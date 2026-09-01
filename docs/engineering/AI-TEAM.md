@@ -11,18 +11,23 @@ AI-команда помогает владельцу разрабатывать
 
 ## Состав
 
-| Роль                   | Где находится                  | Когда используется                                                                                  |
-| ---------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------- |
-| Manager / orchestrator | основной чат Codex             | всегда; принимает задачу и собирает результат                                                       |
-| Architect              | `.codex/agents/architect.toml` | существенные изменения API-совместимости, persistence model, очереди, state machine, ADR и baseline |
-| Frontend               | `.codex/agents/frontend.toml`  | Nuxt/Vue, формы, статусы, админка и браузерные сценарии                                             |
-| Backend                | `.codex/agents/backend.toml`   | NestJS, PostgreSQL, BullMQ, воркеры, FFmpeg и интеграции                                            |
-| QA                     | `.codex/agents/qa.toml`        | тестовые сценарии, controlled failures и воспроизводимые проверки                                   |
-| DevOps                 | `.codex/agents/devops.toml`    | Docker Compose, CI/CD, deployment и observability                                                   |
-| Reviewer               | `.codex/agents/reviewer.toml`  | независимая финальная проверка каждого изменения                                                    |
+| Роль                   | Где находится                         | Когда используется                                                                                  |
+| ---------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Manager / orchestrator | основной чат Codex                    | всегда; принимает задачу и собирает результат                                                       |
+| Architect              | `.codex/agents/architect.toml`        | существенные изменения API-совместимости, persistence model, очереди, state machine, ADR и baseline |
+| Business Analyst       | `.codex/agents/business-analyst.toml` | экономика, нагрузка, KPI, эксперименты и инвестиционные gates                                       |
+| Frontend               | `.codex/agents/frontend.toml`         | Nuxt/Vue, формы, статусы, админка и браузерные сценарии                                             |
+| Backend                | `.codex/agents/backend.toml`          | NestJS, PostgreSQL, BullMQ, воркеры, FFmpeg и интеграции                                            |
+| QA                     | `.codex/agents/qa.toml`               | тестовые сценарии, controlled failures и воспроизводимые проверки                                   |
+| DevOps                 | `.codex/agents/devops.toml`           | Docker Compose, CI/CD, deployment и observability                                                   |
+| Reviewer               | `.codex/agents/reviewer.toml`         | независимая финальная проверка каждого изменения                                                    |
 
 Роли существуют постоянно как доступные специализации, но не запускаются все
 на каждую задачу.
+
+Канонический состав, пользовательские названия задач и протокол восстановления
+после перезапуска определены в `docs/engineering/TEAM-MANIFEST.md`. Текущее
+состояние разработки хранится в `docs/engineering/CURRENT-HANDOFF.md`.
 
 ## Базовая схема работы
 
