@@ -5,6 +5,8 @@ Verified 2026-09-01.
 ## Official/current technical sources
 
 - Nuxt module listing for `@peterbud/nuxt-query`: https://nuxt.com/modules/nuxt-query
+- Vite development server proxy: https://vite.dev/config/server-options.html#server-proxy
+- NGINX proxy buffering and streaming controls: https://nginx.org/en/docs/http/ngx_http_proxy_module.html
 - PrimeVue Nuxt integration: https://primevue.org/nuxt/
 - PrimeVue Tailwind integration: https://primevue.org/tailwind/
 - OpusClip plans and credits: https://help.opus.pro/docs/article/plans-and-credits

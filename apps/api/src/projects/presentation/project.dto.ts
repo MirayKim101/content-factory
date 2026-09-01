@@ -2,13 +2,22 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Allow, Equals, IsString, Length, Matches } from "class-validator";
 
 export class CreateProjectUploadDto {
-  @ApiProperty({ example: "First source" })
+  @ApiProperty({
+    type: String,
+    example: "First source",
+    minLength: 1,
+    maxLength: 200,
+  })
   @IsString()
   @Length(1, 200)
   @Matches(/\S/)
   name!: string;
 
-  @ApiProperty({ enum: ["true"], description: "Must be literal true." })
+  @ApiProperty({
+    type: String,
+    enum: ["true"],
+    description: "Must be literal true.",
+  })
   @Equals("true")
   rightsConfirmed!: string;
 
@@ -18,110 +27,122 @@ export class CreateProjectUploadDto {
 }
 
 class RightsResponseDto {
-  @ApiProperty({ format: "date-time" })
+  @ApiProperty({ type: String, format: "date-time" })
   confirmedAt!: string;
 
-  @ApiProperty({ example: "upload-rights-v1" })
+  @ApiProperty({ type: String, example: "upload-rights-v1" })
   declarationVersion!: string;
 }
 
 class FailureResponseDto {
-  @ApiProperty()
+  @ApiProperty({ type: String })
   code!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   message!: string;
 }
 
 class SourceResponseDto {
-  @ApiProperty({ format: "uuid" })
+  @ApiProperty({ type: String, format: "uuid" })
   id!: string;
 
-  @ApiProperty({ enum: ["PENDING", "READY", "FAILED_FINAL"] })
+  @ApiProperty({
+    type: String,
+    enum: ["PENDING", "READY", "FAILED_FINAL"],
+  })
   status!: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ type: Number, example: 1 })
   sourceVersion!: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   originalFilename!: string;
 
-  @ApiProperty({ example: "video/mp4" })
+  @ApiProperty({ type: String, example: "video/mp4" })
   contentType!: string;
 
   @ApiProperty({
+    type: String,
     example: "123456",
     description: "Decimal string for bigint safety.",
   })
   sizeBytes!: string;
 
-  @ApiProperty({ pattern: "^[a-f0-9]{64}$" })
+  @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
   sha256!: string;
 }
 
 class ArtifactResponseDto {
-  @ApiProperty({ format: "uuid" })
+  @ApiProperty({ type: String, format: "uuid" })
   id!: string;
 
-  @ApiProperty({ enum: ["SOURCE"] })
+  @ApiProperty({ type: String, enum: ["SOURCE"] })
   role!: string;
 
-  @ApiProperty({ enum: ["PENDING", "READY", "FAILED_FINAL"] })
+  @ApiProperty({
+    type: String,
+    enum: ["PENDING", "READY", "FAILED_FINAL"],
+  })
   status!: string;
 
   @ApiProperty({
+    type: String,
     example: "123456",
     description: "Decimal string for bigint safety.",
   })
   sizeBytes!: string;
 
-  @ApiProperty({ pattern: "^[a-f0-9]{64}$" })
+  @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
   sha256!: string;
 
-  @ApiProperty({ example: "video/mp4" })
+  @ApiProperty({ type: String, example: "video/mp4" })
   contentType!: string;
 
-  @ApiProperty({ format: "uuid" })
+  @ApiProperty({ type: String, format: "uuid" })
   lineageSourceId!: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ type: Number, example: 1 })
   lineageSourceVersion!: number;
 
-  @ApiProperty({ example: "source-ingest-v1" })
+  @ApiProperty({ type: String, example: "source-ingest-v1" })
   recipeVersion!: string;
 }
 
 export class ProjectResponseDto {
-  @ApiProperty({ format: "uuid" })
+  @ApiProperty({ type: String, format: "uuid" })
   id!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   name!: string;
 
-  @ApiProperty({ enum: ["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"] })
+  @ApiProperty({
+    type: String,
+    enum: ["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"],
+  })
   status!: string;
 
-  @ApiProperty({ type: RightsResponseDto })
+  @ApiProperty({ type: () => RightsResponseDto })
   rights!: RightsResponseDto;
 
-  @ApiPropertyOptional({ type: FailureResponseDto })
+  @ApiPropertyOptional({ type: () => FailureResponseDto })
   failure?: FailureResponseDto;
 
-  @ApiProperty({ format: "date-time" })
+  @ApiProperty({ type: String, format: "date-time" })
   createdAt!: string;
 
-  @ApiProperty({ format: "date-time" })
+  @ApiProperty({ type: String, format: "date-time" })
   updatedAt!: string;
 
-  @ApiProperty({ type: SourceResponseDto })
+  @ApiProperty({ type: () => SourceResponseDto })
   source!: SourceResponseDto;
 
-  @ApiProperty({ type: ArtifactResponseDto })
+  @ApiProperty({ type: () => ArtifactResponseDto })
   artifact!: ArtifactResponseDto;
 }
 
 class ErrorDetailDto {
   @ApiProperty({
+    type: String,
     enum: [
       "VALIDATION_FAILED",
       "IDEMPOTENCY_KEY_INVALID",
@@ -138,11 +159,11 @@ class ErrorDetailDto {
   })
   code!: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String })
   message!: string;
 }
 
 export class ErrorResponseDto {
-  @ApiProperty({ type: ErrorDetailDto })
+  @ApiProperty({ type: () => ErrorDetailDto })
   error!: ErrorDetailDto;
 }

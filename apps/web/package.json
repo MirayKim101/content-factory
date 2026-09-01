@@ -6,16 +6,28 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev --port 3000",
-    "lint": "oxlint app nuxt.config.ts",
+    "generate:openapi": "node openapi/contract.mjs generate",
+    "check:openapi": "node openapi/contract.mjs check",
+    "lint": "oxlint app nuxt.config.ts openapi",
     "test": "vitest run --passWithNoTests",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@primevue/nuxt-module": "4.5.5",
+    "@tailwindcss/vite": "4.3.3",
+    "@tanstack/vue-query": "5.102.8",
     "nuxt": "4.5.2",
-    "vue": "3.5.42"
+    "primevue": "4.5.5",
+    "tailwindcss": "4.3.3",
+    "vue": "3.5.42",
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/node": "26.4.0",
+    "@vitejs/plugin-vue": "6.0.8",
+    "@vue/test-utils": "2.4.6",
+    "happy-dom": "20.8.3",
+    "openapi-typescript": "7.13.0",
     "oxlint": "1.80.0",
     "typescript": "6.0.3",
     "vitest": "4.1.11",

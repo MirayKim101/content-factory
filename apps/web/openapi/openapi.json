@@ -1,0 +1,411 @@
+{
+  "components": {
+    "schemas": {
+      "ArtifactResponseDto": {
+        "properties": {
+          "contentType": {
+            "example": "video/mp4",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lineageSourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lineageSourceVersion": {
+            "example": 1,
+            "type": "number"
+          },
+          "recipeVersion": {
+            "example": "source-ingest-v1",
+            "type": "string"
+          },
+          "role": {
+            "enum": ["SOURCE"],
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "description": "Decimal string for bigint safety.",
+            "example": "123456",
+            "type": "string"
+          },
+          "status": {
+            "enum": ["PENDING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "status",
+          "sizeBytes",
+          "sha256",
+          "contentType",
+          "lineageSourceId",
+          "lineageSourceVersion",
+          "recipeVersion"
+        ],
+        "type": "object"
+      },
+      "CreateProjectUploadDto": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "type": "string"
+          },
+          "name": {
+            "example": "First source",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "rightsConfirmed": {
+            "description": "Must be literal true.",
+            "enum": ["true"],
+            "type": "string"
+          }
+        },
+        "required": ["name", "rightsConfirmed", "file"],
+        "type": "object"
+      },
+      "ErrorDetailDto": {
+        "properties": {
+          "code": {
+            "enum": [
+              "VALIDATION_FAILED",
+              "IDEMPOTENCY_KEY_INVALID",
+              "FILE_REQUIRED",
+              "INVALID_MULTIPART",
+              "IDEMPOTENCY_CONFLICT",
+              "UPLOAD_TOO_LARGE",
+              "INVALID_MP4",
+              "PROJECT_NOT_FOUND",
+              "INTERNAL_ERROR",
+              "DATABASE_FINALIZE_FAILED",
+              "STORAGE_UPLOAD_FAILED"
+            ],
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "ErrorResponseDto": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetailDto"
+          }
+        },
+        "required": ["error"],
+        "type": "object"
+      },
+      "FailureResponseDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "ProjectResponseDto": {
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/ArtifactResponseDto"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "failure": {
+            "$ref": "#/components/schemas/FailureResponseDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rights": {
+            "$ref": "#/components/schemas/RightsResponseDto"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceResponseDto"
+          },
+          "status": {
+            "enum": ["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "rights",
+          "createdAt",
+          "updatedAt",
+          "source",
+          "artifact"
+        ],
+        "type": "object"
+      },
+      "RightsResponseDto": {
+        "properties": {
+          "confirmedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "declarationVersion": {
+            "example": "upload-rights-v1",
+            "type": "string"
+          }
+        },
+        "required": ["confirmedAt", "declarationVersion"],
+        "type": "object"
+      },
+      "SourceResponseDto": {
+        "properties": {
+          "contentType": {
+            "example": "video/mp4",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "description": "Decimal string for bigint safety.",
+            "example": "123456",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "example": 1,
+            "type": "number"
+          },
+          "status": {
+            "enum": ["PENDING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "sourceVersion",
+          "originalFilename",
+          "contentType",
+          "sizeBytes",
+          "sha256"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "contact": {},
+    "description": "Private Content Factory REST API",
+    "title": "Content Factory API",
+    "version": "1.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "operationId": "AppController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["App"]
+      }
+    },
+    "/api/v1/projects": {
+      "post": {
+        "operationId": "ProjectsController_create",
+        "parameters": [
+          {
+            "description": "Unique caller key (8-200 ASCII characters) for this logical upload.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectUploadDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            },
+            "description": "Created project, or the existing project in its current PENDING, READY, or FAILED state for an identical idempotent retry."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid fields, rights, file, multipart body, or idempotency key."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "The key belongs to a different payload."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Upload exceeds the configured limit."
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "The file is not a structurally acceptable MP4."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Persistence or internal finalization failure."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Object storage upload failed."
+          }
+        },
+        "summary": "Create a project by uploading an authorized MP4 source",
+        "tags": ["projects"]
+      }
+    },
+    "/api/v1/projects/{id}": {
+      "get": {
+        "operationId": "ProjectsController_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid project UUID."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Project not found."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Internal query failure."
+          }
+        },
+        "summary": "Get safe source-ingestion status and lineage",
+        "tags": ["projects"]
+      }
+    }
+  },
+  "servers": [],
+  "tags": []
+}

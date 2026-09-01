@@ -34,3 +34,27 @@ The software can automate rendering and publishing; it cannot honestly make copy
 - approved outputs per operator hour;
 - storage growth and retention cost;
 - per-channel publication limits and platform warnings.
+
+## Long-VOD planning scenario
+
+For capacity experiments, not forecasts, use:
+
+```text
+source GiB ≈ bitrate Mbps × duration hours × 0.43945
+```
+
+A five-hour VOD at 4–8 Mbps is roughly 9–18 GiB. Ten such daily sources imply
+about 90–180 GiB/day and 1.2–2.5 TiB for 14 days of raw retention before
+intermediates and finals. Measure actual bitrate, arrival bursts and retention
+before selecting VDS or worker counts.
+
+Capacity is bounded per stage. The system accepts a batch immediately, runs only
+the jobs admitted by network, CPU/GPU, disk and provider budgets, and keeps the
+rest visibly queued with fairness between channels. An initial planning window
+of under 12 hours is an experiment, not an approved SLA.
+
+Before moving from 2 to 10 channels, measure source-hours per worker-hour,
+queue/processing p50 and p95, peak scratch, GiB-days, cost per source hour and
+operator minutes per approved asset. The 10-to-50 gate additionally requires
+validated demand, rights, provider economics and a benchmark proving the
+editorial window. See ADR-002.

@@ -8,7 +8,11 @@ import {
   type INestApplication,
 } from "@nestjs/common";
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import {
+  DocumentBuilder,
+  SwaggerModule,
+  type OpenAPIObject,
+} from "@nestjs/swagger";
 
 import { AppModule } from "./app.module.js";
 import { loadEnvironment } from "./config/environment.js";
@@ -34,16 +38,25 @@ export async function createApp(): Promise<INestApplication> {
   );
   app.useGlobalFilters(new HttpExceptionFilter(app.get(HttpAdapterHost)));
 
+  const document = createOpenApiDocument(app);
+  SwaggerModule.setup("api/docs", app, document, {
+    jsonDocumentUrl: "api/docs-json",
+  });
+  return app;
+}
+
+/**
+ * Builds the authoritative API contract from the same Nest application that
+ * serves requests. Keeping this separate from HTTP listening lets contract
+ * tooling export the schema without reserving a port or starting a watcher.
+ */
+export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
   const openApiConfig = new DocumentBuilder()
     .setTitle("Content Factory API")
     .setDescription("Private Content Factory REST API")
     .setVersion("1.0")
     .build();
-  const document = SwaggerModule.createDocument(app, openApiConfig);
-  SwaggerModule.setup("api/docs", app, document, {
-    jsonDocumentUrl: "api/docs-json",
-  });
-  return app;
+  return SwaggerModule.createDocument(app, openApiConfig);
 }
 
 async function bootstrap(): Promise<void> {

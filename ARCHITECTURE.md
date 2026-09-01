@@ -84,7 +84,7 @@ Nx is not required initially. Reconsider it only if project-graph enforcement, a
 - generated OpenAPI client;
 - Vitest, Vue Test Utils and Playwright.
 
-SSR, SSG, SEO rendering and a Nitro BFF are outside the baseline. Nuxt is used for routing, layouts, conventions, modules and development ergonomics.
+SSR, SSG, SEO rendering and a Nitro BFF are outside the baseline. Nuxt is used for routing, layouts, conventions, modules and development ergonomics. Browser API calls use relative `/api/v1` URLs. Locally a fixed dev-only Nuxt/Vite proxy routes that path to NestJS; on VDS an infrastructure edge proxy routes it streaming to the private API under the same public origin. The proxy contains no DTO mapping or business logic. See ADR-001.
 
 The absence of JWT does not mean the deployed panel may be publicly reachable without protection. For a private deployment, access should be restricted at the infrastructure boundary, for example by a private network, VPN or access proxy. Application authentication can be added later through an ADR if the operating model changes.
 
@@ -233,6 +233,34 @@ Every job type defines:
 - cleanup and compensation behavior.
 
 Workers must be safe to restart. A reconciliation process restores missing queue work from authoritative database state. Publication jobs must prevent duplicate uploads.
+
+### 6.1 Bounded parallelism and admission
+
+The system accepts independent jobs immediately but starts work only within
+separate configurable resource pools for ingest, probe, CPU media, GPU media,
+each AI provider and each publishing platform. Limits include global and
+per-channel concurrency, resource class, priority aging, retry budget, provider
+circuit state, scratch reservation and I/O admission. A safe local default of
+one heavy FFmpeg slot is a capacity setting, not a sequential architecture.
+
+PostgreSQL owns `ProcessingBatch`, `PipelineJob`, `JobAttempt`, desired/current
+state, monotonic revision, lease/heartbeat, retry budget and structured progress.
+BullMQ carries a job reference. Workers claim with compare-and-set and a lease so
+duplicate delivery creates one logical effect. Batch items fail independently.
+See ADR-002.
+
+### 6.2 Large-file data plane
+
+Stage 3 large uploads use resumable multipart sessions. The REST API creates and
+finalizes a session; browser or Twitch ingest writes bounded chunks directly to
+object storage and calculates integrity data. NestJS and Nitro never buffer a
+whole VOD. Orphan parts expire and are reconciled. A fixed same-origin edge route
+to local/VDS storage is preferred; an external provider may use short-lived
+presigned URLs with exact-origin CORS.
+
+Object storage is authoritative for media and worker disks are scratch. Workers
+reserve predicted scratch before execution and refuse admission below the safety
+threshold. Processing uses streaming/range access where possible.
 
 ## 7. Media and integrations
 

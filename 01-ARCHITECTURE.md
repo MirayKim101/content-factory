@@ -23,7 +23,7 @@ The backend itself begins as a modular deployment for simplicity, but its module
 - Nuxt-adapted FSD: `pages -> widgets -> features -> entities -> shared`;
 - generated OpenAPI client; raw HTTP calls are not scattered through components.
 
-Nuxt remains valuable for routing, layouts, modules, conventions and developer ergonomics. SSR, SSG, Nitro BFF and application JWT are not baseline requirements. Private access is enforced at the infrastructure boundary until an ADR changes the operating model.
+Nuxt remains valuable for routing, layouts, modules, conventions and developer ergonomics. SSR, SSG, Nitro BFF and application JWT are not baseline requirements. Browser calls use relative `/api/v1` URLs. A dev-only Nuxt/Vite proxy provides the same origin locally; on VDS an infrastructure reverse proxy routes `/api/v1/**` directly and streaming to the private NestJS API. See ADR-001. Private access is enforced at the infrastructure boundary until an ADR changes the operating model.
 
 Strict typing is required even though the panel is private. The generated OpenAPI client is the compile-time source of truth for API contracts; frontend code must not duplicate its DTO types by hand. Zod schemas validate untrusted runtime input such as forms, route and query parameters, browser storage, runtime configuration and data that does not pass through a typed owned client. Prefer types inferred from Zod schemas for validated form and UI models. Do not use `any` to bypass a boundary; isolate unavoidable untyped third-party code in a small adapter and narrow it immediately.
 
@@ -41,6 +41,10 @@ Strict typing is required even though the panel is private. The generated OpenAP
 ## Scale model
 
 The pipeline and business behavior are identical at 1, 10 and 100 channels. Capacity grows by adding workers, storage, queue partitions and provider quota. Concurrency, rate limits, operational gates, canary rollout and observability become stricter with scale.
+
+The pipeline uses bounded parallelism, not globally sequential execution and not unlimited fan-out. Ingest, probe, CPU/GPU media, AI and publishing have independent configurable pools, admission limits and retry budgets. PostgreSQL owns job state and leases; BullMQ is replaceable delivery coordination. Batches group independent items and permit partial success. See ADR-002.
+
+Stage 3 large-file ingestion separates the REST control plane from a resumable multipart data plane to object storage. Stage 1 keeps the single manual upload while preserving project-scoped state and idempotency; simply increasing the current file limit or starting many full HTTP uploads is prohibited without storage and disk admission controls.
 
 ## Technology freshness rule
 
