@@ -1,6 +1,6 @@
 # Sources, Verification Dates and Assumptions
 
-Verified 2026-08-31.
+Verified 2026-09-01.
 
 ## Official/current technical sources
 
@@ -17,6 +17,10 @@ Verified 2026-08-31.
 - Twitch Affiliate requirements: https://help.twitch.tv/s/article/joining-the-affiliate-program
 - Twitch Affiliate advertising settings: https://help.twitch.tv/s/article/affiliate-settings-guide
 - YouTube creator/monetization resources: https://www.youtube.com/creators/resources/
+- PostgreSQL Docker Official Image (`postgres:18.6`): https://hub.docker.com/_/postgres
+- Redis Docker Official Image (`redis:8.10.1`): https://hub.docker.com/_/redis
+- MinIO Community security release (`RELEASE.2025-10-15T17-29-55Z`): https://github.com/minio/minio/releases/tag/RELEASE.2025-10-15T17-29-55Z
+- MinIO Community source-only distribution notice: https://github.com/minio/minio
 
 ## Market benchmarks, not guarantees
 
@@ -33,5 +37,13 @@ Verified 2026-08-31.
 - provider price at production volume;
 - render and storage cost per source hour;
 - legal authorization for every source category.
+
+## Local infrastructure risk to revisit before pre-production
+
+MinIO Community became source-only and its upstream repository was archived in 2026. The local MVP Compose configuration therefore builds the last security
+release from its pinned upstream tag instead of trusting an unmaintained
+third-party image. This remains suitable only for the local MVP. Before
+pre-production, re-evaluate supported S3-compatible storage, its licensing,
+security-update path, migration path and backup/restore procedure in an ADR.
 
 All financial values in `05-FINANCIAL-MODEL.md` are scenario assumptions. They are not sourced claims about guaranteed performance.

@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+mc alias set --quiet local http://127.0.0.1:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+exec mc ready local
