@@ -19,10 +19,13 @@ The backend itself begins as a modular deployment for simplicity, but its module
 - Tailwind CSS and PrimeVue;
 - Pinia for global client-only state;
 - Vue Query for remote/server state;
+- Zod for runtime validation at frontend trust boundaries;
 - Nuxt-adapted FSD: `pages -> widgets -> features -> entities -> shared`;
 - generated OpenAPI client; raw HTTP calls are not scattered through components.
 
 Nuxt remains valuable for routing, layouts, modules, conventions and developer ergonomics. SSR, SSG, Nitro BFF and application JWT are not baseline requirements. Private access is enforced at the infrastructure boundary until an ADR changes the operating model.
+
+Strict typing is required even though the panel is private. The generated OpenAPI client is the compile-time source of truth for API contracts; frontend code must not duplicate its DTO types by hand. Zod schemas validate untrusted runtime input such as forms, route and query parameters, browser storage, runtime configuration and data that does not pass through a typed owned client. Prefer types inferred from Zod schemas for validated form and UI models. Do not use `any` to bypass a boundary; isolate unavoidable untyped third-party code in a small adapter and narrow it immediately.
 
 ## Backend
 

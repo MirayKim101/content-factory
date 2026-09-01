@@ -80,6 +80,7 @@ Nx is not required initially. Reconsider it only if project-graph enforcement, a
 - PrimeVue 4;
 - Pinia;
 - TanStack Vue Query with the Nuxt integration;
+- Zod for runtime validation at frontend trust boundaries;
 - generated OpenAPI client;
 - Vitest, Vue Test Utils and Playwright.
 
@@ -109,7 +110,20 @@ pages -> widgets -> features -> entities -> shared
 
 A lower layer must never import an upper layer. Cross-feature imports are prohibited; shared logic must be moved to the appropriate entity or shared module. Pages coordinate features but do not contain business rules or raw HTTP calls.
 
-### 4.3 State ownership
+### 4.3 Type safety and runtime validation
+
+Strict typing is required even for this private administration panel. TypeScript checks compile-time relationships, while Zod validates values that enter the application at runtime.
+
+- the generated OpenAPI client is the compile-time source of truth for API request and response DTOs;
+- do not manually duplicate generated API types or scatter raw HTTP calls through components;
+- use Zod for forms, route and query parameters, browser storage, runtime configuration and external or otherwise untyped data;
+- infer validated form and UI model types from their Zod schemas where practical;
+- do not use `any` to bypass validation or typing;
+- if a third-party library exposes untyped data, contain it in a small adapter and narrow it to an owned type immediately.
+
+Zod schemas belong to the lowest FSD layer that owns the validated concept. Generic validation primitives live in `shared`, entity rules in `entities`, and workflow-specific form schemas in `features`. Components consume parsed values and must not silently cast unknown input.
+
+### 4.4 State ownership
 
 - Vue Query owns remote server state, caching, invalidation, loading and request errors.
 - Pinia owns durable client-only state shared across routes, such as editor drafts or UI preferences.
@@ -118,7 +132,7 @@ A lower layer must never import an upper layer. Cross-feature imports are prohib
 
 Do not copy Vue Query results into Pinia. Do not build one global application store.
 
-### 4.4 UI system
+### 4.5 UI system
 
 - PrimeVue supplies accessible complex controls.
 - Tailwind supplies layout and targeted styling.

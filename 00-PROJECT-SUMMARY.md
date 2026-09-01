@@ -16,7 +16,7 @@ MVP does not mean a disposable reduced architecture. The difference is capacity,
 
 ## Baseline
 
-- Frontend: Nuxt 4 SPA, Vue, TypeScript, Tailwind, PrimeVue, Pinia, TanStack Vue Query.
+- Frontend: Nuxt 4 SPA, Vue, strict TypeScript, Nuxt-adapted FSD, Zod, Tailwind, PrimeVue, Pinia, TanStack Vue Query.
 - Backend: independent NestJS REST API, PostgreSQL and Prisma.
 - Async work: Redis, BullMQ and independently scalable workers.
 - Media: FFmpeg/FFprobe, object storage and external AI clipping adapters.
