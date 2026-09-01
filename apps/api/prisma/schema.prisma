@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProjectStatus {
+  SOURCE_PENDING
+  SOURCE_READY
+  FAILED_FINAL
+}
+
+enum VideoSourceStatus {
+  PENDING
+  READY
+  FAILED_FINAL
+}
+
+enum MediaArtifactStatus {
+  PENDING
+  READY
+  FAILED_FINAL
+}
+
+enum MediaArtifactRole {
+  SOURCE
+}
+
+enum ArtifactCleanupStatus {
+  NOT_REQUIRED
+  PENDING
+  COMPLETED
+}
+
+model Project {
+  id                       String          @id @db.Uuid
+  idempotencyKey           String          @unique
+  requestFingerprint       String
+  name                     String
+  status                   ProjectStatus   @default(SOURCE_PENDING)
+  rightsConfirmedAt        DateTime
+  rightsDeclarationVersion String
+  failureCode              String?
+  failureMessage           String?
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+  source                   VideoSource?
+  artifacts                MediaArtifact[]
+}
+
+model VideoSource {
+  id               String            @id @db.Uuid
+  projectId        String            @unique @db.Uuid
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status           VideoSourceStatus @default(PENDING)
+  sourceVersion    Int               @default(1)
+  originalFilename String
+  contentType      String
+  sizeBytes        BigInt
+  sha256           String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  artifacts        MediaArtifact[]
+}
+
+model MediaArtifact {
+  id                   String                @id @db.Uuid
+  projectId            String                @db.Uuid
+  project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId             String                @db.Uuid
+  source               VideoSource           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  role                 MediaArtifactRole
+  status               MediaArtifactStatus   @default(PENDING)
+  objectKey            String                @unique
+  storageEtag          String?
+  storageVersion       String?
+  cleanupStatus        ArtifactCleanupStatus @default(NOT_REQUIRED)
+  cleanupAttemptCount  Int                   @default(0)
+  cleanupLastErrorCode String?
+  cleanupRequestedAt   DateTime?
+  cleanupCompletedAt   DateTime?
+  sizeBytes            BigInt
+  sha256               String
+  contentType          String
+  lineageSourceId      String                @db.Uuid
+  lineageSourceVersion Int
+  recipeVersion        String
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@index([status, createdAt])
+  @@index([cleanupStatus, updatedAt])
+}
