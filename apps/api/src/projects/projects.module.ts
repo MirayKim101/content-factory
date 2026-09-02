@@ -3,7 +3,9 @@ import { Module } from "@nestjs/common";
 import { PrismaService } from "../database/prisma.service.js";
 import { CreateProjectWithSource } from "./application/create-project-with-source.js";
 import { GetProject } from "./application/get-project.js";
+import { ListProjects } from "./application/list-projects.js";
 import { OBJECT_STORAGE } from "./application/object-storage.port.js";
+import { PROJECT_LIBRARY_REPOSITORY } from "./application/project-library-repository.port.js";
 import { PROJECT_REPOSITORY } from "./application/project-repository.port.js";
 import { ReconcilePendingUploads } from "./application/reconcile-pending-uploads.js";
 import { PendingUploadReconciliationStartup } from "./infrastructure/pending-upload-reconciliation.startup.js";
@@ -21,11 +23,16 @@ import { TempUploadLifecycleInterceptor } from "./presentation/temp-upload-lifec
     S3ObjectStorage,
     CreateProjectWithSource,
     GetProject,
+    ListProjects,
     ReconcilePendingUploads,
     PendingUploadReconciliationStartup,
     TempUploadSweepStartup,
     TempUploadLifecycleInterceptor,
     { provide: PROJECT_REPOSITORY, useExisting: PrismaProjectRepository },
+    {
+      provide: PROJECT_LIBRARY_REPOSITORY,
+      useExisting: PrismaProjectRepository,
+    },
     { provide: OBJECT_STORAGE, useExisting: S3ObjectStorage },
   ],
   exports: [PrismaService, OBJECT_STORAGE],

@@ -37,6 +37,47 @@ export interface ProjectView {
   };
 }
 
+export interface ProjectLibraryItem {
+  id: string;
+  name: string;
+  status: ProjectStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  source: {
+    id: string;
+    status: SourceStatus;
+    addedAt: Date;
+    originalFilename: string;
+    contentType: string;
+    sizeBytes: bigint;
+    durationMs?: number;
+    probeState?:
+      "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+  };
+  cutJobCounts: {
+    total: number;
+    ready: number;
+    failed: number;
+  };
+}
+
+export interface ProjectListCursor {
+  createdAt: Date;
+  id: string;
+}
+
+export interface ProjectListQuery {
+  cursor?: ProjectListCursor;
+  limit: number;
+  status?: ProjectStatus;
+  q?: string;
+}
+
+export interface ProjectListPage {
+  items: ProjectLibraryItem[];
+  nextCursor: ProjectListCursor | null;
+}
+
 export interface PendingUpload {
   projectId: string;
   sourceId: string;

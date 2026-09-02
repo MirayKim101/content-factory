@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../../database/prisma.service.js";
+import type { ProjectLibraryRepository } from "../application/project-library-repository.port.js";
 import {
   IdempotencyKeyAlreadyExistsError,
   TerminalStateConflictError,
@@ -11,11 +12,16 @@ import {
 import type {
   PendingCleanup,
   PendingUpload,
+  ProjectLibraryItem,
+  ProjectListPage,
+  ProjectListQuery,
   ProjectView,
 } from "../domain/project.js";
 
 @Injectable()
-export class PrismaProjectRepository implements ProjectRepository {
+export class PrismaProjectRepository
+  implements ProjectRepository, ProjectLibraryRepository
+{
   constructor(private readonly prisma: PrismaService) {}
 
   async createPendingUpload(record: CreatePendingUploadRecord): Promise<void> {
@@ -292,6 +298,102 @@ export class PrismaProjectRepository implements ProjectRepository {
     };
   }
 
+  async list(query: ProjectListQuery): Promise<ProjectListPage> {
+    const status = query.status ?? null;
+    const escapedSearch = query.q ? escapeLikePattern(query.q) : null;
+    const cursorCreatedAt = query.cursor?.createdAt ?? null;
+    const cursorId = query.cursor?.id ?? null;
+    const rows = await this.prisma.$queryRaw<ProjectLibraryRow[]>`
+      SELECT
+        project.id,
+        project.name,
+        project.status::text AS status,
+        project."createdAt",
+        project."updatedAt",
+        source.id AS "sourceId",
+        source.status::text AS "sourceStatus",
+        source."createdAt" AS "sourceAddedAt",
+        source."originalFilename",
+        source."contentType",
+        source."sizeBytes",
+        source."durationMs",
+        probe.state::text AS "probeState",
+        cuts.total AS "cutTotal",
+        cuts.ready AS "cutReady",
+        cuts.failed AS "cutFailed"
+      FROM "Project" AS project
+      INNER JOIN "VideoSource" AS source ON source."projectId" = project.id
+      LEFT JOIN LATERAL (
+        SELECT job.state
+        FROM "PipelineJob" AS job
+        WHERE job."sourceId" = source.id
+          AND job.type = 'SOURCE_PROBE'::"PipelineJobType"
+        ORDER BY job."createdAt" DESC, job.id DESC
+        LIMIT 1
+      ) AS probe ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (
+            WHERE job.state = 'READY'::"PipelineJobState"
+          )::int AS ready,
+          COUNT(*) FILTER (
+            WHERE job.state = 'FAILED_FINAL'::"PipelineJobState"
+          )::int AS failed
+        FROM "PipelineJob" AS job
+        WHERE job."projectId" = project.id
+          AND job.type = 'CUT_SEGMENT'::"PipelineJobType"
+      ) AS cuts ON TRUE
+      WHERE (${status}::text IS NULL OR project.status::text = ${status}::text)
+        AND (
+          ${escapedSearch}::text IS NULL
+          OR project.name ILIKE ('%' || ${escapedSearch}::text || '%') ESCAPE E'\\\\'
+          OR source."originalFilename" ILIKE ('%' || ${escapedSearch}::text || '%') ESCAPE E'\\\\'
+        )
+        AND (
+          ${cursorCreatedAt}::timestamptz IS NULL
+          OR (project."createdAt", project.id) < (
+            ${cursorCreatedAt}::timestamptz,
+            ${cursorId}::uuid
+          )
+        )
+      ORDER BY project."createdAt" DESC, project.id DESC
+      LIMIT ${query.limit + 1}
+    `;
+
+    const hasMore = rows.length > query.limit;
+    const visibleRows = rows.slice(0, query.limit);
+    const items: ProjectLibraryItem[] = visibleRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      status: row.status,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      source: {
+        id: row.sourceId,
+        status: row.sourceStatus,
+        addedAt: row.sourceAddedAt,
+        originalFilename: row.originalFilename,
+        contentType: row.contentType,
+        sizeBytes: row.sizeBytes,
+        ...(row.durationMs === null ? {} : { durationMs: row.durationMs }),
+        ...(row.probeState === null ? {} : { probeState: row.probeState }),
+      },
+      cutJobCounts: {
+        total: row.cutTotal,
+        ready: row.cutReady,
+        failed: row.cutFailed,
+      },
+    }));
+    const last = visibleRows.at(-1);
+
+    return {
+      items,
+      nextCursor:
+        hasMore && last ? { createdAt: last.createdAt, id: last.id } : null,
+    };
+  }
+
   async findStalePending(
     before: Date,
     limit: number,
@@ -387,4 +489,30 @@ export class PrismaProjectRepository implements ProjectRepository {
       error.code === "P2002"
     );
   }
+}
+
+interface ProjectLibraryRow {
+  id: string;
+  name: string;
+  status: ProjectLibraryItem["status"];
+  createdAt: Date;
+  updatedAt: Date;
+  sourceId: string;
+  sourceStatus: ProjectLibraryItem["source"]["status"];
+  sourceAddedAt: Date;
+  originalFilename: string;
+  contentType: string;
+  sizeBytes: bigint;
+  durationMs: number | null;
+  probeState: ProjectLibraryItem["source"]["probeState"] | null;
+  cutTotal: number;
+  cutReady: number;
+  cutFailed: number;
+}
+
+function escapeLikePattern(value: string): string {
+  return value
+    .replaceAll("\\", "\\\\")
+    .replaceAll("%", "\\%")
+    .replaceAll("_", "\\_");
 }

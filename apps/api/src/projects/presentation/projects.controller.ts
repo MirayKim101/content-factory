@@ -10,6 +10,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
@@ -24,18 +25,29 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
 
 import { CreateProjectWithSource } from "../application/create-project-with-source.js";
 import { GetProject } from "../application/get-project.js";
+import { ListProjects } from "../application/list-projects.js";
 import {
   CreateProjectUploadDto,
   ErrorResponseDto,
+  ListProjectsQueryDto,
+  ProjectLibraryPageDto,
   ProjectResponseDto,
 } from "./project.dto.js";
-import { toProjectResponse } from "./project-response.js";
+import {
+  decodeProjectListCursor,
+  encodeProjectListCursor,
+} from "./project-list-cursor.js";
+import {
+  toProjectLibraryItemResponse,
+  toProjectResponse,
+} from "./project-response.js";
 import { TempUploadLifecycleInterceptor } from "./temp-upload-lifecycle.interceptor.js";
 import { uploadOptions } from "./upload-options.js";
 
@@ -45,7 +57,68 @@ export class ProjectsController {
   constructor(
     private readonly createProject: CreateProjectWithSource,
     private readonly getProject: GetProject,
+    private readonly listProjects: ListProjects,
   ) {}
+
+  @Get()
+  @ApiOperation({ summary: "List source projects for the media library" })
+  @ApiQuery({
+    name: "cursor",
+    required: false,
+    type: String,
+    maxLength: 512,
+    description: "Opaque cursor returned by the previous page.",
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    type: Number,
+    minimum: 1,
+    maximum: 50,
+    example: 20,
+  })
+  @ApiQuery({
+    name: "status",
+    required: false,
+    enum: ["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"],
+  })
+  @ApiQuery({
+    name: "q",
+    required: false,
+    type: String,
+    maxLength: 200,
+    description:
+      "Case-insensitive literal project name or original filename search. Control characters are rejected.",
+  })
+  @ApiOkResponse({ type: ProjectLibraryPageDto })
+  @ApiResponse({
+    status: 400,
+    type: ErrorResponseDto,
+    description: "Invalid cursor, limit, status, or search query.",
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorResponseDto,
+    description: "Internal query failure.",
+  })
+  async list(
+    @Query() query: ListProjectsQueryDto,
+  ): Promise<ProjectLibraryPageDto> {
+    const page = await this.listProjects.execute({
+      limit: query.limit ? Number(query.limit) : 20,
+      ...(query.cursor
+        ? { cursor: decodeProjectListCursor(query.cursor) }
+        : {}),
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.q?.trim() ? { q: query.q.trim() } : {}),
+    });
+    return {
+      items: page.items.map(toProjectLibraryItemResponse),
+      nextCursor: page.nextCursor
+        ? encodeProjectListCursor(page.nextCursor)
+        : null,
+    };
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

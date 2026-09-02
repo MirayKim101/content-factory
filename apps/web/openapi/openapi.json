@@ -109,6 +109,24 @@
         "required": ["name", "rightsConfirmed", "file"],
         "type": "object"
       },
+      "CutJobCountsDto": {
+        "properties": {
+          "failed": {
+            "example": 1,
+            "type": "number"
+          },
+          "ready": {
+            "example": 2,
+            "type": "number"
+          },
+          "total": {
+            "example": 5,
+            "type": "number"
+          }
+        },
+        "required": ["total", "ready", "failed"],
+        "type": "object"
+      },
       "CutSegmentDto": {
         "properties": {
           "clientSegmentId": {
@@ -139,6 +157,7 @@
               "UPLOAD_TOO_LARGE",
               "INVALID_MP4",
               "PROJECT_NOT_FOUND",
+              "INVALID_CURSOR",
               "INTERNAL_ERROR",
               "DATABASE_FINALIZE_FAILED",
               "STORAGE_UPLOAD_FAILED"
@@ -271,6 +290,114 @@
           "attempt",
           "retryBudget",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ProjectLibraryItemDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutJobCounts": {
+            "$ref": "#/components/schemas/CutJobCountsDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ProjectLibrarySourceDto"
+          },
+          "status": {
+            "enum": ["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "source",
+          "cutJobCounts"
+        ],
+        "type": "object"
+      },
+      "ProjectLibraryPageDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectLibraryItemDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "description": "Opaque cursor for the next page, or null on the last page.",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "ProjectLibrarySourceDto": {
+        "properties": {
+          "addedAt": {
+            "description": "When the source was added to the media library.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "contentType": {
+            "example": "video/mp4",
+            "type": "string"
+          },
+          "durationMs": {
+            "example": 7200000,
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "probeState": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          },
+          "sizeBytes": {
+            "description": "Decimal string for bigint safety.",
+            "example": "123456",
+            "type": "string"
+          },
+          "status": {
+            "enum": ["PENDING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "addedAt",
+          "originalFilename",
+          "contentType",
+          "sizeBytes"
         ],
         "type": "object"
       },
@@ -528,6 +655,85 @@
       }
     },
     "/api/v1/projects": {
+      "get": {
+        "operationId": "ProjectsController_list",
+        "parameters": [
+          {
+            "description": "Case-insensitive literal project name or original filename search. Control characters are rejected.",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": ["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "example": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectLibraryPageDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid cursor, limit, status, or search query."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Internal query failure."
+          }
+        },
+        "summary": "List source projects for the media library",
+        "tags": ["projects"]
+      },
       "post": {
         "operationId": "ProjectsController_create",
         "parameters": [

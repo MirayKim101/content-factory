@@ -59,7 +59,8 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /** List source projects for the media library */
+    get: operations["ProjectsController_list"];
     put?: never;
     /** Create a project by uploading an authorized MP4 source */
     post: operations["ProjectsController_create"];
@@ -166,6 +167,14 @@ export interface components {
        */
       rightsConfirmed: "true";
     };
+    CutJobCountsDto: {
+      /** @example 1 */
+      failed: number;
+      /** @example 2 */
+      ready: number;
+      /** @example 5 */
+      total: number;
+    };
     CutSegmentDto: {
       /** Format: uuid */
       clientSegmentId: string;
@@ -183,6 +192,7 @@ export interface components {
         | "UPLOAD_TOO_LARGE"
         | "INVALID_MP4"
         | "PROJECT_NOT_FOUND"
+        | "INVALID_CURSOR"
         | "INTERNAL_ERROR"
         | "DATABASE_FINALIZE_FAILED"
         | "STORAGE_UPLOAD_FAILED";
@@ -226,6 +236,48 @@ export interface components {
       totalMs?: number;
       /** Format: date-time */
       updatedAt: string;
+    };
+    ProjectLibraryItemDto: {
+      /** Format: date-time */
+      createdAt: string;
+      cutJobCounts: components["schemas"]["CutJobCountsDto"];
+      /** Format: uuid */
+      id: string;
+      name: string;
+      source: components["schemas"]["ProjectLibrarySourceDto"];
+      /** @enum {string} */
+      status: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    ProjectLibraryPageDto: {
+      items: components["schemas"]["ProjectLibraryItemDto"][];
+      /** @description Opaque cursor for the next page, or null on the last page. */
+      nextCursor: string | null;
+    };
+    ProjectLibrarySourceDto: {
+      /**
+       * Format: date-time
+       * @description When the source was added to the media library.
+       */
+      addedAt: string;
+      /** @example video/mp4 */
+      contentType: string;
+      /** @example 7200000 */
+      durationMs?: number;
+      /** Format: uuid */
+      id: string;
+      originalFilename: string;
+      /** @enum {string} */
+      probeState?:
+        "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+      /**
+       * @description Decimal string for bigint safety.
+       * @example 123456
+       */
+      sizeBytes: string;
+      /** @enum {string} */
+      status: "PENDING" | "READY" | "FAILED_FINAL";
     };
     ProjectResponseDto: {
       artifact: components["schemas"]["ArtifactResponseDto"];
@@ -362,6 +414,50 @@ export interface operations {
           "Accept-Ranges"?: string;
           /** @description Unsatisfied range with the authoritative object size. */
           "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ProjectsController_list: {
+    parameters: {
+      query?: {
+        /** @description Case-insensitive literal project name or original filename search. Control characters are rejected. */
+        q?: string;
+        status?: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
+        limit?: number;
+        /** @description Opaque cursor returned by the previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectLibraryPageDto"];
+        };
+      };
+      /** @description Invalid cursor, limit, status, or search query. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Internal query failure. */
+      500: {
+        headers: {
           [name: string]: unknown;
         };
         content: {
