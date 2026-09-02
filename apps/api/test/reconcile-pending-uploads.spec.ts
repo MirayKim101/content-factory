@@ -26,6 +26,7 @@ function projects(): ProjectRepository {
     findPendingCleanup: vi.fn(async () => []),
     markCleanupCompleted: vi.fn(),
     recordCleanupFailure: vi.fn(),
+    attestSourceAuthorization: vi.fn(),
   };
 }
 

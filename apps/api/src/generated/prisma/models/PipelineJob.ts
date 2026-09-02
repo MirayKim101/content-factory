@@ -27,6 +27,7 @@ export type AggregatePipelineJob = {
 }
 
 export type PipelineJobAvgAggregateOutputType = {
+  sourceVersion: number | null
   payloadVersion: number | null
   revision: number | null
   priority: number | null
@@ -37,6 +38,7 @@ export type PipelineJobAvgAggregateOutputType = {
 }
 
 export type PipelineJobSumAggregateOutputType = {
+  sourceVersion: number | null
   payloadVersion: number | null
   revision: number | null
   priority: number | null
@@ -50,6 +52,7 @@ export type PipelineJobMinAggregateOutputType = {
   id: string | null
   projectId: string | null
   sourceId: string | null
+  sourceVersion: number | null
   cutRequestId: string | null
   type: $Enums.PipelineJobType | null
   state: $Enums.PipelineJobState | null
@@ -80,6 +83,7 @@ export type PipelineJobMaxAggregateOutputType = {
   id: string | null
   projectId: string | null
   sourceId: string | null
+  sourceVersion: number | null
   cutRequestId: string | null
   type: $Enums.PipelineJobType | null
   state: $Enums.PipelineJobState | null
@@ -110,6 +114,7 @@ export type PipelineJobCountAggregateOutputType = {
   id: number
   projectId: number
   sourceId: number
+  sourceVersion: number
   cutRequestId: number
   type: number
   state: number
@@ -139,6 +144,7 @@ export type PipelineJobCountAggregateOutputType = {
 
 
 export type PipelineJobAvgAggregateInputType = {
+  sourceVersion?: true
   payloadVersion?: true
   revision?: true
   priority?: true
@@ -149,6 +155,7 @@ export type PipelineJobAvgAggregateInputType = {
 }
 
 export type PipelineJobSumAggregateInputType = {
+  sourceVersion?: true
   payloadVersion?: true
   revision?: true
   priority?: true
@@ -162,6 +169,7 @@ export type PipelineJobMinAggregateInputType = {
   id?: true
   projectId?: true
   sourceId?: true
+  sourceVersion?: true
   cutRequestId?: true
   type?: true
   state?: true
@@ -192,6 +200,7 @@ export type PipelineJobMaxAggregateInputType = {
   id?: true
   projectId?: true
   sourceId?: true
+  sourceVersion?: true
   cutRequestId?: true
   type?: true
   state?: true
@@ -222,6 +231,7 @@ export type PipelineJobCountAggregateInputType = {
   id?: true
   projectId?: true
   sourceId?: true
+  sourceVersion?: true
   cutRequestId?: true
   type?: true
   state?: true
@@ -339,6 +349,7 @@ export type PipelineJobGroupByOutputType = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   cutRequestId: string | null
   type: $Enums.PipelineJobType
   state: $Enums.PipelineJobState
@@ -392,6 +403,7 @@ export type PipelineJobWhereInput = {
   id?: Prisma.UuidFilter<"PipelineJob"> | string
   projectId?: Prisma.UuidFilter<"PipelineJob"> | string
   sourceId?: Prisma.UuidFilter<"PipelineJob"> | string
+  sourceVersion?: Prisma.IntFilter<"PipelineJob"> | number
   cutRequestId?: Prisma.UuidNullableFilter<"PipelineJob"> | string | null
   type?: Prisma.EnumPipelineJobTypeFilter<"PipelineJob"> | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFilter<"PipelineJob"> | $Enums.PipelineJobState
@@ -428,6 +440,7 @@ export type PipelineJobOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   sourceId?: Prisma.SortOrder
+  sourceVersion?: Prisma.SortOrder
   cutRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   state?: Prisma.SortOrder
@@ -469,6 +482,7 @@ export type PipelineJobWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.PipelineJobWhereInput | Prisma.PipelineJobWhereInput[]
   projectId?: Prisma.UuidFilter<"PipelineJob"> | string
   sourceId?: Prisma.UuidFilter<"PipelineJob"> | string
+  sourceVersion?: Prisma.IntFilter<"PipelineJob"> | number
   cutRequestId?: Prisma.UuidNullableFilter<"PipelineJob"> | string | null
   type?: Prisma.EnumPipelineJobTypeFilter<"PipelineJob"> | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFilter<"PipelineJob"> | $Enums.PipelineJobState
@@ -503,6 +517,7 @@ export type PipelineJobOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   sourceId?: Prisma.SortOrder
+  sourceVersion?: Prisma.SortOrder
   cutRequestId?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   state?: Prisma.SortOrder
@@ -541,6 +556,7 @@ export type PipelineJobScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"PipelineJob"> | string
   projectId?: Prisma.UuidWithAggregatesFilter<"PipelineJob"> | string
   sourceId?: Prisma.UuidWithAggregatesFilter<"PipelineJob"> | string
+  sourceVersion?: Prisma.IntWithAggregatesFilter<"PipelineJob"> | number
   cutRequestId?: Prisma.UuidNullableWithAggregatesFilter<"PipelineJob"> | string | null
   type?: Prisma.EnumPipelineJobTypeWithAggregatesFilter<"PipelineJob"> | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateWithAggregatesFilter<"PipelineJob"> | $Enums.PipelineJobState
@@ -569,6 +585,7 @@ export type PipelineJobScalarWhereWithAggregatesInput = {
 
 export type PipelineJobCreateInput = {
   id: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -604,6 +621,7 @@ export type PipelineJobUncheckedCreateInput = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -635,6 +653,7 @@ export type PipelineJobUncheckedCreateInput = {
 
 export type PipelineJobUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -670,6 +689,7 @@ export type PipelineJobUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -703,6 +723,7 @@ export type PipelineJobCreateManyInput = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -731,6 +752,7 @@ export type PipelineJobCreateManyInput = {
 
 export type PipelineJobUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -760,6 +782,7 @@ export type PipelineJobUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -805,6 +828,7 @@ export type PipelineJobCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   sourceId?: Prisma.SortOrder
+  sourceVersion?: Prisma.SortOrder
   cutRequestId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   state?: Prisma.SortOrder
@@ -832,6 +856,7 @@ export type PipelineJobCountOrderByAggregateInput = {
 }
 
 export type PipelineJobAvgOrderByAggregateInput = {
+  sourceVersion?: Prisma.SortOrder
   payloadVersion?: Prisma.SortOrder
   revision?: Prisma.SortOrder
   priority?: Prisma.SortOrder
@@ -845,6 +870,7 @@ export type PipelineJobMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   sourceId?: Prisma.SortOrder
+  sourceVersion?: Prisma.SortOrder
   cutRequestId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   state?: Prisma.SortOrder
@@ -875,6 +901,7 @@ export type PipelineJobMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   sourceId?: Prisma.SortOrder
+  sourceVersion?: Prisma.SortOrder
   cutRequestId?: Prisma.SortOrder
   type?: Prisma.SortOrder
   state?: Prisma.SortOrder
@@ -902,6 +929,7 @@ export type PipelineJobMinOrderByAggregateInput = {
 }
 
 export type PipelineJobSumOrderByAggregateInput = {
+  sourceVersion?: Prisma.SortOrder
   payloadVersion?: Prisma.SortOrder
   revision?: Prisma.SortOrder
   priority?: Prisma.SortOrder
@@ -1100,6 +1128,7 @@ export type PipelineJobUpdateOneRequiredWithoutAttemptsNestedInput = {
 
 export type PipelineJobCreateWithoutProjectInput = {
   id: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -1133,6 +1162,7 @@ export type PipelineJobCreateWithoutProjectInput = {
 export type PipelineJobUncheckedCreateWithoutProjectInput = {
   id: string
   sourceId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -1195,6 +1225,7 @@ export type PipelineJobScalarWhereInput = {
   id?: Prisma.UuidFilter<"PipelineJob"> | string
   projectId?: Prisma.UuidFilter<"PipelineJob"> | string
   sourceId?: Prisma.UuidFilter<"PipelineJob"> | string
+  sourceVersion?: Prisma.IntFilter<"PipelineJob"> | number
   cutRequestId?: Prisma.UuidNullableFilter<"PipelineJob"> | string | null
   type?: Prisma.EnumPipelineJobTypeFilter<"PipelineJob"> | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFilter<"PipelineJob"> | $Enums.PipelineJobState
@@ -1223,6 +1254,7 @@ export type PipelineJobScalarWhereInput = {
 
 export type PipelineJobCreateWithoutSourceInput = {
   id: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -1256,6 +1288,7 @@ export type PipelineJobCreateWithoutSourceInput = {
 export type PipelineJobUncheckedCreateWithoutSourceInput = {
   id: string
   projectId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -1313,6 +1346,7 @@ export type PipelineJobUpdateManyWithWhereWithoutSourceInput = {
 
 export type PipelineJobCreateWithoutResultArtifactInput = {
   id: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -1347,6 +1381,7 @@ export type PipelineJobUncheckedCreateWithoutResultArtifactInput = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -1393,6 +1428,7 @@ export type PipelineJobUpdateToOneWithWhereWithoutResultArtifactInput = {
 
 export type PipelineJobUpdateWithoutResultArtifactInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1427,6 +1463,7 @@ export type PipelineJobUncheckedUpdateWithoutResultArtifactInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -1457,6 +1494,7 @@ export type PipelineJobUncheckedUpdateWithoutResultArtifactInput = {
 
 export type PipelineJobCreateWithoutCutRequestInput = {
   id: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -1491,6 +1529,7 @@ export type PipelineJobUncheckedCreateWithoutCutRequestInput = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -1547,6 +1586,7 @@ export type PipelineJobUpdateManyWithWhereWithoutCutRequestInput = {
 
 export type PipelineJobCreateWithoutSegmentInput = {
   id: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -1581,6 +1621,7 @@ export type PipelineJobUncheckedCreateWithoutSegmentInput = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -1627,6 +1668,7 @@ export type PipelineJobUpdateToOneWithWhereWithoutSegmentInput = {
 
 export type PipelineJobUpdateWithoutSegmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1661,6 +1703,7 @@ export type PipelineJobUncheckedUpdateWithoutSegmentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -1691,6 +1734,7 @@ export type PipelineJobUncheckedUpdateWithoutSegmentInput = {
 
 export type PipelineJobCreateWithoutAttemptsInput = {
   id: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -1725,6 +1769,7 @@ export type PipelineJobUncheckedCreateWithoutAttemptsInput = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -1771,6 +1816,7 @@ export type PipelineJobUpdateToOneWithWhereWithoutAttemptsInput = {
 
 export type PipelineJobUpdateWithoutAttemptsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1805,6 +1851,7 @@ export type PipelineJobUncheckedUpdateWithoutAttemptsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -1836,6 +1883,7 @@ export type PipelineJobUncheckedUpdateWithoutAttemptsInput = {
 export type PipelineJobCreateManyProjectInput = {
   id: string
   sourceId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -1864,6 +1912,7 @@ export type PipelineJobCreateManyProjectInput = {
 
 export type PipelineJobUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1897,6 +1946,7 @@ export type PipelineJobUpdateWithoutProjectInput = {
 export type PipelineJobUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -1929,6 +1979,7 @@ export type PipelineJobUncheckedUpdateWithoutProjectInput = {
 export type PipelineJobUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -1958,6 +2009,7 @@ export type PipelineJobUncheckedUpdateManyWithoutProjectInput = {
 export type PipelineJobCreateManySourceInput = {
   id: string
   projectId: string
+  sourceVersion: number
   cutRequestId?: string | null
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
@@ -1986,6 +2038,7 @@ export type PipelineJobCreateManySourceInput = {
 
 export type PipelineJobUpdateWithoutSourceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2019,6 +2072,7 @@ export type PipelineJobUpdateWithoutSourceInput = {
 export type PipelineJobUncheckedUpdateWithoutSourceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -2051,6 +2105,7 @@ export type PipelineJobUncheckedUpdateWithoutSourceInput = {
 export type PipelineJobUncheckedUpdateManyWithoutSourceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
@@ -2081,6 +2136,7 @@ export type PipelineJobCreateManyCutRequestInput = {
   id: string
   projectId: string
   sourceId: string
+  sourceVersion: number
   type: $Enums.PipelineJobType
   state?: $Enums.PipelineJobState
   payloadVersion?: number
@@ -2108,6 +2164,7 @@ export type PipelineJobCreateManyCutRequestInput = {
 
 export type PipelineJobUpdateWithoutCutRequestInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2142,6 +2199,7 @@ export type PipelineJobUncheckedUpdateWithoutCutRequestInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2174,6 +2232,7 @@ export type PipelineJobUncheckedUpdateManyWithoutCutRequestInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
   state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
   payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2234,6 +2293,7 @@ export type PipelineJobSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   id?: boolean
   projectId?: boolean
   sourceId?: boolean
+  sourceVersion?: boolean
   cutRequestId?: boolean
   type?: boolean
   state?: boolean
@@ -2271,6 +2331,7 @@ export type PipelineJobSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   projectId?: boolean
   sourceId?: boolean
+  sourceVersion?: boolean
   cutRequestId?: boolean
   type?: boolean
   state?: boolean
@@ -2304,6 +2365,7 @@ export type PipelineJobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   projectId?: boolean
   sourceId?: boolean
+  sourceVersion?: boolean
   cutRequestId?: boolean
   type?: boolean
   state?: boolean
@@ -2337,6 +2399,7 @@ export type PipelineJobSelectScalar = {
   id?: boolean
   projectId?: boolean
   sourceId?: boolean
+  sourceVersion?: boolean
   cutRequestId?: boolean
   type?: boolean
   state?: boolean
@@ -2363,7 +2426,7 @@ export type PipelineJobSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PipelineJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "cutRequestId" | "type" | "state" | "payloadVersion" | "idempotencyKey" | "revision" | "priority" | "retryBudget" | "attemptCount" | "processedMs" | "totalMs" | "leaseOwner" | "leaseToken" | "leaseExpiresAt" | "heartbeatAt" | "failureCode" | "failureMessage" | "failureRetryable" | "recipeVersion" | "queuedAt" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pipelineJob"]>
+export type PipelineJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "sourceVersion" | "cutRequestId" | "type" | "state" | "payloadVersion" | "idempotencyKey" | "revision" | "priority" | "retryBudget" | "attemptCount" | "processedMs" | "totalMs" | "leaseOwner" | "leaseToken" | "leaseExpiresAt" | "heartbeatAt" | "failureCode" | "failureMessage" | "failureRetryable" | "recipeVersion" | "queuedAt" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pipelineJob"]>
 export type PipelineJobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
@@ -2398,6 +2461,7 @@ export type $PipelineJobPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: string
     projectId: string
     sourceId: string
+    sourceVersion: number
     cutRequestId: string | null
     type: $Enums.PipelineJobType
     state: $Enums.PipelineJobState
@@ -2854,6 +2918,7 @@ export interface PipelineJobFieldRefs {
   readonly id: Prisma.FieldRef<"PipelineJob", 'String'>
   readonly projectId: Prisma.FieldRef<"PipelineJob", 'String'>
   readonly sourceId: Prisma.FieldRef<"PipelineJob", 'String'>
+  readonly sourceVersion: Prisma.FieldRef<"PipelineJob", 'Int'>
   readonly cutRequestId: Prisma.FieldRef<"PipelineJob", 'String'>
   readonly type: Prisma.FieldRef<"PipelineJob", 'PipelineJobType'>
   readonly state: Prisma.FieldRef<"PipelineJob", 'PipelineJobState'>

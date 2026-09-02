@@ -173,7 +173,7 @@ describe("projects media-library list API (PostgreSQL)", () => {
     });
     const serialized = JSON.stringify(response.body);
     expect(serialized).not.toContain("objectKey");
-    expect(serialized).not.toContain("rights");
+    expect(serialized).not.toContain('"rights":');
     expect(serialized).not.toContain("sha256");
   });
 
@@ -294,6 +294,16 @@ async function seedProject(input: {
         updatedAt: input.sourceCreatedAt ?? input.createdAt,
       },
     });
+    await transaction.sourceAuthorization.create({
+      data: {
+        sourceId,
+        sourceVersion: 1,
+        status: "CLEARED",
+        basis: "LEGACY_ATTESTATION",
+        declarationVersion: "upload-rights-v1",
+        decidedAt: input.createdAt,
+      },
+    });
     await transaction.mediaArtifact.create({
       data: {
         id: artifactId,
@@ -318,6 +328,7 @@ async function seedProject(input: {
           id: randomUUID(),
           projectId: input.id,
           sourceId,
+          sourceVersion: 1,
           type: "SOURCE_PROBE",
           state: input.probeState,
           idempotencyKey: `library-probe-${input.id}`,
@@ -333,6 +344,7 @@ async function seedProject(input: {
           id: randomUUID(),
           projectId: input.id,
           sourceId,
+          sourceVersion: 1,
           type: "CUT_SEGMENT",
           state,
           idempotencyKey: `library-cut-${input.id}-${index}`,

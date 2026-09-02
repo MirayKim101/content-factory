@@ -57,4 +57,6 @@ export interface PipelineRepository {
     sizeBytes: bigint;
     filename: string;
   } | null>;
+  requireProjectAuthorization(projectId: string): Promise<void>;
+  requireJobAuthorization(jobId: string): Promise<void>;
 }

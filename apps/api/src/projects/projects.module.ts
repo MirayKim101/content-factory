@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AttestSourceAuthorization } from "./application/attest-source-authorization.js";
 
 import { PrismaService } from "../database/prisma.service.js";
 import { CreateProjectWithSource } from "./application/create-project-with-source.js";
@@ -18,6 +19,7 @@ import { TempUploadLifecycleInterceptor } from "./presentation/temp-upload-lifec
 @Module({
   controllers: [ProjectsController],
   providers: [
+    AttestSourceAuthorization,
     PrismaService,
     PrismaProjectRepository,
     S3ObjectStorage,

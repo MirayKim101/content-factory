@@ -1,3 +1,5 @@
+import type { SourceAuthorizationView } from "./source-authorization.js";
+
 export type ProjectStatus = "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
 export type SourceStatus = "PENDING" | "READY" | "FAILED_FINAL";
 export type ArtifactStatus = "PENDING" | "READY" | "FAILED_FINAL";
@@ -6,8 +8,8 @@ export interface ProjectView {
   id: string;
   name: string;
   status: ProjectStatus;
-  rightsConfirmedAt: Date;
-  rightsDeclarationVersion: string;
+  rightsConfirmedAt?: Date;
+  rightsDeclarationVersion?: string;
   failure?: { code: string; message: string };
   createdAt: Date;
   updatedAt: Date;
@@ -23,6 +25,7 @@ export interface ProjectView {
     probeState?:
       "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
     probeFailure?: { code: string; message: string };
+    authorization: SourceAuthorizationView;
   };
   artifact: {
     id: string;
@@ -46,6 +49,7 @@ export interface ProjectLibraryItem {
   source: {
     id: string;
     status: SourceStatus;
+    sourceVersion: number;
     addedAt: Date;
     originalFilename: string;
     contentType: string;
@@ -53,6 +57,7 @@ export interface ProjectLibraryItem {
     durationMs?: number;
     probeState?:
       "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    authorization: SourceAuthorizationView;
   };
   cutJobCounts: {
     total: number;

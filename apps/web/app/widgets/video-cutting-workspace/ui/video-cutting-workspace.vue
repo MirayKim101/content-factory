@@ -44,6 +44,9 @@ const submitUnknown = ref(false);
 let retryIdentity: { fingerprint: string; key: string } | undefined;
 
 const durationMs = computed(() => projectQuery.data.value?.source.durationMs);
+const authorizationCleared = computed(
+  () => projectQuery.data.value?.source.authorization.status === "CLEARED",
+);
 const validation = computed(() =>
   durationMs.value === undefined
     ? { segments: [], errors: {} as Record<string, string> }
@@ -52,6 +55,7 @@ const validation = computed(() =>
 const canSubmit = computed(
   () =>
     Boolean(projectId.value) &&
+    authorizationCleared.value &&
     durationMs.value !== undefined &&
     validation.value.segments.length === drafts.value.length &&
     drafts.value.length > 0 &&
@@ -234,6 +238,13 @@ async function submit(): Promise<void> {
           >Обновить сейчас</Button
         >
       </div>
+      <div v-else-if="!authorizationCleared" class="warning">
+        <p>
+          Для этой версии исходника не подтверждены права. Просмотр и нарезка
+          заблокированы.
+        </p>
+        <NuxtLink to="/library">Подтвердить права в медиатеке</NuxtLink>
+      </div>
       <div v-else-if="durationMs === undefined" class="warning" role="status">
         <p v-if="projectQuery.data.value.source.probeState !== 'FAILED_FINAL'">
           Проверяем длительность видео. Поля времени станут доступны после
@@ -248,7 +259,11 @@ async function submit(): Promise<void> {
         <progress aria-label="Проверка длительности видео" />
       </div>
 
-      <div class="editor-grid" :class="{ disabled: durationMs === undefined }">
+      <div
+        v-if="authorizationCleared"
+        class="editor-grid"
+        :class="{ disabled: durationMs === undefined }"
+      >
         <section class="player-panel" aria-labelledby="player-title">
           <h2 id="player-title">Исходное видео</h2>
           <video

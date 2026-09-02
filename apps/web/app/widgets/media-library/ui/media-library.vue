@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import Checkbox from "primevue/checkbox";
+import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { computed, ref, watch } from "vue";
 import type { LibraryPage } from "~/shared/api/generated/project";
 import type { ProjectListQuery } from "~/shared/api/projects";
+import { createProjectsApi } from "~/shared/api/projects";
 
 import { useProjectLibrary } from "~/entities/project/model/use-project-library";
 import {
@@ -16,6 +19,10 @@ import {
 import { formatTimecode } from "~/shared/lib/timecode";
 
 const route = useRoute();
+const config = useRuntimeConfig();
+const projectsApi = createProjectsApi({
+  apiBasePath: config.public.apiBasePath,
+});
 const returnTo = computed(() =>
   typeof route.query.returnTo === "string" ? route.query.returnTo : undefined,
 );
@@ -42,6 +49,10 @@ const statusOptions = [
   { label: "С ошибкой", value: "FAILED_FINAL" },
 ];
 const selectedCount = computed(() => selected.value.length);
+const authorizationTarget = ref<LibraryPage["items"][number] | null>(null);
+const attested = ref(false);
+const authorizationPending = ref(false);
+const authorizationError = ref<string | null>(null);
 
 function updateFilters(next: ProjectListQuery): void {
   void navigateTo({
@@ -62,6 +73,31 @@ function search(): void {
 }
 function select(id: string): void {
   selected.value = toggleProjectSelection(selected.value, id);
+}
+function openAuthorization(item: LibraryPage["items"][number]): void {
+  authorizationTarget.value = item;
+  attested.value = false;
+  authorizationError.value = null;
+}
+async function confirmAuthorization(): Promise<void> {
+  const item = authorizationTarget.value;
+  if (!item || !attested.value || authorizationPending.value) return;
+  authorizationPending.value = true;
+  authorizationError.value = null;
+  try {
+    await projectsApi.attestSourceAuthorization!({
+      projectId: item.id,
+      sourceVersion: item.source.sourceVersion,
+      expectedRevision: item.source.authorization.revision,
+    });
+    authorizationTarget.value = null;
+    await library.refetch();
+  } catch (error) {
+    authorizationError.value =
+      error instanceof Error ? error.message : "Не удалось сохранить решение.";
+  } finally {
+    authorizationPending.value = false;
+  }
 }
 function openWorkspace(): void {
   const projectIds = mergeProjectSelections(
@@ -104,6 +140,20 @@ watch(
           ),
         ]
       : page.items;
+    const selectable = new Set(
+      visibleItems.value
+        .filter(
+          (item) =>
+            item.status === "SOURCE_READY" &&
+            item.source.authorization.status === "CLEARED",
+        )
+        .map((item) => item.id),
+    );
+    selected.value = selected.value.filter(
+      (id) =>
+        !visibleItems.value.some((item) => item.id === id) ||
+        selectable.has(id),
+    );
   },
   { immediate: true },
 );
@@ -152,6 +202,18 @@ watch(
               {{ formatBytes(item.source.sizeBytes) }} · добавлено
               {{ new Date(item.source.addedAt).toLocaleString("ru-RU") }}
             </p>
+            <p
+              class="authorization-badge"
+              :class="{
+                cleared: item.source.authorization.status === 'CLEARED',
+              }"
+            >
+              {{
+                item.source.authorization.status === "CLEARED"
+                  ? "Права подтверждены"
+                  : "Требуется подтверждение прав"
+              }}
+            </p>
             <p>
               Длительность:
               {{
@@ -171,6 +233,7 @@ watch(
               :checked="selected.includes(item.id)"
               :disabled="
                 item.status !== 'SOURCE_READY' ||
+                item.source.authorization.status !== 'CLEARED' ||
                 (!selected.includes(item.id) &&
                   selectedCount >= MAX_SELECTED_PROJECTS)
               "
@@ -178,6 +241,16 @@ watch(
             />
             Выбрать видео
           </label>
+          <Button
+            v-if="
+              item.status === 'SOURCE_READY' &&
+              item.source.authorization.status === 'NOT_REVIEWED'
+            "
+            type="button"
+            severity="secondary"
+            @click="openAuthorization(item)"
+            >Подтвердить права</Button
+          >
           <p v-if="item.status !== 'SOURCE_READY'" class="muted">
             {{
               item.status === "FAILED_FINAL"
@@ -224,6 +297,45 @@ watch(
         >Сбросить поиск</Button
       >
     </div>
+    <Dialog
+      :visible="authorizationTarget !== null"
+      modal
+      header="Подтверждение прав на исходник"
+      @update:visible="
+        authorizationTarget = $event ? authorizationTarget : null
+      "
+    >
+      <p v-if="authorizationTarget">
+        Подтверждение относится только к версии
+        {{ authorizationTarget.source.sourceVersion }} файла «{{
+          authorizationTarget.source.originalFilename
+        }}».
+      </p>
+      <label class="attestation-row">
+        <Checkbox v-model="attested" binary />
+        <span
+          >Подтверждаю, что имею право использовать и обрабатывать это
+          видео.</span
+        >
+      </label>
+      <p v-if="authorizationError" class="error" role="alert">
+        {{ authorizationError }}
+      </p>
+      <template #footer>
+        <Button
+          type="button"
+          severity="secondary"
+          @click="authorizationTarget = null"
+          >Отмена</Button
+        >
+        <Button
+          type="button"
+          :disabled="!attested || authorizationPending"
+          @click="confirmAuthorization"
+          >{{ authorizationPending ? "Сохраняем…" : "Подтвердить" }}</Button
+        >
+      </template>
+    </Dialog>
   </main>
 </template>
 
@@ -279,6 +391,23 @@ watch(
 }
 .muted {
   grid-column: 1/-1;
+}
+.authorization-badge {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: #fff7d6;
+  color: #765800;
+  font-weight: 700;
+}
+.authorization-badge.cleared {
+  background: #e8f2ea;
+  color: #234d35;
+}
+.attestation-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
 }
 .upload-link {
   display: inline-block;

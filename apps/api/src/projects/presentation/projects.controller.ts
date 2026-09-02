@@ -10,6 +10,9 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
+  UnprocessableEntityException,
+  ConflictException,
   Query,
   UploadedFile,
   UseInterceptors,
@@ -31,10 +34,17 @@ import {
 } from "@nestjs/swagger";
 
 import { CreateProjectWithSource } from "../application/create-project-with-source.js";
+import { AttestSourceAuthorization } from "../application/attest-source-authorization.js";
+import {
+  SourceAuthorizationConflictError,
+  SourceNotReadyForAuthorizationError,
+  SourceVersionConflictError,
+} from "../application/project-repository.port.js";
 import { GetProject } from "../application/get-project.js";
 import { ListProjects } from "../application/list-projects.js";
 import {
   CreateProjectUploadDto,
+  AttestSourceAuthorizationDto,
   ErrorResponseDto,
   ListProjectsQueryDto,
   ProjectLibraryPageDto,
@@ -58,6 +68,7 @@ export class ProjectsController {
     private readonly createProject: CreateProjectWithSource,
     private readonly getProject: GetProject,
     private readonly listProjects: ListProjects,
+    private readonly attestAuthorization: AttestSourceAuthorization,
   ) {}
 
   @Get()
@@ -127,7 +138,8 @@ export class ProjectsController {
     FileInterceptor("file", uploadOptions),
   )
   @ApiOperation({
-    summary: "Create a project by uploading an authorized MP4 source",
+    summary:
+      "Create a project by uploading an MP4 source for later authorization",
   })
   @ApiConsumes("multipart/form-data")
   @ApiHeader({
@@ -196,6 +208,71 @@ export class ProjectsController {
       idempotencyKey,
     });
     return toProjectResponse(project);
+  }
+
+  @Put(":id/source-authorization")
+  @ApiOperation({ summary: "Explicitly attest the current source version" })
+  @ApiParam({ name: "id", schema: { type: "string", format: "uuid" } })
+  @ApiBody({ type: AttestSourceAuthorizationDto })
+  @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiConflictResponse({
+    type: ErrorResponseDto,
+    description:
+      "The source version, authorization revision, or source readiness changed.",
+  })
+  @ApiResponse({
+    status: 422,
+    type: ErrorResponseDto,
+    description:
+      "The declaration version or explicit attestation is unsupported.",
+  })
+  @ApiResponse({
+    status: 400,
+    type: ErrorResponseDto,
+    description: "The path or request body is invalid.",
+  })
+  async authorize(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body() body: AttestSourceAuthorizationDto,
+  ): Promise<ProjectResponseDto> {
+    if (
+      body.declarationVersion !== "source-authorization-v1" ||
+      body.attested !== true
+    ) {
+      throw new UnprocessableEntityException({
+        code: "SOURCE_AUTHORIZATION_DECLARATION_UNSUPPORTED",
+        message:
+          "The supported source authorization declaration must be explicitly attested.",
+      });
+    }
+    try {
+      return toProjectResponse(
+        await this.attestAuthorization.execute({
+          projectId: id,
+          sourceVersion: body.sourceVersion,
+          expectedRevision: body.expectedRevision,
+          declarationVersion: body.declarationVersion,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof SourceVersionConflictError)
+        throw new ConflictException({
+          code: "SOURCE_VERSION_CONFLICT",
+          message: "The source version changed. Refresh before confirming.",
+        });
+      if (error instanceof SourceAuthorizationConflictError)
+        throw new ConflictException({
+          code: "SOURCE_AUTHORIZATION_CONFLICT",
+          message:
+            "The authorization decision changed. Refresh before confirming.",
+        });
+      if (error instanceof SourceNotReadyForAuthorizationError)
+        throw new ConflictException({
+          code: "SOURCE_NOT_READY",
+          message: "The source is not ready for authorization.",
+        });
+      throw error;
+    }
   }
 
   @Get(":id")

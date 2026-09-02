@@ -54,6 +54,33 @@
         ],
         "type": "object"
       },
+      "AttestSourceAuthorizationDto": {
+        "properties": {
+          "attested": {
+            "enum": [true],
+            "type": "boolean"
+          },
+          "declarationVersion": {
+            "enum": ["source-authorization-v1"],
+            "type": "string"
+          },
+          "expectedRevision": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "sourceVersion",
+          "expectedRevision",
+          "declarationVersion",
+          "attested"
+        ],
+        "type": "object"
+      },
       "CreateCutsDto": {
         "properties": {
           "segments": {
@@ -101,12 +128,13 @@
             "type": "string"
           },
           "rightsConfirmed": {
-            "description": "Must be literal true.",
+            "deprecated": true,
+            "description": "Ignored legacy upload field. Authorization is a separate step.",
             "enum": ["true"],
             "type": "string"
           }
         },
-        "required": ["name", "rightsConfirmed", "file"],
+        "required": ["name", "file"],
         "type": "object"
       },
       "CutJobCountsDto": {
@@ -356,6 +384,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "authorization": {
+            "$ref": "#/components/schemas/SourceAuthorizationResponseDto"
+          },
           "contentType": {
             "example": "video/mp4",
             "type": "string"
@@ -386,6 +417,10 @@
             "example": "123456",
             "type": "string"
           },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "number"
+          },
           "status": {
             "enum": ["PENDING", "READY", "FAILED_FINAL"],
             "type": "string"
@@ -394,10 +429,12 @@
         "required": [
           "id",
           "status",
+          "sourceVersion",
           "addedAt",
           "originalFilename",
           "contentType",
-          "sizeBytes"
+          "sizeBytes",
+          "authorization"
         ],
         "type": "object"
       },
@@ -421,7 +458,14 @@
             "type": "string"
           },
           "rights": {
-            "$ref": "#/components/schemas/RightsResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RightsResponseDto"
+              }
+            ],
+            "deprecated": true,
+            "nullable": true,
+            "type": "object"
           },
           "source": {
             "$ref": "#/components/schemas/SourceResponseDto"
@@ -439,7 +483,6 @@
           "id",
           "name",
           "status",
-          "rights",
           "createdAt",
           "updatedAt",
           "source",
@@ -461,8 +504,40 @@
         "required": ["confirmedAt", "declarationVersion"],
         "type": "object"
       },
+      "SourceAuthorizationResponseDto": {
+        "properties": {
+          "basis": {
+            "enum": ["LEGACY_ATTESTATION", "OPERATOR_ATTESTATION"],
+            "type": "string"
+          },
+          "decidedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "declarationVersion": {
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "status": {
+            "enum": ["NOT_REVIEWED", "CLEARED"],
+            "type": "string"
+          }
+        },
+        "required": ["sourceVersion", "status", "revision"],
+        "type": "object"
+      },
       "SourceResponseDto": {
         "properties": {
+          "authorization": {
+            "$ref": "#/components/schemas/SourceAuthorizationResponseDto"
+          },
           "contentType": {
             "example": "video/mp4",
             "type": "string"
@@ -517,7 +592,8 @@
           "originalFilename",
           "contentType",
           "sizeBytes",
-          "sha256"
+          "sha256",
+          "authorization"
         ],
         "type": "object"
       }
@@ -829,7 +905,7 @@
             "description": "Object storage upload failed."
           }
         },
-        "summary": "Create a project by uploading an authorized MP4 source",
+        "summary": "Create a project by uploading an MP4 source for later authorization",
         "tags": ["projects"]
       }
     },
@@ -890,6 +966,76 @@
           }
         },
         "summary": "Get safe source-ingestion status and lineage",
+        "tags": ["projects"]
+      }
+    },
+    "/api/v1/projects/{id}/source-authorization": {
+      "put": {
+        "operationId": "ProjectsController_authorize",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttestSourceAuthorizationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "The path or request body is invalid."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "The source version, authorization revision, or source readiness changed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "The declaration version or explicit attestation is unsupported."
+          }
+        },
+        "summary": "Explicitly attest the current source version",
         "tags": ["projects"]
       }
     },

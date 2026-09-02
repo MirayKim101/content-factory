@@ -33,6 +33,11 @@ const readyProject = {
     contentType: "video/mp4",
     sizeBytes: "5",
     sha256: "a".repeat(64),
+    authorization: {
+      sourceVersion: 1,
+      status: "NOT_REVIEWED",
+      revision: 1,
+    },
   },
   artifact: {
     id: "00000000-0000-4000-8000-000000000003",
@@ -122,8 +127,8 @@ describe("SourceUploadWidget runtime", () => {
       "mp4",
     );
     expect(
-      wrapper.get('[aria-describedby="rights-confirmed-error"]').exists(),
-    ).toBe(true);
+      wrapper.find('[aria-describedby="rights-confirmed-error"]').exists(),
+    ).toBe(false);
     expect(wrapper.get('[aria-live="polite"]').exists()).toBe(true);
   });
 

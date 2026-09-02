@@ -20,6 +20,14 @@ const readyProject = {
     contentType: "video/mp4",
     sizeBytes: "1",
     sha256: "a".repeat(64),
+    authorization: {
+      sourceVersion: 1,
+      status: "CLEARED",
+      basis: "LEGACY_ATTESTATION",
+      declarationVersion: "upload-rights-v1",
+      decidedAt: "2026-09-01T00:00:00.000Z",
+      revision: 1,
+    },
   },
   artifact: {
     id: "00000000-0000-4000-8000-000000000003",
@@ -66,7 +74,7 @@ describe("projects API adapter", () => {
     );
     const body = vi.mocked(request.send).mock.calls[0]?.[0] as FormData;
     expect(body.get("name")).toBe("x");
-    expect(body.get("rightsConfirmed")).toBe("true");
+    expect(body.has("rightsConfirmed")).toBe(false);
     expect(body.get("file")).toBeInstanceOf(File);
     request.upload.onprogress?.({
       lengthComputable: true,
@@ -76,5 +84,37 @@ describe("projects API adapter", () => {
     request.onload?.(new Event("load"));
     await created;
     expect(progress).toEqual([{ loaded: 25, total: 100 }]);
+  });
+
+  it("sends an explicit versioned source authorization decision", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => readyProject,
+    });
+    const api = createProjectsApi({
+      apiBasePath: "/api/v1",
+      fetchImplementation: fetchMock,
+    });
+
+    await api.attestSourceAuthorization?.({
+      projectId: readyProject.id,
+      sourceVersion: 3,
+      expectedRevision: 7,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/projects/${readyProject.id}/source-authorization`,
+      expect.objectContaining({
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceVersion: 3,
+          expectedRevision: 7,
+          declarationVersion: "source-authorization-v1",
+          attested: true,
+        }),
+      }),
+    );
   });
 });

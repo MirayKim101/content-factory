@@ -45,6 +45,17 @@ export class CreateProjectWithSource {
           JSON.stringify({
             name: normalizedName,
             originalFilename,
+            sha256: media.sha256,
+            sizeBytes: media.sizeBytes.toString(),
+            authorization: "separate-source-authorization-v1",
+          }),
+        )
+        .digest("hex");
+      const legacyRequestFingerprint = createHash("sha256")
+        .update(
+          JSON.stringify({
+            name: normalizedName,
+            originalFilename,
             rightsDeclarationVersion: "upload-rights-v1",
             sha256: media.sha256,
             sizeBytes: media.sizeBytes.toString(),
@@ -55,7 +66,11 @@ export class CreateProjectWithSource {
       const existing = await this.projects.findByIdempotencyKey(
         input.idempotencyKey,
       );
-      if (existing) return this.resolveIdempotent(existing, requestFingerprint);
+      if (existing)
+        return this.resolveIdempotent(existing, [
+          requestFingerprint,
+          legacyRequestFingerprint,
+        ]);
 
       const projectId = randomUUID();
       const sourceId = randomUUID();
@@ -70,8 +85,6 @@ export class CreateProjectWithSource {
           sourceId,
           artifactId,
           name: normalizedName,
-          rightsConfirmedAt: new Date(),
-          rightsDeclarationVersion: "upload-rights-v1",
           originalFilename,
           contentType: media.contentType,
           sizeBytes: media.sizeBytes,
@@ -86,7 +99,10 @@ export class CreateProjectWithSource {
           input.idempotencyKey,
         );
         if (!concurrent) throw error;
-        return this.resolveIdempotent(concurrent, requestFingerprint);
+        return this.resolveIdempotent(concurrent, [
+          requestFingerprint,
+          legacyRequestFingerprint,
+        ]);
       }
 
       let receipt;
@@ -156,9 +172,9 @@ export class CreateProjectWithSource {
 
   private resolveIdempotent(
     existing: { project: ProjectView; requestFingerprint: string },
-    requestFingerprint: string,
+    acceptedFingerprints: string[],
   ): ProjectView {
-    if (existing.requestFingerprint !== requestFingerprint) {
+    if (!acceptedFingerprints.includes(existing.requestFingerprint)) {
       throw new UploadError(
         "IDEMPOTENCY_CONFLICT",
         "The idempotency key was already used for a different request.",

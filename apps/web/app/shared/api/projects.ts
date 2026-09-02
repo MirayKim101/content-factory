@@ -45,6 +45,15 @@ export interface ProjectsApi {
     query: ProjectListQuery,
     signal?: AbortSignal,
   ): Promise<LibraryPage>;
+  attestSourceAuthorization?(
+    request: AttestSourceAuthorizationRequest,
+    signal?: AbortSignal,
+  ): Promise<Project>;
+}
+export interface AttestSourceAuthorizationRequest {
+  projectId: string;
+  sourceVersion: number;
+  expectedRevision: number;
 }
 export interface ProjectListQuery {
   q?: string;
@@ -69,7 +78,6 @@ export function createProjectsApi({
     async createProject(request) {
       const body = new FormData();
       body.set("name", request.name);
-      body.set("rightsConfirmed", "true");
       body.set("file", request.file);
       const payload = await sendProjectUpload({
         url: `${basePath}/projects`,
@@ -113,6 +121,30 @@ export function createProjectsApi({
       const payload: unknown = await response.json().catch(() => undefined);
       if (!response.ok) throw toApiError(payload, response.status);
       return libraryPageSchema.parse(payload);
+    },
+    async attestSourceAuthorization(request, signal) {
+      let response: Response;
+      try {
+        response = await fetchImplementation(
+          `${basePath}/projects/${request.projectId}/source-authorization`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sourceVersion: request.sourceVersion,
+              expectedRevision: request.expectedRevision,
+              declarationVersion: "source-authorization-v1",
+              attested: true,
+            }),
+            signal,
+          },
+        );
+      } catch {
+        throw new ProjectNetworkError();
+      }
+      const payload: unknown = await response.json().catch(() => undefined);
+      if (!response.ok) throw toApiError(payload, response.status);
+      return projectSchema.parse(payload);
     },
   };
 }
@@ -202,6 +234,9 @@ function toApiError(payload: unknown, status: number): ProjectApiError {
     IDEMPOTENCY_CONFLICT: "Этот ключ загрузки уже связан с другим файлом.",
     VALIDATION_FAILED: "Проверь заполнение формы.",
     STORAGE_UPLOAD_FAILED: "Хранилище временно недоступно.",
+    SOURCE_VERSION_CONFLICT: "Версия исходника изменилась. Обнови медиатеку.",
+    SOURCE_AUTHORIZATION_CONFLICT: "Решение уже изменилось. Обнови медиатеку.",
+    SOURCE_NOT_READY: "Исходник ещё не готов к подтверждению.",
   };
   return new ProjectApiError(
     translations[parsedError.data.error.code] ??

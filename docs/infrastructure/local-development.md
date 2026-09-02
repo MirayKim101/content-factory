@@ -117,12 +117,11 @@ curl --fail http://127.0.0.1:9000/minio/health/ready
    curl --fail-with-body --request POST http://127.0.0.1:3001/api/v1/projects \
      --header 'Idempotency-Key: upload-2026-09-01-001' \
      --form 'name=Первый исходник' \
-     --form 'rightsConfirmed=true' \
      --form 'file=@/ПОЛНЫЙ/ПУТЬ/К/ВИДЕО.mp4;type=video/mp4'
    ```
 
    Замени только путь после `@`. Успех: HTTP 201 и JSON со статусом
-   `SOURCE_READY`. Поле `sizeBytes` намеренно является строкой: так большие
+   `SOURCE_READY` и `source.authorization.status=NOT_REVIEWED`. Поле `sizeBytes` намеренно является строкой: так большие
    значения PostgreSQL `BIGINT` не теряют точность в JavaScript.
 
 4. Скопируй `id` из ответа и проверь сохранённый статус:
@@ -133,6 +132,13 @@ curl --fail http://127.0.0.1:9000/minio/health/ready
 
    Публичный ответ содержит checksum и lineage, но никогда не раскрывает S3
    bucket/object key или путь временного файла.
+
+5. В медиатеке открой диалог подтверждения прав для этого файла. После
+   подтверждения `source.authorization.status` станет `CLEARED`, revision
+   увеличится, и просмотр/нарезка станут доступны. API-эквивалент —
+   `PUT /api/v1/projects/{id}/source-authorization` с текущими
+   `sourceVersion`, `expectedRevision`, literal
+   `declarationVersion=source-authorization-v1` и `attested=true`.
 
 ### Что API гарантирует на этом шаге
 

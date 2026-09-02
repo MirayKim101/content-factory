@@ -57,14 +57,24 @@ enum ArtifactCleanupStatus {
   COMPLETED
 }
 
+enum SourceAuthorizationStatus {
+  NOT_REVIEWED
+  CLEARED
+}
+
+enum SourceAuthorizationBasis {
+  LEGACY_ATTESTATION
+  OPERATOR_ATTESTATION
+}
+
 model Project {
   id                       String          @id @db.Uuid
   idempotencyKey           String          @unique
   requestFingerprint       String
   name                     String
   status                   ProjectStatus   @default(SOURCE_PENDING)
-  rightsConfirmedAt        DateTime
-  rightsDeclarationVersion String
+  rightsConfirmedAt        DateTime?
+  rightsDeclarationVersion String?
   failureCode              String?
   failureMessage           String?
   createdAt                DateTime        @default(now())
@@ -76,11 +86,11 @@ model Project {
 }
 
 model VideoSource {
-  id               String            @id @db.Uuid
-  projectId        String            @unique @db.Uuid
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  status           VideoSourceStatus @default(PENDING)
-  sourceVersion    Int               @default(1)
+  id               String                @id @db.Uuid
+  projectId        String                @unique @db.Uuid
+  project          Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status           VideoSourceStatus     @default(PENDING)
+  sourceVersion    Int                   @default(1)
   originalFilename String
   contentType      String
   sizeBytes        BigInt
@@ -88,10 +98,28 @@ model VideoSource {
   durationMs       Int?
   probedAt         DateTime?
   probeVersion     String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
   artifacts        MediaArtifact[]
   pipelineJobs     PipelineJob[]
+  authorizations   SourceAuthorization[]
+}
+
+model SourceAuthorization {
+  sourceId           String
+  sourceVersion      Int
+  source             VideoSource               @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  status             SourceAuthorizationStatus @default(NOT_REVIEWED)
+  basis              SourceAuthorizationBasis?
+  declarationVersion String?
+  decidedAt          DateTime?
+  revision           Int                       @default(1)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  @@id([sourceId, sourceVersion])
+  @@unique([sourceId, sourceVersion])
+  @@index([status, updatedAt])
 }
 
 model MediaArtifact {
@@ -140,43 +168,45 @@ model CutRequest {
 }
 
 model PipelineJob {
-  id                 String           @id @db.Uuid
-  projectId          String           @db.Uuid
-  project            Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sourceId           String           @db.Uuid
-  source             VideoSource      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  cutRequestId       String?          @db.Uuid
-  cutRequest         CutRequest?      @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
-  type               PipelineJobType
-  state              PipelineJobState @default(QUEUED)
-  payloadVersion     Int              @default(1)
-  idempotencyKey     String           @unique
-  revision           Int              @default(1)
-  priority           Int              @default(0)
-  retryBudget        Int              @default(2)
-  attemptCount       Int              @default(0)
-  processedMs        Int?
-  totalMs            Int?
-  leaseOwner         String?
-  leaseToken         String?          @unique
-  leaseExpiresAt     DateTime?
-  heartbeatAt        DateTime?
-  failureCode        String?
-  failureMessage     String?
-  failureRetryable   Boolean?
-  recipeVersion      String
-  queuedAt           DateTime         @default(now())
-  startedAt          DateTime?
-  finishedAt         DateTime?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  segment            CutSegment?
-  attempts           JobAttempt[]
-  resultArtifact     MediaArtifact?   @relation("PipelineJobResult")
+  id               String           @id @db.Uuid
+  projectId        String           @db.Uuid
+  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId         String           @db.Uuid
+  source           VideoSource      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceVersion    Int
+  cutRequestId     String?          @db.Uuid
+  cutRequest       CutRequest?      @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
+  type             PipelineJobType
+  state            PipelineJobState @default(QUEUED)
+  payloadVersion   Int              @default(1)
+  idempotencyKey   String           @unique
+  revision         Int              @default(1)
+  priority         Int              @default(0)
+  retryBudget      Int              @default(2)
+  attemptCount     Int              @default(0)
+  processedMs      Int?
+  totalMs          Int?
+  leaseOwner       String?
+  leaseToken       String?          @unique
+  leaseExpiresAt   DateTime?
+  heartbeatAt      DateTime?
+  failureCode      String?
+  failureMessage   String?
+  failureRetryable Boolean?
+  recipeVersion    String
+  queuedAt         DateTime         @default(now())
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  segment          CutSegment?
+  attempts         JobAttempt[]
+  resultArtifact   MediaArtifact?   @relation("PipelineJobResult")
 
   @@index([state, type, priority, queuedAt])
   @@index([leaseExpiresAt])
   @@index([projectId, createdAt])
+  @@index([sourceId, sourceVersion])
 }
 
 model CutSegment {

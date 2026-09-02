@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import { computed, onMounted, ref } from "vue";
 
@@ -183,26 +182,6 @@ function formatBytes(bytes: number): string {
           {{ errors.file }}
         </p>
       </div>
-      <label class="checkbox-row" for="rights-confirmed"
-        ><Checkbox
-          input-id="rights-confirmed"
-          binary
-          :model-value="draft.rightsConfirmed"
-          :disabled="isSubmitting || recoveryLocksForm"
-          :aria-invalid="Boolean(errors.rightsConfirmed)"
-          aria-describedby="rights-confirmed-error"
-          @update:model-value="updateDraft({ rightsConfirmed: $event })"
-        /><span
-          >Подтверждаю, что у меня есть права на загрузку этого видео.</span
-        ></label
-      >
-      <p
-        v-if="errors.rightsConfirmed"
-        id="rights-confirmed-error"
-        class="error"
-      >
-        {{ errors.rightsConfirmed }}
-      </p>
       <div class="actions">
         <Button
           class="rounded-md bg-emerald-950 px-4 py-3 font-bold text-white"

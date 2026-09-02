@@ -68,14 +68,13 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
     await rm(uploadDirectory, { recursive: true, force: true });
   });
 
-  it("uploads an authorized MP4, persists lineage, stores the object, and supports GET", async () => {
+  it("uploads an unreviewed MP4, then explicitly authorizes its exact version", async () => {
     expect(process.env.MINIO_ROOT_USER).toBeUndefined();
     expect(process.env.MINIO_ROOT_PASSWORD).toBeUndefined();
     const created = await request(app.getHttpServer())
       .post("/api/v1/projects")
       .set("Idempotency-Key", "integration-happy-0001")
       .field("name", "Integration source")
-      .field("rightsConfirmed", "true")
       .attach("file", tinyMp4(), {
         filename: "source.mp4",
         contentType: "video/mp4",
@@ -86,7 +85,17 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
     expect(created.body).toMatchObject({
       name: "Integration source",
       status: "SOURCE_READY",
-      source: { status: "READY", sourceVersion: 1, contentType: "video/mp4" },
+      rights: null,
+      source: {
+        status: "READY",
+        sourceVersion: 1,
+        contentType: "video/mp4",
+        authorization: {
+          sourceVersion: 1,
+          status: "NOT_REVIEWED",
+          revision: 1,
+        },
+      },
       artifact: {
         role: "SOURCE",
         status: "READY",
@@ -112,13 +121,85 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
       .get(`/api/v1/projects/${created.body.id as string}`)
       .expect(200);
     expect(fetched.body).toEqual(created.body);
+
+    await request(app.getHttpServer())
+      .put(`/api/v1/projects/${created.body.id as string}/source-authorization`)
+      .send({
+        sourceVersion: 2,
+        expectedRevision: 1,
+        declarationVersion: "source-authorization-v1",
+        attested: true,
+      })
+      .expect(409)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_VERSION_CONFLICT"),
+      );
+    await request(app.getHttpServer())
+      .put(`/api/v1/projects/${created.body.id as string}/source-authorization`)
+      .send({
+        sourceVersion: 1,
+        expectedRevision: 99,
+        declarationVersion: "source-authorization-v1",
+        attested: true,
+      })
+      .expect(409)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_AUTHORIZATION_CONFLICT"),
+      );
+    await request(app.getHttpServer())
+      .put(`/api/v1/projects/${created.body.id as string}/source-authorization`)
+      .send({
+        sourceVersion: 1,
+        expectedRevision: 1,
+        declarationVersion: "unsupported-v1",
+        attested: true,
+      })
+      .expect(422)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe(
+          "SOURCE_AUTHORIZATION_DECLARATION_UNSUPPORTED",
+        ),
+      );
+
+    const cleared = await request(app.getHttpServer())
+      .put(`/api/v1/projects/${created.body.id as string}/source-authorization`)
+      .send({
+        sourceVersion: 1,
+        expectedRevision: 1,
+        declarationVersion: "source-authorization-v1",
+        attested: true,
+      })
+      .expect(200);
+    expect(cleared.body.source.authorization).toMatchObject({
+      sourceVersion: 1,
+      status: "CLEARED",
+      basis: "OPERATOR_ATTESTATION",
+      declarationVersion: "source-authorization-v1",
+      revision: 2,
+    });
+    expect(cleared.body.source.authorization.decidedAt).toEqual(
+      expect.any(String),
+    );
+    const replay = await request(app.getHttpServer())
+      .put(`/api/v1/projects/${created.body.id as string}/source-authorization`)
+      .send({
+        sourceVersion: 1,
+        expectedRevision: 1,
+        declarationVersion: "source-authorization-v1",
+        attested: true,
+      })
+      .expect(200);
+    expect(replay.body.source.authorization).toEqual(
+      cleared.body.source.authorization,
+    );
   });
 
-  it("requires the explicit rights declaration and removes its temp file", async () => {
+  it("rejects an invalid deprecated rights field and removes its temp file", async () => {
     await request(app.getHttpServer())
       .post("/api/v1/projects")
       .set("Idempotency-Key", "integration-rights-0001")
       .field("name", "No rights")
+      .field("rightsConfirmed", "false")
       .attach("file", tinyMp4(), {
         filename: "source.mp4",
         contentType: "video/mp4",
@@ -314,8 +395,6 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
       sourceId,
       artifactId,
       name: "CAS source",
-      rightsConfirmedAt: new Date(),
-      rightsDeclarationVersion: "upload-rights-v1",
       originalFilename: "source.mp4",
       contentType: "video/mp4",
       sizeBytes: 100n,
@@ -364,8 +443,6 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
       sourceId,
       artifactId,
       name: "Recovery mismatch",
-      rightsConfirmedAt: new Date(),
-      rightsDeclarationVersion: "upload-rights-v1",
       originalFilename: "source.mp4",
       contentType: "video/mp4",
       sizeBytes: 999n,
@@ -416,8 +493,6 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
       sourceId,
       artifactId,
       name: "Cleanup retry",
-      rightsConfirmedAt: new Date(),
-      rightsDeclarationVersion: "upload-rights-v1",
       originalFilename: "source.mp4",
       contentType: "video/mp4",
       sizeBytes: 100n,

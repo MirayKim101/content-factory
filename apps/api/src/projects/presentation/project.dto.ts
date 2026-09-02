@@ -3,10 +3,13 @@ import {
   Allow,
   Equals,
   IsIn,
+  IsBoolean,
+  IsInt,
   IsOptional,
   IsString,
   Length,
   Matches,
+  Min,
 } from "class-validator";
 
 export class CreateProjectUploadDto {
@@ -21,13 +24,16 @@ export class CreateProjectUploadDto {
   @Matches(/\S/)
   name!: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: String,
     enum: ["true"],
-    description: "Must be literal true.",
+    deprecated: true,
+    description:
+      "Ignored legacy upload field. Authorization is a separate step.",
   })
+  @IsOptional()
   @Equals("true")
-  rightsConfirmed!: string;
+  rightsConfirmed?: string;
 
   @ApiProperty({ type: "string", format: "binary" })
   @Allow()
@@ -40,6 +46,41 @@ class RightsResponseDto {
 
   @ApiProperty({ type: String, example: "upload-rights-v1" })
   declarationVersion!: string;
+}
+
+export class SourceAuthorizationResponseDto {
+  @ApiProperty({ type: Number, minimum: 1 }) sourceVersion!: number;
+  @ApiProperty({ type: String, enum: ["NOT_REVIEWED", "CLEARED"] })
+  status!: string;
+  @ApiPropertyOptional({
+    type: String,
+    enum: ["LEGACY_ATTESTATION", "OPERATOR_ATTESTATION"],
+  })
+  basis?: string;
+  @ApiPropertyOptional({ type: String }) declarationVersion?: string;
+  @ApiPropertyOptional({ type: String, format: "date-time" })
+  decidedAt?: string;
+  @ApiProperty({ type: Number, minimum: 1 }) revision!: number;
+}
+
+export class AttestSourceAuthorizationDto {
+  @ApiProperty({ type: Number, minimum: 1 })
+  @IsInt()
+  @Min(1)
+  sourceVersion!: number;
+
+  @ApiProperty({ type: Number, minimum: 1 })
+  @IsInt()
+  @Min(1)
+  expectedRevision!: number;
+
+  @ApiProperty({ type: String, enum: ["source-authorization-v1"] })
+  @IsString()
+  declarationVersion!: string;
+
+  @ApiProperty({ type: Boolean, enum: [true] })
+  @IsBoolean()
+  attested!: boolean;
 }
 
 class FailureResponseDto {
@@ -94,6 +135,9 @@ class SourceResponseDto {
 
   @ApiPropertyOptional({ type: () => FailureResponseDto })
   probeFailure?: FailureResponseDto;
+
+  @ApiProperty({ type: () => SourceAuthorizationResponseDto })
+  authorization!: SourceAuthorizationResponseDto;
 }
 
 class ArtifactResponseDto {
@@ -145,8 +189,12 @@ export class ProjectResponseDto {
   })
   status!: string;
 
-  @ApiProperty({ type: () => RightsResponseDto })
-  rights!: RightsResponseDto;
+  @ApiPropertyOptional({
+    type: () => RightsResponseDto,
+    nullable: true,
+    deprecated: true,
+  })
+  rights!: RightsResponseDto | null;
 
   @ApiPropertyOptional({ type: () => FailureResponseDto })
   failure?: FailureResponseDto;
@@ -218,6 +266,9 @@ class ProjectLibrarySourceDto {
   })
   status!: string;
 
+  @ApiProperty({ type: Number, minimum: 1 })
+  sourceVersion!: number;
+
   @ApiProperty({
     type: String,
     format: "date-time",
@@ -246,6 +297,9 @@ class ProjectLibrarySourceDto {
     enum: ["QUEUED", "PROCESSING", "RETRY_WAIT", "READY", "FAILED_FINAL"],
   })
   probeState?: string;
+
+  @ApiProperty({ type: () => SourceAuthorizationResponseDto })
+  authorization!: SourceAuthorizationResponseDto;
 }
 
 class CutJobCountsDto {

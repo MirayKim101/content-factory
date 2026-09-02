@@ -13,8 +13,6 @@ export interface CreatePendingUploadRecord {
   sourceId: string;
   artifactId: string;
   name: string;
-  rightsConfirmedAt: Date;
-  rightsDeclarationVersion: string;
   originalFilename: string;
   contentType: string;
   sizeBytes: bigint;
@@ -47,8 +45,17 @@ export interface ProjectRepository {
   findPendingCleanup(limit: number): Promise<PendingCleanup[]>;
   markCleanupCompleted(artifactId: string): Promise<void>;
   recordCleanupFailure(artifactId: string, errorCode: string): Promise<void>;
+  attestSourceAuthorization(input: {
+    projectId: string;
+    sourceVersion: number;
+    expectedRevision: number;
+    declarationVersion: string;
+  }): Promise<ProjectView>;
 }
 
 export class IdempotencyKeyAlreadyExistsError extends Error {}
 
 export class TerminalStateConflictError extends Error {}
+export class SourceVersionConflictError extends Error {}
+export class SourceAuthorizationConflictError extends Error {}
+export class SourceNotReadyForAuthorizationError extends Error {}

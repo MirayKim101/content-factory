@@ -31,6 +31,11 @@ const project = (name = "Первый ролик"): Project => ({
     contentType: "video/mp4",
     sizeBytes: "5",
     sha256: "a".repeat(64),
+    authorization: {
+      sourceVersion: 1,
+      status: "NOT_REVIEWED",
+      revision: 1,
+    },
   },
   artifact: {
     id: "00000000-0000-4000-8000-000000000003",
@@ -54,29 +59,25 @@ function validUpload(api: ProjectsApi) {
   );
   upload.updateDraft({
     name: "Первый ролик",
-    rightsConfirmed: true,
     file: sourceFile(),
   });
   return upload;
 }
 
 describe("source upload validation", () => {
-  it("rejects empty/too long names, missing rights, and a non-MP4 file", () => {
+  it("rejects empty/too long names and a non-MP4 file", () => {
     const result = validateSourceUploadForm({
       name: " ",
-      rightsConfirmed: false,
       file: new File(["x"], "source.mov", { type: "video/quicktime" }),
     });
     expect(result.success).toBe(false);
     if (!result.success)
       expect(result.errors).toMatchObject({
         name: expect.any(String),
-        rightsConfirmed: expect.any(String),
         file: expect.any(String),
       });
     const longName = validateSourceUploadForm({
       name: "a".repeat(201),
-      rightsConfirmed: true,
       file: sourceFile(),
     });
     expect(longName.success).toBe(false);

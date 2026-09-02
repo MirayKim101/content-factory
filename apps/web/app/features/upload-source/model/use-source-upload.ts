@@ -36,7 +36,6 @@ function newIdempotencyKey(): string {
 export function useSourceUpload(api: ProjectsApi) {
   const draft = ref<SourceUploadFormDraft>({
     name: "",
-    rightsConfirmed: false,
     file: null,
   });
   const errors = ref<Record<string, string>>({});
@@ -211,7 +210,6 @@ export function useSourceUpload(api: ProjectsApi) {
     draft.value = {
       ...draft.value,
       name: active.name,
-      rightsConfirmed: true,
       file,
     };
     return true;

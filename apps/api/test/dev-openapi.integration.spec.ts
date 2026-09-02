@@ -34,7 +34,7 @@ describe("development OpenAPI bootstrap", () => {
     });
     const upload = document.components.schemas.CreateProjectUploadDto;
     if (!upload) throw new Error("CreateProjectUploadDto schema is missing.");
-    expect(upload.required).toEqual(["name", "rightsConfirmed", "file"]);
+    expect(upload.required).toEqual(["name", "file"]);
     expect(upload.properties).toMatchObject({
       name: { type: "string", minLength: 1, maxLength: 200 },
       rightsConfirmed: { type: "string", enum: ["true"] },
@@ -42,6 +42,9 @@ describe("development OpenAPI bootstrap", () => {
     });
     expect(document.components.schemas).toHaveProperty("ProjectResponseDto");
     expect(document.components.schemas).toHaveProperty("ErrorResponseDto");
+    expect(document.components.schemas).toHaveProperty(
+      "SourceAuthorizationResponseDto",
+    );
   }, 20_000);
 });
 

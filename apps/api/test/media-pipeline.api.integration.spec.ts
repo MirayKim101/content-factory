@@ -149,6 +149,118 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
     ).toBe(0);
   });
 
+  it("fails closed for playback, cut intent, and result download with zero cut rows", async () => {
+    const projectId = await readyProject(5_000, false);
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectId}/source`)
+      .expect(403)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_AUTHORIZATION_REQUIRED"),
+      );
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${projectId}/cuts`)
+      .set("Idempotency-Key", "integration-unauthorized-cuts-0001")
+      .send({
+        segments: [
+          { clientSegmentId: randomUUID(), startMs: 100, endMs: 1_000 },
+        ],
+      })
+      .expect(403)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_AUTHORIZATION_REQUIRED"),
+      );
+    expect(await prisma.cutRequest.count({ where: { projectId } })).toBe(0);
+    expect(
+      await prisma.pipelineJob.count({
+        where: { projectId, type: "CUT_SEGMENT" },
+      }),
+    ).toBe(0);
+
+    const source = await prisma.videoSource.findUniqueOrThrow({
+      where: { projectId },
+    });
+    const jobId = randomUUID();
+    await prisma.pipelineJob.create({
+      data: {
+        id: jobId,
+        projectId,
+        sourceId: source.id,
+        sourceVersion: 1,
+        type: "CUT_SEGMENT",
+        state: "READY",
+        idempotencyKey: `unauthorized-result-${randomUUID()}`,
+        recipeVersion: "stage1-cut-h264-v2",
+      },
+    });
+    await request(app.getHttpServer())
+      .get(`/api/v1/pipeline-jobs/${jobId}/result`)
+      .expect(403)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_AUTHORIZATION_REQUIRED"),
+      );
+
+    await prisma.videoSource.update({
+      where: { id: source.id },
+      data: {
+        sourceVersion: 2,
+        authorizations: {
+          create: {
+            sourceVersion: 2,
+            status: "CLEARED",
+            basis: "OPERATOR_ATTESTATION",
+            declarationVersion: "source-authorization-v1",
+            decidedAt: new Date(),
+          },
+        },
+      },
+    });
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectId}/source`)
+      .expect(404);
+    await request(app.getHttpServer())
+      .get(`/api/v1/pipeline-jobs/${jobId}/result`)
+      .expect(403)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_AUTHORIZATION_REQUIRED"),
+      );
+
+    await prisma.sourceAuthorization.update({
+      where: {
+        sourceId_sourceVersion: { sourceId: source.id, sourceVersion: 1 },
+      },
+      data: {
+        status: "CLEARED",
+        basis: "OPERATOR_ATTESTATION",
+        declarationVersion: "source-authorization-v1",
+        decidedAt: new Date(),
+      },
+    });
+    await prisma.mediaArtifact.create({
+      data: {
+        id: randomUUID(),
+        projectId,
+        sourceId: source.id,
+        pipelineJobId: jobId,
+        role: "CUT_RESULT",
+        status: "READY",
+        objectKey: `test/${projectId}/${jobId}/wrong-version.mp4`,
+        sizeBytes: 10n,
+        sha256: "d".repeat(64),
+        contentType: "video/mp4",
+        lineageSourceId: source.id,
+        lineageSourceVersion: 2,
+        recipeVersion: "stage1-cut-h264-v2",
+        outputFilename: "wrong-version.mp4",
+      },
+    });
+    await request(app.getHttpServer())
+      .get(`/api/v1/pipeline-jobs/${jobId}/result`)
+      .expect(409)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("CUT_RESULT_NOT_READY"),
+      );
+  });
+
   it("returns a safe 416 for an unsatisfiable source range", async () => {
     const projectId = await readyProject(5_000);
     const response = await request(app.getHttpServer())
@@ -180,6 +292,7 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
         id: jobId,
         projectId,
         sourceId: source.id,
+        sourceVersion: source.sourceVersion,
         type: "CUT_SEGMENT",
         state: "READY",
         idempotencyKey: `test-result-${randomUUID()}`,
@@ -289,7 +402,10 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
     });
   });
 
-  async function readyProject(durationMs: number): Promise<string> {
+  async function readyProject(
+    durationMs: number,
+    cleared = true,
+  ): Promise<string> {
     const projectId = randomUUID();
     const sourceId = randomUUID();
     projects.push(projectId);
@@ -314,6 +430,19 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
             durationMs,
             probedAt: new Date(),
             probeVersion: "ffprobe test",
+            authorizations: {
+              create: {
+                sourceVersion: 1,
+                status: cleared ? "CLEARED" : "NOT_REVIEWED",
+                ...(cleared
+                  ? {
+                      basis: "LEGACY_ATTESTATION" as const,
+                      declarationVersion: "upload-rights-v1",
+                      decidedAt: new Date(),
+                    }
+                  : {}),
+              },
+            },
           },
         },
         artifacts: {

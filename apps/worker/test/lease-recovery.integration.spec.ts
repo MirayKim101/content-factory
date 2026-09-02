@@ -202,6 +202,37 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     }
   });
 
+  it("does not claim a job whose exact source version is not authorized", async () => {
+    const { jobId } = await createQueuedCut(false);
+    const job = await prisma.pipelineJob.findUniqueOrThrow({
+      where: { id: jobId },
+      select: { sourceId: true },
+    });
+    await prisma.videoSource.update({
+      where: { id: job.sourceId },
+      data: {
+        sourceVersion: 2,
+        authorizations: {
+          create: {
+            sourceVersion: 2,
+            status: "CLEARED",
+            basis: "OPERATOR_ATTESTATION",
+            declarationVersion: "source-authorization-v1",
+            decidedAt: new Date(),
+          },
+        },
+      },
+    });
+    const repository = new PgMediaJobRepository(workerConfig().databaseUrl);
+    await expect(
+      repository.claim(jobId, "worker-denied", 30_000),
+    ).resolves.toBeNull();
+    await expect(
+      prisma.pipelineJob.findUniqueOrThrow({ where: { id: jobId } }),
+    ).resolves.toMatchObject({ state: "QUEUED", attemptCount: 0 });
+    await repository.close();
+  });
+
   async function prepareCrashedUpload() {
     const { projectId, jobId } = await createQueuedCut();
     const repository = new PgMediaJobRepository(workerConfig().databaseUrl);
@@ -231,7 +262,7 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     };
   }
 
-  async function createQueuedCut(): Promise<{
+  async function createQueuedCut(cleared = true): Promise<{
     projectId: string;
     jobId: string;
   }> {
@@ -259,6 +290,19 @@ describe("worker lease recovery race (PostgreSQL)", () => {
             durationMs: 10_000,
             probedAt: new Date(),
             probeVersion: "ffprobe integration",
+            authorizations: {
+              create: {
+                sourceVersion: 1,
+                status: cleared ? "CLEARED" : "NOT_REVIEWED",
+                ...(cleared
+                  ? {
+                      basis: "LEGACY_ATTESTATION" as const,
+                      declarationVersion: "upload-rights-v1",
+                      decidedAt: new Date(),
+                    }
+                  : {}),
+              },
+            },
           },
         },
         artifacts: {
@@ -280,6 +324,7 @@ describe("worker lease recovery race (PostgreSQL)", () => {
           create: {
             id: jobId,
             sourceId,
+            sourceVersion: 1,
             type: "CUT_SEGMENT",
             idempotencyKey: `worker-race-job-${randomUUID()}`,
             recipeVersion: "stage1-cut-h264-v1",

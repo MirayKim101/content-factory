@@ -9,16 +9,36 @@ export function toProjectResponse(project: ProjectView): ProjectResponseDto {
     id: project.id,
     name: project.name,
     status: project.status,
-    rights: {
-      confirmedAt: project.rightsConfirmedAt.toISOString(),
-      declarationVersion: project.rightsDeclarationVersion,
-    },
+    rights:
+      project.rightsConfirmedAt && project.rightsDeclarationVersion
+        ? {
+            confirmedAt: project.rightsConfirmedAt.toISOString(),
+            declarationVersion: project.rightsDeclarationVersion,
+          }
+        : null,
     ...(project.failure ? { failure: project.failure } : {}),
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
     source: {
       ...project.source,
       sizeBytes: project.source.sizeBytes.toString(),
+      authorization: {
+        sourceVersion: project.source.authorization.sourceVersion,
+        status: project.source.authorization.status,
+        ...(project.source.authorization.basis
+          ? { basis: project.source.authorization.basis }
+          : {}),
+        ...(project.source.authorization.declarationVersion
+          ? {
+              declarationVersion:
+                project.source.authorization.declarationVersion,
+            }
+          : {}),
+        ...(project.source.authorization.decidedAt
+          ? { decidedAt: project.source.authorization.decidedAt.toISOString() }
+          : {}),
+        revision: project.source.authorization.revision,
+      },
     },
     artifact: {
       ...project.artifact,
@@ -40,6 +60,23 @@ export function toProjectLibraryItemResponse(
       ...project.source,
       addedAt: project.source.addedAt.toISOString(),
       sizeBytes: project.source.sizeBytes.toString(),
+      authorization: {
+        sourceVersion: project.source.authorization.sourceVersion,
+        status: project.source.authorization.status,
+        ...(project.source.authorization.basis
+          ? { basis: project.source.authorization.basis }
+          : {}),
+        ...(project.source.authorization.declarationVersion
+          ? {
+              declarationVersion:
+                project.source.authorization.declarationVersion,
+            }
+          : {}),
+        ...(project.source.authorization.decidedAt
+          ? { decidedAt: project.source.authorization.decidedAt.toISOString() }
+          : {}),
+        revision: project.source.authorization.revision,
+      },
     },
     cutJobCounts: project.cutJobCounts,
   };

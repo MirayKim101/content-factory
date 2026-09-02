@@ -4,6 +4,9 @@ import { PrismaService } from "../../database/prisma.service.js";
 import type { ProjectLibraryRepository } from "../application/project-library-repository.port.js";
 import {
   IdempotencyKeyAlreadyExistsError,
+  SourceAuthorizationConflictError,
+  SourceNotReadyForAuthorizationError,
+  SourceVersionConflictError,
   TerminalStateConflictError,
   type CreatePendingUploadRecord,
   type ProjectRepository,
@@ -33,8 +36,8 @@ export class PrismaProjectRepository
             idempotencyKey: record.idempotencyKey,
             requestFingerprint: record.requestFingerprint,
             name: record.name,
-            rightsConfirmedAt: record.rightsConfirmedAt,
-            rightsDeclarationVersion: record.rightsDeclarationVersion,
+            rightsConfirmedAt: null,
+            rightsDeclarationVersion: null,
           },
         });
         await transaction.videoSource.create({
@@ -46,6 +49,13 @@ export class PrismaProjectRepository
             sizeBytes: record.sizeBytes,
             sha256: record.sha256,
             sourceVersion: record.sourceVersion,
+          },
+        });
+        await transaction.sourceAuthorization.create({
+          data: {
+            sourceId: record.sourceId,
+            sourceVersion: record.sourceVersion,
+            status: "NOT_REVIEWED",
           },
         });
         await transaction.mediaArtifact.create({
@@ -233,6 +243,7 @@ export class PrismaProjectRepository
       include: {
         source: {
           include: {
+            authorizations: true,
             pipelineJobs: {
               where: { type: "SOURCE_PROBE" },
               orderBy: { createdAt: "desc" },
@@ -247,12 +258,20 @@ export class PrismaProjectRepository
     const artifact = project?.artifacts[0];
     if (!project || !source || !artifact) return null;
     const probeJob = source.pipelineJobs[0];
+    const authorization = source.authorizations.find(
+      (decision) => decision.sourceVersion === source.sourceVersion,
+    );
+    if (!authorization) throw new Error("SOURCE_AUTHORIZATION_MISSING");
     return {
       id: project.id,
       name: project.name,
       status: project.status,
-      rightsConfirmedAt: project.rightsConfirmedAt,
-      rightsDeclarationVersion: project.rightsDeclarationVersion,
+      ...(project.rightsConfirmedAt
+        ? { rightsConfirmedAt: project.rightsConfirmedAt }
+        : {}),
+      ...(project.rightsDeclarationVersion
+        ? { rightsDeclarationVersion: project.rightsDeclarationVersion }
+        : {}),
       ...(project.failureCode && project.failureMessage
         ? {
             failure: {
@@ -283,6 +302,18 @@ export class PrismaProjectRepository
               },
             }
           : {}),
+        authorization: {
+          sourceVersion: authorization.sourceVersion,
+          status: authorization.status,
+          ...(authorization.basis ? { basis: authorization.basis } : {}),
+          ...(authorization.declarationVersion
+            ? { declarationVersion: authorization.declarationVersion }
+            : {}),
+          ...(authorization.decidedAt
+            ? { decidedAt: authorization.decidedAt }
+            : {}),
+          revision: authorization.revision,
+        },
       },
       artifact: {
         id: artifact.id,
@@ -299,92 +330,118 @@ export class PrismaProjectRepository
   }
 
   async list(query: ProjectListQuery): Promise<ProjectListPage> {
-    const status = query.status ?? null;
-    const escapedSearch = query.q ? escapeLikePattern(query.q) : null;
-    const cursorCreatedAt = query.cursor?.createdAt ?? null;
-    const cursorId = query.cursor?.id ?? null;
-    const rows = await this.prisma.$queryRaw<ProjectLibraryRow[]>`
-      SELECT
-        project.id,
-        project.name,
-        project.status::text AS status,
-        project."createdAt",
-        project."updatedAt",
-        source.id AS "sourceId",
-        source.status::text AS "sourceStatus",
-        source."createdAt" AS "sourceAddedAt",
-        source."originalFilename",
-        source."contentType",
-        source."sizeBytes",
-        source."durationMs",
-        probe.state::text AS "probeState",
-        cuts.total AS "cutTotal",
-        cuts.ready AS "cutReady",
-        cuts.failed AS "cutFailed"
-      FROM "Project" AS project
-      INNER JOIN "VideoSource" AS source ON source."projectId" = project.id
-      LEFT JOIN LATERAL (
-        SELECT job.state
-        FROM "PipelineJob" AS job
-        WHERE job."sourceId" = source.id
-          AND job.type = 'SOURCE_PROBE'::"PipelineJobType"
-        ORDER BY job."createdAt" DESC, job.id DESC
-        LIMIT 1
-      ) AS probe ON TRUE
-      LEFT JOIN LATERAL (
-        SELECT
-          COUNT(*)::int AS total,
-          COUNT(*) FILTER (
-            WHERE job.state = 'READY'::"PipelineJobState"
-          )::int AS ready,
-          COUNT(*) FILTER (
-            WHERE job.state = 'FAILED_FINAL'::"PipelineJobState"
-          )::int AS failed
-        FROM "PipelineJob" AS job
-        WHERE job."projectId" = project.id
-          AND job.type = 'CUT_SEGMENT'::"PipelineJobType"
-      ) AS cuts ON TRUE
-      WHERE (${status}::text IS NULL OR project.status::text = ${status}::text)
-        AND (
-          ${escapedSearch}::text IS NULL
-          OR project.name ILIKE ('%' || ${escapedSearch}::text || '%') ESCAPE E'\\\\'
-          OR source."originalFilename" ILIKE ('%' || ${escapedSearch}::text || '%') ESCAPE E'\\\\'
-        )
-        AND (
-          ${cursorCreatedAt}::timestamptz IS NULL
-          OR (project."createdAt", project.id) < (
-            ${cursorCreatedAt}::timestamptz,
-            ${cursorId}::uuid
-          )
-        )
-      ORDER BY project."createdAt" DESC, project.id DESC
-      LIMIT ${query.limit + 1}
-    `;
+    const escapedQuery = query.q ? escapeLikePattern(query.q) : undefined;
+    const rows = await this.prisma.project.findMany({
+      where: {
+        ...(query.status ? { status: query.status } : {}),
+        AND: [
+          ...(escapedQuery
+            ? [
+                {
+                  OR: [
+                    {
+                      name: {
+                        contains: escapedQuery,
+                        mode: "insensitive" as const,
+                      },
+                    },
+                    {
+                      source: {
+                        originalFilename: {
+                          contains: escapedQuery,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ]
+            : []),
+          ...(query.cursor
+            ? [
+                {
+                  OR: [
+                    { createdAt: { lt: query.cursor.createdAt } },
+                    {
+                      createdAt: query.cursor.createdAt,
+                      id: { lt: query.cursor.id },
+                    },
+                  ],
+                },
+              ]
+            : []),
+        ],
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: query.limit + 1,
+      include: {
+        source: {
+          include: {
+            authorizations: true,
+            pipelineJobs: {
+              where: { type: { in: ["SOURCE_PROBE", "CUT_SEGMENT"] } },
+              orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            },
+          },
+        },
+      },
+    });
 
     const hasMore = rows.length > query.limit;
     const visibleRows = rows.slice(0, query.limit);
-    const items: ProjectLibraryItem[] = visibleRows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      status: row.status,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      source: {
-        id: row.sourceId,
-        status: row.sourceStatus,
-        addedAt: row.sourceAddedAt,
-        originalFilename: row.originalFilename,
-        contentType: row.contentType,
-        sizeBytes: row.sizeBytes,
-        ...(row.durationMs === null ? {} : { durationMs: row.durationMs }),
-        ...(row.probeState === null ? {} : { probeState: row.probeState }),
-      },
-      cutJobCounts: {
-        total: row.cutTotal,
-        ready: row.cutReady,
-        failed: row.cutFailed,
-      },
-    }));
+    const items: ProjectLibraryItem[] = visibleRows.flatMap((row) => {
+      const source = row.source;
+      if (!source) return [];
+      const authorization = source.authorizations.find(
+        (decision) => decision.sourceVersion === source.sourceVersion,
+      );
+      if (!authorization) throw new Error("SOURCE_AUTHORIZATION_MISSING");
+      const probe = source.pipelineJobs.find(
+        (job) => job.type === "SOURCE_PROBE",
+      );
+      const cuts = source.pipelineJobs.filter(
+        (job) => job.type === "CUT_SEGMENT",
+      );
+      return [
+        {
+          id: row.id,
+          name: row.name,
+          status: row.status,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          source: {
+            id: source.id,
+            status: source.status,
+            sourceVersion: source.sourceVersion,
+            addedAt: source.createdAt,
+            originalFilename: source.originalFilename,
+            contentType: source.contentType,
+            sizeBytes: source.sizeBytes,
+            ...(source.durationMs === null
+              ? {}
+              : { durationMs: source.durationMs }),
+            ...(probe ? { probeState: probe.state } : {}),
+            authorization: {
+              sourceVersion: authorization.sourceVersion,
+              status: authorization.status,
+              ...(authorization.basis ? { basis: authorization.basis } : {}),
+              ...(authorization.declarationVersion
+                ? { declarationVersion: authorization.declarationVersion }
+                : {}),
+              ...(authorization.decidedAt
+                ? { decidedAt: authorization.decidedAt }
+                : {}),
+              revision: authorization.revision,
+            },
+          },
+          cutJobCounts: {
+            total: cuts.length,
+            ready: cuts.filter((job) => job.state === "READY").length,
+            failed: cuts.filter((job) => job.state === "FAILED_FINAL").length,
+          },
+        },
+      ];
+    });
     const last = visibleRows.at(-1);
 
     return {
@@ -392,6 +449,86 @@ export class PrismaProjectRepository
       nextCursor:
         hasMore && last ? { createdAt: last.createdAt, id: last.id } : null,
     };
+  }
+
+  async attestSourceAuthorization(input: {
+    projectId: string;
+    sourceVersion: number;
+    expectedRevision: number;
+    declarationVersion: string;
+  }): Promise<ProjectView> {
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`
+        SELECT "id"
+        FROM "VideoSource"
+        WHERE "projectId" = ${input.projectId}::uuid
+        FOR UPDATE
+      `;
+      const source = await transaction.videoSource.findUnique({
+        where: { projectId: input.projectId },
+        include: {
+          authorizations: {
+            where: { sourceVersion: input.sourceVersion },
+            take: 1,
+          },
+        },
+      });
+      if (!source || source.sourceVersion !== input.sourceVersion)
+        throw new SourceVersionConflictError();
+      if (source.status !== "READY")
+        throw new SourceNotReadyForAuthorizationError();
+      const current = source.authorizations[0];
+      if (!current) throw new SourceVersionConflictError();
+      if (
+        current.status === "CLEARED" &&
+        current.basis === "OPERATOR_ATTESTATION" &&
+        current.declarationVersion === input.declarationVersion
+      ) {
+        return;
+      }
+      if (
+        current.status !== "NOT_REVIEWED" ||
+        current.revision !== input.expectedRevision
+      ) {
+        throw new SourceAuthorizationConflictError();
+      }
+      const updated = await transaction.sourceAuthorization.updateMany({
+        where: {
+          sourceId: source.id,
+          sourceVersion: input.sourceVersion,
+          status: "NOT_REVIEWED",
+          revision: input.expectedRevision,
+        },
+        data: {
+          status: "CLEARED",
+          basis: "OPERATOR_ATTESTATION",
+          declarationVersion: input.declarationVersion,
+          decidedAt: new Date(),
+          revision: { increment: 1 },
+        },
+      });
+      if (updated.count !== 1) {
+        const concurrent = await transaction.sourceAuthorization.findUnique({
+          where: {
+            sourceId_sourceVersion: {
+              sourceId: source.id,
+              sourceVersion: input.sourceVersion,
+            },
+          },
+        });
+        if (
+          concurrent?.status === "CLEARED" &&
+          concurrent.basis === "OPERATOR_ATTESTATION" &&
+          concurrent.declarationVersion === input.declarationVersion
+        ) {
+          return;
+        }
+        throw new SourceAuthorizationConflictError();
+      }
+    });
+    const project = await this.getById(input.projectId);
+    if (!project) throw new SourceVersionConflictError();
+    return project;
   }
 
   async findStalePending(
@@ -489,25 +626,6 @@ export class PrismaProjectRepository
       error.code === "P2002"
     );
   }
-}
-
-interface ProjectLibraryRow {
-  id: string;
-  name: string;
-  status: ProjectLibraryItem["status"];
-  createdAt: Date;
-  updatedAt: Date;
-  sourceId: string;
-  sourceStatus: ProjectLibraryItem["source"]["status"];
-  sourceAddedAt: Date;
-  originalFilename: string;
-  contentType: string;
-  sizeBytes: bigint;
-  durationMs: number | null;
-  probeState: ProjectLibraryItem["source"]["probeState"] | null;
-  cutTotal: number;
-  cutReady: number;
-  cutFailed: number;
 }
 
 function escapeLikePattern(value: string): string {

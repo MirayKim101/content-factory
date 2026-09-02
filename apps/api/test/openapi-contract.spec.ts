@@ -59,6 +59,11 @@ describe("authoritative OpenAPI export", () => {
             parameters?: unknown[];
             responses?: Record<string, unknown>;
           };
+          put?: {
+            parameters?: unknown[];
+            requestBody?: unknown;
+            responses?: Record<string, unknown>;
+          };
         }
       >;
     };
@@ -70,9 +75,34 @@ describe("authoritative OpenAPI export", () => {
       components: {
         schemas: {
           CreateProjectUploadDto: {
-            required: ["name", "rightsConfirmed", "file"],
+            required: ["name", "file"],
+          },
+          SourceAuthorizationResponseDto: {},
+          AttestSourceAuthorizationDto: {},
+        },
+      },
+    });
+    expect(
+      document.paths["/api/v1/projects/{id}/source-authorization"]?.put,
+    ).toMatchObject({
+      parameters: [
+        expect.objectContaining({ in: "path", name: "id", required: true }),
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/AttestSourceAuthorizationDto",
+            },
           },
         },
+      },
+      responses: {
+        "200": {},
+        "400": {},
+        "409": {},
+        "422": {},
       },
     });
     for (const path of [

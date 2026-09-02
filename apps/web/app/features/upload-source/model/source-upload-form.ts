@@ -7,9 +7,6 @@ export const sourceUploadFormSchema = z.object({
     .trim()
     .min(1, "Укажи название проекта.")
     .max(200, "Название должно быть не длиннее 200 символов."),
-  rightsConfirmed: z.literal(true, {
-    error: "Нужно подтвердить права на видео.",
-  }),
   file: z
     .instanceof(File, { error: "Выбери MP4-файл." })
     .refine((file) => file.size > 0, "Файл не должен быть пустым.")
@@ -23,7 +20,6 @@ export const sourceUploadFormSchema = z.object({
 export type SourceUploadForm = z.infer<typeof sourceUploadFormSchema>;
 export type SourceUploadFormDraft = {
   name: string;
-  rightsConfirmed: boolean;
   file: File | null;
 };
 export function validateSourceUploadForm(

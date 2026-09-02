@@ -3,95 +3,90 @@
 Обновлено: 2026-09-02
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
-Последний готовый commit: `c65de91 perf(media): add reproducible fast cut recipe`
+Текущий сохранённый commit: `feat: add versioned source authorization`
 
-## Готово
+## Решение владельца
 
-- локальные PostgreSQL, Redis и private MinIO;
-- ручная загрузка одного разрешённого MP4 через Nuxt SPA;
-- same-origin `/api/v1` routing без Nitro BFF (ADR-001);
-- PostgreSQL metadata, MinIO object, SHA-256, lineage и safe DTO;
-- generated OpenAPI contract и live drift check;
-- bounded parallel media pipeline (ADR-002);
-- **Stage 1 manual cutting завершён и получил independent review `CLEAN`:**
-  - `/cuts?projectId=...` с browser player;
-  - кнопки установки начала/конца и точные `startMs/endMs`;
-  - несколько независимых segments в одном submit;
-  - один `PipelineJob`, `JobAttempt` и отдельный MP4 на каждый segment;
-  - PostgreSQL-authoritative state, BullMQ reference delivery и reconciliation;
-  - Docker media worker, FFprobe/FFmpeg, concurrency default `1`;
-  - lease/heartbeat/retry, attempt-aware deliveries и stale-worker protection;
-  - post-encode video/duration validation;
-  - attempt-specific result keys и durable orphan cleanup/retry;
-  - status polling, safe failure, source playback и result download с Range;
-  - result checksum, size, duration, recipe/tool versions и lineage.
+- весь MVP до Twitch разрабатывается и тестируется локально;
+- VDS пока не покупать; manager сам поднимет вопрос после capacity gate и
+  наблюдаемой реальной очереди;
+- mobile UI отложен;
+- до Twitch нужно завершить Stage 1, Stage 2 и новый Stage 2B AI-assisted;
+- metadata и thumbnail независимо поддерживают `MANUAL`, `AI_ASSISTED` и
+  `MIXED`; ручной ввод и собственная обложка доступны всегда.
 
-## Фактическая проверка Stage 1 cutting
+## Готово ранее
 
-- API unit: `26/26`;
-- worker unit: `10/10`;
-- web: `29/29`;
-- contracts: `2/2`;
-- API integration: `17/17`;
-- PostgreSQL worker recovery integration: `3/3`;
-- format, lint, typecheck, OpenAPI drift и `git diff --check`: passed;
-- четыре Prisma migration применены, schema up to date;
-- Docker `media-worker` healthy, FFmpeg/FFprobe `5.1.9-0+deb12u1`;
-- реальный 6-секундный H.264 source дал два независимых READY MP4:
-  - `500–2400ms` -> `1.900000s`, SHA-256
-    `b5bd45cda75307a68ea79abad53fc746ac48f89c0784a8e07a23a8a6af65fcaa`;
-  - `3000–5500ms` -> `2.500000s`, SHA-256
-    `9070e0b2661ab3f969866034eb387de85414ca8bcd7032807aba6aaf30de6923`;
-- same-key replay не создаёт дубликаты; changed payload -> `409`;
-- invalid bounds -> `422`; unsatisfiable Range -> safe `416`;
-- corrupted structurally valid source -> terminal `FAILED_FINAL`;
-- expired attempt/replay/collision/crash-after-upload/delete-retry scenarios
-  воспроизведены; stale attempt не изменяет authoritative result.
+- локальные PostgreSQL, Redis, private MinIO и Docker media-worker;
+- загрузка MP4 с реальным процентом, media library, `/horizontal` multi-source
+  workspace, точные таймкоды, background FFmpeg, status и download;
+- до 20 выбранных источников, один активный player, независимые drafts/jobs;
+- worker-local verified source cache, phase telemetry и recipe
+  `stage1-cut-h264-v2` (`libx264 veryfast`, CRF 20, AAC 192k);
+- реальная 29:25 нарезка выполнена за 11:55.696 на cache hit;
+- старые jobs v1 остаются на `medium`.
 
-## Локальная инфраструктура
+## Завершённый slice: source authorization
 
-На момент handoff Docker Compose поднят:
+Independent review: `CLEAN`.
 
-- PostgreSQL healthy на `127.0.0.1:5432`;
-- Redis healthy на `127.0.0.1:6379`;
-- MinIO healthy на `127.0.0.1:9000/9001`;
-- `media-worker` healthy, без host port;
-- `minio-init` ожидаемо завершён как one-shot с exit `0`.
+- ADR-003: version-aware `SourceAuthorization`;
+- новые sources: `NOT_REVIEWED`, без фиктивной аттестации;
+- 6 legacy sources перенесены как `CLEARED / LEGACY_ATTESTATION` с исходными
+  timestamp/declaration version;
+- отдельный CAS/idempotent `PUT /api/v1/projects/:id/source-authorization`;
+- fail-closed gates для playback, cut transaction, result download,
+  dispatch/recovery и worker claim;
+- `PipelineJob.sourceVersion` обязателен без default; jobs и artifacts
+  проверяются по exact source version и lineage;
+- upload checkbox и hardcoded `rightsConfirmed=true` удалены;
+- media library показывает статус и отдельный dialog подтверждения;
+- unauthorized deep-link не открывает player/editor/submit/download;
+- миграции применены локально; media objects не изменялись.
 
-MinIO volume занимает около `3.6 GiB`, доступно около `847 GiB`. Большой
-загруженный `video-test.mp4` и все существующие objects не удалялись.
+## Проверки source authorization
 
-API и Nuxt после автоматических QA smoke могли быть остановлены. Перед показом
-проверить порты `3001/3000` и запустить команды из
-`docs/infrastructure/local-development.md`.
+- API unit: `32/32`;
+- API integration: `33/33`;
+- worker unit: `30/30`;
+- worker PostgreSQL integration: `4/4`;
+- web: `48/48`;
+- API/worker/web typecheck и lint: passed;
+- OpenAPI generation/drift и `git diff --check`: passed;
+- Docker media-worker пересобран, запускается как `node`, healthy,
+  `FailingStreak=0`; PostgreSQL, Redis и MinIO healthy.
 
-## Сохранённый большой источник
+## AI-решение до Twitch
 
-`/Users/mirai/Downloads/video-test.mp4` — `3 813 099 228` bytes, около двух
-часов Full HD. Не изменять, не перемещать и не добавлять в Git. Не загружать
-повторно без необходимости. Persistent MinIO source не удалять без явного
-решения владельца.
+Architect рекомендует отдельный Stage 2B и отдельный ADR перед реализацией.
 
-## Принятые, но отложенные работы
+- один `CreatorProfile` на стримера: canonical name, official URL, язык,
+  тематика, operator/rights notes;
+- source context: игра, аудитория, цель, ограничения;
+- per-cut prompt: что происходит, акцент, tone, CTA;
+- AI использует research snapshot, transcript и sparse frames конкретного cut;
+- AI выдаёт drafts, пользователь редактирует и явно подтверждает revision;
+- без подтверждённой reference-фотографии likeness не используется;
+- Twitch, vertical, publishing и analytics остаются после Stage 2B.
 
-1. Реальный клиентский upload progress: bytes/total, percent, speed, ETA и
-   отдельная неизмеримая server-finalization стадия.
-2. Удаление per-upload правового checkbox и additive source authorization model:
-   новые sources `NOT_REVIEWED`, legacy `CLEARED/LEGACY_ATTESTATION`.
-3. Список проектов и безопасное удаление проекта/artifacts.
+Notion backlog обновлён:
+`https://app.notion.com/p/3cff0d44c82d81bd9f5ac01270044f67`.
 
-Текущий `rightsConfirmed` контракт не изменялся в cutting slice; нельзя скрыть
-checkbox и продолжать автоматически записывать ложное подтверждение.
+## Первый следующий шаг
 
-## Следующий продуктовый шаг
+Реализовать один вертикальный slice: последовательная очередь ручной загрузки
+5–10 MP4, concurrency `1`, с отдельными real progress/server-finalization,
+status, safe error и retry для каждого файла. Ошибка одного файла не должна
+останавливать следующие. После реализации — independent review.
 
-Stage 1 manual upload/cut/status/download доказан. Следующий bounded slice перед
-расширением editorial pipeline: project list и сохранённый source selection,
-чтобы пользователь мог без ручного UUID возвращаться к нескольким загруженным
-видео и их независимым jobs/results. Затем выполнить отложенный upload-progress
+Затем: сохранённый horizontal operations/history screen, capacity baseline
+`5 × 3` (каждый clip минимум 30 минут), templates/manual editorial package,
+render overlays/intro/outro/audio, preview/approval/export, и только потом AI
+Stage 2B.
 
-- source-authorization slice и переходить к Stage 2 overlays/packaging по
-  `docs/product/MVP-ROADMAP.md`.
+## Локальные данные
 
-Не добавлять Twitch, AI highlight detection, вертикальные clips, публикацию или
-analytics раньше соответствующего Stage 3 slice.
+Не удалять и не загружать повторно без необходимости:
+`/Users/mirai/Downloads/video-test.mp4` — `3813099228` bytes. Persistent MinIO
+sources/results сохранять. Никогда не взаимодействовать с директориями
+`seanova` или `dockerServer`.

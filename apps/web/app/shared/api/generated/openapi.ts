@@ -62,7 +62,7 @@ export interface paths {
     /** List source projects for the media library */
     get: operations["ProjectsController_list"];
     put?: never;
-    /** Create a project by uploading an authorized MP4 source */
+    /** Create a project by uploading an MP4 source for later authorization */
     post: operations["ProjectsController_create"];
     delete?: never;
     options?: never;
@@ -80,6 +80,23 @@ export interface paths {
     /** Get safe source-ingestion status and lineage */
     get: operations["ProjectsController_get"];
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{id}/source-authorization": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Explicitly attest the current source version */
+    put: operations["ProjectsController_authorize"];
     post?: never;
     delete?: never;
     options?: never;
@@ -146,6 +163,14 @@ export interface components {
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
     };
+    AttestSourceAuthorizationDto: {
+      /** @enum {boolean} */
+      attested: true;
+      /** @enum {string} */
+      declarationVersion: "source-authorization-v1";
+      expectedRevision: number;
+      sourceVersion: number;
+    };
     CreateCutsDto: {
       segments: components["schemas"]["CutSegmentDto"][];
     };
@@ -162,10 +187,11 @@ export interface components {
       /** @example First source */
       name: string;
       /**
-       * @description Must be literal true.
+       * @deprecated
+       * @description Ignored legacy upload field. Authorization is a separate step.
        * @enum {string}
        */
-      rightsConfirmed: "true";
+      rightsConfirmed?: "true";
     };
     CutJobCountsDto: {
       /** @example 1 */
@@ -261,6 +287,7 @@ export interface components {
        * @description When the source was added to the media library.
        */
       addedAt: string;
+      authorization: components["schemas"]["SourceAuthorizationResponseDto"];
       /** @example video/mp4 */
       contentType: string;
       /** @example 7200000 */
@@ -276,6 +303,7 @@ export interface components {
        * @example 123456
        */
       sizeBytes: string;
+      sourceVersion: number;
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
     };
@@ -287,7 +315,8 @@ export interface components {
       /** Format: uuid */
       id: string;
       name: string;
-      rights: components["schemas"]["RightsResponseDto"];
+      /** @deprecated */
+      rights?: components["schemas"]["RightsResponseDto"] | null;
       source: components["schemas"]["SourceResponseDto"];
       /** @enum {string} */
       status: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
@@ -300,7 +329,19 @@ export interface components {
       /** @example upload-rights-v1 */
       declarationVersion: string;
     };
+    SourceAuthorizationResponseDto: {
+      /** @enum {string} */
+      basis?: "LEGACY_ATTESTATION" | "OPERATOR_ATTESTATION";
+      /** Format: date-time */
+      decidedAt?: string;
+      declarationVersion?: string;
+      revision: number;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "NOT_REVIEWED" | "CLEARED";
+    };
     SourceResponseDto: {
+      authorization: components["schemas"]["SourceAuthorizationResponseDto"];
       /** @example video/mp4 */
       contentType: string;
       /**
@@ -586,6 +627,58 @@ export interface operations {
       };
       /** @description Internal query failure. */
       500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ProjectsController_authorize: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AttestSourceAuthorizationDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectResponseDto"];
+        };
+      };
+      /** @description The path or request body is invalid. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description The source version, authorization revision, or source readiness changed. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description The declaration version or explicit attestation is unsupported. */
+      422: {
         headers: {
           [name: string]: unknown;
         };

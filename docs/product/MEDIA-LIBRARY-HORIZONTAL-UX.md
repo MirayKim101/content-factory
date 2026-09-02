@@ -59,8 +59,8 @@ cut jobs. Поиск работает по проекту и имени файл
 
 В строке есть checkbox «Выбрать видео». Можно выбрать 5+ файлов, максимум 20:
 это ограничение совпадает с deep-link и защищает интерфейс от неуправляемого
-экрана. Не `SOURCE_READY` источник виден, но не выбирается: checkbox disabled
-и причина показана рядом. До перехода выбор — временное состояние страницы;
+экрана. Не `SOURCE_READY` или не авторизованный источник виден, но не
+выбирается: checkbox disabled и причина показана рядом. До перехода выбор — временное состояние страницы;
 после перехода источником истины становится `projectIds` в URL.
 
 Панель действий после выбора: «Выбрано: N» и «Открыть в горизонтальных видео».
@@ -70,9 +70,9 @@ API, не из localStorage.
 
 ### Очередь загрузки
 
-Действие «Загрузить видео» открывает inline panel: имя проекта, MP4 и
-подтверждение прав **для каждого** файла до отдельного source-authorization
-slice. «Добавить ещё файл» создаёт очередь строк. Оператор выбирает один или
+Действие «Загрузить видео» открывает inline panel: имя проекта и MP4. После
+готовности файла медиатека показывает `NOT_REVIEWED`; отдельный диалог явно
+подтверждает права только для текущей версии исходника. «Добавить ещё файл» создаёт очередь строк. Оператор выбирает один или
 пять+ файлов, но одновременно выполняется ровно одна HTTP-загрузка
 (`concurrency = 1`), без конкуренции за сеть и локальные ресурсы.
 
@@ -279,15 +279,14 @@ filters. Pinia is not introduced for server state.
    and verify both rows and the first active player return.
 3. Create two pairs for A and one for B. Start A, edit B, start B; verify
    separate jobs and independent downloadable MP4s.
-4. A pending/failed source is visibly nonselectable; a URL with one bad and one
-   ready ID still permits the ready source to be used.
+4. A pending/failed/`NOT_REVIEWED` source is visibly nonselectable; direct URLs
+   do not load its player or editor until the exact source version is cleared.
 5. Repeat selection/timecode/submit using keyboard in the supported desktop
    layout.
 
 ## Deferred decisions
 
-- Source authorization replaces the per-upload rights checkbox only in its own
-  additive slice; this document does not hide or auto-confirm it.
+- Source authorization follows ADR-003; upload never auto-confirms rights.
 - Project/artifact deletion, sorting and tags need durable API semantics before
   destructive or misleading controls appear.
 - Vertical source selection may reuse this projection only when Stage 3 defines

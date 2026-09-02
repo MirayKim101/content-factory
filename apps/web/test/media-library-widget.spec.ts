@@ -17,11 +17,20 @@ const page = {
       source: {
         id: "00000000-0000-4000-8000-000000000002",
         status: "READY",
+        sourceVersion: 1,
         addedAt: "2026-09-02T00:00:00.000Z",
         originalFilename: "stream.mp4",
         contentType: "video/mp4",
         sizeBytes: "1024",
         durationMs: 10_000,
+        authorization: {
+          sourceVersion: 1,
+          status: "CLEARED",
+          basis: "LEGACY_ATTESTATION",
+          declarationVersion: "upload-rights-v1",
+          decidedAt: "2026-09-02T00:00:00.000Z",
+          revision: 1,
+        },
       },
       cutJobCounts: { total: 1, ready: 1, failed: 0 },
     },
@@ -65,6 +74,38 @@ describe("MediaLibrary render states", () => {
     await flushPromises();
     expect(wrapper.text()).toContain("Запись эфира");
     expect(wrapper.text()).not.toContain("Медиатека пока пуста");
+  });
+
+  it("blocks selection and requires an explicit dialog for an unreviewed source", async () => {
+    const unreviewed = structuredClone(page);
+    unreviewed.items[0]!.source.authorization = {
+      sourceVersion: 1,
+      status: "NOT_REVIEWED",
+      basis: undefined,
+      declarationVersion: undefined,
+      decidedAt: undefined,
+      revision: 4,
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response(unreviewed)));
+    const wrapper = mountLibrary();
+    await flushPromises();
+
+    const selection = wrapper.get('input[aria-label="Выбрать stream.mp4"]');
+    expect(selection.attributes("disabled")).toBeDefined();
+    expect(wrapper.text()).toContain("Требуется подтверждение прав");
+    const open = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Подтвердить права"));
+    expect(open).toBeDefined();
+    await open!.trigger("click");
+    await flushPromises();
+    expect(document.body.textContent).toContain(
+      "Подтверждение относится только к версии 1 файла «stream.mp4»",
+    );
+    const confirm = [...document.body.querySelectorAll("button")].find(
+      (button) => button.textContent?.trim() === "Подтвердить",
+    );
+    expect(confirm?.disabled).toBe(true);
   });
 
   it("keeps the rendered list with a safe stale-error banner", async () => {

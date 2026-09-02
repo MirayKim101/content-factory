@@ -3,7 +3,10 @@ import { randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
 
 import type { MediaJobRepository } from "../application/ports.js";
-import type { ClaimedMediaJob } from "../domain/media-job.js";
+import {
+  ControlledMediaError,
+  type ClaimedMediaJob,
+} from "../domain/media-job.js";
 
 interface ClaimRow {
   id: string;
@@ -44,12 +47,21 @@ export class PgMediaJobRepository implements MediaJobRepository {
         `SELECT j."id", j."type", j."state", j."projectId", j."sourceId",
                 j."attemptCount", j."retryBudget", j."recipeVersion", j."leaseExpiresAt",
                 j."queuedAt", j."startedAt" AS "jobStartedAt",
-                s."sourceVersion", s."originalFilename", s."sha256" AS "sourceSha256",
+                j."sourceVersion", s."originalFilename", a."sha256" AS "sourceSha256",
                 a."objectKey" AS "sourceObjectKey", a."sizeBytes"::text AS "sourceSizeBytes",
                 c."clientSegmentId", c."startMs", c."endMs"
            FROM "PipelineJob" j
            JOIN "VideoSource" s ON s."id" = j."sourceId"
-           JOIN "MediaArtifact" a ON a."sourceId" = s."id" AND a."role" = 'SOURCE' AND a."status" = 'READY'
+           JOIN "SourceAuthorization" auth
+             ON auth."sourceId" = s."id"
+            AND auth."sourceVersion" = j."sourceVersion"
+            AND auth."status" = 'CLEARED'
+            AND auth."basis" IS NOT NULL
+            AND auth."declarationVersion" IS NOT NULL
+            AND auth."decidedAt" IS NOT NULL
+           JOIN "MediaArtifact" a ON a."sourceId" = s."id"
+            AND a."lineageSourceVersion" = j."sourceVersion"
+            AND a."role" = 'SOURCE' AND a."status" = 'READY'
       LEFT JOIN "CutSegment" c ON c."jobId" = j."id"
           WHERE j."id" = $1
           FOR UPDATE OF j`,
@@ -196,11 +208,17 @@ export class PgMediaJobRepository implements MediaJobRepository {
   ): Promise<void> {
     await this.transaction(async (client) => {
       await this.assertLease(client, job);
-      await client.query(
+      const updated = await client.query(
         `UPDATE "VideoSource" SET "durationMs"=$2, "probedAt"=now(), "probeVersion"=$3, "updatedAt"=now()
-          WHERE "id"=$1`,
-        [job.sourceId, durationMs, probeVersion],
+          WHERE "id"=$1 AND "sourceVersion"=$4`,
+        [job.sourceId, durationMs, probeVersion, job.sourceVersion],
       );
+      if (updated.rowCount !== 1)
+        throw new ControlledMediaError(
+          "SOURCE_VERSION_STALE",
+          "Версия исходного видео изменилась до завершения проверки.",
+          false,
+        );
       await this.finishReady(client, job);
     });
   }

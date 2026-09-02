@@ -36,6 +36,7 @@ import {
   type ObjectStorage,
 } from "../../projects/application/object-storage.port.js";
 import { ErrorResponseDto } from "../../projects/presentation/project.dto.js";
+import { SourceAuthorizationRequiredError } from "../../projects/domain/source-authorization.js";
 import { CreateCuts } from "../application/create-cuts.js";
 import { GetPipelineJob } from "../application/get-pipeline-job.js";
 import {
@@ -146,6 +147,16 @@ export class MediaPipelineController {
           message: "The source is not ready for cutting.",
         });
       }
+      if (error instanceof SourceAuthorizationRequiredError) {
+        throw new HttpException(
+          {
+            code: "SOURCE_AUTHORIZATION_REQUIRED",
+            message:
+              "Explicit authorization is required for this source version.",
+          },
+          HttpStatus.FORBIDDEN,
+        );
+      }
       if (error instanceof CutDurationUnavailableError) {
         throw new ConflictException({
           code: "SOURCE_DURATION_UNAVAILABLE",
@@ -209,6 +220,11 @@ export class MediaPipelineController {
     @Headers("range") range: string | undefined,
     @Res() response: ServerResponse,
   ): Promise<void> {
+    try {
+      await this.repository.requireProjectAuthorization(projectId);
+    } catch (error) {
+      this.rethrowAuthorization(error);
+    }
     const object = await this.repository.getSourceObject(projectId);
     if (!object)
       throw new NotFoundException({
@@ -258,6 +274,11 @@ export class MediaPipelineController {
     @Headers("range") range: string | undefined,
     @Res() response: ServerResponse,
   ): Promise<void> {
+    try {
+      await this.repository.requireJobAuthorization(id);
+    } catch (error) {
+      this.rethrowAuthorization(error);
+    }
     const object = await this.repository.getResultObject(id);
     if (!object)
       throw new ConflictException({
@@ -342,6 +363,20 @@ export class MediaPipelineController {
       },
       HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE,
     );
+  }
+
+  private rethrowAuthorization(error: unknown): never {
+    if (error instanceof SourceAuthorizationRequiredError) {
+      throw new HttpException(
+        {
+          code: "SOURCE_AUTHORIZATION_REQUIRED",
+          message:
+            "Explicit authorization is required for this source version.",
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    throw error;
   }
 }
 

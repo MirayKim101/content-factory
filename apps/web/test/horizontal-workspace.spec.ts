@@ -41,8 +41,22 @@ function project(id: string) {
     name: `Проект ${id.slice(-3)}`,
     status: "SOURCE_READY" as const,
     source: {
+      id: "00000000-0000-4000-8000-000000000199",
+      status: "READY" as const,
+      sourceVersion: 1,
       originalFilename: `source-${id.slice(-3)}.mp4`,
+      contentType: "video/mp4" as const,
+      sizeBytes: "1",
+      sha256: "a".repeat(64),
       durationMs: 3_600_000,
+      authorization: {
+        sourceVersion: 1,
+        status: "CLEARED" as const,
+        basis: "LEGACY_ATTESTATION" as const,
+        declarationVersion: "upload-rights-v1",
+        decidedAt: "2026-09-01T00:00:00.000Z",
+        revision: 1,
+      },
     },
   };
 }
@@ -220,5 +234,26 @@ describe("HorizontalWorkspace cut confirmation", () => {
     await firstInputs[0]!.setValue("12:47");
     expect(rows[0]!.text()).not.toContain("Проверьте параметры перед запуском");
     expect(rows[1]!.text()).toContain("Проверьте параметры перед запуском");
+  });
+
+  it("fails closed for an unauthorized project id from a direct URL", async () => {
+    mocks.getProject.mockResolvedValue({
+      ...project(projectA),
+      source: {
+        ...project(projectA).source,
+        authorization: {
+          sourceVersion: 1,
+          status: "NOT_REVIEWED" as const,
+          revision: 1,
+        },
+      },
+    });
+    const wrapper = mountWorkspace([projectA]);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Просмотр и нарезка заблокированы");
+    expect(wrapper.find("video").exists()).toBe(false);
+    expect(wrapper.find("form").exists()).toBe(false);
+    expect(mocks.createCuts).not.toHaveBeenCalled();
   });
 });

@@ -57,7 +57,12 @@ const rows = computed(() =>
 const activeRow = computed(() =>
   rows.value.find((row) => row.id === activeProjectId.value),
 );
-const activeProject = computed(() => activeRow.value?.query.data);
+const activeProject = computed(() => {
+  const project = activeRow.value?.query.data;
+  return project?.source.authorization.status === "CLEARED"
+    ? project
+    : undefined;
+});
 
 function ensureState(id: string): WorkspaceSourceState {
   return getSessionSourceState(id);
@@ -215,7 +220,14 @@ watch(
 );
 watch(
   () =>
-    rows.value.map((row) => ({ id: row.id, status: row.query.data?.status })),
+    rows.value.map((row) => ({
+      id: row.id,
+      status:
+        row.query.data?.status === "SOURCE_READY" &&
+        row.query.data.source.authorization.status === "CLEARED"
+          ? "SOURCE_READY"
+          : "SOURCE_PENDING",
+    })),
   (loadedRows) => {
     const readyId = firstReadyProjectId(loadedRows, activeProjectId.value);
     if (readyId) activeProjectId.value = readyId;
@@ -305,6 +317,9 @@ watch(
                 <Button
                   type="button"
                   severity="secondary"
+                  :disabled="
+                    row.query.data.source.authorization.status !== 'CLEARED'
+                  "
                   @click="openPlayer(row.id)"
                   >{{
                     activeProjectId === row.id ? "В плеере" : "Открыть в плеере"
@@ -322,6 +337,16 @@ watch(
               <Button type="button" @click="row.query.refetch()"
                 >Обновить сейчас</Button
               >
+            </p>
+            <p
+              v-else-if="
+                row.query.data.source.authorization.status !== 'CLEARED'
+              "
+              class="warning"
+            >
+              Для этой версии исходника не подтверждены права. Просмотр и
+              нарезка заблокированы.
+              <NuxtLink to="/library">Подтвердить в медиатеке</NuxtLink>
             </p>
             <form
               v-else

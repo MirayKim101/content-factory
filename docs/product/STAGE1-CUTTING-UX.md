@@ -304,7 +304,7 @@ does not promise recovery of unsubmitted media edits.
   validation or be the sole source for `durationMs`.
 - The source playback route must support range requests, otherwise seeking in a
   two-hour source is not acceptable for this UX. Its authorization semantics
-  remain private-infrastructure scope of ADR-001.
+  follows the fail-closed exact-version gate from ADR-003.
 - No synthetic ETA: only show it if the API supplies one with an explicit
   confidence/measurement definition. Current copy intentionally omits it.
 - No task controls (cancel, retry, priority) are designed here because their

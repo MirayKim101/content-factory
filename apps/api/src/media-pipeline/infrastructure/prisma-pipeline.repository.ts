@@ -14,6 +14,10 @@ import type {
   CreateCutsResult,
   PipelineJobView,
 } from "../domain/pipeline-job.js";
+import {
+  isSourceAuthorizationCleared,
+  SourceAuthorizationRequiredError,
+} from "../../projects/domain/source-authorization.js";
 
 interface JobRow {
   id: string;
@@ -61,51 +65,82 @@ export class PrismaPipelineRepository implements PipelineRepository {
       endMs: number;
     }>;
   }): Promise<{ result: CreateCutsResult; created: boolean }> {
-    const existing = await this.findRequest(input.idempotencyKey);
-    if (existing) {
-      if (existing.requestFingerprint !== input.requestFingerprint) {
-        throw new CutIdempotencyConflictError();
-      }
-      return { result: this.mapRequest(existing), created: false };
-    }
-
-    const source = await this.prisma.project.findUnique({
-      where: { id: input.projectId },
-      include: { source: true },
-    });
-    if (
-      !source?.source ||
-      source.status !== "SOURCE_READY" ||
-      source.source.status !== "READY"
-    ) {
-      throw new CutSourceNotReadyError();
-    }
-    const durationMs = source.source.durationMs;
-    if (durationMs === null) throw new CutDurationUnavailableError();
-    for (const segment of input.segments) {
-      if (
-        segment.startMs < 0 ||
-        segment.endMs <= segment.startMs ||
-        segment.endMs > durationMs
-      ) {
-        throw new CutBoundsInvalidError(segment.clientSegmentId, durationMs);
-      }
-    }
-
     try {
-      const created = await this.prisma.cutRequest.create({
-        data: {
-          id: input.requestId,
-          projectId: input.projectId,
-          idempotencyKey: input.idempotencyKey,
-          requestFingerprint: input.requestFingerprint,
-          jobs: {
-            create: input.segments.map((segment) => {
-              const jobId = randomUUID();
-              return {
-                id: jobId,
+      return await this.prisma.$transaction(async (transaction) => {
+        const project = await transaction.project.findUnique({
+          where: { id: input.projectId },
+          include: {
+            source: { include: { authorizations: true } },
+          },
+        });
+        if (
+          !project?.source ||
+          project.status !== "SOURCE_READY" ||
+          project.source.status !== "READY"
+        )
+          throw new CutSourceNotReadyError();
+        const authorization = project.source.authorizations.find(
+          (decision) =>
+            decision.sourceVersion === project.source!.sourceVersion,
+        );
+        if (
+          !isSourceAuthorizationCleared(
+            authorization
+              ? {
+                  sourceVersion: authorization.sourceVersion,
+                  status: authorization.status,
+                  ...(authorization.basis
+                    ? { basis: authorization.basis }
+                    : {}),
+                  ...(authorization.declarationVersion
+                    ? { declarationVersion: authorization.declarationVersion }
+                    : {}),
+                  ...(authorization.decidedAt
+                    ? { decidedAt: authorization.decidedAt }
+                    : {}),
+                  revision: authorization.revision,
+                }
+              : null,
+            project.source.sourceVersion,
+          )
+        )
+          throw new SourceAuthorizationRequiredError();
+        const existing = await transaction.cutRequest.findUnique({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: {
+            jobs: { include: jobViewInclude, orderBy: { createdAt: "asc" } },
+          },
+        });
+        if (existing) {
+          if (existing.requestFingerprint !== input.requestFingerprint)
+            throw new CutIdempotencyConflictError();
+          return { result: this.mapRequest(existing), created: false };
+        }
+        const durationMs = project.source.durationMs;
+        if (durationMs === null) throw new CutDurationUnavailableError();
+        for (const segment of input.segments) {
+          if (
+            segment.startMs < 0 ||
+            segment.endMs <= segment.startMs ||
+            segment.endMs > durationMs
+          )
+            throw new CutBoundsInvalidError(
+              segment.clientSegmentId,
+              durationMs,
+            );
+        }
+        const created = await transaction.cutRequest.create({
+          data: {
+            id: input.requestId,
+            projectId: input.projectId,
+            idempotencyKey: input.idempotencyKey,
+            requestFingerprint: input.requestFingerprint,
+            jobs: {
+              create: input.segments.map((segment) => ({
+                id: randomUUID(),
                 projectId: input.projectId,
-                sourceId: source.source!.id,
+                sourceId: project.source!.id,
+                sourceVersion: project.source!.sourceVersion,
                 type: "CUT_SEGMENT" as const,
                 idempotencyKey: `cut:${input.idempotencyKey}:${segment.clientSegmentId}`,
                 recipeVersion: "stage1-cut-h264-v2",
@@ -125,13 +160,13 @@ export class PrismaPipelineRepository implements PipelineRepository {
                     state: "QUEUED" as const,
                   },
                 },
-              };
-            }),
+              })),
+            },
           },
-        },
-        include: { jobs: { include: jobViewInclude } },
+          include: { jobs: { include: jobViewInclude } },
+        });
+        return { result: this.mapRequest(created), created: true };
       });
-      return { result: this.mapRequest(created), created: true };
     } catch (error) {
       if (!this.isUniqueConstraint(error)) throw error;
       const concurrent = await this.findRequest(input.idempotencyKey);
@@ -157,13 +192,28 @@ export class PrismaPipelineRepository implements PipelineRepository {
     const rows = await this.prisma.pipelineJob.findMany({
       where: { state: { in: ["QUEUED", "RETRY_WAIT"] } },
       orderBy: [{ priority: "desc" }, { queuedAt: "asc" }],
-      take: limit,
-      select: { id: true, attemptCount: true },
+      take: Math.max(limit, limit * 4),
+      select: {
+        id: true,
+        attemptCount: true,
+        sourceVersion: true,
+        source: { include: { authorizations: true } },
+      },
     });
-    return rows.map((row) => ({
-      jobId: row.id,
-      attemptNumber: row.attemptCount + 1,
-    }));
+    return rows
+      .filter((row) =>
+        this.isCleared(
+          row.source.authorizations.find(
+            (decision) => decision.sourceVersion === row.sourceVersion,
+          ),
+          row.sourceVersion,
+        ),
+      )
+      .slice(0, limit)
+      .map((row) => ({
+        jobId: row.id,
+        attemptNumber: row.attemptCount + 1,
+      }));
   }
 
   async getRunnableJobsByIds(jobIds: string[]) {
@@ -173,12 +223,26 @@ export class PrismaPipelineRepository implements PipelineRepository {
         id: { in: jobIds },
         state: { in: ["QUEUED", "RETRY_WAIT"] },
       },
-      select: { id: true, attemptCount: true },
+      select: {
+        id: true,
+        attemptCount: true,
+        sourceVersion: true,
+        source: { include: { authorizations: true } },
+      },
     });
-    return rows.map((row) => ({
-      jobId: row.id,
-      attemptNumber: row.attemptCount + 1,
-    }));
+    return rows
+      .filter((row) =>
+        this.isCleared(
+          row.source.authorizations.find(
+            (decision) => decision.sourceVersion === row.sourceVersion,
+          ),
+          row.sourceVersion,
+        ),
+      )
+      .map((row) => ({
+        jobId: row.id,
+        attemptNumber: row.attemptCount + 1,
+      }));
   }
 
   async isDeliveryRunnable(delivery: {
@@ -186,15 +250,18 @@ export class PrismaPipelineRepository implements PipelineRepository {
     attemptNumber: number;
   }): Promise<boolean> {
     if (delivery.attemptNumber < 1) return false;
-    return (
-      (await this.prisma.pipelineJob.count({
-        where: {
-          id: delivery.jobId,
-          state: { in: ["QUEUED", "RETRY_WAIT"] },
-          attemptCount: delivery.attemptNumber - 1,
-        },
-      })) === 1
+    const job = await this.prisma.pipelineJob.findFirst({
+      where: {
+        id: delivery.jobId,
+        state: { in: ["QUEUED", "RETRY_WAIT"] },
+        attemptCount: delivery.attemptNumber - 1,
+      },
+      include: { source: { include: { authorizations: true } } },
+    });
+    const authorization = job?.source.authorizations.find(
+      (decision) => decision.sourceVersion === job.sourceVersion,
     );
+    return Boolean(job && this.isCleared(authorization, job.sourceVersion));
   }
 
   async ensureProbeJobs(limit: number) {
@@ -204,12 +271,17 @@ export class PrismaPipelineRepository implements PipelineRepository {
         durationMs: null,
         pipelineJobs: { none: { type: "SOURCE_PROBE" } },
       },
-      take: limit,
+      take: Math.max(limit, limit * 4),
       orderBy: { createdAt: "asc" },
-      select: { id: true, projectId: true, sourceVersion: true },
+      include: { authorizations: true },
     });
     const ids: string[] = [];
     for (const source of sources) {
+      if (ids.length >= limit) break;
+      const authorization = source.authorizations.find(
+        (decision) => decision.sourceVersion === source.sourceVersion,
+      );
+      if (!this.isCleared(authorization, source.sourceVersion)) continue;
       const id = randomUUID();
       try {
         await this.prisma.pipelineJob.create({
@@ -217,6 +289,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
             id,
             projectId: source.projectId,
             sourceId: source.id,
+            sourceVersion: source.sourceVersion,
             type: "SOURCE_PROBE",
             idempotencyKey: `probe:v1:${source.id}:${source.sourceVersion}`,
             recipeVersion: "source-probe-v1",
@@ -242,10 +315,19 @@ export class PrismaPipelineRepository implements PipelineRepository {
       where: { state: "PROCESSING", leaseExpiresAt: { lt: new Date() } },
       take: limit,
       orderBy: { leaseExpiresAt: "asc" },
-      select: { id: true, leaseToken: true },
+      select: {
+        id: true,
+        leaseToken: true,
+        sourceVersion: true,
+        source: { include: { authorizations: true } },
+      },
     });
     const recovered: Array<{ jobId: string; attemptNumber: number }> = [];
     for (const job of expired) {
+      const authorization = job.source.authorizations.find(
+        (decision) => decision.sourceVersion === job.sourceVersion,
+      );
+      if (!this.isCleared(authorization, job.sourceVersion)) continue;
       const updated = await this.prisma.pipelineJob.updateMany({
         where: {
           id: job.id,
@@ -395,34 +477,128 @@ export class PrismaPipelineRepository implements PipelineRepository {
   }
 
   async getSourceObject(projectId: string) {
-    const artifact = await this.prisma.mediaArtifact.findFirst({
-      where: { projectId, role: "SOURCE", status: "READY" },
-      include: { source: { select: { originalFilename: true } } },
-    });
-    return artifact
-      ? {
-          objectKey: artifact.objectKey,
-          sizeBytes: artifact.sizeBytes,
-          filename: artifact.source.originalFilename,
-        }
-      : null;
+    return this.prisma.$transaction(
+      async (transaction) => {
+        const source = await transaction.videoSource.findUnique({
+          where: { projectId },
+          include: { authorizations: true },
+        });
+        const authorization = source?.authorizations.find(
+          (decision) => decision.sourceVersion === source.sourceVersion,
+        );
+        if (!source || !this.isCleared(authorization, source.sourceVersion))
+          throw new SourceAuthorizationRequiredError();
+        const artifact = await transaction.mediaArtifact.findFirst({
+          where: {
+            projectId,
+            sourceId: source.id,
+            lineageSourceId: source.id,
+            lineageSourceVersion: source.sourceVersion,
+            role: "SOURCE",
+            status: "READY",
+          },
+        });
+        return artifact
+          ? {
+              objectKey: artifact.objectKey,
+              sizeBytes: artifact.sizeBytes,
+              filename: source.originalFilename,
+            }
+          : null;
+      },
+      { isolationLevel: "Serializable" },
+    );
   }
 
   async getResultObject(jobId: string) {
-    const artifact = await this.prisma.mediaArtifact.findFirst({
-      where: {
-        pipelineJobId: jobId,
-        role: "CUT_RESULT",
-        status: "READY",
+    return this.prisma.$transaction(
+      async (transaction) => {
+        const job = await transaction.pipelineJob.findUnique({
+          where: { id: jobId },
+          include: { source: { include: { authorizations: true } } },
+        });
+        const authorization = job?.source.authorizations.find(
+          (decision) => decision.sourceVersion === job.sourceVersion,
+        );
+        if (!job || !this.isCleared(authorization, job.sourceVersion))
+          throw new SourceAuthorizationRequiredError();
+        const artifact = await transaction.mediaArtifact.findFirst({
+          where: {
+            pipelineJobId: job.id,
+            sourceId: job.sourceId,
+            lineageSourceId: job.sourceId,
+            lineageSourceVersion: job.sourceVersion,
+            role: "CUT_RESULT",
+            status: "READY",
+          },
+        });
+        return artifact?.outputFilename
+          ? {
+              objectKey: artifact.objectKey,
+              sizeBytes: artifact.sizeBytes,
+              filename: artifact.outputFilename,
+            }
+          : null;
       },
+      { isolationLevel: "Serializable" },
+    );
+  }
+
+  async requireProjectAuthorization(projectId: string): Promise<void> {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      include: { source: { include: { authorizations: true } } },
     });
-    return artifact && artifact.outputFilename
-      ? {
-          objectKey: artifact.objectKey,
-          sizeBytes: artifact.sizeBytes,
-          filename: artifact.outputFilename,
+    const source = project?.source;
+    const authorization = source?.authorizations.find(
+      (decision) => decision.sourceVersion === source.sourceVersion,
+    );
+    if (!source || !this.isCleared(authorization, source.sourceVersion))
+      throw new SourceAuthorizationRequiredError();
+  }
+
+  async requireJobAuthorization(jobId: string): Promise<void> {
+    const job = await this.prisma.pipelineJob.findUnique({
+      where: { id: jobId },
+      include: { source: { include: { authorizations: true } } },
+    });
+    const authorization = job?.source.authorizations.find(
+      (decision) => decision.sourceVersion === job.sourceVersion,
+    );
+    if (!job || !this.isCleared(authorization, job.sourceVersion))
+      throw new SourceAuthorizationRequiredError();
+  }
+
+  private isCleared(
+    authorization:
+      | {
+          sourceVersion: number;
+          status: "NOT_REVIEWED" | "CLEARED";
+          basis: "LEGACY_ATTESTATION" | "OPERATOR_ATTESTATION" | null;
+          declarationVersion: string | null;
+          decidedAt: Date | null;
+          revision: number;
         }
-      : null;
+      | undefined,
+    sourceVersion: number,
+  ): boolean {
+    return isSourceAuthorizationCleared(
+      authorization
+        ? {
+            sourceVersion: authorization.sourceVersion,
+            status: authorization.status,
+            ...(authorization.basis ? { basis: authorization.basis } : {}),
+            ...(authorization.declarationVersion
+              ? { declarationVersion: authorization.declarationVersion }
+              : {}),
+            ...(authorization.decidedAt
+              ? { decidedAt: authorization.decidedAt }
+              : {}),
+            revision: authorization.revision,
+          }
+        : null,
+      sourceVersion,
+    );
   }
 
   private findRequest(key: string) {
