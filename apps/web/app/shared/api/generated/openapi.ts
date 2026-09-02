@@ -52,6 +52,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/pipeline-jobs/{jobId}/editorial-package": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_package"];
+    /** Save one immutable editorial package revision */
+    put: operations["EditorialController_putPackage"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/processing-templates": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_processingTemplates"];
+    put?: never;
+    /** Create immutable processing template revision 1 */
+    post: operations["EditorialController_createProcessingTemplate"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects": {
     parameters: {
       query?: never;
@@ -115,6 +149,55 @@ export interface paths {
     put?: never;
     /** Atomically create one independent background job per cut segment */
     post: operations["MediaPipelineController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-assets/thumbnails": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_thumbnails"];
+    put?: never;
+    /** Upload one private project thumbnail */
+    post: operations["EditorialController_createThumbnail"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-assets/thumbnails/{assetId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_thumbnailContent"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-packages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_projectPackages"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -198,6 +281,9 @@ export interface components {
       /** Format: uuid */
       requestId: string;
     };
+    CreateProcessingTemplateDto: {
+      name: string;
+    };
     CreateProjectUploadDto: {
       /** Format: binary */
       file: string;
@@ -218,11 +304,89 @@ export interface components {
       /** @example 5 */
       total: number;
     };
+    CutResultArtifactResponseDto: {
+      /** Format: uuid */
+      id: string;
+      recipeVersion: string;
+      sha256: string;
+      sizeBytes: string;
+      /** Format: uuid */
+      sourceId: string;
+      /** Format: int32 */
+      sourceVersion: number;
+    };
     CutSegmentDto: {
       /** Format: uuid */
       clientSegmentId: string;
       endMs: number;
       startMs: number;
+    };
+    EditorialAssetListResponseDto: {
+      items: components["schemas"]["EditorialAssetResponseDto"][];
+    };
+    EditorialAssetResponseDto: {
+      /** @enum {string} */
+      contentType: "image/jpeg" | "image/png" | "image/webp";
+      /** Format: date-time */
+      createdAt: string;
+      failure?: components["schemas"]["EditorialFailureResponseDto"];
+      /** Format: int32 */
+      height: number;
+      /** Format: uuid */
+      id: string;
+      originalFilename: string;
+      /** Format: uuid */
+      projectId: string;
+      sha256: string;
+      /** @description Decimal string for bigint safety. */
+      sizeBytes: string;
+      /** @enum {string} */
+      status: "PENDING" | "READY" | "FAILED_FINAL";
+      /** @enum {string} */
+      type: "THUMBNAIL";
+      /** Format: date-time */
+      updatedAt: string;
+      /** Format: int32 */
+      width: number;
+    };
+    EditorialFailureResponseDto: {
+      code: string;
+      message: string;
+    };
+    EditorialPackageListResponseDto: {
+      items: components["schemas"]["EditorialPackageResponseDto"][];
+    };
+    EditorialPackageResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      cutResultArtifact: components["schemas"]["CutResultArtifactResponseDto"];
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      pipelineJobId: string;
+      /** Format: uuid */
+      projectId: string;
+      revision: components["schemas"]["EditorialRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+      validation: components["schemas"]["EditorialValidationResponseDto"];
+    };
+    EditorialRevisionResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      description: string | null;
+      /** Format: uuid */
+      id: string;
+      processingTemplateRevision: components["schemas"]["ProcessingTemplateRevisionResponseDto"];
+      /** Format: int32 */
+      revision: number;
+      tags: string[] | null;
+      thumbnail: components["schemas"]["EditorialAssetResponseDto"] | null;
+      title: string | null;
+    };
+    EditorialValidationResponseDto: {
+      complete: boolean;
+      missingFields: ("TITLE" | "DESCRIPTION" | "TAGS" | "THUMBNAIL")[];
     };
     ErrorDetailDto: {
       /** @enum {string} */
@@ -279,6 +443,22 @@ export interface components {
       totalMs?: number;
       /** Format: date-time */
       updatedAt: string;
+    };
+    ProcessingTemplateListResponseDto: {
+      items: components["schemas"]["ProcessingTemplateRevisionResponseDto"][];
+    };
+    ProcessingTemplateRevisionResponseDto: {
+      /** @enum {string} */
+      configurationVersion: "manual-editorial-v1";
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      id: string;
+      name: string;
+      /** Format: int32 */
+      revision: number;
+      /** Format: uuid */
+      templateId: string;
     };
     ProjectCutJobsResponseDto: {
       items: components["schemas"]["PipelineJobResponseDto"][];
@@ -349,6 +529,18 @@ export interface components {
       /** @example upload-rights-v1 */
       declarationVersion: string;
     };
+    SaveEditorialPackageDto: {
+      description?: string | null;
+      /** Format: int32 */
+      expectedRevision: number;
+      /** Format: uuid */
+      processingTemplateRevisionId: string;
+      /** @description Ordered tags. Order is preserved exactly. */
+      tags?: string[] | null;
+      /** Format: uuid */
+      thumbnailAssetId?: string | null;
+      title?: string | null;
+    };
     SourceAuthorizationResponseDto: {
       /** @enum {string} */
       basis?:
@@ -391,6 +583,10 @@ export interface components {
       sourceVersion: number;
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
+    };
+    ThumbnailUploadDto: {
+      /** Format: binary */
+      file: string;
     };
   };
   responses: never;
@@ -480,6 +676,178 @@ export interface operations {
           "Accept-Ranges"?: string;
           /** @description Unsatisfied range with the authoritative object size. */
           "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_package: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialPackageResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_putPackage: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SaveEditorialPackageDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialPackageResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_processingTemplates: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProcessingTemplateListResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_createProcessingTemplate: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateProcessingTemplateDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProcessingTemplateRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
           [name: string]: unknown;
         };
         content: {
@@ -742,6 +1110,206 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  EditorialController_thumbnails: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialAssetListResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_createThumbnail: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["ThumbnailUploadDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialAssetResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_thumbnailContent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        assetId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Private thumbnail bytes. Storage object keys are never exposed. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "image/jpeg": string;
+          "image/png": string;
+          "image/webp": string;
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "image/jpeg": components["schemas"]["ErrorResponseDto"];
+          "image/png": components["schemas"]["ErrorResponseDto"];
+          "image/webp": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_projectPackages: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialPackageListResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };

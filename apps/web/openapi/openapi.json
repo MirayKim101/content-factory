@@ -115,6 +115,17 @@
         "required": ["requestId", "projectId", "jobs"],
         "type": "object"
       },
+      "CreateProcessingTemplateDto": {
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "type": "object"
+      },
       "CreateProjectUploadDto": {
         "properties": {
           "file": {
@@ -155,6 +166,43 @@
         "required": ["total", "ready", "failed"],
         "type": "object"
       },
+      "CutResultArtifactResponseDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipeVersion": {
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "sizeBytes",
+          "sourceId",
+          "sourceVersion",
+          "recipeVersion"
+        ],
+        "type": "object"
+      },
       "CutSegmentDto": {
         "properties": {
           "clientSegmentId": {
@@ -171,6 +219,231 @@
           }
         },
         "required": ["clientSegmentId", "startMs", "endMs"],
+        "type": "object"
+      },
+      "EditorialAssetListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EditorialAssetResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "type": "object"
+      },
+      "EditorialAssetResponseDto": {
+        "properties": {
+          "contentType": {
+            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "failure": {
+            "$ref": "#/components/schemas/EditorialFailureResponseDto"
+          },
+          "height": {
+            "format": "int32",
+            "maximum": 40000000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "description": "Decimal string for bigint safety.",
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "status": {
+            "enum": ["PENDING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          },
+          "type": {
+            "enum": ["THUMBNAIL"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "width": {
+            "format": "int32",
+            "maximum": 40000000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "type",
+          "status",
+          "originalFilename",
+          "contentType",
+          "sizeBytes",
+          "sha256",
+          "width",
+          "height",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "EditorialFailureResponseDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "EditorialPackageListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EditorialPackageResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "type": "object"
+      },
+      "EditorialPackageResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutResultArtifact": {
+            "$ref": "#/components/schemas/CutResultArtifactResponseDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "pipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/EditorialRevisionResponseDto"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/EditorialValidationResponseDto"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "pipelineJobId",
+          "cutResultArtifact",
+          "revision",
+          "validation",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "EditorialRevisionResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "processingTemplateRevision": {
+            "$ref": "#/components/schemas/ProcessingTemplateRevisionResponseDto"
+          },
+          "revision": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "thumbnail": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialAssetResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "title": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "processingTemplateRevision",
+          "title",
+          "description",
+          "tags",
+          "thumbnail",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "EditorialValidationResponseDto": {
+        "properties": {
+          "complete": {
+            "type": "boolean"
+          },
+          "missingFields": {
+            "items": {
+              "enum": ["TITLE", "DESCRIPTION", "TAGS", "THUMBNAIL"],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["complete", "missingFields"],
         "type": "object"
       },
       "ErrorDetailDto": {
@@ -318,6 +591,55 @@
           "attempt",
           "retryBudget",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ProcessingTemplateListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessingTemplateRevisionResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "type": "object"
+      },
+      "ProcessingTemplateRevisionResponseDto": {
+        "properties": {
+          "configurationVersion": {
+            "enum": ["manual-editorial-v1"],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "templateId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "templateId",
+          "revision",
+          "name",
+          "configurationVersion",
+          "createdAt"
         ],
         "type": "object"
       },
@@ -516,6 +838,50 @@
         "required": ["confirmedAt", "declarationVersion"],
         "type": "object"
       },
+      "SaveEditorialPackageDto": {
+        "properties": {
+          "description": {
+            "maxLength": 5000,
+            "nullable": true,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "format": "int32",
+            "maximum": 2147483646,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "processingTemplateRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "tags": {
+            "description": "Ordered tags. Order is preserved exactly.",
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            "maxItems": 30,
+            "minItems": 0,
+            "nullable": true,
+            "type": "array"
+          },
+          "thumbnailAssetId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["expectedRevision", "processingTemplateRevisionId"],
+        "type": "object"
+      },
       "SourceAuthorizationResponseDto": {
         "properties": {
           "basis": {
@@ -615,6 +981,16 @@
           "sha256",
           "authorization"
         ],
+        "type": "object"
+      },
+      "ThumbnailUploadDto": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": ["file"],
         "type": "object"
       }
     }
@@ -748,6 +1124,237 @@
           }
         },
         "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{jobId}/editorial-package": {
+      "get": {
+        "operationId": "EditorialController_package",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialPackageResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      },
+      "put": {
+        "operationId": "EditorialController_putPackage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveEditorialPackageDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialPackageResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Save one immutable editorial package revision",
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/processing-templates": {
+      "get": {
+        "operationId": "EditorialController_processingTemplates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessingTemplateListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      },
+      "post": {
+        "operationId": "EditorialController_createProcessingTemplate",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProcessingTemplateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessingTemplateRevisionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create immutable processing template revision 1",
+        "tags": ["editorial-content"]
       }
     },
     "/api/v1/projects": {
@@ -1099,6 +1706,301 @@
         },
         "summary": "Atomically create one independent background job per cut segment",
         "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/projects/{projectId}/editorial-assets/thumbnails": {
+      "get": {
+        "operationId": "EditorialController_thumbnails",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialAssetListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      },
+      "post": {
+        "operationId": "EditorialController_createThumbnail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ThumbnailUploadDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialAssetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Upload one private project thumbnail",
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/projects/{projectId}/editorial-assets/thumbnails/{assetId}/content": {
+      "get": {
+        "operationId": "EditorialController_thumbnailContent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Private thumbnail bytes. Storage object keys are never exposed."
+          },
+          "404": {
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/projects/{projectId}/editorial-packages": {
+      "get": {
+        "operationId": "EditorialController_projectPackages",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialPackageListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
       }
     },
     "/api/v1/projects/{projectId}/pipeline-jobs": {

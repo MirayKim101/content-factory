@@ -234,6 +234,8 @@ export type ProjectWhereInput = {
   artifacts?: Prisma.MediaArtifactListRelationFilter
   cutRequests?: Prisma.CutRequestListRelationFilter
   pipelineJobs?: Prisma.PipelineJobListRelationFilter
+  editorialAssets?: Prisma.EditorialAssetListRelationFilter
+  editorialPackages?: Prisma.EditorialPackageListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -252,6 +254,8 @@ export type ProjectOrderByWithRelationInput = {
   artifacts?: Prisma.MediaArtifactOrderByRelationAggregateInput
   cutRequests?: Prisma.CutRequestOrderByRelationAggregateInput
   pipelineJobs?: Prisma.PipelineJobOrderByRelationAggregateInput
+  editorialAssets?: Prisma.EditorialAssetOrderByRelationAggregateInput
+  editorialPackages?: Prisma.EditorialPackageOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -273,6 +277,8 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   artifacts?: Prisma.MediaArtifactListRelationFilter
   cutRequests?: Prisma.CutRequestListRelationFilter
   pipelineJobs?: Prisma.PipelineJobListRelationFilter
+  editorialAssets?: Prisma.EditorialAssetListRelationFilter
+  editorialPackages?: Prisma.EditorialPackageListRelationFilter
 }, "id" | "idempotencyKey">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -325,6 +331,8 @@ export type ProjectCreateInput = {
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
   cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -343,6 +351,8 @@ export type ProjectUncheckedCreateInput = {
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
   cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -361,6 +371,8 @@ export type ProjectUpdateInput = {
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -379,6 +391,8 @@ export type ProjectUncheckedUpdateInput = {
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -546,6 +560,34 @@ export type ProjectUpdateOneRequiredWithoutPipelineJobsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutPipelineJobsInput, Prisma.ProjectUpdateWithoutPipelineJobsInput>, Prisma.ProjectUncheckedUpdateWithoutPipelineJobsInput>
 }
 
+export type ProjectCreateNestedOneWithoutEditorialAssetsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialAssetsInput, Prisma.ProjectUncheckedCreateWithoutEditorialAssetsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutEditorialAssetsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutEditorialAssetsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialAssetsInput, Prisma.ProjectUncheckedCreateWithoutEditorialAssetsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutEditorialAssetsInput
+  upsert?: Prisma.ProjectUpsertWithoutEditorialAssetsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutEditorialAssetsInput, Prisma.ProjectUpdateWithoutEditorialAssetsInput>, Prisma.ProjectUncheckedUpdateWithoutEditorialAssetsInput>
+}
+
+export type ProjectCreateNestedOneWithoutEditorialPackagesInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialPackagesInput, Prisma.ProjectUncheckedCreateWithoutEditorialPackagesInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutEditorialPackagesInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutEditorialPackagesNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialPackagesInput, Prisma.ProjectUncheckedCreateWithoutEditorialPackagesInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutEditorialPackagesInput
+  upsert?: Prisma.ProjectUpsertWithoutEditorialPackagesInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutEditorialPackagesInput, Prisma.ProjectUpdateWithoutEditorialPackagesInput>, Prisma.ProjectUncheckedUpdateWithoutEditorialPackagesInput>
+}
+
 export type ProjectCreateWithoutSourceInput = {
   id: string
   idempotencyKey: string
@@ -561,6 +603,8 @@ export type ProjectCreateWithoutSourceInput = {
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
   cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutSourceInput = {
@@ -578,6 +622,8 @@ export type ProjectUncheckedCreateWithoutSourceInput = {
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
   cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutSourceInput = {
@@ -611,6 +657,8 @@ export type ProjectUpdateWithoutSourceInput = {
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutSourceInput = {
@@ -628,6 +676,8 @@ export type ProjectUncheckedUpdateWithoutSourceInput = {
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutArtifactsInput = {
@@ -645,6 +695,8 @@ export type ProjectCreateWithoutArtifactsInput = {
   source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
   cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutArtifactsInput = {
@@ -662,6 +714,8 @@ export type ProjectUncheckedCreateWithoutArtifactsInput = {
   source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
   cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutArtifactsInput = {
@@ -695,6 +749,8 @@ export type ProjectUpdateWithoutArtifactsInput = {
   source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutArtifactsInput = {
@@ -712,6 +768,8 @@ export type ProjectUncheckedUpdateWithoutArtifactsInput = {
   source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutCutRequestsInput = {
@@ -729,6 +787,8 @@ export type ProjectCreateWithoutCutRequestsInput = {
   source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutCutRequestsInput = {
@@ -746,6 +806,8 @@ export type ProjectUncheckedCreateWithoutCutRequestsInput = {
   source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutCutRequestsInput = {
@@ -779,6 +841,8 @@ export type ProjectUpdateWithoutCutRequestsInput = {
   source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutCutRequestsInput = {
@@ -796,6 +860,8 @@ export type ProjectUncheckedUpdateWithoutCutRequestsInput = {
   source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutPipelineJobsInput = {
@@ -813,6 +879,8 @@ export type ProjectCreateWithoutPipelineJobsInput = {
   source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
   cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutPipelineJobsInput = {
@@ -830,6 +898,8 @@ export type ProjectUncheckedCreateWithoutPipelineJobsInput = {
   source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
   cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutPipelineJobsInput = {
@@ -863,6 +933,8 @@ export type ProjectUpdateWithoutPipelineJobsInput = {
   source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutPipelineJobsInput = {
@@ -880,6 +952,192 @@ export type ProjectUncheckedUpdateWithoutPipelineJobsInput = {
   source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
   cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutEditorialAssetsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutEditorialAssetsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutEditorialAssetsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialAssetsInput, Prisma.ProjectUncheckedCreateWithoutEditorialAssetsInput>
+}
+
+export type ProjectUpsertWithoutEditorialAssetsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutEditorialAssetsInput, Prisma.ProjectUncheckedUpdateWithoutEditorialAssetsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialAssetsInput, Prisma.ProjectUncheckedCreateWithoutEditorialAssetsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutEditorialAssetsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutEditorialAssetsInput, Prisma.ProjectUncheckedUpdateWithoutEditorialAssetsInput>
+}
+
+export type ProjectUpdateWithoutEditorialAssetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutEditorialAssetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutEditorialPackagesInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutEditorialPackagesInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutEditorialPackagesInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialPackagesInput, Prisma.ProjectUncheckedCreateWithoutEditorialPackagesInput>
+}
+
+export type ProjectUpsertWithoutEditorialPackagesInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutEditorialPackagesInput, Prisma.ProjectUncheckedUpdateWithoutEditorialPackagesInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutEditorialPackagesInput, Prisma.ProjectUncheckedCreateWithoutEditorialPackagesInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutEditorialPackagesInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutEditorialPackagesInput, Prisma.ProjectUncheckedUpdateWithoutEditorialPackagesInput>
+}
+
+export type ProjectUpdateWithoutEditorialPackagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutEditorialPackagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 
@@ -891,12 +1149,16 @@ export type ProjectCountOutputType = {
   artifacts: number
   cutRequests: number
   pipelineJobs: number
+  editorialAssets: number
+  editorialPackages: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   artifacts?: boolean | ProjectCountOutputTypeCountArtifactsArgs
   cutRequests?: boolean | ProjectCountOutputTypeCountCutRequestsArgs
   pipelineJobs?: boolean | ProjectCountOutputTypeCountPipelineJobsArgs
+  editorialAssets?: boolean | ProjectCountOutputTypeCountEditorialAssetsArgs
+  editorialPackages?: boolean | ProjectCountOutputTypeCountEditorialPackagesArgs
 }
 
 /**
@@ -930,6 +1192,20 @@ export type ProjectCountOutputTypeCountPipelineJobsArgs<ExtArgs extends runtime.
   where?: Prisma.PipelineJobWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountEditorialAssetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialAssetWhereInput
+}
+
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountEditorialPackagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialPackageWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -947,6 +1223,8 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   artifacts?: boolean | Prisma.Project$artifactsArgs<ExtArgs>
   cutRequests?: boolean | Prisma.Project$cutRequestsArgs<ExtArgs>
   pipelineJobs?: boolean | Prisma.Project$pipelineJobsArgs<ExtArgs>
+  editorialAssets?: boolean | Prisma.Project$editorialAssetsArgs<ExtArgs>
+  editorialPackages?: boolean | Prisma.Project$editorialPackagesArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -998,6 +1276,8 @@ export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   artifacts?: boolean | Prisma.Project$artifactsArgs<ExtArgs>
   cutRequests?: boolean | Prisma.Project$cutRequestsArgs<ExtArgs>
   pipelineJobs?: boolean | Prisma.Project$pipelineJobsArgs<ExtArgs>
+  editorialAssets?: boolean | Prisma.Project$editorialAssetsArgs<ExtArgs>
+  editorialPackages?: boolean | Prisma.Project$editorialPackagesArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1010,6 +1290,8 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     artifacts: Prisma.$MediaArtifactPayload<ExtArgs>[]
     cutRequests: Prisma.$CutRequestPayload<ExtArgs>[]
     pipelineJobs: Prisma.$PipelineJobPayload<ExtArgs>[]
+    editorialAssets: Prisma.$EditorialAssetPayload<ExtArgs>[]
+    editorialPackages: Prisma.$EditorialPackagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1421,6 +1703,8 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   artifacts<T extends Prisma.Project$artifactsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$artifactsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MediaArtifactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cutRequests<T extends Prisma.Project$cutRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$cutRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CutRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pipelineJobs<T extends Prisma.Project$pipelineJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$pipelineJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  editorialAssets<T extends Prisma.Project$editorialAssetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$editorialAssetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  editorialPackages<T extends Prisma.Project$editorialPackagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$editorialPackagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialPackagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1942,6 +2226,54 @@ export type Project$pipelineJobsArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.PipelineJobScalarFieldEnum | Prisma.PipelineJobScalarFieldEnum[]
+}
+
+/**
+ * Project.editorialAssets
+ */
+export type Project$editorialAssetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialAsset
+   */
+  select?: Prisma.EditorialAssetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialAsset
+   */
+  omit?: Prisma.EditorialAssetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialAssetInclude<ExtArgs> | null
+  where?: Prisma.EditorialAssetWhereInput
+  orderBy?: Prisma.EditorialAssetOrderByWithRelationInput | Prisma.EditorialAssetOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialAssetWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialAssetScalarFieldEnum | Prisma.EditorialAssetScalarFieldEnum[]
+}
+
+/**
+ * Project.editorialPackages
+ */
+export type Project$editorialPackagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialPackage
+   */
+  select?: Prisma.EditorialPackageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialPackage
+   */
+  omit?: Prisma.EditorialPackageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialPackageInclude<ExtArgs> | null
+  where?: Prisma.EditorialPackageWhereInput
+  orderBy?: Prisma.EditorialPackageOrderByWithRelationInput | Prisma.EditorialPackageOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialPackageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialPackageScalarFieldEnum | Prisma.EditorialPackageScalarFieldEnum[]
 }
 
 /**

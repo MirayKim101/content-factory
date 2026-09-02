@@ -68,22 +68,34 @@ enum SourceAuthorizationBasis {
   LOCAL_DEVELOPMENT_AUTO
 }
 
+enum EditorialAssetType {
+  THUMBNAIL
+}
+
+enum EditorialAssetStatus {
+  PENDING
+  READY
+  FAILED_FINAL
+}
+
 model Project {
-  id                       String          @id @db.Uuid
-  idempotencyKey           String          @unique
+  id                       String             @id @db.Uuid
+  idempotencyKey           String             @unique
   requestFingerprint       String
   name                     String
-  status                   ProjectStatus   @default(SOURCE_PENDING)
+  status                   ProjectStatus      @default(SOURCE_PENDING)
   rightsConfirmedAt        DateTime?
   rightsDeclarationVersion String?
   failureCode              String?
   failureMessage           String?
-  createdAt                DateTime        @default(now())
-  updatedAt                DateTime        @updatedAt
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
   source                   VideoSource?
   artifacts                MediaArtifact[]
   cutRequests              CutRequest[]
   pipelineJobs             PipelineJob[]
+  editorialAssets          EditorialAsset[]
+  editorialPackages        EditorialPackage[]
 }
 
 model VideoSource {
@@ -151,6 +163,7 @@ model MediaArtifact {
   outputFilename       String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+  editorialPackage     EditorialPackage?
 
   @@index([status, createdAt])
   @@index([cleanupStatus, updatedAt])
@@ -169,45 +182,150 @@ model CutRequest {
 }
 
 model PipelineJob {
-  id               String           @id @db.Uuid
-  projectId        String           @db.Uuid
-  project          Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sourceId         String           @db.Uuid
-  source           VideoSource      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  id               String            @id @db.Uuid
+  projectId        String            @db.Uuid
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId         String            @db.Uuid
+  source           VideoSource       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   sourceVersion    Int
-  cutRequestId     String?          @db.Uuid
-  cutRequest       CutRequest?      @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
+  cutRequestId     String?           @db.Uuid
+  cutRequest       CutRequest?       @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
   type             PipelineJobType
-  state            PipelineJobState @default(QUEUED)
-  payloadVersion   Int              @default(1)
-  idempotencyKey   String           @unique
-  revision         Int              @default(1)
-  priority         Int              @default(0)
-  retryBudget      Int              @default(2)
-  attemptCount     Int              @default(0)
+  state            PipelineJobState  @default(QUEUED)
+  payloadVersion   Int               @default(1)
+  idempotencyKey   String            @unique
+  revision         Int               @default(1)
+  priority         Int               @default(0)
+  retryBudget      Int               @default(2)
+  attemptCount     Int               @default(0)
   processedMs      Int?
   totalMs          Int?
   leaseOwner       String?
-  leaseToken       String?          @unique
+  leaseToken       String?           @unique
   leaseExpiresAt   DateTime?
   heartbeatAt      DateTime?
   failureCode      String?
   failureMessage   String?
   failureRetryable Boolean?
   recipeVersion    String
-  queuedAt         DateTime         @default(now())
+  queuedAt         DateTime          @default(now())
   startedAt        DateTime?
   finishedAt       DateTime?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   segment          CutSegment?
   attempts         JobAttempt[]
-  resultArtifact   MediaArtifact?   @relation("PipelineJobResult")
+  resultArtifact   MediaArtifact?    @relation("PipelineJobResult")
+  editorialPackage EditorialPackage?
 
   @@index([state, type, priority, queuedAt])
   @@index([leaseExpiresAt])
   @@index([projectId, createdAt])
   @@index([sourceId, sourceVersion])
+}
+
+model ProcessingTemplate {
+  id                 String                       @id @db.Uuid
+  idempotencyKey     String                       @unique
+  requestFingerprint String
+  createdAt          DateTime                     @default(now())
+  revisions          ProcessingTemplateRevision[]
+}
+
+model ProcessingTemplateRevision {
+  id                   String                     @id @db.Uuid
+  templateId           String                     @db.Uuid
+  template             ProcessingTemplate         @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  revision             Int
+  name                 String
+  configurationVersion String                     @default("manual-editorial-v1")
+  createdAt            DateTime                   @default(now())
+  editorialRevisions   EditorialPackageRevision[]
+
+  @@unique([templateId, revision])
+  @@index([createdAt, id])
+}
+
+model EditorialAsset {
+  id                   String                     @id @db.Uuid
+  projectId            String                     @db.Uuid
+  project              Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type                 EditorialAssetType
+  status               EditorialAssetStatus       @default(PENDING)
+  idempotencyKey       String                     @unique
+  requestFingerprint   String
+  objectKey            String                     @unique
+  storageEtag          String?
+  storageVersion       String?
+  cleanupStatus        ArtifactCleanupStatus      @default(NOT_REQUIRED)
+  cleanupAttemptCount  Int                        @default(0)
+  cleanupLastErrorCode String?
+  cleanupRequestedAt   DateTime?
+  cleanupCompletedAt   DateTime?
+  failureCode          String?
+  failureMessage       String?
+  originalFilename     String
+  contentType          String
+  sizeBytes            BigInt
+  sha256               String
+  width                Int
+  height               Int
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  packageRevisions     EditorialPackageRevision[]
+
+  @@index([projectId, type, status, createdAt])
+  @@index([cleanupStatus, updatedAt])
+}
+
+model EditorialPackage {
+  id                     String                     @id @db.Uuid
+  projectId              String                     @db.Uuid
+  project                Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pipelineJobId          String                     @unique @db.Uuid
+  pipelineJob            PipelineJob                @relation(fields: [pipelineJobId], references: [id], onDelete: Restrict)
+  cutResultArtifactId    String                     @unique @db.Uuid
+  cutResultArtifact      MediaArtifact              @relation(fields: [cutResultArtifactId], references: [id], onDelete: Restrict)
+  cutResultSha256        String
+  cutResultSizeBytes     BigInt
+  cutResultRecipeVersion String
+  lineageSourceId        String                     @db.Uuid
+  lineageSourceVersion   Int
+  currentRevision        Int
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+  revisions              EditorialPackageRevision[]
+
+  @@index([projectId, updatedAt, id])
+}
+
+model EditorialPackageRevision {
+  id                           String                     @id @db.Uuid
+  packageId                    String                     @db.Uuid
+  package                      EditorialPackage           @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  revision                     Int
+  processingTemplateRevisionId String                     @db.Uuid
+  processingTemplateRevision   ProcessingTemplateRevision @relation(fields: [processingTemplateRevisionId], references: [id], onDelete: Restrict)
+  title                        String?
+  description                  String?
+  tags                         Json?
+  thumbnailAssetId             String?                    @db.Uuid
+  thumbnailAsset               EditorialAsset?            @relation(fields: [thumbnailAssetId], references: [id], onDelete: Restrict)
+  createdAt                    DateTime                   @default(now())
+  mutationRequests             EditorialMutationRequest[]
+
+  @@unique([packageId, revision])
+  @@index([processingTemplateRevisionId])
+  @@index([thumbnailAssetId])
+}
+
+model EditorialMutationRequest {
+  id                 String                   @id @db.Uuid
+  idempotencyKey     String                   @unique
+  requestFingerprint String
+  packageRevisionId  String                   @db.Uuid
+  packageRevision    EditorialPackageRevision @relation(fields: [packageRevisionId], references: [id], onDelete: Restrict)
+  createdAt          DateTime                 @default(now())
 }
 
 model CutSegment {

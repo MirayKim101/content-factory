@@ -48,6 +48,36 @@ export type CutRequest = Prisma.CutRequestModel
  */
 export type PipelineJob = Prisma.PipelineJobModel
 /**
+ * Model ProcessingTemplate
+ *
+ */
+export type ProcessingTemplate = Prisma.ProcessingTemplateModel
+/**
+ * Model ProcessingTemplateRevision
+ *
+ */
+export type ProcessingTemplateRevision = Prisma.ProcessingTemplateRevisionModel
+/**
+ * Model EditorialAsset
+ *
+ */
+export type EditorialAsset = Prisma.EditorialAssetModel
+/**
+ * Model EditorialPackage
+ *
+ */
+export type EditorialPackage = Prisma.EditorialPackageModel
+/**
+ * Model EditorialPackageRevision
+ *
+ */
+export type EditorialPackageRevision = Prisma.EditorialPackageRevisionModel
+/**
+ * Model EditorialMutationRequest
+ *
+ */
+export type EditorialMutationRequest = Prisma.EditorialMutationRequestModel
+/**
  * Model CutSegment
  *
  */

@@ -79,6 +79,106 @@ describe("authoritative OpenAPI export", () => {
           },
           SourceAuthorizationResponseDto: {},
           AttestSourceAuthorizationDto: {},
+          ProcessingTemplateRevisionResponseDto: {},
+          EditorialAssetResponseDto: {},
+          EditorialPackageResponseDto: {},
+        },
+      },
+    });
+    expect(document.paths["/api/v1/processing-templates"]).toMatchObject({
+      get: { responses: { "200": {} } },
+      post: {
+        parameters: expect.arrayContaining([
+          expect.objectContaining({
+            in: "header",
+            name: "Idempotency-Key",
+            required: true,
+          }),
+        ]),
+        responses: { "201": {}, "409": {} },
+      },
+    });
+    expect(
+      document.paths[
+        "/api/v1/projects/{projectId}/editorial-assets/thumbnails"
+      ],
+    ).toMatchObject({
+      get: { responses: { "200": {} } },
+      post: {
+        requestBody: {
+          content: { "multipart/form-data": {} },
+        },
+        responses: {
+          "201": {},
+          "409": {},
+          "413": {},
+          "415": {},
+          "422": {},
+        },
+      },
+    });
+    expect(
+      document.paths["/api/v1/pipeline-jobs/{jobId}/editorial-package"],
+    ).toMatchObject({
+      get: { responses: { "200": {}, "403": {}, "404": {}, "409": {} } },
+      put: {
+        parameters: expect.arrayContaining([
+          expect.objectContaining({
+            in: "header",
+            name: "Idempotency-Key",
+            required: true,
+          }),
+          expect.objectContaining({ in: "path", name: "jobId" }),
+        ]),
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/SaveEditorialPackageDto",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {},
+          "403": {},
+          "404": {},
+          "409": {},
+          "422": {},
+        },
+      },
+    });
+    expect(
+      document.paths["/api/v1/projects/{projectId}/editorial-packages"]?.get,
+    ).toMatchObject({
+      responses: { "200": {}, "403": {}, "404": {}, "409": {} },
+    });
+    expect(document).toMatchObject({
+      components: {
+        schemas: {
+          SaveEditorialPackageDto: {
+            required: ["expectedRevision", "processingTemplateRevisionId"],
+            properties: {
+              expectedRevision: {
+                type: "integer",
+                format: "int32",
+                minimum: 0,
+                maximum: 2_147_483_646,
+              },
+              tags: {
+                type: "array",
+                nullable: true,
+                minItems: 0,
+                maxItems: 30,
+                items: {
+                  type: "string",
+                  minLength: 1,
+                  maxLength: 100,
+                  pattern: "\\S",
+                },
+              },
+            },
+          },
         },
       },
     });

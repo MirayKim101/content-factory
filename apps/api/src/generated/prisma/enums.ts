@@ -98,3 +98,19 @@ export const SourceAuthorizationBasis = {
 } as const
 
 export type SourceAuthorizationBasis = (typeof SourceAuthorizationBasis)[keyof typeof SourceAuthorizationBasis]
+
+
+export const EditorialAssetType = {
+  THUMBNAIL: 'THUMBNAIL'
+} as const
+
+export type EditorialAssetType = (typeof EditorialAssetType)[keyof typeof EditorialAssetType]
+
+
+export const EditorialAssetStatus = {
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type EditorialAssetStatus = (typeof EditorialAssetStatus)[keyof typeof EditorialAssetStatus]

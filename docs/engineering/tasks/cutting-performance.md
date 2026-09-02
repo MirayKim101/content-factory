@@ -129,3 +129,33 @@ scratch budget `24 GiB` повышение concurrency может ухудшит
 7. Controlled failure корректно retry/finalize.
 8. Отчёт содержит p50/p95, clips/hour, CPU/RAM/scratch/network и source cache
    hit/miss/eviction/download bytes.
+
+## Capacity baseline 5 × 3 — итог
+
+Тест выполнен 2026-09-02 на одном локальном media-worker с concurrency `1`:
+пять `CutRequest` по три независимых 30-минутных результата. Все времена БД
+ниже переведены из UTC; wall time не зависит от часового пояса.
+
+- 15 из 15 jobs завершились `READY`; retries, failures и pending cleanup: `0`;
+- общий wall time: `3:35:06.329` (`12906329 ms`), throughput: `4.184 clips/hour`;
+- run time: p50 `871542 ms`, p95 `1036553 ms`;
+- queue wait: p50 `5693847 ms`, p95 `11517399 ms`;
+- encode: p50 `868780.37 ms`, p95 `1032843.50 ms`;
+- source/probe cache: один miss и 14 hits, evictions `0`;
+- исходник размером `3813099228` bytes скачан один раз за `5109.78 ms`;
+- созданы 15 уникальных artifact IDs и object keys общим размером
+  `10412342617` bytes (примерно `9.697 GiB`);
+- одинаковые диапазоны закономерно дали одинаковые checksums: уникальных
+  checksums `9`, но физических result objects и lineage records по-прежнему 15;
+- независимый FFprobe всех объектов подтвердил ровно `1800000 ms`, H.264 + AAC
+  и совпадение размеров с PostgreSQL;
+- PostgreSQL, Redis, MinIO и media-worker остались healthy.
+
+HTTP reload/download smoke в момент сбора метрик не выполнялся, потому что API
+и web не были запущены. Доступность и целостность всех объектов подтверждены
+FFprobe; пользовательский reload/download уже покрыт предыдущим Stage 1 smoke.
+
+Baseline доказывает надёжность и пользу кэша, но concurrency `1` недостаточна
+для целевой очереди. Следующий capacity experiment выполняется отдельно:
+сначала concurrency `2`, затем `4` только при безопасных CPU/RAM/scratch
+показателях и без изменения бизнес-логики jobs.

@@ -3,8 +3,8 @@
 Обновлено: 2026-09-02
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
-Текущий сохранённый commit: `feat: add versioned source authorization`
-Текущий незакоммиченный slice: desktop source grid + local auto-authorization
+Текущий сохранённый commit: `HEAD feat: add manual editorial package backend`
+Рабочее дерево после ночной фиксации: clean
 
 ## Решение владельца
 
@@ -45,7 +45,7 @@ Independent review: `CLEAN`.
 - unauthorized deep-link не открывает player/editor/submit/download;
 - миграции применены локально; media objects не изменялись.
 
-## Текущий slice: grid редактора и быстрый local smoke
+## Завершённый slice: grid редактора и быстрый local smoke
 
 - `/horizontal` показывает независимые карточки с собственными 16:9 players;
 - 4 колонки включаются от 1600 px, пятая карточка переносится;
@@ -93,17 +93,49 @@ Architect рекомендует отдельный Stage 2B и отдельны
 Notion backlog обновлён:
 `https://app.notion.com/p/3cff0d44c82d81bd9f5ac01270044f67`.
 
+## Capacity baseline 5 × 3
+
+- 15/15 реальных 30-минутных jobs: `READY`, retries/failures `0`;
+- wall time `3:35:06.329`, throughput `4.184 clips/hour` при concurrency `1`;
+- run p50 `14:31.542`, p95 `17:16.553`;
+- source/probe cache: 1 miss + 14 hits, исходник скачан один раз;
+- 15 уникальных result objects, общий объём примерно `9.697 GiB`;
+- FFprobe всех результатов: ровно 30 минут, H.264 + AAC;
+- подробный evidence: `docs/engineering/tasks/cutting-performance.md`.
+
+## Завершённый backend slice: manual editorial draft
+
+Independent review: `CLEAN`.
+
+- additive migration `20260902210000_stage2_manual_editorial_draft` применена к
+  локальной PostgreSQL;
+- immutable processing template revisions и editorial package revisions;
+- ручные title, description, ordered tags и private thumbnail сохраняются и
+  восстанавливаются после reload;
+- optimistic revision, idempotency, exact source/result lineage и fail-closed
+  project authorization;
+- JPEG/PNG/WebP проходят строгую structural validation; corrupt/reserved WebP,
+  SVG, fake MIME и pixel bombs отклоняются controlled failure;
+- MinIO policy разрешает API только `sources/*` и `editorial/*`; прямой
+  anonymous thumbnail URL возвращает `403`, project-scoped API — `200`;
+- API integration `38/38`, unit/contract `59/59`; worker `37/37`; web checks,
+  lint, typecheck, build, OpenAPI, formatting и diff check passed;
+- media-worker не перезапускался, 15 benchmark results и пользовательские
+  данные сохранены.
+
+Frontend для manual editorial draft намеренно не начинался: владелец попросил
+зафиксировать состояние и остановиться до завтра.
+
 ## Первый следующий шаг
 
-Capacity baseline `5 × 3` запущен 2026-09-02 в 19:33 Asia/Novosibirsk на
-`video-test.mp4` без физических копий: пять логических партий
-`capacity-video-01`…`capacity-video-05`, по три реальных FFmpeg job длительностью
-30 минут. Начальное состояние подтверждено: 15 persisted jobs, один
-`PROCESSING`, 14 `QUEUED`; первый job сообщил 41.408 сек processed. После
-terminal results зафиксировать wall time, failures/retries, output sizes и
-reload/download smoke. Затем переходить к templates/manual editorial package,
-render overlays/intro/outro/audio, preview/approval/export, и только потом AI
-Stage 2B.
+Завтра перед новым implementation slice восстановить состояние по этому handoff
+и проверить `git status`, migration status и healthy containers. Затем передать
+замороженный editorial OpenAPI contract одному `Frontend Engineer — Manual
+Editorial Workspace`: добавить ручное редактирование title/description/tags,
+загрузку/выбор собственной обложки и reload сохранённой revision на desktop
+`/horizontal`. После browser smoke продолжить Stage 2 overlays/intro/outro/audio,
+preview/approval/export. Capacity concurrency `2`, затем `4` — отдельный
+измеряемый experiment, не смешивать его с frontend slice.
 
 ## Локальные данные
 

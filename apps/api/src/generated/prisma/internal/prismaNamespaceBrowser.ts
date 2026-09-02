@@ -57,6 +57,12 @@ export const ModelName = {
   MediaArtifact: 'MediaArtifact',
   CutRequest: 'CutRequest',
   PipelineJob: 'PipelineJob',
+  ProcessingTemplate: 'ProcessingTemplate',
+  ProcessingTemplateRevision: 'ProcessingTemplateRevision',
+  EditorialAsset: 'EditorialAsset',
+  EditorialPackage: 'EditorialPackage',
+  EditorialPackageRevision: 'EditorialPackageRevision',
+  EditorialMutationRequest: 'EditorialMutationRequest',
   CutSegment: 'CutSegment',
   JobAttempt: 'JobAttempt'
 } as const
@@ -203,6 +209,102 @@ export const PipelineJobScalarFieldEnum = {
 export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
 
 
+export const ProcessingTemplateScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type ProcessingTemplateScalarFieldEnum = (typeof ProcessingTemplateScalarFieldEnum)[keyof typeof ProcessingTemplateScalarFieldEnum]
+
+
+export const ProcessingTemplateRevisionScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  revision: 'revision',
+  name: 'name',
+  configurationVersion: 'configurationVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type ProcessingTemplateRevisionScalarFieldEnum = (typeof ProcessingTemplateRevisionScalarFieldEnum)[keyof typeof ProcessingTemplateRevisionScalarFieldEnum]
+
+
+export const EditorialAssetScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  type: 'type',
+  status: 'status',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  objectKey: 'objectKey',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  originalFilename: 'originalFilename',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EditorialAssetScalarFieldEnum = (typeof EditorialAssetScalarFieldEnum)[keyof typeof EditorialAssetScalarFieldEnum]
+
+
+export const EditorialPackageScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  pipelineJobId: 'pipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutResultRecipeVersion: 'cutResultRecipeVersion',
+  lineageSourceId: 'lineageSourceId',
+  lineageSourceVersion: 'lineageSourceVersion',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EditorialPackageScalarFieldEnum = (typeof EditorialPackageScalarFieldEnum)[keyof typeof EditorialPackageScalarFieldEnum]
+
+
+export const EditorialPackageRevisionScalarFieldEnum = {
+  id: 'id',
+  packageId: 'packageId',
+  revision: 'revision',
+  processingTemplateRevisionId: 'processingTemplateRevisionId',
+  title: 'title',
+  description: 'description',
+  tags: 'tags',
+  thumbnailAssetId: 'thumbnailAssetId',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialPackageRevisionScalarFieldEnum = (typeof EditorialPackageRevisionScalarFieldEnum)[keyof typeof EditorialPackageRevisionScalarFieldEnum]
+
+
+export const EditorialMutationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  packageRevisionId: 'packageRevisionId',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialMutationRequestScalarFieldEnum = (typeof EditorialMutationRequestScalarFieldEnum)[keyof typeof EditorialMutationRequestScalarFieldEnum]
+
+
 export const CutSegmentScalarFieldEnum = {
   id: 'id',
   jobId: 'jobId',
@@ -247,6 +349,14 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -261,4 +371,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
