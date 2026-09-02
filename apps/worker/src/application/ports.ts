@@ -60,6 +60,85 @@ export interface WorkerObjectStorage {
   close(): void;
 }
 
+export interface SourceCacheIdentity {
+  sourceId: string;
+  sourceVersion: number;
+  sha256: string;
+  sizeBytes: bigint;
+}
+
+export interface SourceProbeResult {
+  durationMs: number;
+  version: string;
+}
+
+export interface SourceCacheHandle {
+  path: string;
+  outcome: "hit" | "fill" | "single_flight_wait";
+  probe(
+    load: (signal: AbortSignal) => Promise<SourceProbeResult>,
+    signal: AbortSignal,
+  ): Promise<{ result: SourceProbeResult; hit: boolean }>;
+  release(): Promise<void>;
+}
+
+export interface SourceCache {
+  acquire(input: {
+    identity: SourceCacheIdentity;
+    outputReservationBytes: bigint;
+    safetyBytes: bigint;
+    signal: AbortSignal;
+    fill(destination: string, signal: AbortSignal): Promise<void>;
+    onTelemetry?(event: SourceCacheTelemetry): void;
+  }): Promise<SourceCacheHandle>;
+  close(): Promise<void>;
+}
+
+export type TelemetryOutcome = "success" | "failure" | "aborted";
+
+export interface SourceCacheTelemetry {
+  phase:
+    "cache_lookup" | "cache_wait" | "source_download" | "source_integrity_hash";
+  durationMs: number;
+  outcome: TelemetryOutcome;
+  bytes?: string;
+  cacheOutcome?: "hit" | "miss" | "single_flight_wait";
+  evictionCount?: number;
+  evictedBytes?: string;
+  currentCacheBytes?: string;
+}
+
+export interface MediaJobPhaseTelemetry {
+  event: "media_job_phase";
+  workerId: string;
+  jobId: string;
+  sourceId: string;
+  attemptNumber: number;
+  phase:
+    | "queue_wait"
+    | "cache_lookup"
+    | "cache_wait"
+    | "source_download"
+    | "source_integrity_hash"
+    | "source_probe"
+    | "encode"
+    | "output_probe"
+    | "output_hash"
+    | "upload"
+    | "total";
+  durationMs: number;
+  bytes?: string;
+  cacheOutcome?: SourceCacheTelemetry["cacheOutcome"];
+  probeCacheHit?: boolean;
+  outcome: TelemetryOutcome;
+  failureCode?: string;
+  evictionCount?: number;
+  evictedBytes?: string;
+  currentCacheBytes?: string;
+}
+
+export type MediaJobTelemetry = (event: MediaJobPhaseTelemetry) => void;
+
 export interface MediaProcessor {
   probe(
     filePath: string,

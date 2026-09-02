@@ -20,6 +20,8 @@ interface ClaimRow {
   retryBudget: number;
   recipeVersion: string;
   leaseExpiresAt: Date | null;
+  queuedAt: Date;
+  jobStartedAt: Date | null;
   clientSegmentId: string | null;
   startMs: number | null;
   endMs: number | null;
@@ -41,6 +43,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
       const selected = await client.query<ClaimRow>(
         `SELECT j."id", j."type", j."state", j."projectId", j."sourceId",
                 j."attemptCount", j."retryBudget", j."recipeVersion", j."leaseExpiresAt",
+                j."queuedAt", j."startedAt" AS "jobStartedAt",
                 s."sourceVersion", s."originalFilename", s."sha256" AS "sourceSha256",
                 a."objectKey" AS "sourceObjectKey", a."sizeBytes"::text AS "sourceSizeBytes",
                 c."clientSegmentId", c."startMs", c."endMs"
@@ -68,12 +71,13 @@ export class PgMediaJobRepository implements MediaJobRepository {
         return null;
       }
       const leaseToken = randomUUID();
-      await client.query(
+      const attempt = await client.query<{ startedAt: Date }>(
         `INSERT INTO "JobAttempt" ("id","jobId","attemptNumber","state","workerId","leaseToken","startedAt","heartbeatAt","updatedAt")
          VALUES ($1,$2,$3,'PROCESSING',$4,$5,now(),now(),now())
          ON CONFLICT ("jobId","attemptNumber") DO UPDATE SET
            "state"='PROCESSING', "workerId"=EXCLUDED."workerId", "leaseToken"=EXCLUDED."leaseToken",
-           "startedAt"=COALESCE("JobAttempt"."startedAt",now()), "heartbeatAt"=now(), "updatedAt"=now()`,
+           "startedAt"=COALESCE("JobAttempt"."startedAt",now()), "heartbeatAt"=now(), "updatedAt"=now()
+         RETURNING "startedAt"`,
         [randomUUID(), jobId, attemptNumber, workerId, leaseToken],
       );
       await client.query(
@@ -97,6 +101,12 @@ export class PgMediaJobRepository implements MediaJobRepository {
         originalFilename: row.originalFilename,
         leaseToken,
         attemptNumber,
+        queueWaitMs: Math.max(
+          0,
+          (row.jobStartedAt?.getTime() ??
+            attempt.rows[0]?.startedAt.getTime() ??
+            row.queuedAt.getTime()) - row.queuedAt.getTime(),
+        ),
         retryBudget: row.retryBudget,
         recipeVersion: row.recipeVersion,
         ...(row.clientSegmentId && row.startMs !== null && row.endMs !== null

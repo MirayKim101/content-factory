@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir } from "node:fs/promises";
+import { chmod, mkdir } from "node:fs/promises";
 
 import { parseMediaJobReference } from "@content-factory/contracts";
 import { Worker } from "bullmq";
@@ -7,11 +7,15 @@ import { Worker } from "bullmq";
 import { ProcessMediaJob } from "./application/process-media-job.js";
 import { workerConfig } from "./config.js";
 import { FfmpegMediaProcessor } from "./infrastructure/ffmpeg-media-processor.js";
+import { LocalSourceCache } from "./infrastructure/local-source-cache.js";
 import { PgMediaJobRepository } from "./infrastructure/pg-media-job.repository.js";
 import { S3WorkerObjectStorage } from "./infrastructure/s3-worker-object-storage.js";
 
 const config = workerConfig();
 await mkdir(config.scratchDirectory, { recursive: true });
+await mkdir(config.sourceCacheDirectory, { recursive: true });
+await chmod(config.scratchDirectory, 0o700);
+await chmod(config.sourceCacheDirectory, 0o700);
 const workerId = `media-worker-${randomUUID()}`;
 const repository = new PgMediaJobRepository(config.databaseUrl);
 const storage = new S3WorkerObjectStorage(
@@ -22,10 +26,16 @@ const processor = new FfmpegMediaProcessor(
   config.ffmpegPath,
   config.ffprobePath,
 );
+const sourceCache = new LocalSourceCache({
+  directory: config.sourceCacheDirectory,
+  maxBytes: config.sourceCacheMaxBytes,
+  ttlMs: config.sourceCacheTtlMs,
+});
 const processJob = new ProcessMediaJob(
   repository,
   storage,
   processor,
+  sourceCache,
   workerId,
   {
     scratchDirectory: config.scratchDirectory,
@@ -33,6 +43,7 @@ const processJob = new ProcessMediaJob(
     leaseMs: config.leaseMs,
     jobTimeoutMs: config.jobTimeoutMs,
   },
+  (event) => console.log(JSON.stringify(event)),
 );
 
 const worker = new Worker(
@@ -103,6 +114,7 @@ async function shutdown(signal: string): Promise<void> {
     JSON.stringify({ event: "media_worker_stopping", workerId, signal }),
   );
   await worker.close();
+  await sourceCache.close();
   await repository.close();
   storage.close();
 }

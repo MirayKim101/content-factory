@@ -52,6 +52,9 @@ export interface WorkerConfig {
   jobTimeoutMs: number;
   scratchDirectory: string;
   scratchSafetyBytes: bigint;
+  sourceCacheDirectory: string;
+  sourceCacheMaxBytes: bigint;
+  sourceCacheTtlMs: number;
   ffmpegPath: string;
   ffprobePath: string;
 }
@@ -93,6 +96,19 @@ export function workerConfig(): WorkerConfig {
       BigInt(integer("MEDIA_SCRATCH_SAFETY_MIB", 1024, 64, 1_048_576)) *
       1024n *
       1024n,
+    sourceCacheDirectory: resolve(
+      process.env.MEDIA_SOURCE_CACHE_DIRECTORY?.trim() || "tmp/media-cache",
+    ),
+    sourceCacheMaxBytes:
+      BigInt(integer("MEDIA_SOURCE_CACHE_MAX_MIB", 12_288, 64, 1_048_576)) *
+      1024n *
+      1024n,
+    sourceCacheTtlMs: integer(
+      "MEDIA_SOURCE_CACHE_TTL_MS",
+      21_600_000,
+      60_000,
+      604_800_000,
+    ),
     ffmpegPath: process.env.FFMPEG_PATH?.trim() || "ffmpeg",
     ffprobePath: process.env.FFPROBE_PATH?.trim() || "ffprobe",
   };

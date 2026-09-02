@@ -12,6 +12,7 @@ export interface ClaimedMediaJob {
   originalFilename: string;
   leaseToken: string;
   attemptNumber: number;
+  queueWaitMs: number;
   retryBudget: number;
   recipeVersion: string;
   segment?: {

@@ -11,10 +11,12 @@ import { PrismaPipelineRepository } from "../../api/src/media-pipeline/infrastru
 import type { ObjectStorage } from "../../api/src/projects/application/object-storage.port.js";
 import { ProcessMediaJob } from "../src/application/process-media-job.js";
 import type {
+  MediaJobPhaseTelemetry,
   MediaProcessor,
   WorkerObjectStorage,
 } from "../src/application/ports.js";
 import { workerConfig } from "../src/config.js";
+import { LocalSourceCache } from "../src/infrastructure/local-source-cache.js";
 import { PgMediaJobRepository } from "../src/infrastructure/pg-media-job.repository.js";
 
 describe("worker lease recovery race (PostgreSQL)", () => {
@@ -41,10 +43,17 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     const reconciliation = new PrismaPipelineRepository(prisma);
     const storage = new MemoryStorage();
     const processor = new DistinctAttemptProcessor();
+    const sourceCache = new LocalSourceCache({
+      directory: join(scratchDirectory, "source-cache"),
+      maxBytes: 1024n * 1024n,
+      ttlMs: 60_000,
+    });
+    const telemetry: MediaJobPhaseTelemetry[] = [];
     const processJob = new ProcessMediaJob(
       repository,
       storage,
       processor,
+      sourceCache,
       "integration-worker",
       {
         scratchDirectory,
@@ -52,6 +61,7 @@ describe("worker lease recovery race (PostgreSQL)", () => {
         leaseMs: 30_000,
         jobTimeoutMs: 60_000,
       },
+      (event) => telemetry.push(event),
     );
     let recoveredDelivery: { jobId: string; attemptNumber: number } | undefined;
 
@@ -77,6 +87,14 @@ describe("worker lease recovery race (PostgreSQL)", () => {
         include: { attempts: { orderBy: { attemptNumber: "asc" } } },
       });
       expect(job).toMatchObject({ state: "READY", attemptCount: 2 });
+      expect(
+        telemetry.filter((event) => event.phase === "queue_wait"),
+      ).toHaveLength(2);
+      expect(
+        telemetry.every(
+          (event) => event.phase !== "queue_wait" || event.durationMs >= 0,
+        ),
+      ).toBe(true);
       expect(job.attempts).toMatchObject([
         {
           attemptNumber: 1,
@@ -106,6 +124,7 @@ describe("worker lease recovery race (PostgreSQL)", () => {
       ).execute(10);
       expect(storage.objects.get(artifact.objectKey)).toEqual(fakeMp4("B"));
     } finally {
+      await sourceCache.close();
       await repository.close();
       await rm(scratchDirectory, { recursive: true, force: true });
     }

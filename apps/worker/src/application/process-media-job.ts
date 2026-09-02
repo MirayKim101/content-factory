@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdtemp, rm, stat, statfs } from "node:fs/promises";
+import { mkdtemp, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import {
@@ -9,8 +9,13 @@ import {
   type ClaimedMediaJob,
 } from "../domain/media-job.js";
 import type {
+  MediaJobPhaseTelemetry,
+  MediaJobTelemetry,
   MediaJobRepository,
   MediaProcessor,
+  SourceCache,
+  SourceCacheHandle,
+  TelemetryOutcome,
   WorkerObjectStorage,
 } from "./ports.js";
 
@@ -26,8 +31,10 @@ export class ProcessMediaJob {
     private readonly repository: MediaJobRepository,
     private readonly storage: WorkerObjectStorage,
     private readonly processor: MediaProcessor,
+    private readonly sourceCache: SourceCache,
     private readonly workerId: string,
     private readonly limits: MediaWorkerLimits,
+    private readonly telemetry: MediaJobTelemetry = () => undefined,
   ) {}
 
   async execute(jobId: string): Promise<void> {
@@ -37,6 +44,7 @@ export class ProcessMediaJob {
       this.limits.leaseMs,
     );
     if (!job) return;
+    const totalStartedAt = performance.now();
     const abort = new AbortController();
     const timeout = setTimeout(
       () =>
@@ -57,6 +65,84 @@ export class ProcessMediaJob {
     let lastProgress = -1;
     let uploadedObjectKey: string | undefined;
     let finalized = false;
+    let succeeded = false;
+    let failureCode: string | undefined;
+    let cachedSource: SourceCacheHandle | undefined;
+
+    const recordPhase = (
+      phase: MediaJobPhaseTelemetry["phase"],
+      durationMs: number,
+      outcome: TelemetryOutcome,
+      details: Omit<
+        Partial<MediaJobPhaseTelemetry>,
+        | "event"
+        | "workerId"
+        | "jobId"
+        | "sourceId"
+        | "attemptNumber"
+        | "phase"
+        | "durationMs"
+        | "outcome"
+      > = {},
+    ): void => {
+      try {
+        this.telemetry({
+          event: "media_job_phase",
+          workerId: this.workerId,
+          jobId: job.id,
+          sourceId: job.sourceId,
+          attemptNumber: job.attemptNumber,
+          phase,
+          durationMs,
+          outcome,
+          ...details,
+        });
+      } catch {
+        // Telemetry must never change media processing behavior.
+      }
+    };
+
+    const measurePhase = async <T>(
+      phase: MediaJobPhaseTelemetry["phase"],
+      work: () => Promise<T>,
+      successDetails: (
+        result: T,
+      ) => Omit<
+        Partial<MediaJobPhaseTelemetry>,
+        | "event"
+        | "workerId"
+        | "jobId"
+        | "sourceId"
+        | "attemptNumber"
+        | "phase"
+        | "durationMs"
+        | "outcome"
+      > = () => ({}),
+    ): Promise<T> => {
+      const startedAt = performance.now();
+      try {
+        const result = await work();
+        recordPhase(
+          phase,
+          elapsed(startedAt),
+          "success",
+          successDetails(result),
+        );
+        return result;
+      } catch (error) {
+        recordPhase(
+          phase,
+          elapsed(startedAt),
+          telemetryOutcome(error, abort.signal),
+          {
+            failureCode: phaseFailureCode(error, abort.signal),
+          },
+        );
+        throw error;
+      }
+    };
+
+    recordPhase("queue_wait", job.queueWaitMs, "success");
 
     const heartbeat = async (): Promise<void> => {
       if (heartbeatStopped || heartbeatRunning || abort.signal.aborted) return;
@@ -91,23 +177,42 @@ export class ProcessMediaJob {
       );
       heartbeatTimer.unref();
 
-      await this.assertScratchCapacity(job.sourceSizeBytes);
+      cachedSource = await this.sourceCache.acquire({
+        identity: {
+          sourceId: job.sourceId,
+          sourceVersion: job.sourceVersion,
+          sha256: job.sourceSha256,
+          sizeBytes: job.sourceSizeBytes,
+        },
+        outputReservationBytes: job.sourceSizeBytes,
+        safetyBytes: this.limits.scratchSafetyBytes,
+        signal: abort.signal,
+        fill: (destination, signal) =>
+          this.storage.download(job.sourceObjectKey, destination, signal),
+        onTelemetry: ({ phase, durationMs, outcome, ...details }) =>
+          recordPhase(phase, durationMs, outcome, details),
+      });
       scratch = await mkdtemp(
         join(this.limits.scratchDirectory, "content-factory-media-"),
       );
-      const sourcePath = join(scratch, "source.mp4");
-      await this.storage.download(
-        job.sourceObjectKey,
-        sourcePath,
-        abort.signal,
+      const sourcePath = cachedSource.path;
+      const cachedProbe = await measurePhase(
+        "source_probe",
+        () =>
+          cachedSource!.probe(
+            (probeSignal) => this.processor.probe(sourcePath, probeSignal),
+            abort.signal,
+          ),
+        (value) => ({ probeCacheHit: value.hit }),
       );
-      const probe = await this.processor.probe(sourcePath, abort.signal);
+      const probe = cachedProbe.result;
       if (job.type === "SOURCE_PROBE") {
         await this.repository.completeProbe(
           job,
           probe.durationMs,
           probe.version,
         );
+        succeeded = true;
         return;
       }
       if (!job.segment)
@@ -124,38 +229,52 @@ export class ProcessMediaJob {
         );
       }
       const outputPath = join(scratch, "result.mp4");
-      const cut = await this.processor.cut({
-        sourcePath,
-        outputPath,
-        startMs: job.segment.startMs,
-        endMs: job.segment.endMs,
-        signal: abort.signal,
-        onProgress: (value) => {
-          lastProgress = Math.min(
-            value,
-            job.segment!.endMs - job.segment!.startMs,
-          );
-        },
-      });
-      const expectedDurationMs = job.segment.endMs - job.segment.startMs;
-      const outputProbe = await this.processor.inspectOutput(
-        outputPath,
-        abort.signal,
+      const cut = await measurePhase("encode", () =>
+        this.processor.cut({
+          sourcePath,
+          outputPath,
+          startMs: job.segment!.startMs,
+          endMs: job.segment!.endMs,
+          signal: abort.signal,
+          onProgress: (value) => {
+            lastProgress = Math.min(
+              value,
+              job.segment!.endMs - job.segment!.startMs,
+            );
+          },
+        }),
       );
-      assertValidCutOutput(outputProbe, expectedDurationMs);
+      const expectedDurationMs = job.segment.endMs - job.segment.startMs;
+      await measurePhase("output_probe", async () => {
+        const outputProbe = await this.processor.inspectOutput(
+          outputPath,
+          abort.signal,
+        );
+        assertValidCutOutput(outputProbe, expectedDurationMs);
+        return outputProbe;
+      });
       const outputStat = await stat(outputPath);
-      const sha256 = await hashFile(outputPath);
+      const sha256 = await measurePhase(
+        "output_hash",
+        () => hashFile(outputPath, abort.signal),
+        () => ({ bytes: outputStat.size.toString() }),
+      );
       await this.assertActiveLease(job);
       const objectKey = `sources/${job.projectId}/results/${job.id}/attempt-${job.attemptNumber}-${safeIdentity(job.leaseToken)}.mp4`;
       const filename = `${safeBaseName(job.originalFilename)}-${job.segment.startMs}-${job.segment.endMs}.mp4`;
       await this.repository.prepareAttemptOutput(job, objectKey);
       uploadedObjectKey = objectKey;
-      const receipt = await this.storage.upload({
-        objectKey,
-        filePath: outputPath,
-        sha256,
-        signal: abort.signal,
-      });
+      const receipt = await measurePhase(
+        "upload",
+        () =>
+          this.storage.upload({
+            objectKey,
+            filePath: outputPath,
+            sha256,
+            signal: abort.signal,
+          }),
+        () => ({ bytes: outputStat.size.toString() }),
+      );
       await this.assertActiveLease(job);
       await this.repository.completeCut(job, {
         objectKey,
@@ -167,6 +286,7 @@ export class ProcessMediaJob {
         ffmpegVersion: cut.version,
       });
       finalized = true;
+      succeeded = true;
     } catch (error) {
       let failure = error;
       if (uploadedObjectKey && !finalized) {
@@ -183,6 +303,7 @@ export class ProcessMediaJob {
         uploadedObjectKey = undefined;
       }
       const controlled = normalizeError(failure, abort.signal);
+      failureCode = controlled.code;
       const disposition = await this.repository.fail(
         job,
         controlled.code,
@@ -194,32 +315,28 @@ export class ProcessMediaJob {
       heartbeatStopped = true;
       if (heartbeatTimer) clearInterval(heartbeatTimer);
       clearTimeout(timeout);
+      if (cachedSource) await cachedSource.release();
       if (scratch) await rm(scratch, { recursive: true, force: true });
+      recordPhase(
+        "total",
+        elapsed(totalStartedAt),
+        succeeded ? "success" : abort.signal.aborted ? "aborted" : "failure",
+        failureCode ? { failureCode } : {},
+      );
     }
   }
 
   private async assertActiveLease(job: ClaimedMediaJob): Promise<void> {
     if (!(await this.repository.isLeaseActive(job))) throw leaseLostError();
   }
-
-  private async assertScratchCapacity(sourceBytes: bigint): Promise<void> {
-    const stats = await statfs(this.limits.scratchDirectory);
-    const available = BigInt(stats.bavail) * BigInt(stats.bsize);
-    const required = sourceBytes * 2n + this.limits.scratchSafetyBytes;
-    if (available < required) {
-      throw new ControlledMediaError(
-        "SCRATCH_ADMISSION_DENIED",
-        "Недостаточно временного дискового пространства для обработки.",
-        true,
-      );
-    }
-  }
 }
 
-async function hashFile(path: string): Promise<string> {
+async function hashFile(path: string, signal: AbortSignal): Promise<string> {
   const hash = createHash("sha256");
-  for await (const chunk of createReadStream(path))
+  for await (const chunk of createReadStream(path)) {
+    if (signal.aborted) throw signal.reason;
     hash.update(chunk as Buffer);
+  }
   return hash.digest("hex");
 }
 
@@ -288,4 +405,33 @@ function assertValidCutOutput(
 
 function safeIdentity(value: string): string {
   return value.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 80);
+}
+
+function elapsed(startedAt: number): number {
+  return Math.max(0, Math.round((performance.now() - startedAt) * 100) / 100);
+}
+
+function telemetryOutcome(
+  error: unknown,
+  signal: AbortSignal,
+): TelemetryOutcome {
+  if (
+    signal.aborted ||
+    (error instanceof ControlledMediaError &&
+      (error.code === "JOB_LEASE_LOST" ||
+        error.code === "MEDIA_JOB_TIMEOUT")) ||
+    (error instanceof Error && error.name === "AbortError")
+  ) {
+    return "aborted";
+  }
+  return "failure";
+}
+
+function phaseFailureCode(error: unknown, signal: AbortSignal): string {
+  if (error instanceof ControlledMediaError) return error.code;
+  if (signal.aborted && signal.reason instanceof ControlledMediaError)
+    return signal.reason.code;
+  if (error instanceof Error && error.message === "JOB_LEASE_LOST")
+    return "JOB_LEASE_LOST";
+  return "MEDIA_PROCESSING_FAILED";
 }
