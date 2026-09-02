@@ -85,6 +85,9 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
     });
     expect(persisted).toHaveLength(2);
     expect(
+      persisted.every((job) => job.recipeVersion === "stage1-cut-h264-v2"),
+    ).toBe(true);
+    expect(
       persisted.every(
         (job) =>
           job.attempts.length === 1 && job.attempts[0]?.state === "QUEUED",
@@ -101,6 +104,16 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
       .send({ segments })
       .expect(201);
     expect(replay.body).toEqual(first.body);
+    const replayedJobs = await prisma.pipelineJob.findMany({
+      where: { cutRequestId: first.body.requestId as string },
+      orderBy: { id: "asc" },
+      select: { id: true, recipeVersion: true },
+    });
+    expect(replayedJobs).toEqual(
+      persisted
+        .map((job) => ({ id: job.id, recipeVersion: job.recipeVersion }))
+        .sort((left, right) => left.id.localeCompare(right.id)),
+    );
     expect(
       await prisma.cutRequest.count({
         where: { idempotencyKey: "integration-cuts-0001" },

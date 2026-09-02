@@ -97,6 +97,7 @@ export class FfmpegMediaProcessor implements MediaProcessor {
   }
 
   async cut(input: {
+    recipeVersion: string;
     sourcePath: string;
     outputPath: string;
     startMs: number;
@@ -104,44 +105,10 @@ export class FfmpegMediaProcessor implements MediaProcessor {
     signal: AbortSignal;
     onProgress(processedMs: number): void;
   }): Promise<{ version: string }> {
-    const durationMs = input.endMs - input.startMs;
-    const process = spawn(
-      this.ffmpegPath,
-      [
-        "-hide_banner",
-        "-nostdin",
-        "-y",
-        "-ss",
-        seconds(input.startMs),
-        "-i",
-        input.sourcePath,
-        "-t",
-        seconds(durationMs),
-        "-map",
-        "0:v:0",
-        "-map",
-        "0:a?",
-        "-c:v",
-        "libx264",
-        "-preset",
-        "medium",
-        "-crf",
-        "20",
-        "-pix_fmt",
-        "yuv420p",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "192k",
-        "-movflags",
-        "+faststart",
-        "-progress",
-        "pipe:1",
-        "-nostats",
-        input.outputPath,
-      ],
-      { signal: input.signal, stdio: ["ignore", "pipe", "pipe"] },
-    );
+    const process = spawn(this.ffmpegPath, buildCutArguments(input), {
+      signal: input.signal,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
     let stdout = "";
     let stderr = "";
     process.stdout.setEncoding("utf8");
@@ -179,6 +146,59 @@ export class FfmpegMediaProcessor implements MediaProcessor {
     );
     return { version: firstLine(version.stdout, "ffmpeg-unknown") };
   }
+}
+
+export function buildCutArguments(input: {
+  recipeVersion: string;
+  sourcePath: string;
+  outputPath: string;
+  startMs: number;
+  endMs: number;
+}): string[] {
+  const preset = encoderPreset(input.recipeVersion);
+  return [
+    "-hide_banner",
+    "-nostdin",
+    "-y",
+    "-ss",
+    seconds(input.startMs),
+    "-i",
+    input.sourcePath,
+    "-t",
+    seconds(input.endMs - input.startMs),
+    "-map",
+    "0:v:0",
+    "-map",
+    "0:a?",
+    "-c:v",
+    "libx264",
+    "-preset",
+    preset,
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-movflags",
+    "+faststart",
+    "-progress",
+    "pipe:1",
+    "-nostats",
+    input.outputPath,
+  ];
+}
+
+function encoderPreset(recipeVersion: string): "medium" | "veryfast" {
+  if (recipeVersion === "stage1-cut-h264-v1") return "medium";
+  if (recipeVersion === "stage1-cut-h264-v2") return "veryfast";
+  throw new ControlledMediaError(
+    "CUT_RECIPE_UNSUPPORTED",
+    "Версия настроек обработки этого задания не поддерживается.",
+    false,
+  );
 }
 
 export function parseOutputProbe(

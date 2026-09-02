@@ -154,6 +154,7 @@ export interface MediaProcessor {
     version: string;
   }>;
   cut(input: {
+    recipeVersion: string;
     sourcePath: string;
     outputPath: string;
     startMs: number;

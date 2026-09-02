@@ -231,6 +231,7 @@ export class ProcessMediaJob {
       const outputPath = join(scratch, "result.mp4");
       const cut = await measurePhase("encode", () =>
         this.processor.cut({
+          recipeVersion: job.recipeVersion,
           sourcePath,
           outputPath,
           startMs: job.segment!.startMs,

@@ -13,6 +13,7 @@ import type {
   WorkerObjectStorage,
 } from "../src/application/ports.js";
 import type { ClaimedMediaJob } from "../src/domain/media-job.js";
+import { ControlledMediaError } from "../src/domain/media-job.js";
 
 function claimed(type: ClaimedMediaJob["type"]): ClaimedMediaJob {
   return {
@@ -103,6 +104,9 @@ describe("ProcessMediaJob", () => {
       }),
     );
     expect(deps.processor.inspectOutput).toHaveBeenCalledOnce();
+    expect(deps.processor.cut).toHaveBeenCalledWith(
+      expect.objectContaining({ recipeVersion: "stage1-cut-h264-v1" }),
+    );
     expect(deps.repository.prepareAttemptOutput).toHaveBeenCalledWith(
       job,
       expect.stringContaining("/attempt-1-"),
@@ -145,6 +149,28 @@ describe("ProcessMediaJob", () => {
     await worker(deps).execute(job.id);
     expect(deps.storage.download).not.toHaveBeenCalled();
     expect(deps.processor.cut).not.toHaveBeenCalled();
+  });
+
+  it("fails an unsupported cut recipe safely without retry or upload", async () => {
+    const job = { ...claimed("CUT_SEGMENT"), recipeVersion: "unknown-v9" };
+    const deps = dependencies(job);
+    deps.processor.cut = vi.fn(async () => {
+      throw new ControlledMediaError(
+        "CUT_RECIPE_UNSUPPORTED",
+        "Версия настроек обработки этого задания не поддерживается.",
+        false,
+      );
+    });
+
+    await worker(deps).execute(job.id);
+
+    expect(deps.repository.fail).toHaveBeenCalledWith(
+      job,
+      "CUT_RECIPE_UNSUPPORTED",
+      expect.any(String),
+      false,
+    );
+    expect(deps.storage.upload).not.toHaveBeenCalled();
   });
 
   it("persists a retryable controlled state after an infrastructure failure", async () => {
