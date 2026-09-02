@@ -11,6 +11,11 @@ export interface CreateProjectRequest {
   file: File;
   idempotencyKey: string;
   signal?: AbortSignal;
+  onUploadProgress?: (progress: UploadProgress) => void;
+}
+export interface UploadProgress {
+  loaded: number;
+  total: number;
 }
 export class ProjectApiError extends Error {
   constructor(
@@ -35,12 +40,14 @@ export interface ProjectsApi {
 interface CreateProjectsApiOptions {
   apiBasePath: unknown;
   fetchImplementation?: typeof fetch;
+  xmlHttpRequestFactory?: () => XMLHttpRequest;
 }
 
 /** Temporary typed adapter until the OpenAPI client is generated in a contract slice. */
 export function createProjectsApi({
   apiBasePath,
   fetchImplementation = fetch,
+  xmlHttpRequestFactory = () => new XMLHttpRequest(),
 }: CreateProjectsApiOptions): ProjectsApi {
   const basePath = parseApiBasePath(apiBasePath);
   return {
@@ -49,20 +56,16 @@ export function createProjectsApi({
       body.set("name", request.name);
       body.set("rightsConfirmed", "true");
       body.set("file", request.file);
-      let response: Response;
-      try {
-        response = await fetchImplementation(`${basePath}/projects`, {
-          method: "POST",
-          body,
-          signal: request.signal,
-          headers: { "Idempotency-Key": request.idempotencyKey },
-        });
-      } catch {
-        throw new ProjectNetworkError();
-      }
-      const payload: unknown = await response.json().catch(() => undefined);
-      if (!response.ok) throw toApiError(payload, response.status);
-      return projectSchema.parse(payload);
+      const payload = await sendProjectUpload({
+        url: `${basePath}/projects`,
+        body,
+        idempotencyKey: request.idempotencyKey,
+        signal: request.signal,
+        onUploadProgress: request.onUploadProgress,
+        createRequest: xmlHttpRequestFactory,
+      });
+      if (!payload.ok) throw toApiError(payload.body, payload.status);
+      return projectSchema.parse(payload.body);
     },
     async getProject(id, signal) {
       let response: Response;
@@ -78,6 +81,76 @@ export function createProjectsApi({
       return projectSchema.parse(payload);
     },
   };
+}
+
+interface UploadResponse {
+  ok: boolean;
+  status: number;
+  body: unknown;
+}
+
+interface SendProjectUploadOptions {
+  url: string;
+  body: FormData;
+  idempotencyKey: string;
+  signal?: AbortSignal;
+  onUploadProgress?: (progress: UploadProgress) => void;
+  createRequest: () => XMLHttpRequest;
+}
+
+function sendProjectUpload({
+  url,
+  body,
+  idempotencyKey,
+  signal,
+  onUploadProgress,
+  createRequest,
+}: SendProjectUploadOptions): Promise<UploadResponse> {
+  return new Promise((resolve, reject) => {
+    const request = createRequest();
+    let settled = false;
+    const finish = (callback: () => void): void => {
+      if (settled) return;
+      settled = true;
+      signal?.removeEventListener("abort", abort);
+      callback();
+    };
+    const abort = (): void => request.abort();
+    request.open("POST", url);
+    request.setRequestHeader("Idempotency-Key", idempotencyKey);
+    request.upload.onprogress = (event: ProgressEvent) => {
+      if (!event.lengthComputable || event.total <= 0) return;
+      onUploadProgress?.({
+        loaded: Math.min(Math.max(0, event.loaded), event.total),
+        total: event.total,
+      });
+    };
+    request.onerror = () => finish(() => reject(new ProjectNetworkError()));
+    request.onabort = () => finish(() => reject(new ProjectNetworkError()));
+    request.onload = () => {
+      let responseBody: unknown;
+      try {
+        responseBody = request.responseText
+          ? (JSON.parse(request.responseText) as unknown)
+          : undefined;
+      } catch {
+        responseBody = undefined;
+      }
+      finish(() =>
+        resolve({
+          ok: request.status >= 200 && request.status < 300,
+          status: request.status,
+          body: responseBody,
+        }),
+      );
+    };
+    if (signal?.aborted) {
+      request.abort();
+      return;
+    }
+    signal?.addEventListener("abort", abort, { once: true });
+    request.send(body);
+  });
 }
 
 function toApiError(payload: unknown, status: number): ProjectApiError {

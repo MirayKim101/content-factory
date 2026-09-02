@@ -22,6 +22,7 @@ const {
   isSubmitting,
   isSending,
   isFinalizing,
+  uploadProgress,
   pollError,
   requestError,
   result,
@@ -90,6 +91,19 @@ function onFileChange(event: Event): void {
     return;
   }
   updateDraft({ file });
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} Б`;
+  const units = ["КБ", "МБ", "ГБ", "ТБ"];
+  const unitIndex = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)) - 1,
+    units.length - 1,
+  );
+  const value = bytes / 1024 ** (unitIndex + 1);
+  return `${new Intl.NumberFormat("ru-RU", {
+    maximumFractionDigits: value >= 10 ? 0 : 1,
+  }).format(value)} ${units[unitIndex]}`;
 }
 </script>
 
@@ -210,6 +224,18 @@ function onFileChange(event: Event): void {
       <p v-if="isSending">
         Файл отправляется на сервер. Не закрывай эту страницу.
       </p>
+      <div v-if="isSending" class="upload-progress">
+        <progress
+          :value="uploadProgress.percent"
+          max="100"
+          aria-label="Прогресс загрузки файла"
+        />
+        <p>
+          <strong>{{ uploadProgress.percent }}%</strong>
+          — загружено {{ formatBytes(uploadProgress.loaded) }} из
+          {{ formatBytes(uploadProgress.total) }}.
+        </p>
+      </div>
       <div v-else-if="isFinalizing || pollError">
         <p>Сервер проверяет и сохраняет загруженный файл.</p>
         <p v-if="pollError" class="error">{{ pollError }}</p>
@@ -254,8 +280,12 @@ function onFileChange(event: Event): void {
           v-if="result.status === 'SOURCE_READY'"
           class="cut-link"
           :to="{ path: '/cuts', query: { projectId: result.id } }"
-          >Перейти к нарезке</NuxtLink
+          >Открыть нарезку и задать таймкоды</NuxtLink
         >
+        <p v-if="result.status === 'SOURCE_READY'" class="cut-help">
+          На следующем экране добавь несколько пар таймкодов «начало — конец».
+          Для каждой пары будет создан отдельный MP4 для скачивания.
+        </p>
       </div>
     </div>
   </section>
@@ -332,6 +362,21 @@ button:disabled {
 .status {
   min-height: 1.5rem;
   margin-top: 1.25rem;
+}
+.upload-progress {
+  margin-top: 0.75rem;
+}
+.upload-progress progress {
+  display: block;
+  width: min(100%, 32rem);
+  height: 1.25rem;
+}
+.upload-progress p,
+.cut-help {
+  margin: 0.45rem 0 0;
+}
+.cut-help {
+  color: #385346;
 }
 .success {
   padding: 1rem;

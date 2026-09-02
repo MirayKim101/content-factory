@@ -5,6 +5,7 @@ import {
   ProjectApiError,
   ProjectNetworkError,
   type ProjectsApi,
+  type UploadProgress,
 } from "~/shared/api/projects";
 import {
   type SourceUploadFormDraft,
@@ -17,6 +18,18 @@ import {
 } from "./active-attempt-storage";
 
 type SubmissionState = "idle" | "sending" | "pending" | "success" | "error";
+export interface SourceUploadProgress {
+  loaded: number;
+  total: number;
+  percent: number;
+}
+
+const emptyUploadProgress: SourceUploadProgress = {
+  loaded: 0,
+  total: 0,
+  percent: 0,
+};
+
 function newIdempotencyKey(): string {
   return `web-upload-${crypto.randomUUID()}`;
 }
@@ -30,6 +43,7 @@ export function useSourceUpload(api: ProjectsApi) {
   const phase = ref<"idle" | "pending">("idle");
   const activeProjectId = ref<string | null>(null);
   const idempotencyKey = ref<string | null>(null);
+  const uploadProgress = ref<SourceUploadProgress>({ ...emptyUploadProgress });
   let attemptVersion = 0;
   const mutation = useMutation({
     mutationFn: (request: Parameters<ProjectsApi["createProject"]>[0]) =>
@@ -87,6 +101,7 @@ export function useSourceUpload(api: ProjectsApi) {
     activeProjectId.value = null;
     phase.value = "idle";
     mutation.reset();
+    uploadProgress.value = { ...emptyUploadProgress };
     if (import.meta.client) clearActiveAttempt();
   }
   function updateDraft(next: Partial<SourceUploadFormDraft>): void {
@@ -101,6 +116,7 @@ export function useSourceUpload(api: ProjectsApi) {
       return;
     }
     errors.value = {};
+    uploadProgress.value = { ...emptyUploadProgress };
     const version = ++attemptVersion;
     const key = idempotencyKey.value ?? newIdempotencyKey();
     idempotencyKey.value = key;
@@ -119,6 +135,9 @@ export function useSourceUpload(api: ProjectsApi) {
       const project = await mutation.mutateAsync({
         ...validated.data,
         idempotencyKey: key,
+        onUploadProgress(progress) {
+          setUploadProgress(progress);
+        },
       });
       if (version !== attemptVersion) return;
       if (project.status === "FAILED_FINAL") {
@@ -204,6 +223,26 @@ export function useSourceUpload(api: ProjectsApi) {
   function retryPoll(): void {
     if (phase.value === "pending") void poll.refetch();
   }
+  function setUploadProgress(progress: UploadProgress): void {
+    if (!Number.isFinite(progress.total) || progress.total <= 0) return;
+    const total = Math.max(0, progress.total);
+    const loaded = Math.min(Math.max(0, progress.loaded), total);
+    // Keep 100% reserved for a successful server response. The browser may
+    // finish sending the request body while the server is still validating it.
+    const percent = Math.min(
+      99,
+      Math.max(0, Math.floor((loaded / total) * 100)),
+    );
+    const previous = uploadProgress.value;
+    if (total === previous.total && loaded < previous.loaded) return;
+    const monotonicLoaded =
+      total === previous.total ? Math.max(previous.loaded, loaded) : loaded;
+    uploadProgress.value = {
+      loaded: Math.min(monotonicLoaded, total),
+      total,
+      percent: Math.max(previous.percent, percent),
+    };
+  }
   return {
     draft,
     errors,
@@ -213,6 +252,7 @@ export function useSourceUpload(api: ProjectsApi) {
     isSubmitting,
     isSending,
     isFinalizing,
+    uploadProgress,
     pollError,
     updateDraft,
     submit,

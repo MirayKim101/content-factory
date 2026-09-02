@@ -47,6 +47,32 @@ const readyProject = {
   },
 };
 
+class SuccessfulUploadRequest {
+  static instances: SuccessfulUploadRequest[] = [];
+
+  status = 201;
+  responseText = JSON.stringify(readyProject);
+  upload: XMLHttpRequestUpload = {} as XMLHttpRequestUpload;
+  onerror: XMLHttpRequestEventTarget["onerror"] = null;
+  onabort: XMLHttpRequestEventTarget["onabort"] = null;
+  onload: XMLHttpRequestEventTarget["onload"] = null;
+  readonly open = vi.fn();
+  readonly setRequestHeader = vi.fn();
+  readonly send = vi.fn(() => {
+    this.upload.onprogress?.({
+      lengthComputable: true,
+      loaded: 5,
+      total: 5,
+    } as ProgressEvent);
+    this.onload?.(new Event("load"));
+  });
+  readonly abort = vi.fn();
+
+  constructor() {
+    SuccessfulUploadRequest.instances.push(this);
+  }
+}
+
 function mountWidget() {
   return mount(SourceUploadWidget, {
     global: {
@@ -75,10 +101,12 @@ async function selectFile(
 describe("SourceUploadWidget runtime", () => {
   beforeEach(() => {
     clearActiveAttempt();
+    SuccessfulUploadRequest.instances = [];
     vi.stubGlobal("useRuntimeConfig", () => ({
       public: { apiBasePath: "/api/v1" },
     }));
     vi.stubGlobal("fetch", vi.fn());
+    vi.stubGlobal("XMLHttpRequest", SuccessfulUploadRequest);
   });
   afterEach(() => {
     clearActiveAttempt();
@@ -111,9 +139,6 @@ describe("SourceUploadWidget runtime", () => {
       },
       status: "SENDING",
     });
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify(readyProject), { status: 201 }),
-    );
     const wrapper = mountWidget();
     await flushPromises();
 
@@ -129,11 +154,11 @@ describe("SourceUploadWidget runtime", () => {
     );
     expect(wrapper.text()).toContain("Исходная попытка сохранена");
     expect(wrapper.text()).toContain("Сбросить и начать новую попытку");
-    expect(fetch).not.toHaveBeenCalled();
+    expect(SuccessfulUploadRequest.instances).toHaveLength(0);
 
     await selectFile(input, file);
     expect(wrapper.text()).toContain("Файл подтверждён");
-    expect(fetch).not.toHaveBeenCalled();
+    expect(SuccessfulUploadRequest.instances).toHaveLength(0);
 
     const retry = wrapper
       .findAll("button")
@@ -144,12 +169,10 @@ describe("SourceUploadWidget runtime", () => {
     await retry?.trigger("click");
     await flushPromises();
 
-    expect(fetch).toHaveBeenCalledTimes(1);
-    const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(init).toMatchObject({
-      method: "POST",
-      headers: { "Idempotency-Key": activeAttemptKey },
-    });
+    expect(SuccessfulUploadRequest.instances).toHaveLength(1);
+    expect(
+      SuccessfulUploadRequest.instances[0]?.setRequestHeader,
+    ).toHaveBeenCalledWith("Idempotency-Key", activeAttemptKey);
   });
 
   it("continues a known project with GET only", async () => {

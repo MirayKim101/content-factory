@@ -113,6 +113,56 @@ describe("source upload workflow", () => {
     await Promise.all([first, second]);
   });
 
+  it("keeps byte upload progress monotonic and reserves 100% for server acceptance", async () => {
+    let report: ((progress: { loaded: number; total: number }) => void) | null =
+      null;
+    const api: ProjectsApi = {
+      createProject: vi.fn(
+        (request) =>
+          new Promise<Project>((resolve) => {
+            report = request.onUploadProgress ?? null;
+            resolve(project());
+          }),
+      ),
+    };
+    const upload = validUpload(api);
+    const submitted = upload.submit();
+    await Promise.resolve();
+    report?.({ loaded: 25, total: 100 });
+    report?.({ loaded: 10, total: 100 });
+    report?.({ loaded: 180, total: 100 });
+    expect(upload.uploadProgress.value).toEqual({
+      loaded: 100,
+      total: 100,
+      percent: 99,
+    });
+    await submitted;
+  });
+
+  it("does not claim 100% when the server rejects a fully sent request", async () => {
+    let report: ((progress: { loaded: number; total: number }) => void) | null =
+      null;
+    let rejectRequest: ((reason: unknown) => void) | null = null;
+    const api: ProjectsApi = {
+      createProject: vi.fn(
+        (request) =>
+          new Promise<Project>((_resolve, reject) => {
+            report = request.onUploadProgress ?? null;
+            rejectRequest = reject;
+          }),
+      ),
+    };
+    const upload = validUpload(api);
+    const submitted = upload.submit();
+    await Promise.resolve();
+    report?.({ loaded: 100, total: 100 });
+    expect(upload.uploadProgress.value.percent).toBe(99);
+    rejectRequest?.(new ProjectNetworkError());
+    await submitted;
+    expect(upload.state.value).toBe("error");
+    expect(upload.uploadProgress.value.percent).toBe(99);
+  });
+
   it("uses the same idempotency key when explicitly retrying after an unknown network outcome", async () => {
     const api: ProjectsApi = {
       createProject: vi
