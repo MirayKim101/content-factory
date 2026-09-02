@@ -1,6 +1,11 @@
 import { reactive } from "vue";
 
-import { emptySegment, formatTimecode, type SegmentDraft } from "./segments";
+import {
+  emptySegment,
+  formatTimecode,
+  type CutSubmissionSummary,
+  type SegmentDraft,
+} from "./segments";
 
 export interface WorkspaceSourceState {
   drafts: SegmentDraft[];
@@ -10,6 +15,7 @@ export interface WorkspaceSourceState {
   jobs: string[];
   error?: string;
   retryIdentity?: CutRequestIdentity;
+  confirmation?: CutSubmissionSummary;
 }
 
 export interface CutRequestIdentity {

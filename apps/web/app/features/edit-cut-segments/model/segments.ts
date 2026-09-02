@@ -14,6 +14,15 @@ export interface ValidSegment {
   endMs: number;
 }
 
+/**
+ * A frozen, normalized snapshot for the final user-visible check before the
+ * request is sent. Its `segments` array is intentionally the API payload.
+ */
+export interface CutSubmissionSummary {
+  segments: ValidSegment[];
+  totalDurationMs: number;
+}
+
 export function emptySegment(): SegmentDraft {
   return { clientKey: crypto.randomUUID(), startText: "", endText: "" };
 }
@@ -86,4 +95,24 @@ export function validateSegments(
     segments.push({ clientSegmentId: draft.clientKey, startMs, endMs });
   }
   return { segments, errors };
+}
+
+export function createCutSubmissionSummary(
+  drafts: SegmentDraft[],
+  durationMs: number,
+): { summary?: CutSubmissionSummary; errors: Record<string, string> } {
+  const validated = validateSegments(drafts, durationMs);
+  if (validated.segments.length !== drafts.length) {
+    return { errors: validated.errors };
+  }
+  return {
+    summary: {
+      segments: validated.segments,
+      totalDurationMs: validated.segments.reduce(
+        (total, segment) => total + segment.endMs - segment.startMs,
+        0,
+      ),
+    },
+    errors: validated.errors,
+  };
 }

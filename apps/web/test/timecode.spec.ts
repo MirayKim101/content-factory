@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createCutSubmissionSummary,
   formatTimecode,
   parseTimecode,
   segmentFromBounds,
@@ -43,5 +44,39 @@ describe("manual cut timecodes", () => {
       endText: "00:00:09.500",
     });
     expect(first.clientKey).not.toBe(second.clientKey);
+  });
+
+  it("normalizes MM:SS bounds and keeps the visible confirmation payload exact", () => {
+    const result = createCutSubmissionSummary(
+      [
+        {
+          clientKey: "expected-clip",
+          startText: "12:46",
+          endText: "13:21",
+        },
+      ],
+      60 * 60 * 1_000,
+    );
+
+    expect(result.errors).toEqual({});
+    expect(result.summary).toEqual({
+      segments: [
+        {
+          clientSegmentId: "expected-clip",
+          startMs: 766_000,
+          endMs: 801_000,
+        },
+      ],
+      totalDurationMs: 35_000,
+    });
+    expect(formatTimecode(result.summary!.segments[0]!.startMs)).toBe(
+      "00:12:46.000",
+    );
+    expect(formatTimecode(result.summary!.segments[0]!.endMs)).toBe(
+      "00:13:21.000",
+    );
+    expect(formatTimecode(result.summary!.totalDurationMs)).toBe(
+      "00:00:35.000",
+    );
   });
 });

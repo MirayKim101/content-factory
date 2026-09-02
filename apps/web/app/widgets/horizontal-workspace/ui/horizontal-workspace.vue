@@ -6,6 +6,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import PipelineJobCard from "~/entities/pipeline-job/ui/pipeline-job-card.vue";
 import {
   emptySegment,
+  createCutSubmissionSummary,
   formatTimecode,
   parseTimecode,
   validateSegments,
@@ -61,6 +62,9 @@ const activeProject = computed(() => activeRow.value?.query.data);
 function ensureState(id: string): WorkspaceSourceState {
   return getSessionSourceState(id);
 }
+function clearConfirmation(id: string): void {
+  ensureState(id).confirmation = undefined;
+}
 function removeSource(id: string): void {
   const next = ids.value.filter((item) => item !== id);
   activeProjectId.value = next[0];
@@ -76,6 +80,7 @@ function openPlayer(id: string): void {
 }
 function addSegment(id: string): void {
   const state = ensureState(id);
+  clearConfirmation(id);
   state.drafts.push(emptySegment());
   state.activeSegment = state.drafts.length - 1;
   openPlayer(id);
@@ -87,6 +92,7 @@ function addSegment(id: string): void {
 }
 function removeSegment(id: string, index: number): void {
   const state = ensureState(id);
+  clearConfirmation(id);
   state.drafts.splice(index, 1);
   if (!state.drafts.length) state.drafts.push(emptySegment());
   state.activeSegment = Math.min(state.activeSegment, state.drafts.length - 1);
@@ -112,10 +118,22 @@ function setMarker(field: "startText" | "endText"): void {
   const id = activeProjectId.value;
   if (!id) return;
   const state = ensureState(id);
+  clearConfirmation(id);
   const draft = state.drafts[state.activeSegment];
   if (!draft) return;
   draft[field] = markerTimecode(player.value?.currentTime ?? 0);
   announcement.value = `${field === "startText" ? "Начало" : "Конец"} установлено для активного видео.`;
+}
+function requestConfirmation(id: string, durationMs: number | undefined): void {
+  const state = ensureState(id);
+  state.submitted = true;
+  state.error = undefined;
+  state.confirmation = undefined;
+  if (durationMs === undefined || state.submitting) return;
+  const result = createCutSubmissionSummary(state.drafts, durationMs);
+  if (!result.summary) return;
+  state.confirmation = result.summary;
+  announcement.value = `Проверьте ${result.summary.segments.length} нормализованных отрезка перед запуском.`;
 }
 async function submit(
   id: string,
@@ -125,9 +143,16 @@ async function submit(
   state.submitted = true;
   state.error = undefined;
   if (durationMs === undefined || state.submitting) return;
-  const validated = validateSegments(state.drafts, durationMs);
-  if (validated.segments.length !== state.drafts.length) return;
-  const fingerprint = cutRequestFingerprint(validated.segments);
+  const confirmation = state.confirmation;
+  const current = createCutSubmissionSummary(state.drafts, durationMs);
+  if (!confirmation || !current.summary) return;
+  const fingerprint = cutRequestFingerprint(current.summary.segments);
+  if (fingerprint !== cutRequestFingerprint(confirmation.segments)) {
+    state.confirmation = undefined;
+    announcement.value =
+      "Таймкоды изменились. Проверьте нормализованные границы ещё раз.";
+    return;
+  }
   const identity = idempotencyForCutRequest(
     state.retryIdentity,
     fingerprint,
@@ -139,11 +164,12 @@ async function submit(
     const result = await mediaApi.createCuts({
       projectId: id,
       idempotencyKey: identity.key,
-      segments: validated.segments,
+      segments: confirmation.segments,
     });
     state.retryIdentity = undefined;
     state.jobs = result.jobs.map((job) => job.id);
     state.drafts = [emptySegment()];
+    state.confirmation = undefined;
     state.activeSegment = 0;
     state.submitted = false;
     announcement.value = "Задания нарезки созданы для выбранного видео.";
@@ -169,6 +195,7 @@ function cloneSegment(
   bounds: { startMs: number; endMs: number },
 ): void {
   const state = ensureState(id);
+  clearConfirmation(id);
   state.drafts.push({
     clientKey: crypto.randomUUID(),
     startText: formatTimecode(bounds.startMs),
@@ -326,6 +353,7 @@ watch(
                     ensureState(row.id).activeSegment = index;
                     openPlayer(row.id);
                   "
+                  @input="clearConfirmation(row.id)"
                   @blur="normalizeField(draft, 'startText')"
                 />
                 <label :for="`horizontal-${row.id}-${index}-end`">Конец</label
@@ -347,6 +375,7 @@ watch(
                     ensureState(row.id).activeSegment = index;
                     openPlayer(row.id);
                   "
+                  @input="clearConfirmation(row.id)"
                   @blur="normalizeField(draft, 'endText')"
                 />
                 <p
@@ -367,6 +396,42 @@ watch(
                   >Удалить</Button
                 >
               </article>
+              <p class="timecode-help">
+                Формат: ЧЧ:ММ:СС.ммм. Если ввести <strong>12:46</strong>, это
+                будет <strong>00:12:46.000</strong>, а не двенадцать часов.
+              </p>
+              <section
+                v-if="ensureState(row.id).confirmation"
+                class="confirmation"
+                :aria-label="`Проверка параметров для ${row.query.data.source.originalFilename}`"
+              >
+                <h3>Проверьте параметры перед запуском</h3>
+                <p>
+                  В задания будут отправлены именно эти нормализованные границы:
+                </p>
+                <ol>
+                  <li
+                    v-for="(segment, index) in ensureState(row.id).confirmation
+                      ?.segments ?? []"
+                    :key="segment.clientSegmentId"
+                  >
+                    Отрезок {{ index + 1 }}:
+                    {{ formatTimecode(segment.startMs) }}–{{
+                      formatTimecode(segment.endMs)
+                    }}
+                    · длительность
+                    {{ formatTimecode(segment.endMs - segment.startMs) }}
+                  </li>
+                </ol>
+                <p>
+                  Всего материала на нарезку:
+                  {{
+                    formatTimecode(
+                      ensureState(row.id).confirmation?.totalDurationMs ?? 0,
+                    )
+                  }}.
+                </p>
+              </section>
               <div class="actions">
                 <Button
                   type="button"
@@ -377,13 +442,29 @@ watch(
                   type="submit"
                   :disabled="
                     row.query.data.source.durationMs === undefined ||
-                    ensureState(row.id).submitting
+                    ensureState(row.id).submitting ||
+                    !ensureState(row.id).confirmation
                   "
                   >{{
                     ensureState(row.id).submitting
                       ? "Создаём задания…"
-                      : `Запустить нарезку (${ensureState(row.id).drafts.length})`
+                      : `Запустить нарезку (${ensureState(row.id).confirmation?.segments.length ?? 0})`
                   }}</Button
+                >
+                <Button
+                  v-if="!ensureState(row.id).confirmation"
+                  type="button"
+                  :disabled="
+                    row.query.data.source.durationMs === undefined ||
+                    ensureState(row.id).submitting
+                  "
+                  @click="
+                    requestConfirmation(
+                      row.id,
+                      row.query.data.source.durationMs,
+                    )
+                  "
+                  >Проверить параметры</Button
                 >
               </div>
               <p v-if="ensureState(row.id).error" class="error" role="alert">
