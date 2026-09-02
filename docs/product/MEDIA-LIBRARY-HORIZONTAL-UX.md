@@ -45,8 +45,8 @@ deep-link и позже перенаправляется в `/horizontal` с т�
 | `Медиатека`            | `/library?…`                        | Все исходники, поиск, выбор, загрузка              | доступен                                              |
 | `Вертикальные видео`   | —                                   | Будущий AI/vertical pipeline                       | disabled, `aria-disabled=true`, «Появится на Этапе 3» |
 
-На мобильном экране sidebar становится кнопкой «Разделы» и drawer; текущий
-раздел и disabled-статус остаются понятны текстом, не только иконкой или цветом.
+Текущий MVP проектируется и принимается только для desktop. Отдельная мобильная
+навигация и drawer отложены в интерфейсный backlog.
 
 ## Медиатека
 
@@ -149,29 +149,12 @@ Sidebar занимает 224–272 px, контент имеет огранич�
 закреплён в верху scroll container, но при недостаточной высоте перестаёт быть
 sticky, а не перекрывает поля или native controls.
 
-### Mobile wireframe (320–1023 px)
+### Mobile — deferred
 
-```text
-┌──────────────────────────────────┐
-│ [Разделы] Горизонтальные видео    │
-│ [Добавить видео]                  │
-├──────────────────────────────────┤
-│ stream-01.mp4 · В плеере          │
-│        [ native video ]           │
-│ [Начало] [Конец]                  │
-├──────────────────────────────────┤
-│ stream-01.mp4 [В плеере] [Убрать] │
-│ Начало [00:12:04.250]             │
-│ Конец   [00:13:31.500]            │
-│ [+ Отрезок] [Запустить (1)]       │
-├──────────────────────────────────┤
-│ stream-02.mp4 [Открыть в плеере]  │
-│ …                                 │
-└──────────────────────────────────┘
-```
-
-Контент — одна колонка: player, затем source rows. Player не sticky. Поля и
-действия переносятся без горизонтальной прокрутки; touch targets от 44×44 px.
+Отдельная mobile-версия, drawer-навигация, touch-layout и приёмка на ширине
+320–1023 px не входят в текущий MVP. Desktop-интерфейс не должен аварийно
+ломаться при уменьшении окна, но mobile-specific UX будет спроектирован и
+проверен отдельным срезом.
 
 ### Строка источника
 
@@ -298,8 +281,8 @@ filters. Pinia is not introduced for server state.
    separate jobs and independent downloadable MP4s.
 4. A pending/failed source is visibly nonselectable; a URL with one bad and one
    ready ID still permits the ready source to be used.
-5. Repeat selection/timecode/submit by keyboard at 320 CSS px with no horizontal
-   page scroll or inaccessible action.
+5. Repeat selection/timecode/submit using keyboard in the supported desktop
+   layout.
 
 ## Deferred decisions
 
@@ -309,5 +292,7 @@ filters. Pinia is not introduced for server state.
   destructive or misleading controls appear.
 - Vertical source selection may reuse this projection only when Stage 3 defines
   eligibility and its processing contract.
+- Mobile navigation and mobile-specific layout are deferred by the owner until
+  after the desktop MVP.
 - Timeline, thumbnails and batch orchestration require a later product/API
   decision; they are not inferred from this management UI.

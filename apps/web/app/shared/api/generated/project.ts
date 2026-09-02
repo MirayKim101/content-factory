@@ -2,6 +2,37 @@ import { z } from "zod";
 import type { components } from "./openapi";
 
 export type Project = components["schemas"]["ProjectResponseDto"];
+export type LibraryPage = components["schemas"]["ProjectLibraryPageDto"];
+
+export const libraryPageSchema: z.ZodType<LibraryPage> = z.object({
+  items: z.array(
+    z.object({
+      id: z.uuid(),
+      name: z.string(),
+      status: z.enum(["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"]),
+      createdAt: z.iso.datetime(),
+      updatedAt: z.iso.datetime(),
+      source: z.object({
+        id: z.uuid(),
+        status: z.enum(["PENDING", "READY", "FAILED_FINAL"]),
+        addedAt: z.iso.datetime(),
+        originalFilename: z.string(),
+        contentType: z.string(),
+        sizeBytes: z.string().regex(/^\d+$/),
+        durationMs: z.number().int().nonnegative().optional(),
+        probeState: z
+          .enum(["QUEUED", "PROCESSING", "RETRY_WAIT", "READY", "FAILED_FINAL"])
+          .optional(),
+      }),
+      cutJobCounts: z.object({
+        total: z.number().int().nonnegative(),
+        ready: z.number().int().nonnegative(),
+        failed: z.number().int().nonnegative(),
+      }),
+    }),
+  ),
+  nextCursor: z.string().nullable(),
+});
 
 // Temporary hand-maintained boundary. Replace by OpenAPI generation once the
 // authoritative local schema endpoint is available (see task blocker report).

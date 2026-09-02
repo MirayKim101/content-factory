@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { projectSchema, type Project } from "~/shared/api/generated/project";
+import {
+  libraryPageSchema,
+  projectSchema,
+  type LibraryPage,
+  type Project,
+} from "~/shared/api/generated/project";
 import { parseApiBasePath } from "~/shared/config/api-config";
 
 const errorResponseSchema = z.object({
@@ -36,6 +41,16 @@ export class ProjectNetworkError extends Error {
 export interface ProjectsApi {
   createProject(request: CreateProjectRequest): Promise<Project>;
   getProject?(id: string, signal?: AbortSignal): Promise<Project>;
+  listProjects?(
+    query: ProjectListQuery,
+    signal?: AbortSignal,
+  ): Promise<LibraryPage>;
+}
+export interface ProjectListQuery {
+  q?: string;
+  status?: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
+  cursor?: string;
+  limit?: number;
 }
 interface CreateProjectsApiOptions {
   apiBasePath: unknown;
@@ -79,6 +94,25 @@ export function createProjectsApi({
       const payload: unknown = await response.json().catch(() => undefined);
       if (!response.ok) throw toApiError(payload, response.status);
       return projectSchema.parse(payload);
+    },
+    async listProjects(query, signal) {
+      const params = new URLSearchParams();
+      if (query.q) params.set("q", query.q);
+      if (query.status) params.set("status", query.status);
+      if (query.cursor) params.set("cursor", query.cursor);
+      if (query.limit) params.set("limit", String(query.limit));
+      let response: Response;
+      try {
+        response = await fetchImplementation(
+          `${basePath}/projects${params.size ? `?${params}` : ""}`,
+          { signal },
+        );
+      } catch {
+        throw new ProjectNetworkError();
+      }
+      const payload: unknown = await response.json().catch(() => undefined);
+      if (!response.ok) throw toApiError(payload, response.status);
+      return libraryPageSchema.parse(payload);
     },
   };
 }
