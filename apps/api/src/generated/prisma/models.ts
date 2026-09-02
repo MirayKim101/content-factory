@@ -11,4 +11,8 @@
 export type * from './models/Project.js'
 export type * from './models/VideoSource.js'
 export type * from './models/MediaArtifact.js'
+export type * from './models/CutRequest.js'
+export type * from './models/PipelineJob.js'
+export type * from './models/CutSegment.js'
+export type * from './models/JobAttempt.js'
 export type * from './commonInputTypes.js'

@@ -53,7 +53,11 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Project: 'Project',
   VideoSource: 'VideoSource',
-  MediaArtifact: 'MediaArtifact'
+  MediaArtifact: 'MediaArtifact',
+  CutRequest: 'CutRequest',
+  PipelineJob: 'PipelineJob',
+  CutSegment: 'CutSegment',
+  JobAttempt: 'JobAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -98,6 +102,9 @@ export const VideoSourceScalarFieldEnum = {
   contentType: 'contentType',
   sizeBytes: 'sizeBytes',
   sha256: 'sha256',
+  durationMs: 'durationMs',
+  probedAt: 'probedAt',
+  probeVersion: 'probeVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -125,11 +132,94 @@ export const MediaArtifactScalarFieldEnum = {
   lineageSourceId: 'lineageSourceId',
   lineageSourceVersion: 'lineageSourceVersion',
   recipeVersion: 'recipeVersion',
+  pipelineJobId: 'pipelineJobId',
+  ffmpegVersion: 'ffmpegVersion',
+  outputFilename: 'outputFilename',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type MediaArtifactScalarFieldEnum = (typeof MediaArtifactScalarFieldEnum)[keyof typeof MediaArtifactScalarFieldEnum]
+
+
+export const CutRequestScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type CutRequestScalarFieldEnum = (typeof CutRequestScalarFieldEnum)[keyof typeof CutRequestScalarFieldEnum]
+
+
+export const PipelineJobScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  cutRequestId: 'cutRequestId',
+  type: 'type',
+  state: 'state',
+  payloadVersion: 'payloadVersion',
+  idempotencyKey: 'idempotencyKey',
+  revision: 'revision',
+  priority: 'priority',
+  retryBudget: 'retryBudget',
+  attemptCount: 'attemptCount',
+  processedMs: 'processedMs',
+  totalMs: 'totalMs',
+  leaseOwner: 'leaseOwner',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  heartbeatAt: 'heartbeatAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  failureRetryable: 'failureRetryable',
+  recipeVersion: 'recipeVersion',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+
+
+export const CutSegmentScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  clientSegmentId: 'clientSegmentId',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  createdAt: 'createdAt'
+} as const
+
+export type CutSegmentScalarFieldEnum = (typeof CutSegmentScalarFieldEnum)[keyof typeof CutSegmentScalarFieldEnum]
+
+
+export const JobAttemptScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  workerId: 'workerId',
+  leaseToken: 'leaseToken',
+  startedAt: 'startedAt',
+  heartbeatAt: 'heartbeatAt',
+  finishedAt: 'finishedAt',
+  failureCode: 'failureCode',
+  outputObjectKey: 'outputObjectKey',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobAttemptScalarFieldEnum = (typeof JobAttemptScalarFieldEnum)[keyof typeof JobAttemptScalarFieldEnum]
 
 
 export const SortOrder = {

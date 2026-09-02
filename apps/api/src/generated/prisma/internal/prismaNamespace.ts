@@ -399,7 +399,11 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   Project: 'Project',
   VideoSource: 'VideoSource',
-  MediaArtifact: 'MediaArtifact'
+  MediaArtifact: 'MediaArtifact',
+  CutRequest: 'CutRequest',
+  PipelineJob: 'PipelineJob',
+  CutSegment: 'CutSegment',
+  JobAttempt: 'JobAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -415,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "mediaArtifact"
+    modelProps: "project" | "videoSource" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "cutSegment" | "jobAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -641,6 +645,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CutRequest: {
+      payload: Prisma.$CutRequestPayload<ExtArgs>
+      fields: Prisma.CutRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CutRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CutRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.CutRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CutRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>
+        }
+        findMany: {
+          args: Prisma.CutRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>[]
+        }
+        create: {
+          args: Prisma.CutRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>
+        }
+        createMany: {
+          args: Prisma.CutRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CutRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.CutRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>
+        }
+        update: {
+          args: Prisma.CutRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.CutRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CutRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CutRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.CutRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.CutRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCutRequest>
+        }
+        groupBy: {
+          args: Prisma.CutRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CutRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    PipelineJob: {
+      payload: Prisma.$PipelineJobPayload<ExtArgs>
+      fields: Prisma.PipelineJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PipelineJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PipelineJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        findFirst: {
+          args: Prisma.PipelineJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PipelineJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        findMany: {
+          args: Prisma.PipelineJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>[]
+        }
+        create: {
+          args: Prisma.PipelineJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        createMany: {
+          args: Prisma.PipelineJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PipelineJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>[]
+        }
+        delete: {
+          args: Prisma.PipelineJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        update: {
+          args: Prisma.PipelineJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.PipelineJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PipelineJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PipelineJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.PipelineJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        aggregate: {
+          args: Prisma.PipelineJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePipelineJob>
+        }
+        groupBy: {
+          args: Prisma.PipelineJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PipelineJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PipelineJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PipelineJobCountAggregateOutputType> | number
+        }
+      }
+    }
+    CutSegment: {
+      payload: Prisma.$CutSegmentPayload<ExtArgs>
+      fields: Prisma.CutSegmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CutSegmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CutSegmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>
+        }
+        findFirst: {
+          args: Prisma.CutSegmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CutSegmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>
+        }
+        findMany: {
+          args: Prisma.CutSegmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>[]
+        }
+        create: {
+          args: Prisma.CutSegmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>
+        }
+        createMany: {
+          args: Prisma.CutSegmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CutSegmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>[]
+        }
+        delete: {
+          args: Prisma.CutSegmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>
+        }
+        update: {
+          args: Prisma.CutSegmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.CutSegmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CutSegmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CutSegmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.CutSegmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutSegmentPayload>
+        }
+        aggregate: {
+          args: Prisma.CutSegmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCutSegment>
+        }
+        groupBy: {
+          args: Prisma.CutSegmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutSegmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CutSegmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutSegmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    JobAttempt: {
+      payload: Prisma.$JobAttemptPayload<ExtArgs>
+      fields: Prisma.JobAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.JobAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.JobAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.JobAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.JobAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.JobAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.JobAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        update: {
+          args: Prisma.JobAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.JobAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.JobAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.JobAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.JobAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobAttempt>
+        }
+        groupBy: {
+          args: Prisma.JobAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -706,6 +1006,9 @@ export const VideoSourceScalarFieldEnum = {
   contentType: 'contentType',
   sizeBytes: 'sizeBytes',
   sha256: 'sha256',
+  durationMs: 'durationMs',
+  probedAt: 'probedAt',
+  probeVersion: 'probeVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -733,11 +1036,94 @@ export const MediaArtifactScalarFieldEnum = {
   lineageSourceId: 'lineageSourceId',
   lineageSourceVersion: 'lineageSourceVersion',
   recipeVersion: 'recipeVersion',
+  pipelineJobId: 'pipelineJobId',
+  ffmpegVersion: 'ffmpegVersion',
+  outputFilename: 'outputFilename',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type MediaArtifactScalarFieldEnum = (typeof MediaArtifactScalarFieldEnum)[keyof typeof MediaArtifactScalarFieldEnum]
+
+
+export const CutRequestScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type CutRequestScalarFieldEnum = (typeof CutRequestScalarFieldEnum)[keyof typeof CutRequestScalarFieldEnum]
+
+
+export const PipelineJobScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  cutRequestId: 'cutRequestId',
+  type: 'type',
+  state: 'state',
+  payloadVersion: 'payloadVersion',
+  idempotencyKey: 'idempotencyKey',
+  revision: 'revision',
+  priority: 'priority',
+  retryBudget: 'retryBudget',
+  attemptCount: 'attemptCount',
+  processedMs: 'processedMs',
+  totalMs: 'totalMs',
+  leaseOwner: 'leaseOwner',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  heartbeatAt: 'heartbeatAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  failureRetryable: 'failureRetryable',
+  recipeVersion: 'recipeVersion',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+
+
+export const CutSegmentScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  clientSegmentId: 'clientSegmentId',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  createdAt: 'createdAt'
+} as const
+
+export type CutSegmentScalarFieldEnum = (typeof CutSegmentScalarFieldEnum)[keyof typeof CutSegmentScalarFieldEnum]
+
+
+export const JobAttemptScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  workerId: 'workerId',
+  leaseToken: 'leaseToken',
+  startedAt: 'startedAt',
+  heartbeatAt: 'heartbeatAt',
+  finishedAt: 'finishedAt',
+  failureCode: 'failureCode',
+  outputObjectKey: 'outputObjectKey',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobAttemptScalarFieldEnum = (typeof JobAttemptScalarFieldEnum)[keyof typeof JobAttemptScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -893,6 +1279,55 @@ export type EnumArtifactCleanupStatusFieldRefInput<$PrismaModel> = FieldRefInput
  * Reference to a field of type 'ArtifactCleanupStatus[]'
  */
 export type ListEnumArtifactCleanupStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ArtifactCleanupStatus[]'>
+
+
+
+/**
+ * Reference to a field of type 'PipelineJobType'
+ */
+export type EnumPipelineJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobType'>
+
+
+
+/**
+ * Reference to a field of type 'PipelineJobType[]'
+ */
+export type ListEnumPipelineJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobType[]'>
+
+
+
+/**
+ * Reference to a field of type 'PipelineJobState'
+ */
+export type EnumPipelineJobStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobState'>
+
+
+
+/**
+ * Reference to a field of type 'PipelineJobState[]'
+ */
+export type ListEnumPipelineJobStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobState[]'>
+
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+
+
+
+/**
+ * Reference to a field of type 'JobAttemptState'
+ */
+export type EnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState'>
+
+
+
+/**
+ * Reference to a field of type 'JobAttemptState[]'
+ */
+export type ListEnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState[]'>
     
 
 
@@ -1063,6 +1498,10 @@ export type GlobalOmitConfig = {
   project?: Prisma.ProjectOmit
   videoSource?: Prisma.VideoSourceOmit
   mediaArtifact?: Prisma.MediaArtifactOmit
+  cutRequest?: Prisma.CutRequestOmit
+  pipelineJob?: Prisma.PipelineJobOmit
+  cutSegment?: Prisma.CutSegmentOmit
+  jobAttempt?: Prisma.JobAttemptOmit
 }
 
 /* Types for Logging */
@@ -1125,4 +1564,3 @@ export type PrismaAction =
  * `PrismaClient` proxy available in interactive transactions.
  */
 export type TransactionClient = Omit<DefaultPrismaClient, runtime.ITXClientDenyList>
-

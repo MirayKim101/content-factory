@@ -24,7 +24,7 @@ export * as $Enums from './enums.js'
 export * from "./enums.js"
 /**
  * ## Prisma Client
- * 
+ *
  * Type-safe database client for TypeScript
  * @example
  * ```
@@ -34,7 +34,7 @@ export * from "./enums.js"
  * // Fetch zero or more Projects
  * const projects = await prisma.project.findMany()
  * ```
- * 
+ *
  * Read more in our [docs](https://pris.ly/d/client).
  */
 export const PrismaClient = $Class.getPrismaClientClass()
@@ -43,12 +43,12 @@ export { Prisma }
 
 /**
  * Model Project
- * 
+ *
  */
 export type Project = Prisma.ProjectModel
 /**
  * Model VideoSource
- * 
+ *
  */
 export type VideoSource = Prisma.VideoSourceModel
 /**
@@ -56,3 +56,23 @@ export type VideoSource = Prisma.VideoSourceModel
  * 
  */
 export type MediaArtifact = Prisma.MediaArtifactModel
+/**
+ * Model CutRequest
+ *
+ */
+export type CutRequest = Prisma.CutRequestModel
+/**
+ * Model PipelineJob
+ *
+ */
+export type PipelineJob = Prisma.PipelineJobModel
+/**
+ * Model CutSegment
+ *
+ */
+export type CutSegment = Prisma.CutSegmentModel
+/**
+ * Model JobAttempt
+ *
+ */
+export type JobAttempt = Prisma.JobAttemptModel

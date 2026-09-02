@@ -70,6 +70,22 @@ class SourceResponseDto {
 
   @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
   sha256!: string;
+
+  @ApiPropertyOptional({
+    type: Number,
+    example: 7200000,
+    description: "Authoritative FFprobe duration in integer milliseconds.",
+  })
+  durationMs?: number;
+
+  @ApiPropertyOptional({
+    type: String,
+    enum: ["QUEUED", "PROCESSING", "RETRY_WAIT", "READY", "FAILED_FINAL"],
+  })
+  probeState?: string;
+
+  @ApiPropertyOptional({ type: () => FailureResponseDto })
+  probeFailure?: FailureResponseDto;
 }
 
 class ArtifactResponseDto {

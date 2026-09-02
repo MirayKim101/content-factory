@@ -1,0 +1,9 @@
+.git
+.env
+.DS_Store
+**/node_modules
+**/.turbo
+**/dist
+apps/api
+apps/web
+infrastructure/.DS_Store

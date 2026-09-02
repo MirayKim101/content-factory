@@ -51,7 +51,18 @@ describe("authoritative OpenAPI export", () => {
       readFile(secondPath, "utf8"),
     ]);
     expect(first).toBe(second);
-    expect(JSON.parse(first)).toMatchObject({
+    const document = JSON.parse(first) as {
+      paths: Record<
+        string,
+        {
+          get?: {
+            parameters?: unknown[];
+            responses?: Record<string, unknown>;
+          };
+        }
+      >;
+    };
+    expect(document).toMatchObject({
       openapi: "3.0.0",
       paths: {
         "/api/v1/projects": { post: { requestBody: { required: true } } },
@@ -64,6 +75,36 @@ describe("authoritative OpenAPI export", () => {
         },
       },
     });
+    for (const path of [
+      "/api/v1/projects/{projectId}/source",
+      "/api/v1/pipeline-jobs/{id}/result",
+    ]) {
+      const operation = document.paths[path]?.get;
+      expect(operation?.parameters).toContainEqual(
+        expect.objectContaining({
+          in: "header",
+          name: "Range",
+          required: false,
+        }),
+      );
+      expect(operation?.responses).toMatchObject({
+        "200": { content: { "video/mp4": {} } },
+        "206": {
+          content: { "video/mp4": {} },
+          headers: {
+            "Accept-Ranges": {},
+            "Content-Range": {},
+          },
+        },
+        "416": {
+          content: { "application/json": {} },
+          headers: {
+            "Accept-Ranges": {},
+            "Content-Range": {},
+          },
+        },
+      });
+    }
     expect(() =>
       assertArtifactMatches(first, second, "OpenAPI JSON"),
     ).not.toThrow();

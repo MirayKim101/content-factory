@@ -1,8 +1,8 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-01
+Обновлено: 2026-09-02
 Ветка: `main`
-Последний завершённый commit: `56bb2af feat: add stage 1 upload interface`
+Последний commit до текущего готового dirty slice: `1dde0b4 docs: persist ai team handoff`
 
 ## Готово
 
@@ -10,98 +10,87 @@
 - ручная загрузка одного разрешённого MP4 через Nuxt SPA;
 - same-origin `/api/v1` routing без Nitro BFF (ADR-001);
 - PostgreSQL metadata, MinIO object, SHA-256, lineage и safe DTO;
-- idempotency/recovery для lost response, reload, stale response и polling;
 - generated OpenAPI contract и live drift check;
-- архитектура bounded parallel media pipeline и больших VOD (ADR-002);
-- финальный independent review: CLEAN;
-- проверка: 22 backend unit, 12 integration и 20 frontend tests;
-- маленький H.264 MP4 успешно загружен через browser smoke.
-- реальный `video-test.mp4` размером `3 813 099 228` bytes успешно загружен:
-  PostgreSQL `SOURCE_READY`, объект MinIO `READY`;
-- подтверждено, что текущий исходник хранится в persistent MinIO volume
-  бессрочно: пользовательского delete endpoint, retention policy и экрана
-  управления проектами пока нет.
+- bounded parallel media pipeline (ADR-002);
+- **Stage 1 manual cutting завершён и получил independent review `CLEAN`:**
+  - `/cuts?projectId=...` с browser player;
+  - кнопки установки начала/конца и точные `startMs/endMs`;
+  - несколько независимых segments в одном submit;
+  - один `PipelineJob`, `JobAttempt` и отдельный MP4 на каждый segment;
+  - PostgreSQL-authoritative state, BullMQ reference delivery и reconciliation;
+  - Docker media worker, FFprobe/FFmpeg, concurrency default `1`;
+  - lease/heartbeat/retry, attempt-aware deliveries и stale-worker protection;
+  - post-encode video/duration validation;
+  - attempt-specific result keys и durable orphan cleanup/retry;
+  - status polling, safe failure, source playback и result download с Range;
+  - result checksum, size, duration, recipe/tool versions и lineage.
 
-## Сейчас запущено локально
+## Фактическая проверка Stage 1 cutting
 
-На момент записи API и Nuxt были запущены для показа владельцу:
+- API unit: `26/26`;
+- worker unit: `10/10`;
+- web: `29/29`;
+- contracts: `2/2`;
+- API integration: `17/17`;
+- PostgreSQL worker recovery integration: `3/3`;
+- format, lint, typecheck, OpenAPI drift и `git diff --check`: passed;
+- четыре Prisma migration применены, schema up to date;
+- Docker `media-worker` healthy, FFmpeg/FFprobe `5.1.9-0+deb12u1`;
+- реальный 6-секундный H.264 source дал два независимых READY MP4:
+  - `500–2400ms` -> `1.900000s`, SHA-256
+    `b5bd45cda75307a68ea79abad53fc746ac48f89c0784a8e07a23a8a6af65fcaa`;
+  - `3000–5500ms` -> `2.500000s`, SHA-256
+    `9070e0b2661ab3f969866034eb387de85414ca8bcd7032807aba6aaf30de6923`;
+- same-key replay не создаёт дубликаты; changed payload -> `409`;
+- invalid bounds -> `422`; unsatisfiable Range -> safe `416`;
+- corrupted structurally valid source -> terminal `FAILED_FINAL`;
+- expired attempt/replay/collision/crash-after-upload/delete-retry scenarios
+  воспроизведены; stale attempt не изменяет authoritative result.
 
-- UI: `http://127.0.0.1:3000/`;
-- API: `http://127.0.0.1:3001/api/v1`;
-- Docker Compose: PostgreSQL, Redis и MinIO; `minio-init` — ожидаемо завершённый
-  one-shot provisioning container.
+## Локальная инфраструктура
 
-После перезапуска нельзя предполагать, что процессы сохранились: проверить
-порты и Compose перед использованием.
+На момент handoff Docker Compose поднят:
 
-## Следующая пользовательская цель
+- PostgreSQL healthy на `127.0.0.1:5432`;
+- Redis healthy на `127.0.0.1:6379`;
+- MinIO healthy на `127.0.0.1:9000/9001`;
+- `media-worker` healthy, без host port;
+- `minio-init` ожидаемо завершён как one-shot с exit `0`.
 
-Stage 1 должен впервые нарезать видео:
+MinIO volume занимает около `3.6 GiB`, доступно около `847 GiB`. Большой
+загруженный `video-test.mp4` и все существующие objects не удалялись.
 
-```text
-загруженный MP4
--> ручные start/end таймкоды
--> PostgreSQL PipelineJob/JobAttempt
--> BullMQ worker
--> FFmpeg/FFprobe в фоне
--> статус и controlled failure
--> скачивание готового горизонтального MP4
-```
+API и Nuxt после автоматических QA smoke могли быть остановлены. Перед показом
+проверить порты `3001/3000` и запустить команды из
+`docs/infrastructure/local-development.md`.
 
-Ограничение среза: без Twitch, AI, вертикальных клипов, баннеров и публикации.
-Использовать bounded concurrency; локальный default — один тяжёлый FFmpeg slot,
-но job model не должна предполагать глобальную последовательность.
+## Сохранённый большой источник
 
-## Обязательное ближайшее UX-улучшение загрузки
+`/Users/mirai/Downloads/video-test.mp4` — `3 813 099 228` bytes, около двух
+часов Full HD. Не изменять, не перемещать и не добавлять в Git. Не загружать
+повторно без необходимости. Persistent MinIO source не удалять без явного
+решения владельца.
 
-После большого smoke с `video-test.mp4` подтверждено, что интерфейс должен
-показывать реальный
-клиентский upload progress:
+## Принятые, но отложенные работы
 
-- отправленные и общие bytes;
-- процент;
-- текущую скорость;
-- приблизительное оставшееся время;
-- отдельную стадию после 100%: сервер проверяет и сохраняет файл;
-- terminal `SOURCE_READY` или понятную ошибку.
+1. Реальный клиентский upload progress: bytes/total, percent, speed, ETA и
+   отдельная неизмеримая server-finalization стадия.
+2. Удаление per-upload правового checkbox и additive source authorization model:
+   новые sources `NOT_REVIEWED`, legacy `CLEARED/LEGACY_ATTESTATION`.
+3. Список проектов и безопасное удаление проекта/artifacts.
 
-Нельзя изображать процент серверной проверки без измеримых данных backend. Для
-будущей multi-upload очереди progress и ошибка принадлежат каждому видео; общий
-экран показывает active/queued/completed counts. Для browser upload progress
-допустим один owned typed XHR transport adapter поверх generated OpenAPI types;
-raw transport не размещается в компонентах.
+Текущий `rightsConfirmed` контракт не изменялся в cutting slice; нельзя скрыть
+checkbox и продолжать автоматически записывать ложное подтверждение.
 
-## Доступный большой тестовый файл
+## Следующий продуктовый шаг
 
-`/Users/mirai/Downloads/video-test.mp4` — `3 813 099 228` bytes (около 3.55
-GiB), двухчасовой Full HD. Один большой smoke уже выполнен успешно.
-Не изменять, не перемещать и не добавлять в Git. Не загружать автоматически без
-необходимости: для следующих проверок сначала использовать маленький fixture.
-Загруженный объект не удалять без явного указания владельца.
+Stage 1 manual upload/cut/status/download доказан. Следующий bounded slice перед
+расширением editorial pipeline: project list и сохранённый source selection,
+чтобы пользователь мог без ручного UUID возвращаться к нескольким загруженным
+видео и их независимым jobs/results. Затем выполнить отложенный upload-progress
 
-## Принятое архитектурное решение, которое ещё не реализовано
+- source-authorization slice и переходить к Stage 2 overlays/packaging по
+  `docs/product/MVP-ROADMAP.md`.
 
-Per-upload checkbox подтверждения прав убрать. Нельзя скрывать его и продолжать
-автоматически записывать ложное `rightsConfirmed=true`. Новые источники получают
-`authorizationStatus=NOT_REVIEWED`; проверка выполняется один раз на уровне
-зарегистрированного источника, а автоматическая публикация разрешается только
-для `CLEARED`. Старые записи мигрируются как `CLEARED/LEGACY_ATTESTATION`.
-Нужны отдельный ADR, additive migration, обратная совместимость API и полный
-contract/UI/test/doc slice.
-
-## Выбранный Stage 1 UX таймкодов
-
-Не строить сейчас полный CapCut/iMovie timeline. Использовать встроенный
-видеоплеер, кнопки «Установить начало»/«Установить конец», редактируемые поля
-таймкодов и список отрезков. В контракте хранить точные `startMs`/`endMs`, чтобы
-позже добавить thumbnails и draggable timeline без изменения worker-модели.
-
-## Первый шаг после восстановления
-
-1. Проверить `git status`, Compose, API/web процессы и свободное место MinIO.
-2. Выполнить bounded slice: upload progress плюс approved removal правовой
-   checkbox с additive source-authorization migration и independent review.
-3. Затем реализовать главный Stage 1 slice: player-based manual timestamps,
-   background FFmpeg cut, status и download.
-4. После появления списка проектов добавить безопасное удаление проекта и
-   артефактов; до этого не удалять MinIO volume вручную.
+Не добавлять Twitch, AI highlight detection, вертикальные clips, публикацию или
+analytics раньше соответствующего Stage 3 slice.

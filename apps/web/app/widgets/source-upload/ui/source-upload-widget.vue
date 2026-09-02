@@ -250,6 +250,12 @@ function onFileChange(event: Event): void {
             <dd>{{ result.source.sizeBytes }} байт</dd>
           </div>
         </dl>
+        <NuxtLink
+          v-if="result.status === 'SOURCE_READY'"
+          class="cut-link"
+          :to="{ path: '/cuts', query: { projectId: result.id } }"
+          >Перейти к нарезке</NuxtLink
+        >
       </div>
     </div>
   </section>

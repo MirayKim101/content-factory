@@ -19,6 +19,10 @@ export interface ProjectView {
     contentType: string;
     sizeBytes: bigint;
     sha256: string;
+    durationMs?: number;
+    probeState?:
+      "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    probeFailure?: { code: string; message: string };
   };
   artifact: {
     id: string;

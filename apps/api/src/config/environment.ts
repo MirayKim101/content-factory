@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { MEDIA_QUEUE_NAME } from "@content-factory/contracts";
 import dotenv from "dotenv";
 
 let loaded = false;
@@ -9,7 +10,6 @@ export function loadEnvironment(): void {
   if (loaded) return;
   delete process.env.MINIO_ROOT_USER;
   delete process.env.MINIO_ROOT_PASSWORD;
-  delete process.env.REDIS_PASSWORD;
   const path = resolve(import.meta.dirname, "../../../../.env");
   try {
     const parsed = dotenv.parse(readFileSync(path));
@@ -30,6 +30,9 @@ const API_ENVIRONMENT_KEYS = [
   "POSTGRES_PASSWORD",
   "POSTGRES_HOST",
   "POSTGRES_PORT",
+  "REDIS_HOST",
+  "REDIS_PORT",
+  "REDIS_PASSWORD",
   "S3_ENDPOINT",
   "S3_REGION",
   "S3_SOURCE_BUCKET",
@@ -44,6 +47,10 @@ const API_ENVIRONMENT_KEYS = [
   "SOURCE_PENDING_STALE_AFTER_MS",
   "SOURCE_PENDING_RECONCILE_LIMIT",
   "SOURCE_PENDING_STARTUP_TIMEOUT_MS",
+  "MEDIA_RECONCILE_INTERVAL_MS",
+  "MEDIA_RECONCILE_LIMIT",
+  "MEDIA_QUEUE_NAME",
+  "MEDIA_QUEUE_DISABLED",
 ] as const;
 
 function required(name: string): string {
@@ -100,6 +107,13 @@ export interface ApiEnvironment {
   reconcileStaleAfterMs: number;
   reconcileLimit: number;
   reconcileStartupTimeoutMs: number;
+  redisHost: string;
+  redisPort: number;
+  redisPassword: string;
+  mediaReconcileIntervalMs: number;
+  mediaReconcileLimit: number;
+  mediaQueueName: string;
+  mediaQueueDisabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -153,5 +167,17 @@ export function apiEnvironment(): ApiEnvironment {
       1,
       60_000,
     ),
+    redisHost: process.env.REDIS_HOST?.trim() || "127.0.0.1",
+    redisPort: boundedInteger("REDIS_PORT", 6379, 1, 65_535),
+    redisPassword: required("REDIS_PASSWORD"),
+    mediaReconcileIntervalMs: boundedInteger(
+      "MEDIA_RECONCILE_INTERVAL_MS",
+      5_000,
+      1_000,
+      300_000,
+    ),
+    mediaReconcileLimit: boundedInteger("MEDIA_RECONCILE_LIMIT", 100, 1, 1_000),
+    mediaQueueName: process.env.MEDIA_QUEUE_NAME?.trim() || MEDIA_QUEUE_NAME,
+    mediaQueueDisabled: process.env.MEDIA_QUEUE_DISABLED === "1",
   };
 }

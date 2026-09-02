@@ -8,6 +8,9 @@
 - `minio-init` — одноразовая выдача отдельной least-privilege учётки API и
   принудительная проверка private bucket. Root credentials использует только
   этот provisioning-контейнер, приложение их не загружает.
+- `media-worker` — отдельный non-root процесс FFprobe/FFmpeg. Он получает
+  исходник и сохраняет результат только через private S3; его scratch —
+  ephemeral tmpfs и не является volume с медиа.
 
 Контейнеры называются с префиксом `content-factory`, данные лежат в Docker
 volumes с тем же префиксом. Порты доступны только с этого компьютера
@@ -34,12 +37,15 @@ volumes с тем же префиксом. Порты доступны толь�
 
    Зачем `--quiet`: обычный вывод `config` содержит раскрытые значения паролей.
    Успех: первая команда завершается без вывода и ошибок, а вторая показывает
-   четыре сервиса — `postgres`, `redis`, `minio`, `minio-init`.
+   пять сервисов — `postgres`, `redis`, `minio`, `minio-init`, `media-worker`.
 
-3. Собери локальный образ MinIO и запусти зависимости:
+3. Собери локальный образ MinIO и запусти зависимости. Worker запускается
+   отдельно после additive migration, поэтому не может получить задания до
+   готовности схемы:
 
    ```sh
-   docker compose --env-file .env -f infrastructure/compose.yaml up --build --detach
+   docker compose --env-file .env -f infrastructure/compose.yaml up --build --detach \
+     postgres redis minio minio-init
    ```
 
    Первый запуск может занять несколько минут: MinIO Community собирается из
@@ -172,6 +178,121 @@ Integration-набор использует реальные локальные 
 маленький MP4 в памяти, проверяет запись и объект, а затем удаляет созданные им
 данные.
 
+## Запуск фоновой нарезки Stage 1
+
+1. Примени additive migration и запусти API:
+
+   ```sh
+   corepack pnpm --filter @content-factory/api db:generate
+   corepack pnpm --filter @content-factory/api db:migrate
+   corepack pnpm --filter @content-factory/api dev
+   ```
+
+   Migration добавляет `CutRequest`, `PipelineJob`, `JobAttempt`, `CutSegment`
+   и result lineage, не удаляя существующие проекты или исходники. API
+   периодически создаёт probe jobs и возвращает потерянные после Redis/restart
+   jobs в очередь из PostgreSQL.
+
+2. В отдельном терминале собери и запусти единственный локальный media worker:
+
+   ```sh
+   docker compose --env-file .env -f infrastructure/compose.yaml up --build --detach media-worker
+   docker compose --env-file .env -f infrastructure/compose.yaml ps media-worker
+   docker compose --env-file .env -f infrastructure/compose.yaml exec media-worker ffmpeg -version
+   docker compose --env-file .env -f infrastructure/compose.yaml exec media-worker ffprobe -version
+   ```
+
+   Ожидаемый результат: worker имеет статус `running` и `healthy`; обе команды
+   версии печатают FFmpeg/FFprobe. Первый лог worker — JSON с
+   `event: "media_worker_started"` и `concurrency: 1`. Это безопасный default;
+   изменить его можно через `MEDIA_WORKER_CONCURRENCY`, но только после
+   измерения CPU, scratch и I/O. Container запускается как встроенный пользователь
+   `node`, с read-only root filesystem, без Linux capabilities и без host-port.
+   Его временная папка — tmpfs, ограниченный `MEDIA_SCRATCH_SIZE` (default
+   `24g`); `MEDIA_SCRATCH_SAFETY_MIB` резервирует свободное место до скачивания
+   source. Если Docker Desktop выделил меньше места, job безопасно завершится
+   `SCRATCH_ADMISSION_DENIED`, а не заполнит persistent volume.
+
+3. Ещё в одном терминале запусти интерфейс:
+
+   ```sh
+   corepack pnpm --filter @content-factory/web dev
+   ```
+
+   Открой <http://127.0.0.1:3000/>. После готовой загрузки нажми «Перейти к
+   нарезке», дождись FFprobe-длительности, создай два разных отрезка и нажми
+   «Запустить нарезку (2)». Ожидаемый результат: две независимые карточки jobs,
+   затем две отдельные кнопки «Скачать MP4»; отрезки не склеиваются.
+
+### Проверка результата и контролируемой ошибки
+
+Скачай оба файла и проверь каждый отдельно:
+
+```sh
+ffprobe -v error -show_entries format=duration -of default=nw=1 \
+  /ПОЛНЫЙ/ПУТЬ/К/СКАЧАННОМУ-cut.mp4
+```
+
+Длительность должна совпадать с `endMs - startMs` в пределах обычного допуска
+перекодирования одного кадра. Для серверной проверки границ введи конец позже
+длительности source: UI блокирует submit, а прямой API-вызов возвращает HTTP
+422 `CUT_BOUNDS_INVALID` и не создаёт job. Повреждённый MP4 завершает probe/job
+`FAILED_FINAL` с безопасным кодом без object key, FFmpeg command или stack trace.
+
+Проверка restart/idempotency выполняется так: отправь один и тот же неизменённый
+submit повторно с тем же `Idempotency-Key`; API возвращает те же job IDs. После
+остановки worker дождись истечения `MEDIA_JOB_LEASE_MS` и запусти API/worker:
+reconciliation вернёт job в `RETRY_WAIT`, а детерминированный object key и
+PostgreSQL unique constraints не позволят создать второй logical result.
+
+BullMQ закреплён как `6.2.2`. Версия проверена 2026-09-02 по официальным
+[connection/retry](https://docs.bullmq.io/guide/connections),
+[concurrency](https://docs.bullmq.io/guide/workers/concurrency) и
+[release](https://github.com/taskforcesh/bullmq/releases) материалам. Queue
+несёт только versioned `{schemaVersion, jobId}` reference; бизнес-состояние
+остаётся в PostgreSQL.
+
+### Docker runtime: версии, логи и controlled startup failure
+
+`media-worker` использует официальный multi-architecture Node image
+`node:24.15.0-bookworm-slim` с immutable index digest
+`sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d`.
+FFmpeg закреплён на Debian Bookworm security version
+`7:5.1.9-0+deb12u1`. Выбор проверен 2026-09-02 по
+[Node Docker image](https://github.com/nodejs/docker-node),
+[Docker digest guidance](https://docs.docker.com/build/policies/examples/#pin-base-images-to-digests)
+и [Debian FFmpeg source package](https://sources.debian.org/src/ffmpeg/).
+Образ не использует floating tags; build выполняется через сохранённый
+`pnpm-lock.yaml`.
+
+Worker пишет JSON-lines в Docker local log driver, который хранит максимум три
+файла по 10 MiB. Посмотреть последние безопасные операционные события можно
+так:
+
+```sh
+docker compose --env-file .env -f infrastructure/compose.yaml logs --tail=100 media-worker
+```
+
+Не выполняй `docker compose config` без `--quiet`: он может вывести значения из
+`.env`. Для воспроизводимой проверки отсутствующего binary используй временный
+container — он завершится с JSON `FFMPEG_UNAVAILABLE` и кодом `78`, не печатая
+credentials:
+
+```sh
+docker compose --env-file .env -f infrastructure/compose.yaml run --rm --no-deps \
+  -e FFMPEG_PATH=/not-present/ffmpeg media-worker
+```
+
+Для проверки отсутствующей обязательной настройки временно замени только её в
+этой команде. Ожидаемый безопасный результат — `CONFIG_S3_SECRET_KEY_REQUIRED`:
+
+```sh
+docker compose --env-file .env -f infrastructure/compose.yaml run --rm --no-deps \
+  -e S3_SECRET_KEY= media-worker
+```
+
+Оба вызова не запускают job и не меняют PostgreSQL, Redis или MinIO.
+
 ## Маршрут API через локальный интерфейс
 
 Frontend обращается только к относительному `/api/v1`. В development Nuxt/Vite
@@ -201,14 +322,18 @@ docker compose --env-file .env -f infrastructure/compose.yaml up --detach
 
 Политика `unless-stopped` автоматически перезапускает сервис после неожиданного
 падения или перезапуска Docker. После перезапуска проверь `ps`: каждый сервис
-должен снова стать `healthy`. Если сервис не стал healthy, сначала посмотри
-только его логи:
+должен снова стать `healthy`; `minio-init` остаётся завершённым с кодом `0`.
+При `docker compose down` worker сначала получает `SIGTERM` и до 45 секунд
+закрывает BullMQ intake; если активный FFmpeg не успел завершиться, lease и
+reconciliation безопасно вернут job в очередь после следующего запуска. Если
+сервис не стал healthy, сначала посмотри только его логи:
 
 ```sh
 docker compose --env-file .env -f infrastructure/compose.yaml logs --tail=100 minio
 ```
 
-Замени `minio` на `postgres` или `redis`, если проблема в другом сервисе.
+Замени `minio` на `postgres`, `redis` или `media-worker`, если проблема в другом
+сервисе.
 
 Две частые и контролируемые ошибки:
 
@@ -229,6 +354,11 @@ docker compose --env-file .env -f infrastructure/compose.yaml logs --tail=100 mi
 `postgres-data`, `redis-data` и `minio-data` — постоянные Docker volumes.
 Обычная команда `down` их **не удаляет**. Никогда не используй `down --volumes`
 для рабочего MVP: она безвозвратно удалит локальную базу и медиафайлы.
+
+`media-worker` не имеет persistent volume: source/result доступны между
+запусками только через S3-compatible MinIO. Его tmpfs scratch не входит в
+backup и намеренно исчезает при остановке container; задача восстановится по
+PostgreSQL lease/reconciliation.
 
 Volume — это защита от обычного перезапуска, но не backup. Пока в проекте нет
 пользовательских данных, достаточно убедиться, что volumes сохраняются после
@@ -252,3 +382,9 @@ Prisma не выполняет автоматический destructive rollback
 bucket, затем делай forward-миграцию или восстанавливай проверенный backup.
 Удалять таблицы и bucket вручную нельзя. До первой реальной загрузки резервное
 копирование PostgreSQL и S3 остаётся обязательным следующим операционным шагом.
+
+Для отката именно нарезки сначала останови `@content-factory/worker`, затем
+отключи создание новых cut jobs на уровне кода/API. Additive таблицы, job rows и
+result objects не удаляй: предыдущий upload-срез их игнорирует, а данные нужны
+для forward-fix и повторного reconciliation. Destructive down migration для
+реальных source/result данных не поддерживается.

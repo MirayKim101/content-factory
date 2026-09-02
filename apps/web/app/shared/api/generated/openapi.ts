@@ -20,6 +20,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/pipeline-jobs/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MediaPipelineController_job"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{id}/result": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MediaPipelineController_result"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects": {
     parameters: {
       query?: never;
@@ -54,6 +86,39 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/cuts": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Atomically create one independent background job per cut segment */
+    post: operations["MediaPipelineController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/source": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MediaPipelineController_source"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -80,6 +145,16 @@ export interface components {
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
     };
+    CreateCutsDto: {
+      segments: components["schemas"]["CutSegmentDto"][];
+    };
+    CreateCutsResponseDto: {
+      jobs: components["schemas"]["PipelineJobResponseDto"][];
+      /** Format: uuid */
+      projectId: string;
+      /** Format: uuid */
+      requestId: string;
+    };
     CreateProjectUploadDto: {
       /** Format: binary */
       file: string;
@@ -90,6 +165,12 @@ export interface components {
        * @enum {string}
        */
       rightsConfirmed: "true";
+    };
+    CutSegmentDto: {
+      /** Format: uuid */
+      clientSegmentId: string;
+      endMs: number;
+      startMs: number;
     };
     ErrorDetailDto: {
       /** @enum {string} */
@@ -113,6 +194,38 @@ export interface components {
     FailureResponseDto: {
       code: string;
       message: string;
+    };
+    JobFailureDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    JobResultDto: {
+      /** Format: uri-reference */
+      downloadUrl: string;
+      filename: string;
+      sha256: string;
+      /** @description Decimal bigint string. */
+      sizeBytes: string;
+    };
+    PipelineJobResponseDto: {
+      attempt: number;
+      /** Format: uuid */
+      clientSegmentId: string;
+      endMs: number;
+      failure?: components["schemas"]["JobFailureDto"];
+      /** Format: uuid */
+      id: string;
+      processedMs?: number;
+      result?: components["schemas"]["JobResultDto"];
+      retryBudget: number;
+      revision: number;
+      startMs: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+      totalMs?: number;
+      /** Format: date-time */
+      updatedAt: string;
     };
     ProjectResponseDto: {
       artifact: components["schemas"]["ArtifactResponseDto"];
@@ -138,9 +251,18 @@ export interface components {
     SourceResponseDto: {
       /** @example video/mp4 */
       contentType: string;
+      /**
+       * @description Authoritative FFprobe duration in integer milliseconds.
+       * @example 7200000
+       */
+      durationMs?: number;
       /** Format: uuid */
       id: string;
       originalFilename: string;
+      probeFailure?: components["schemas"]["FailureResponseDto"];
+      /** @enum {string} */
+      probeState?:
+        "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
       sha256: string;
       /**
        * @description Decimal string for bigint safety.
@@ -175,6 +297,76 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  MediaPipelineController_job: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PipelineJobResponseDto"];
+        };
+      };
+    };
+  };
+  MediaPipelineController_result: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range, for example bytes=0-1048575. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready cut result MP4 attachment. */
+      200: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Requested cut-result byte range. */
+      206: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Returned or unsatisfied byte range. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description The requested byte range cannot be satisfied. */
+      416: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Unsatisfied range with the authoritative object size. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };
@@ -299,6 +491,89 @@ export interface operations {
       /** @description Internal query failure. */
       500: {
         headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MediaPipelineController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateCutsDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreateCutsResponseDto"];
+        };
+      };
+      /** @description Key belongs to a different request or source is not ready. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  MediaPipelineController_source: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range, for example bytes=0-1048575. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Private browser-playable source MP4 with byte-range support. */
+      200: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Requested source byte range. */
+      206: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Returned or unsatisfied byte range. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description The requested byte range cannot be satisfied. */
+      416: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Unsatisfied range with the authoritative object size. */
+          "Content-Range"?: string;
           [name: string]: unknown;
         };
         content: {

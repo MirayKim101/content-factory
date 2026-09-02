@@ -27,6 +27,28 @@ enum MediaArtifactStatus {
 
 enum MediaArtifactRole {
   SOURCE
+  CUT_RESULT
+}
+
+enum PipelineJobType {
+  SOURCE_PROBE
+  CUT_SEGMENT
+}
+
+enum PipelineJobState {
+  QUEUED
+  PROCESSING
+  RETRY_WAIT
+  READY
+  FAILED_FINAL
+}
+
+enum JobAttemptState {
+  QUEUED
+  PROCESSING
+  FAILED_RETRYABLE
+  READY
+  FAILED_FINAL
 }
 
 enum ArtifactCleanupStatus {
@@ -49,6 +71,8 @@ model Project {
   updatedAt                DateTime        @updatedAt
   source                   VideoSource?
   artifacts                MediaArtifact[]
+  cutRequests              CutRequest[]
+  pipelineJobs             PipelineJob[]
 }
 
 model VideoSource {
@@ -61,9 +85,13 @@ model VideoSource {
   contentType      String
   sizeBytes        BigInt
   sha256           String
+  durationMs       Int?
+  probedAt         DateTime?
+  probeVersion     String?
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   artifacts        MediaArtifact[]
+  pipelineJobs     PipelineJob[]
 }
 
 model MediaArtifact {
@@ -88,9 +116,103 @@ model MediaArtifact {
   lineageSourceId      String                @db.Uuid
   lineageSourceVersion Int
   recipeVersion        String
+  pipelineJobId        String?               @unique @db.Uuid
+  pipelineJob          PipelineJob?          @relation("PipelineJobResult", fields: [pipelineJobId], references: [id], onDelete: SetNull)
+  ffmpegVersion        String?
+  outputFilename       String?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 
   @@index([status, createdAt])
+  @@index([cleanupStatus, updatedAt])
+}
+
+model CutRequest {
+  id                 String        @id @db.Uuid
+  projectId          String        @db.Uuid
+  project            Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  idempotencyKey     String        @unique
+  requestFingerprint String
+  createdAt          DateTime      @default(now())
+  jobs               PipelineJob[]
+
+  @@index([projectId, createdAt])
+}
+
+model PipelineJob {
+  id                 String           @id @db.Uuid
+  projectId          String           @db.Uuid
+  project            Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId           String           @db.Uuid
+  source             VideoSource      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  cutRequestId       String?          @db.Uuid
+  cutRequest         CutRequest?      @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
+  type               PipelineJobType
+  state              PipelineJobState @default(QUEUED)
+  payloadVersion     Int              @default(1)
+  idempotencyKey     String           @unique
+  revision           Int              @default(1)
+  priority           Int              @default(0)
+  retryBudget        Int              @default(2)
+  attemptCount       Int              @default(0)
+  processedMs        Int?
+  totalMs            Int?
+  leaseOwner         String?
+  leaseToken         String?          @unique
+  leaseExpiresAt     DateTime?
+  heartbeatAt        DateTime?
+  failureCode        String?
+  failureMessage     String?
+  failureRetryable   Boolean?
+  recipeVersion      String
+  queuedAt           DateTime         @default(now())
+  startedAt          DateTime?
+  finishedAt         DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  segment            CutSegment?
+  attempts           JobAttempt[]
+  resultArtifact     MediaArtifact?   @relation("PipelineJobResult")
+
+  @@index([state, type, priority, queuedAt])
+  @@index([leaseExpiresAt])
+  @@index([projectId, createdAt])
+}
+
+model CutSegment {
+  id              String      @id @db.Uuid
+  jobId           String      @unique @db.Uuid
+  job             PipelineJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  clientSegmentId String
+  startMs         Int
+  endMs           Int
+  createdAt       DateTime    @default(now())
+
+  @@unique([jobId, clientSegmentId])
+}
+
+model JobAttempt {
+  id                   String                @id @db.Uuid
+  jobId                String                @db.Uuid
+  job                  PipelineJob           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  attemptNumber        Int
+  state                JobAttemptState       @default(QUEUED)
+  workerId             String?
+  leaseToken           String?
+  startedAt            DateTime?
+  heartbeatAt          DateTime?
+  finishedAt           DateTime?
+  failureCode          String?
+  outputObjectKey      String?               @unique
+  cleanupStatus        ArtifactCleanupStatus @default(NOT_REQUIRED)
+  cleanupAttemptCount  Int                   @default(0)
+  cleanupLastErrorCode String?
+  cleanupRequestedAt   DateTime?
+  cleanupCompletedAt   DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@unique([jobId, attemptNumber])
+  @@index([state, updatedAt])
   @@index([cleanupStatus, updatedAt])
 }

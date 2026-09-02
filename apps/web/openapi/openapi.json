@@ -54,6 +54,40 @@
         ],
         "type": "object"
       },
+      "CreateCutsDto": {
+        "properties": {
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/CutSegmentDto"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": ["segments"],
+        "type": "object"
+      },
+      "CreateCutsResponseDto": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/PipelineJobResponseDto"
+            },
+            "type": "array"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": ["requestId", "projectId", "jobs"],
+        "type": "object"
+      },
       "CreateProjectUploadDto": {
         "properties": {
           "file": {
@@ -73,6 +107,24 @@
           }
         },
         "required": ["name", "rightsConfirmed", "file"],
+        "type": "object"
+      },
+      "CutSegmentDto": {
+        "properties": {
+          "clientSegmentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "endMs": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "startMs": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": ["clientSegmentId", "startMs", "endMs"],
         "type": "object"
       },
       "ErrorDetailDto": {
@@ -119,6 +171,107 @@
           }
         },
         "required": ["code", "message"],
+        "type": "object"
+      },
+      "JobFailureDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": ["code", "message", "retryable"],
+        "type": "object"
+      },
+      "JobResultDto": {
+        "properties": {
+          "downloadUrl": {
+            "format": "uri-reference",
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "description": "Decimal bigint string.",
+            "type": "string"
+          }
+        },
+        "required": ["filename", "sizeBytes", "sha256", "downloadUrl"],
+        "type": "object"
+      },
+      "PipelineJobResponseDto": {
+        "properties": {
+          "attempt": {
+            "type": "number"
+          },
+          "clientSegmentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "endMs": {
+            "type": "number"
+          },
+          "failure": {
+            "$ref": "#/components/schemas/JobFailureDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "processedMs": {
+            "type": "number"
+          },
+          "result": {
+            "$ref": "#/components/schemas/JobResultDto"
+          },
+          "retryBudget": {
+            "type": "number"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "startMs": {
+            "type": "number"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          },
+          "totalMs": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "clientSegmentId",
+          "revision",
+          "state",
+          "startMs",
+          "endMs",
+          "attempt",
+          "retryBudget",
+          "updatedAt"
+        ],
         "type": "object"
       },
       "ProjectResponseDto": {
@@ -187,11 +340,29 @@
             "example": "video/mp4",
             "type": "string"
           },
+          "durationMs": {
+            "description": "Authoritative FFprobe duration in integer milliseconds.",
+            "example": 7200000,
+            "type": "number"
+          },
           "id": {
             "format": "uuid",
             "type": "string"
           },
           "originalFilename": {
+            "type": "string"
+          },
+          "probeFailure": {
+            "$ref": "#/components/schemas/FailureResponseDto"
+          },
+          "probeState": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
             "type": "string"
           },
           "sha256": {
@@ -243,6 +414,117 @@
           }
         },
         "tags": ["App"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{id}": {
+      "get": {
+        "operationId": "MediaPipelineController_job",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineJobResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{id}/result": {
+      "get": {
+        "operationId": "MediaPipelineController_result",
+        "parameters": [
+          {
+            "description": "One RFC 9110 byte range, for example bytes=0-1048575.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Ready cut result MP4 attachment.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "206": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Requested cut-result byte range.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "description": "Returned or unsatisfied byte range.",
+                "schema": {
+                  "example": "bytes 0-1023/4096",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "The requested byte range cannot be satisfied.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "description": "Unsatisfied range with the authoritative object size.",
+                "schema": {
+                  "example": "bytes */4096",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["media-pipeline"]
       }
     },
     "/api/v1/projects": {
@@ -403,6 +685,140 @@
         },
         "summary": "Get safe source-ingestion status and lineage",
         "tags": ["projects"]
+      }
+    },
+    "/api/v1/projects/{projectId}/cuts": {
+      "post": {
+        "operationId": "MediaPipelineController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCutsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCutsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "description": "Key belongs to a different request or source is not ready."
+          }
+        },
+        "summary": "Atomically create one independent background job per cut segment",
+        "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/projects/{projectId}/source": {
+      "get": {
+        "operationId": "MediaPipelineController_source",
+        "parameters": [
+          {
+            "description": "One RFC 9110 byte range, for example bytes=0-1048575.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Private browser-playable source MP4 with byte-range support.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "206": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Requested source byte range.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "description": "Returned or unsatisfied byte range.",
+                "schema": {
+                  "example": "bytes 0-1023/4096",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "The requested byte range cannot be satisfied.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "description": "Unsatisfied range with the authoritative object size.",
+                "schema": {
+                  "example": "bytes */4096",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["media-pipeline"]
       }
     }
   },

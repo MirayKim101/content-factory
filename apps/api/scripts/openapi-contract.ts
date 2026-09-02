@@ -16,6 +16,8 @@ const contractEnvironment = {
   POSTGRES_PASSWORD: "openapi_contract",
   S3_ACCESS_KEY: "openapi_contract",
   S3_SECRET_KEY: "openapi_contract",
+  REDIS_PASSWORD: "openapi_contract",
+  MEDIA_QUEUE_DISABLED: "1",
 } as const;
 const prettierCli = resolve(
   import.meta.dirname,

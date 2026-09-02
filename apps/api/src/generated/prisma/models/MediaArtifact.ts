@@ -58,6 +58,9 @@ export type MediaArtifactMinAggregateOutputType = {
   lineageSourceId: string | null
   lineageSourceVersion: number | null
   recipeVersion: string | null
+  pipelineJobId: string | null
+  ffmpegVersion: string | null
+  outputFilename: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -82,6 +85,9 @@ export type MediaArtifactMaxAggregateOutputType = {
   lineageSourceId: string | null
   lineageSourceVersion: number | null
   recipeVersion: string | null
+  pipelineJobId: string | null
+  ffmpegVersion: string | null
+  outputFilename: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -106,6 +112,9 @@ export type MediaArtifactCountAggregateOutputType = {
   lineageSourceId: number
   lineageSourceVersion: number
   recipeVersion: number
+  pipelineJobId: number
+  ffmpegVersion: number
+  outputFilename: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -144,6 +153,9 @@ export type MediaArtifactMinAggregateInputType = {
   lineageSourceId?: true
   lineageSourceVersion?: true
   recipeVersion?: true
+  pipelineJobId?: true
+  ffmpegVersion?: true
+  outputFilename?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -168,6 +180,9 @@ export type MediaArtifactMaxAggregateInputType = {
   lineageSourceId?: true
   lineageSourceVersion?: true
   recipeVersion?: true
+  pipelineJobId?: true
+  ffmpegVersion?: true
+  outputFilename?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -192,6 +207,9 @@ export type MediaArtifactCountAggregateInputType = {
   lineageSourceId?: true
   lineageSourceVersion?: true
   recipeVersion?: true
+  pipelineJobId?: true
+  ffmpegVersion?: true
+  outputFilename?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -303,6 +321,9 @@ export type MediaArtifactGroupByOutputType = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId: string | null
+  ffmpegVersion: string | null
+  outputFilename: string | null
   createdAt: Date
   updatedAt: Date
   _count: MediaArtifactCountAggregateOutputType | null
@@ -350,10 +371,14 @@ export type MediaArtifactWhereInput = {
   lineageSourceId?: Prisma.UuidFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringFilter<"MediaArtifact"> | string
+  pipelineJobId?: Prisma.UuidNullableFilter<"MediaArtifact"> | string | null
+  ffmpegVersion?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
+  pipelineJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
 }
 
 export type MediaArtifactOrderByWithRelationInput = {
@@ -376,15 +401,20 @@ export type MediaArtifactOrderByWithRelationInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  outputFilename?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   source?: Prisma.VideoSourceOrderByWithRelationInput
+  pipelineJob?: Prisma.PipelineJobOrderByWithRelationInput
 }
 
 export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   objectKey?: string
+  pipelineJobId?: string
   AND?: Prisma.MediaArtifactWhereInput | Prisma.MediaArtifactWhereInput[]
   OR?: Prisma.MediaArtifactWhereInput[]
   NOT?: Prisma.MediaArtifactWhereInput | Prisma.MediaArtifactWhereInput[]
@@ -405,11 +435,14 @@ export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
   lineageSourceId?: Prisma.UuidFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringFilter<"MediaArtifact"> | string
+  ffmpegVersion?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
-}, "id" | "objectKey">
+  pipelineJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
+}, "id" | "objectKey" | "pipelineJobId">
 
 export type MediaArtifactOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -431,6 +464,9 @@ export type MediaArtifactOrderByWithAggregationInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  outputFilename?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MediaArtifactCountOrderByAggregateInput
@@ -463,6 +499,9 @@ export type MediaArtifactScalarWhereWithAggregatesInput = {
   lineageSourceId?: Prisma.UuidWithAggregatesFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntWithAggregatesFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringWithAggregatesFilter<"MediaArtifact"> | string
+  pipelineJobId?: Prisma.UuidNullableWithAggregatesFilter<"MediaArtifact"> | string | null
+  ffmpegVersion?: Prisma.StringNullableWithAggregatesFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableWithAggregatesFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MediaArtifact"> | Date | string
 }
@@ -485,10 +524,13 @@ export type MediaArtifactCreateInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateInput = {
@@ -511,6 +553,9 @@ export type MediaArtifactUncheckedCreateInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -533,10 +578,13 @@ export type MediaArtifactUpdateInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateInput = {
@@ -559,6 +607,9 @@ export type MediaArtifactUncheckedUpdateInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -583,6 +634,9 @@ export type MediaArtifactCreateManyInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -605,6 +659,8 @@ export type MediaArtifactUpdateManyMutationInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -629,6 +685,9 @@ export type MediaArtifactUncheckedUpdateManyInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -663,6 +722,9 @@ export type MediaArtifactCountOrderByAggregateInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrder
+  outputFilename?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -693,6 +755,9 @@ export type MediaArtifactMaxOrderByAggregateInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrder
+  outputFilename?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -717,6 +782,9 @@ export type MediaArtifactMinOrderByAggregateInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrder
+  outputFilename?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -725,6 +793,11 @@ export type MediaArtifactSumOrderByAggregateInput = {
   cleanupAttemptCount?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
+}
+
+export type MediaArtifactNullableScalarRelationFilter = {
+  is?: Prisma.MediaArtifactWhereInput | null
+  isNot?: Prisma.MediaArtifactWhereInput | null
 }
 
 export type MediaArtifactCreateNestedManyWithoutProjectInput = {
@@ -823,8 +896,36 @@ export type EnumArtifactCleanupStatusFieldUpdateOperationsInput = {
   set?: $Enums.ArtifactCleanupStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
+export type MediaArtifactCreateNestedOneWithoutPipelineJobInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUncheckedCreateNestedOneWithoutPipelineJobInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneWithoutPipelineJobNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutPipelineJobInput
+  disconnect?: Prisma.MediaArtifactWhereInput | boolean
+  delete?: Prisma.MediaArtifactWhereInput | boolean
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutPipelineJobInput, Prisma.MediaArtifactUpdateWithoutPipelineJobInput>, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
+}
+
+export type MediaArtifactUncheckedUpdateOneWithoutPipelineJobNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutPipelineJobInput
+  disconnect?: Prisma.MediaArtifactWhereInput | boolean
+  delete?: Prisma.MediaArtifactWhereInput | boolean
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutPipelineJobInput, Prisma.MediaArtifactUpdateWithoutPipelineJobInput>, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
 }
 
 export type MediaArtifactCreateWithoutProjectInput = {
@@ -845,9 +946,12 @@ export type MediaArtifactCreateWithoutProjectInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutProjectInput = {
@@ -869,6 +973,9 @@ export type MediaArtifactUncheckedCreateWithoutProjectInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -922,6 +1029,9 @@ export type MediaArtifactScalarWhereInput = {
   lineageSourceId?: Prisma.UuidFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringFilter<"MediaArtifact"> | string
+  pipelineJobId?: Prisma.UuidNullableFilter<"MediaArtifact"> | string | null
+  ffmpegVersion?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
 }
@@ -944,9 +1054,12 @@ export type MediaArtifactCreateWithoutSourceInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutSourceInput = {
@@ -968,6 +1081,9 @@ export type MediaArtifactUncheckedCreateWithoutSourceInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -998,6 +1114,126 @@ export type MediaArtifactUpdateManyWithWhereWithoutSourceInput = {
   data: Prisma.XOR<Prisma.MediaArtifactUpdateManyMutationInput, Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceInput>
 }
 
+export type MediaArtifactCreateWithoutPipelineJobInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutPipelineJobInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type MediaArtifactCreateOrConnectWithoutPipelineJobInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+}
+
+export type MediaArtifactUpsertWithoutPipelineJobInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutPipelineJobInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
+}
+
+export type MediaArtifactUpdateWithoutPipelineJobInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutPipelineJobInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type MediaArtifactCreateManyProjectInput = {
   id: string
   sourceId: string
@@ -1017,6 +1253,9 @@ export type MediaArtifactCreateManyProjectInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1039,9 +1278,12 @@ export type MediaArtifactUpdateWithoutProjectInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
@@ -1063,6 +1305,9 @@ export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1086,6 +1331,9 @@ export type MediaArtifactUncheckedUpdateManyWithoutProjectInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1109,6 +1357,9 @@ export type MediaArtifactCreateManySourceInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1131,9 +1382,12 @@ export type MediaArtifactUpdateWithoutSourceInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
@@ -1155,6 +1409,9 @@ export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1178,6 +1435,9 @@ export type MediaArtifactUncheckedUpdateManyWithoutSourceInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1204,10 +1464,14 @@ export type MediaArtifactSelect<ExtArgs extends runtime.Types.Extensions.Interna
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
 export type MediaArtifactSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1230,10 +1494,14 @@ export type MediaArtifactSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
 export type MediaArtifactSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1256,10 +1524,14 @@ export type MediaArtifactSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
 export type MediaArtifactSelectScalar = {
@@ -1282,22 +1554,28 @@ export type MediaArtifactSelectScalar = {
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MediaArtifactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "role" | "status" | "objectKey" | "storageEtag" | "storageVersion" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "sizeBytes" | "sha256" | "contentType" | "lineageSourceId" | "lineageSourceVersion" | "recipeVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["mediaArtifact"]>
+export type MediaArtifactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "role" | "status" | "objectKey" | "storageEtag" | "storageVersion" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "sizeBytes" | "sha256" | "contentType" | "lineageSourceId" | "lineageSourceVersion" | "recipeVersion" | "pipelineJobId" | "ffmpegVersion" | "outputFilename" | "createdAt" | "updatedAt", ExtArgs["result"]["mediaArtifact"]>
 export type MediaArtifactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }
 export type MediaArtifactIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }
 export type MediaArtifactIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }
 
 export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1305,6 +1583,7 @@ export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.Inter
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
     source: Prisma.$VideoSourcePayload<ExtArgs>
+    pipelineJob: Prisma.$PipelineJobPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1326,6 +1605,9 @@ export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.Inter
     lineageSourceId: string
     lineageSourceVersion: number
     recipeVersion: string
+    pipelineJobId: string | null
+    ffmpegVersion: string | null
+    outputFilename: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["mediaArtifact"]>
@@ -1724,6 +2006,7 @@ export interface Prisma__MediaArtifactClient<T, Null = never, ExtArgs extends ru
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   source<T extends Prisma.VideoSourceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSourceDefaultArgs<ExtArgs>>): Prisma.Prisma__VideoSourceClient<runtime.Types.Result.GetResult<Prisma.$VideoSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  pipelineJob<T extends Prisma.MediaArtifact$pipelineJobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1772,6 +2055,9 @@ export interface MediaArtifactFieldRefs {
   readonly lineageSourceId: Prisma.FieldRef<"MediaArtifact", 'String'>
   readonly lineageSourceVersion: Prisma.FieldRef<"MediaArtifact", 'Int'>
   readonly recipeVersion: Prisma.FieldRef<"MediaArtifact", 'String'>
+  readonly pipelineJobId: Prisma.FieldRef<"MediaArtifact", 'String'>
+  readonly ffmpegVersion: Prisma.FieldRef<"MediaArtifact", 'String'>
+  readonly outputFilename: Prisma.FieldRef<"MediaArtifact", 'String'>
   readonly createdAt: Prisma.FieldRef<"MediaArtifact", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MediaArtifact", 'DateTime'>
 }
@@ -2172,6 +2458,25 @@ export type MediaArtifactDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many MediaArtifacts to delete.
    */
   limit?: number
+}
+
+/**
+ * MediaArtifact.pipelineJob
+ */
+export type MediaArtifact$pipelineJobArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PipelineJob
+   */
+  select?: Prisma.PipelineJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PipelineJob
+   */
+  omit?: Prisma.PipelineJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PipelineJobInclude<ExtArgs> | null
+  where?: Prisma.PipelineJobWhereInput
 }
 
 /**

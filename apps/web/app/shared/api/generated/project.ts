@@ -24,6 +24,13 @@ export const projectSchema = z.object({
     contentType: z.literal("video/mp4"),
     sizeBytes: z.string().regex(/^\d+$/),
     sha256: z.string().regex(/^[a-f0-9]{64}$/),
+    durationMs: z.number().int().nonnegative().optional(),
+    probeState: z
+      .enum(["QUEUED", "PROCESSING", "RETRY_WAIT", "READY", "FAILED_FINAL"])
+      .optional(),
+    probeFailure: z
+      .object({ code: z.string(), message: z.string() })
+      .optional(),
   }),
   artifact: z.object({
     id: z.uuid(),

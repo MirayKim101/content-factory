@@ -103,6 +103,72 @@ services:
       minio:
         condition: service_healthy
 
+  media-worker:
+    image: content-factory-media-worker:0.0.0-stage1
+    build:
+      context: ..
+      dockerfile: apps/worker/Dockerfile
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    cpus: 2.0
+    stop_grace_period: 45s
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?copy .env.example to .env and set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?copy .env.example to .env and set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env and set POSTGRES_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?copy .env.example to .env and set REDIS_PASSWORD}
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_SOURCE_BUCKET: ${S3_SOURCE_BUCKET:-content-factory-sources}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?copy .env.example to .env and set S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?copy .env.example to .env and set S3_SECRET_KEY}
+      MEDIA_WORKER_CONCURRENCY: ${MEDIA_WORKER_CONCURRENCY:-1}
+      MEDIA_JOB_LEASE_MS: ${MEDIA_JOB_LEASE_MS:-30000}
+      MEDIA_JOB_TIMEOUT_MS: ${MEDIA_JOB_TIMEOUT_MS:-7200000}
+      MEDIA_SCRATCH_DIRECTORY: /tmp/media-worker
+      MEDIA_SCRATCH_SAFETY_MIB: ${MEDIA_SCRATCH_SAFETY_MIB:-1024}
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      FFPROBE_PATH: /usr/bin/ffprobe
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=${MEDIA_SCRATCH_SIZE:-24g}
+    networks:
+      - content-factory
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "/usr/local/bin/content-factory-media-worker-healthcheck.mjs",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+
 networks:
   content-factory:
     name: content-factory

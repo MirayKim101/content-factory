@@ -225,13 +225,22 @@ export class PrismaProjectRepository implements ProjectRepository {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       include: {
-        source: true,
+        source: {
+          include: {
+            pipelineJobs: {
+              where: { type: "SOURCE_PROBE" },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
         artifacts: { where: { role: "SOURCE" }, take: 1 },
       },
     });
     const source = project?.source;
     const artifact = project?.artifacts[0];
     if (!project || !source || !artifact) return null;
+    const probeJob = source.pipelineJobs[0];
     return {
       id: project.id,
       name: project.name,
@@ -256,10 +265,22 @@ export class PrismaProjectRepository implements ProjectRepository {
         contentType: source.contentType,
         sizeBytes: source.sizeBytes,
         sha256: source.sha256,
+        ...(source.durationMs === null
+          ? {}
+          : { durationMs: source.durationMs }),
+        ...(probeJob ? { probeState: probeJob.state } : {}),
+        ...(probeJob?.failureCode && probeJob.failureMessage
+          ? {
+              probeFailure: {
+                code: probeJob.failureCode,
+                message: probeJob.failureMessage,
+              },
+            }
+          : {}),
       },
       artifact: {
         id: artifact.id,
-        role: artifact.role,
+        role: "SOURCE",
         status: artifact.status,
         sizeBytes: artifact.sizeBytes,
         sha256: artifact.sha256,
