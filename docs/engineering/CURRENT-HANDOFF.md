@@ -2,7 +2,8 @@
 
 Обновлено: 2026-09-02
 Ветка: `main`
-Последний commit до текущего готового dirty slice: `1dde0b4 docs: persist ai team handoff`
+Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
+Последний готовый commit: `c65de91 perf(media): add reproducible fast cut recipe`
 
 ## Готово
 

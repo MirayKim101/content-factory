@@ -1,6 +1,6 @@
 # Cutting performance — MVP capacity gate
 
-Статус: brainstorm complete, implementation pending
+Статус: P0 cache, telemetry, bounds confirmation and recipe v2 complete
 
 Дата: 2026-09-02
 
@@ -22,8 +22,39 @@
 - скорость обработки: примерно `0.68× realtime`;
 - размер результата: `540871550` bytes.
 
-Точного замера 35-секундного отрезка пока нет. Нельзя использовать этот job как
-оценку времени 35-секундной нарезки.
+Этот исторический job нельзя использовать как оценку времени 35-секундной
+нарезки; отдельный точный benchmark приведён ниже.
+
+## Реальный 35-секундный benchmark
+
+Все календарные часы ниже указаны в `Asia/Novosibirsk (UTC+7)`. PostgreSQL
+хранит timestamps в UTC; длительности считаются как разность authoritative
+timestamps и не зависят от часового пояса.
+
+После внедрения cache и recipe `stage1-cut-h264-v2` выполнены два реальных job
+на существующем source размером `3813099228` bytes:
+
+- `12:46–13:21`, cold cache: total `25031 ms`, encode `14924 ms`, download
+  `4621 ms`, integrity hash `5204 ms`, output `8261830` bytes;
+- `13:21–13:56`, cache hit: total `15406 ms`, encode `15246 ms`, повторные
+  download/hash отсутствуют, source probe cache hit `0.02 ms`, output
+  `9846503` bytes.
+
+Оба результата имеют `READY`, duration `35000 ms`, attempt `1`, независимые
+object keys и SHA-256. Cold job прошёл примерно в `2.5×` быстрее старого
+`medium` pipeline (`62847 ms`), cache-hit job — примерно в `3.1×` быстрее
+старого cache-hit результата (`47320 ms`).
+
+Изолированный preset benchmark того же диапазона:
+
+| Preset     | Encode time | Output size | SSIM     |
+| ---------- | ----------- | ----------- | -------- |
+| `medium`   | `52027 ms`  | `10362383`  | baseline |
+| `faster`   | `27877 ms`  | `9598776`   | `0.9724` |
+| `veryfast` | `15191 ms`  | `8261830`   | `0.9712` |
+
+Новые jobs используют `stage1-cut-h264-v2` (`veryfast`, CRF 20, AAC 192k).
+Старые jobs с `stage1-cut-h264-v1` воспроизводимо остаются на `medium`.
 
 ## Найденные причины
 
