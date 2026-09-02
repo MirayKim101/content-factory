@@ -4,6 +4,7 @@
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
 Текущий сохранённый commit: `feat: add versioned source authorization`
+Текущий незакоммиченный slice: desktop source grid + local auto-authorization
 
 ## Решение владельца
 
@@ -44,13 +45,33 @@ Independent review: `CLEAN`.
 - unauthorized deep-link не открывает player/editor/submit/download;
 - миграции применены локально; media objects не изменялись.
 
-## Проверки source authorization
+## Текущий slice: grid редактора и быстрый local smoke
 
-- API unit: `32/32`;
-- API integration: `33/33`;
-- worker unit: `30/30`;
-- worker PostgreSQL integration: `4/4`;
-- web: `48/48`;
+- `/horizontal` показывает независимые карточки с собственными 16:9 players;
+- 4 колонки включаются от 1600 px, пятая карточка переносится;
+- PrimeVue Dialog каждой карточки содержит компактный editor player, marker
+  buttons, несколько timecode pairs и запуск;
+- marker берёт время только из player открытого Dialog;
+- Dialog ограничен viewport, имеет внутренний scroll, компактный editor player,
+  sticky actions и проверенный backdrop/context stack;
+- progress, failures, READY и download находятся на source card и остаются
+  видимыми после закрытия Dialog;
+- `GET /api/v1/projects/:projectId/pipeline-jobs` восстанавливает persisted jobs
+  текущей версии source из PostgreSQL после полного reload;
+- локальная загрузка server-side получает `LOCAL_DEVELOPMENT_AUTO`, поэтому
+  отдельный Dialog подтверждения не мешает тестам;
+- manual/production остаётся fail-closed; API возвращает policy-aware
+  `authorization.usable`;
+- кириллическое multipart filename нормализуется и проверено интеграционно;
+- ADR-004 фиксирует конфигурацию, безопасность, миграцию и rollback.
+
+## Проверки текущего slice
+
+- API unit: `42/42`;
+- API integration: `34/34`;
+- worker unit: `37/37`;
+- worker PostgreSQL integration: `5/5`;
+- web: `57/57`;
 - API/worker/web typecheck и lint: passed;
 - OpenAPI generation/drift и `git diff --check`: passed;
 - Docker media-worker пересобран, запускается как `node`, healthy,
@@ -74,13 +95,13 @@ Notion backlog обновлён:
 
 ## Первый следующий шаг
 
-Реализовать один вертикальный slice: последовательная очередь ручной загрузки
-5–10 MP4, concurrency `1`, с отдельными real progress/server-finalization,
-status, safe error и retry для каждого файла. Ошибка одного файла не должна
-останавливать следующие. После реализации — independent review.
-
-Затем: сохранённый horizontal operations/history screen, capacity baseline
-`5 × 3` (каждый clip минимум 30 минут), templates/manual editorial package,
+Capacity baseline `5 × 3` запущен 2026-09-02 в 19:33 Asia/Novosibirsk на
+`video-test.mp4` без физических копий: пять логических партий
+`capacity-video-01`…`capacity-video-05`, по три реальных FFmpeg job длительностью
+30 минут. Начальное состояние подтверждено: 15 persisted jobs, один
+`PROCESSING`, 14 `QUEUED`; первый job сообщил 41.408 сек processed. После
+terminal results зафиксировать wall time, failures/retries, output sizes и
+reload/download smoke. Затем переходить к templates/manual editorial package,
 render overlays/intro/outro/audio, preview/approval/export, и только потом AI
 Stage 2B.
 

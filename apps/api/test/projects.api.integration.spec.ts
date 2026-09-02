@@ -35,6 +35,9 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
     process.env.API_UPLOAD_TEMP_DIRECTORY = uploadDirectory;
     process.env.API_MAX_UPLOAD_BYTES = "2048";
     process.env.SOURCE_PENDING_STALE_AFTER_MS = "600000";
+    process.env.DEPLOYMENT_PROFILE = "local";
+    process.env.SOURCE_AUTHORIZATION_POLICY = "manual";
+    process.env.API_HOST = "127.0.0.1";
     const { createApp } = await import("../src/main.js");
     app = await createApp();
     await app.listen(0, "127.0.0.1");
@@ -192,6 +195,36 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
     expect(replay.body.source.authorization).toEqual(
       cleared.body.source.authorization,
     );
+  });
+
+  it("auto-authorizes the exact source version only in explicit local-auto policy", async () => {
+    process.env.SOURCE_AUTHORIZATION_POLICY = "local-auto";
+    try {
+      const created = await request(app.getHttpServer())
+        .post("/api/v1/projects")
+        .set("Idempotency-Key", `integration-local-auto-${randomUUID()}`)
+        .field("name", "Local auto source")
+        .attach("file", tinyMp4(), {
+          filename: "Стрим №1.mp4",
+          contentType: "video/mp4",
+        })
+        .expect(201);
+
+      createdProjectIds.push(created.body.id as string);
+      expect(created.body.source.authorization).toMatchObject({
+        sourceVersion: 1,
+        status: "CLEARED",
+        basis: "LOCAL_DEVELOPMENT_AUTO",
+        declarationVersion: "local-development-auto-v1",
+        revision: 2,
+      });
+      expect(created.body.source.originalFilename).toBe("Стрим №1.mp4");
+      expect(created.body.source.authorization.decidedAt).toEqual(
+        expect.any(String),
+      );
+    } finally {
+      process.env.SOURCE_AUTHORIZATION_POLICY = "manual";
+    }
   });
 
   it("rejects an invalid deprecated rights field and removes its temp file", async () => {

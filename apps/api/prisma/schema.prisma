@@ -65,6 +65,7 @@ enum SourceAuthorizationStatus {
 enum SourceAuthorizationBasis {
   LEGACY_ATTESTATION
   OPERATOR_ATTESTATION
+  LOCAL_DEVELOPMENT_AUTO
 }
 
 model Project {

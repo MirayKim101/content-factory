@@ -233,6 +233,25 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     await repository.close();
   });
 
+  it("claims local-auto evidence only while the worker local policy is active", async () => {
+    const { jobId } = await createQueuedCut(true, "LOCAL_DEVELOPMENT_AUTO");
+    const databaseUrl = workerConfig().databaseUrl;
+    const manualRepository = new PgMediaJobRepository(databaseUrl);
+    await expect(
+      manualRepository.claim(jobId, "worker-manual", 30_000),
+    ).resolves.toBeNull();
+    await manualRepository.close();
+
+    const localRepository = new PgMediaJobRepository(databaseUrl, "local-auto");
+    const claimed = await localRepository.claim(
+      jobId,
+      "worker-local-auto",
+      30_000,
+    );
+    expect(claimed).toMatchObject({ id: jobId, sourceVersion: 1 });
+    await localRepository.close();
+  });
+
   async function prepareCrashedUpload() {
     const { projectId, jobId } = await createQueuedCut();
     const repository = new PgMediaJobRepository(workerConfig().databaseUrl);
@@ -262,7 +281,11 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     };
   }
 
-  async function createQueuedCut(cleared = true): Promise<{
+  async function createQueuedCut(
+    cleared = true,
+    basis:
+      "LEGACY_ATTESTATION" | "LOCAL_DEVELOPMENT_AUTO" = "LEGACY_ATTESTATION",
+  ): Promise<{
     projectId: string;
     jobId: string;
   }> {
@@ -296,8 +319,11 @@ describe("worker lease recovery race (PostgreSQL)", () => {
                 status: cleared ? "CLEARED" : "NOT_REVIEWED",
                 ...(cleared
                   ? {
-                      basis: "LEGACY_ATTESTATION" as const,
-                      declarationVersion: "upload-rights-v1",
+                      basis,
+                      declarationVersion:
+                        basis === "LOCAL_DEVELOPMENT_AUTO"
+                          ? "local-development-auto-v1"
+                          : "upload-rights-v1",
                       decidedAt: new Date(),
                     }
                   : {}),

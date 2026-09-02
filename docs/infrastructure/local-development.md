@@ -28,6 +28,14 @@ volumes с тем же префиксом. Порты доступны толь�
    `CHANGE_ME_...` на разные длинные пароли. Для локального MVP подойдёт
    команда `openssl rand -base64 24`, выполненная отдельно для каждого пароля.
 
+   Шаблон также включает явный local-only режим:
+   `DEPLOYMENT_PROFILE=local`,
+   `SOURCE_AUTHORIZATION_POLICY=local-auto`, `API_HOST=127.0.0.1`. В нём новая
+   версия исходника получает отдельное `LOCAL_DEVELOPMENT_AUTO` решение после
+   успешной финализации, поэтому диалог подтверждения не показывается. API и
+   worker откажутся запускаться с local-auto вне local loopback. Для production
+   обязательна policy `manual`; local evidence там остаётся заблокированным.
+
 2. Проверь конфигурацию до запуска:
 
    ```sh
@@ -133,9 +141,9 @@ curl --fail http://127.0.0.1:9000/minio/health/ready
    Публичный ответ содержит checksum и lineage, но никогда не раскрывает S3
    bucket/object key или путь временного файла.
 
-5. В медиатеке открой диалог подтверждения прав для этого файла. После
-   подтверждения `source.authorization.status` станет `CLEARED`, revision
-   увеличится, и просмотр/нарезка станут доступны. API-эквивалент —
+5. В стандартном локальном `local-auto` режиме источник уже вернётся как
+   `CLEARED / LOCAL_DEVELOPMENT_AUTO`, и просмотр/нарезка станут доступны без
+   диалога. В `manual` режиме медиатеки открой диалог подтверждения прав; API-эквивалент —
    `PUT /api/v1/projects/{id}/source-authorization` с текущими
    `sourceVersion`, `expectedRevision`, literal
    `declarationVersion=source-authorization-v1` и `attested=true`.

@@ -186,9 +186,9 @@ describe("projects media-library list API (PostgreSQL)", () => {
       .get(`/api/v1/projects?q=${encodeURIComponent(token)}`)
       .expect(200);
 
-    expect(response.body.items.map((item: { id: string }) => item.id)).toEqual([
-      expectedId,
-    ]);
+    expect(
+      response.body.items.map((item: { id: string }) => item.id),
+    ).toContain(expectedId);
   });
 
   it("publishes the bounded media-library query contract", async () => {

@@ -13,6 +13,7 @@ export interface WorkspaceSourceState {
   submitted: boolean;
   submitting: boolean;
   jobs: string[];
+  sourceIdentity?: string;
   error?: string;
   retryIdentity?: CutRequestIdentity;
   confirmation?: CutSubmissionSummary;
@@ -38,6 +39,35 @@ export function createWorkspaceSourceState(): WorkspaceSourceState {
 /** Keeps unsent drafts only for the current browser session across route changes. */
 export function getSessionSourceState(id: string): WorkspaceSourceState {
   return (sessionSourceStates[id] ??= createWorkspaceSourceState());
+}
+
+export function reconcileWorkspaceSource(
+  state: WorkspaceSourceState,
+  sourceId: string,
+  sourceVersion: number,
+): boolean {
+  const identity = `${sourceId}:${sourceVersion}`;
+  const changed =
+    state.sourceIdentity !== undefined && state.sourceIdentity !== identity;
+  if (changed) {
+    state.drafts = [emptySegment()];
+    state.activeSegment = 0;
+    state.submitted = false;
+    state.submitting = false;
+    state.jobs = [];
+    state.error = undefined;
+    state.retryIdentity = undefined;
+    state.confirmation = undefined;
+  }
+  state.sourceIdentity = identity;
+  return changed;
+}
+
+export function isCurrentWorkspaceSource(
+  state: WorkspaceSourceState,
+  identity: string | undefined,
+): boolean {
+  return identity !== undefined && state.sourceIdentity === identity;
 }
 
 export function cutRequestFingerprint(

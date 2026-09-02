@@ -17,7 +17,10 @@ await mkdir(config.sourceCacheDirectory, { recursive: true });
 await chmod(config.scratchDirectory, 0o700);
 await chmod(config.sourceCacheDirectory, 0o700);
 const workerId = `media-worker-${randomUUID()}`;
-const repository = new PgMediaJobRepository(config.databaseUrl);
+const repository = new PgMediaJobRepository(
+  config.databaseUrl,
+  config.sourceAuthorizationPolicy,
+);
 const storage = new S3WorkerObjectStorage(
   config.storage.bucket,
   config.storage,

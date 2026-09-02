@@ -35,6 +35,10 @@ export interface PipelineRepository {
     segments: CutSegmentIntent[];
   }): Promise<{ result: CreateCutsResult; created: boolean }>;
   getJob(id: string): Promise<PipelineJobView | null>;
+  listProjectCutJobs(
+    projectId: string,
+    limit: number,
+  ): Promise<PipelineJobView[]>;
   getRunnableJobs(limit: number): Promise<JobDelivery[]>;
   getRunnableJobsByIds(jobIds: string[]): Promise<JobDelivery[]>;
   isDeliveryRunnable(delivery: JobDelivery): Promise<boolean>;

@@ -36,6 +36,7 @@ const readyProject = {
     authorization: {
       sourceVersion: 1,
       status: "NOT_REVIEWED",
+      usable: false,
       revision: 1,
     },
   },

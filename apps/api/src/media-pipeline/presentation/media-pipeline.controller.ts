@@ -13,6 +13,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Res,
   UnprocessableEntityException,
 } from "@nestjs/common";
@@ -39,6 +40,7 @@ import { ErrorResponseDto } from "../../projects/presentation/project.dto.js";
 import { SourceAuthorizationRequiredError } from "../../projects/domain/source-authorization.js";
 import { CreateCuts } from "../application/create-cuts.js";
 import { GetPipelineJob } from "../application/get-pipeline-job.js";
+import { ListProjectCutJobs } from "../application/list-project-cut-jobs.js";
 import {
   CutBoundsInvalidError,
   CutDurationUnavailableError,
@@ -51,6 +53,7 @@ import {
   CreateCutsDto,
   CreateCutsResponseDto,
   PipelineJobResponseDto,
+  ProjectCutJobsResponseDto,
 } from "./pipeline.dto.js";
 import {
   toCreateCutsResponse,
@@ -85,6 +88,8 @@ export class MediaPipelineController {
   constructor(
     @Inject(CreateCuts) private readonly createCuts: CreateCuts,
     @Inject(GetPipelineJob) private readonly getPipelineJob: GetPipelineJob,
+    @Inject(ListProjectCutJobs)
+    private readonly listProjectCutJobs: ListProjectCutJobs,
     @Inject(PIPELINE_REPOSITORY)
     private readonly repository: PipelineRepository,
     @Inject(OBJECT_STORAGE) private readonly storage: ObjectStorage,
@@ -185,6 +190,31 @@ export class MediaPipelineController {
         message: "Pipeline job was not found.",
       });
     return toPipelineJobResponse(job);
+  }
+
+  @Get("projects/:projectId/pipeline-jobs")
+  @ApiOperation({ summary: "List persisted cut jobs for the current source" })
+  @ApiOkResponse({ type: ProjectCutJobsResponseDto })
+  async projectJobs(
+    @Param("projectId", new ParseUUIDPipe({ version: "4" })) projectId: string,
+    @Query("limit") rawLimit?: string,
+  ): Promise<ProjectCutJobsResponseDto> {
+    const limit = rawLimit === undefined ? 50 : Number(rawLimit);
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
+      throw new BadRequestException({
+        code: "PIPELINE_JOB_LIMIT_INVALID",
+        message: "Limit must be an integer between 1 and 100.",
+      });
+    }
+    try {
+      return {
+        items: (await this.listProjectCutJobs.execute(projectId, limit)).map(
+          toPipelineJobResponse,
+        ),
+      };
+    } catch (error) {
+      this.rethrowAuthorization(error);
+    }
   }
 
   @Get("projects/:projectId/source")

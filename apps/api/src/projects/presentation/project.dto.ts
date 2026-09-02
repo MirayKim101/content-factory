@@ -52,9 +52,19 @@ export class SourceAuthorizationResponseDto {
   @ApiProperty({ type: Number, minimum: 1 }) sourceVersion!: number;
   @ApiProperty({ type: String, enum: ["NOT_REVIEWED", "CLEARED"] })
   status!: string;
+  @ApiProperty({
+    type: Boolean,
+    description:
+      "Policy-aware authorization eligibility for playback and processing.",
+  })
+  usable!: boolean;
   @ApiPropertyOptional({
     type: String,
-    enum: ["LEGACY_ATTESTATION", "OPERATOR_ATTESTATION"],
+    enum: [
+      "LEGACY_ATTESTATION",
+      "OPERATOR_ATTESTATION",
+      "LOCAL_DEVELOPMENT_AUTO",
+    ],
   })
   basis?: string;
   @ApiPropertyOptional({ type: String }) declarationVersion?: string;

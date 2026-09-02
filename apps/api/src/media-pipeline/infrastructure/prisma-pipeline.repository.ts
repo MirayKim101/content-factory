@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../../database/prisma.service.js";
+import { sourceAuthorizationRuntime } from "../../config/environment.js";
 import {
   CutBoundsInvalidError,
   CutDurationUnavailableError,
@@ -83,27 +84,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
           (decision) =>
             decision.sourceVersion === project.source!.sourceVersion,
         );
-        if (
-          !isSourceAuthorizationCleared(
-            authorization
-              ? {
-                  sourceVersion: authorization.sourceVersion,
-                  status: authorization.status,
-                  ...(authorization.basis
-                    ? { basis: authorization.basis }
-                    : {}),
-                  ...(authorization.declarationVersion
-                    ? { declarationVersion: authorization.declarationVersion }
-                    : {}),
-                  ...(authorization.decidedAt
-                    ? { decidedAt: authorization.decidedAt }
-                    : {}),
-                  revision: authorization.revision,
-                }
-              : null,
-            project.source.sourceVersion,
-          )
-        )
+        if (!this.isCleared(authorization, project.source.sourceVersion))
           throw new SourceAuthorizationRequiredError();
         const existing = await transaction.cutRequest.findUnique({
           where: { idempotencyKey: input.idempotencyKey },
@@ -186,6 +167,45 @@ export class PrismaPipelineRepository implements PipelineRepository {
       include: jobViewInclude,
     });
     return job ? this.mapJob(job) : null;
+  }
+
+  async listProjectCutJobs(
+    projectId: string,
+    limit: number,
+  ): Promise<PipelineJobView[]> {
+    return this.prisma.$transaction(
+      async (transaction) => {
+        const project = await transaction.project.findUnique({
+          where: { id: projectId },
+          select: {
+            source: {
+              select: { id: true, sourceVersion: true, authorizations: true },
+            },
+          },
+        });
+        if (!project?.source) return [];
+        const authorization = project.source.authorizations.find(
+          (decision) =>
+            decision.sourceVersion === project.source!.sourceVersion,
+        );
+        if (!this.isCleared(authorization, project.source.sourceVersion)) {
+          throw new SourceAuthorizationRequiredError();
+        }
+        const jobs = await transaction.pipelineJob.findMany({
+          where: {
+            projectId,
+            sourceId: project.source.id,
+            sourceVersion: project.source.sourceVersion,
+            type: "CUT_SEGMENT",
+          },
+          include: jobViewInclude,
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          take: limit,
+        });
+        return jobs.map((job) => this.mapJob(job));
+      },
+      { isolationLevel: "RepeatableRead" },
+    );
   }
 
   async getRunnableJobs(limit: number) {
@@ -574,11 +594,16 @@ export class PrismaPipelineRepository implements PipelineRepository {
       | {
           sourceVersion: number;
           status: "NOT_REVIEWED" | "CLEARED";
-          basis: "LEGACY_ATTESTATION" | "OPERATOR_ATTESTATION" | null;
+          basis:
+            | "LEGACY_ATTESTATION"
+            | "OPERATOR_ATTESTATION"
+            | "LOCAL_DEVELOPMENT_AUTO"
+            | null;
           declarationVersion: string | null;
           decidedAt: Date | null;
           revision: number;
         }
+      | null
       | undefined,
     sourceVersion: number,
   ): boolean {
@@ -598,6 +623,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
           }
         : null,
       sourceVersion,
+      sourceAuthorizationRuntime().policy,
     );
   }
 

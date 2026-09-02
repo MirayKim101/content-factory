@@ -93,7 +93,8 @@ export type SourceAuthorizationStatus = (typeof SourceAuthorizationStatus)[keyof
 
 export const SourceAuthorizationBasis = {
   LEGACY_ATTESTATION: 'LEGACY_ATTESTATION',
-  OPERATOR_ATTESTATION: 'OPERATOR_ATTESTATION'
+  OPERATOR_ATTESTATION: 'OPERATOR_ATTESTATION',
+  LOCAL_DEVELOPMENT_AUTO: 'LOCAL_DEVELOPMENT_AUTO'
 } as const
 
 export type SourceAuthorizationBasis = (typeof SourceAuthorizationBasis)[keyof typeof SourceAuthorizationBasis]

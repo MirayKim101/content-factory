@@ -34,6 +34,7 @@ const project = (name = "Первый ролик"): Project => ({
     authorization: {
       sourceVersion: 1,
       status: "NOT_REVIEWED",
+      usable: false,
       revision: 1,
     },
   },

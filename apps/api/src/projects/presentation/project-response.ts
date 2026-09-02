@@ -1,10 +1,13 @@
+import { sourceAuthorizationRuntime } from "../../config/environment.js";
 import type { ProjectLibraryItem, ProjectView } from "../domain/project.js";
+import { isSourceAuthorizationCleared } from "../domain/source-authorization.js";
 import type {
   ProjectLibraryItemDto,
   ProjectResponseDto,
 } from "./project.dto.js";
 
 export function toProjectResponse(project: ProjectView): ProjectResponseDto {
+  const authorizationPolicy = sourceAuthorizationRuntime().policy;
   return {
     id: project.id,
     name: project.name,
@@ -25,6 +28,11 @@ export function toProjectResponse(project: ProjectView): ProjectResponseDto {
       authorization: {
         sourceVersion: project.source.authorization.sourceVersion,
         status: project.source.authorization.status,
+        usable: isSourceAuthorizationCleared(
+          project.source.authorization,
+          project.source.sourceVersion,
+          authorizationPolicy,
+        ),
         ...(project.source.authorization.basis
           ? { basis: project.source.authorization.basis }
           : {}),
@@ -50,6 +58,7 @@ export function toProjectResponse(project: ProjectView): ProjectResponseDto {
 export function toProjectLibraryItemResponse(
   project: ProjectLibraryItem,
 ): ProjectLibraryItemDto {
+  const authorizationPolicy = sourceAuthorizationRuntime().policy;
   return {
     id: project.id,
     name: project.name,
@@ -63,6 +72,11 @@ export function toProjectLibraryItemResponse(
       authorization: {
         sourceVersion: project.source.authorization.sourceVersion,
         status: project.source.authorization.status,
+        usable: isSourceAuthorizationCleared(
+          project.source.authorization,
+          project.source.sourceVersion,
+          authorizationPolicy,
+        ),
         ...(project.source.authorization.basis
           ? { basis: project.source.authorization.basis }
           : {}),

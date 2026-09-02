@@ -5,6 +5,8 @@ import { parseApiBasePath } from "~/shared/config/api-config";
 
 export type PipelineJob = components["schemas"]["PipelineJobResponseDto"];
 export type CreateCutsResponse = components["schemas"]["CreateCutsResponseDto"];
+export type ProjectCutJobsResponse =
+  components["schemas"]["ProjectCutJobsResponseDto"];
 
 const failureSchema = z.object({
   code: z.string(),
@@ -45,6 +47,8 @@ const createCutsResponseSchema: z.ZodType<CreateCutsResponse> = z.object({
   projectId: z.uuid(),
   jobs: z.array(pipelineJobSchema),
 });
+const projectCutJobsResponseSchema: z.ZodType<ProjectCutJobsResponse> =
+  z.object({ items: z.array(pipelineJobSchema) });
 const errorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string() }),
 });
@@ -98,6 +102,14 @@ export function createMediaPipelineApi(
         `${basePath}/pipeline-jobs/${encodeURIComponent(id)}`,
         {},
         pipelineJobSchema,
+      );
+    },
+    async listProjectJobs(projectId: string): Promise<ProjectCutJobsResponse> {
+      return request(
+        fetchImplementation,
+        `${basePath}/projects/${encodeURIComponent(projectId)}/pipeline-jobs?limit=100`,
+        {},
+        projectCutJobsResponseSchema,
       );
     },
   };

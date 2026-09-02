@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../../database/prisma.service.js";
+import { sourceAuthorizationRuntime } from "../../config/environment.js";
 import type { ProjectLibraryRepository } from "../application/project-library-repository.port.js";
 import {
   IdempotencyKeyAlreadyExistsError,
@@ -85,6 +86,7 @@ export class PrismaProjectRepository
     artifactId: string,
     receipt: StorageReceipt,
   ): Promise<void> {
+    const autoAuthorize = sourceAuthorizationRuntime().policy === "local-auto";
     await this.prisma.$transaction(async (transaction) => {
       const current = await transaction.mediaArtifact.findUnique({
         where: { id: artifactId },
@@ -95,7 +97,9 @@ export class PrismaProjectRepository
       if (
         current.status !== "PENDING" ||
         current.source.status !== "PENDING" ||
-        current.project.status !== "SOURCE_PENDING"
+        current.project.status !== "SOURCE_PENDING" ||
+        current.sourceId !== current.lineageSourceId ||
+        current.source.sourceVersion !== current.lineageSourceVersion
       ) {
         throw new TerminalStateConflictError();
       }
@@ -130,6 +134,26 @@ export class PrismaProjectRepository
       });
       if (source.count !== 1 || project.count !== 1)
         throw new TerminalStateConflictError();
+      if (autoAuthorize) {
+        const authorization = await transaction.sourceAuthorization.updateMany({
+          where: {
+            sourceId: current.sourceId,
+            sourceVersion: current.lineageSourceVersion,
+            status: "NOT_REVIEWED",
+            basis: null,
+            declarationVersion: null,
+            decidedAt: null,
+          },
+          data: {
+            status: "CLEARED",
+            basis: "LOCAL_DEVELOPMENT_AUTO",
+            declarationVersion: "local-development-auto-v1",
+            decidedAt: new Date(),
+            revision: { increment: 1 },
+          },
+        });
+        if (authorization.count !== 1) throw new TerminalStateConflictError();
+      }
     });
   }
 
@@ -608,13 +632,18 @@ export class PrismaProjectRepository
 
   private isReady(current: {
     status: string;
-    source: { status: string };
+    sourceId: string;
+    lineageSourceId: string;
+    lineageSourceVersion: number;
+    source: { status: string; sourceVersion: number };
     project: { status: string };
   }): boolean {
     return (
       current.status === "READY" &&
       current.source.status === "READY" &&
-      current.project.status === "SOURCE_READY"
+      current.project.status === "SOURCE_READY" &&
+      current.sourceId === current.lineageSourceId &&
+      current.source.sourceVersion === current.lineageSourceVersion
     );
   }
 

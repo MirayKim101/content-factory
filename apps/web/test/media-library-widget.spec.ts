@@ -26,6 +26,7 @@ const page = {
         authorization: {
           sourceVersion: 1,
           status: "CLEARED",
+          usable: true,
           basis: "LEGACY_ATTESTATION",
           declarationVersion: "upload-rights-v1",
           decidedAt: "2026-09-02T00:00:00.000Z",
@@ -81,6 +82,7 @@ describe("MediaLibrary render states", () => {
     unreviewed.items[0]!.source.authorization = {
       sourceVersion: 1,
       status: "NOT_REVIEWED",
+      usable: false,
       basis: undefined,
       declarationVersion: undefined,
       decidedAt: undefined,

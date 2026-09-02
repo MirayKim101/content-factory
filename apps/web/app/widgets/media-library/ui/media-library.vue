@@ -144,8 +144,7 @@ watch(
       visibleItems.value
         .filter(
           (item) =>
-            item.status === "SOURCE_READY" &&
-            item.source.authorization.status === "CLEARED",
+            item.status === "SOURCE_READY" && item.source.authorization.usable,
         )
         .map((item) => item.id),
     );
@@ -205,11 +204,11 @@ watch(
             <p
               class="authorization-badge"
               :class="{
-                cleared: item.source.authorization.status === 'CLEARED',
+                cleared: item.source.authorization.usable,
               }"
             >
               {{
-                item.source.authorization.status === "CLEARED"
+                item.source.authorization.usable
                   ? "Права подтверждены"
                   : "Требуется подтверждение прав"
               }}
@@ -226,18 +225,19 @@ watch(
               {{ item.cutJobCounts.failed }}
             </p>
           </div>
-          <label>
-            <input
-              type="checkbox"
+          <label :for="`select-source-${item.id}`">
+            <Checkbox
+              :input-id="`select-source-${item.id}`"
+              binary
               :aria-label="`Выбрать ${item.source.originalFilename}`"
-              :checked="selected.includes(item.id)"
+              :model-value="selected.includes(item.id)"
               :disabled="
                 item.status !== 'SOURCE_READY' ||
-                item.source.authorization.status !== 'CLEARED' ||
+                !item.source.authorization.usable ||
                 (!selected.includes(item.id) &&
                   selectedCount >= MAX_SELECTED_PROJECTS)
               "
-              @change="select(item.id)"
+              @update:model-value="select(item.id)"
             />
             Выбрать видео
           </label>
@@ -251,6 +251,17 @@ watch(
             @click="openAuthorization(item)"
             >Подтвердить права</Button
           >
+          <p
+            v-else-if="
+              item.status === 'SOURCE_READY' &&
+              item.source.authorization.status === 'CLEARED' &&
+              !item.source.authorization.usable
+            "
+            class="warning"
+          >
+            Локальное разрешение недействительно в этом режиме. Перед ручным
+            подтверждением администратор должен сбросить решение.
+          </p>
           <p v-if="item.status !== 'SOURCE_READY'" class="muted">
             {{
               item.status === "FAILED_FINAL"

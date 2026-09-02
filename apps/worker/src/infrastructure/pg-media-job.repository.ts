@@ -33,7 +33,11 @@ interface ClaimRow {
 export class PgMediaJobRepository implements MediaJobRepository {
   private readonly pool: Pool;
 
-  constructor(connectionString: string) {
+  constructor(
+    connectionString: string,
+    private readonly sourceAuthorizationPolicy:
+      "manual" | "local-auto" = "manual",
+  ) {
     this.pool = new Pool({ connectionString, max: 4 });
   }
 
@@ -56,7 +60,10 @@ export class PgMediaJobRepository implements MediaJobRepository {
              ON auth."sourceId" = s."id"
             AND auth."sourceVersion" = j."sourceVersion"
             AND auth."status" = 'CLEARED'
-            AND auth."basis" IS NOT NULL
+            AND (
+              auth."basis" IN ('LEGACY_ATTESTATION', 'OPERATOR_ATTESTATION')
+              OR (auth."basis" = 'LOCAL_DEVELOPMENT_AUTO' AND $2 = 'local-auto')
+            )
             AND auth."declarationVersion" IS NOT NULL
             AND auth."decidedAt" IS NOT NULL
            JOIN "MediaArtifact" a ON a."sourceId" = s."id"
@@ -65,7 +72,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
       LEFT JOIN "CutSegment" c ON c."jobId" = j."id"
           WHERE j."id" = $1
           FOR UPDATE OF j`,
-        [jobId],
+        [jobId, this.sourceAuthorizationPolicy],
       );
       const row = selected.rows[0];
       if (!row || row.state === "READY" || row.state === "FAILED_FINAL")

@@ -57,6 +57,26 @@ export interface WorkerConfig {
   sourceCacheTtlMs: number;
   ffmpegPath: string;
   ffprobePath: string;
+  sourceAuthorizationPolicy: "manual" | "local-auto";
+}
+
+export function resolveWorkerSourceAuthorizationPolicy(
+  environment: NodeJS.ProcessEnv,
+): "manual" | "local-auto" {
+  const policy =
+    environment.SOURCE_AUTHORIZATION_POLICY?.trim() === "local-auto"
+      ? "local-auto"
+      : "manual";
+  if (policy === "manual") return policy;
+
+  const localProfile = environment.DEPLOYMENT_PROFILE?.trim() === "local";
+  const apiHost = environment.API_HOST?.trim() || "127.0.0.1";
+  const loopback =
+    apiHost === "127.0.0.1" || apiHost === "localhost" || apiHost === "::1";
+  if (!localProfile || !loopback) {
+    throw new Error("CONFIG_SOURCE_AUTHORIZATION_LOCAL_AUTO_UNSAFE");
+  }
+  return policy;
 }
 
 export function workerConfig(): WorkerConfig {
@@ -111,5 +131,8 @@ export function workerConfig(): WorkerConfig {
     ),
     ffmpegPath: process.env.FFMPEG_PATH?.trim() || "ffmpeg",
     ffprobePath: process.env.FFPROBE_PATH?.trim() || "ffprobe",
+    sourceAuthorizationPolicy: resolveWorkerSourceAuthorizationPolicy(
+      process.env,
+    ),
   };
 }

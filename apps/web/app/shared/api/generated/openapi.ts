@@ -121,6 +121,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/pipeline-jobs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List persisted cut jobs for the current source */
+    get: operations["MediaPipelineController_projectJobs"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{projectId}/source": {
     parameters: {
       query?: never;
@@ -263,6 +280,9 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
     };
+    ProjectCutJobsResponseDto: {
+      items: components["schemas"]["PipelineJobResponseDto"][];
+    };
     ProjectLibraryItemDto: {
       /** Format: date-time */
       createdAt: string;
@@ -331,7 +351,10 @@ export interface components {
     };
     SourceAuthorizationResponseDto: {
       /** @enum {string} */
-      basis?: "LEGACY_ATTESTATION" | "OPERATOR_ATTESTATION";
+      basis?:
+        | "LEGACY_ATTESTATION"
+        | "OPERATOR_ATTESTATION"
+        | "LOCAL_DEVELOPMENT_AUTO";
       /** Format: date-time */
       decidedAt?: string;
       declarationVersion?: string;
@@ -339,6 +362,8 @@ export interface components {
       sourceVersion: number;
       /** @enum {string} */
       status: "NOT_REVIEWED" | "CLEARED";
+      /** @description Policy-aware authorization eligibility for playback and processing. */
+      usable: boolean;
     };
     SourceResponseDto: {
       authorization: components["schemas"]["SourceAuthorizationResponseDto"];
@@ -717,6 +742,25 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  MediaPipelineController_projectJobs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectCutJobsResponseDto"];
+        };
       };
     };
   };

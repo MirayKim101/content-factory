@@ -79,6 +79,11 @@ export class CreateCutsResponseDto {
   jobs!: PipelineJobResponseDto[];
 }
 
+export class ProjectCutJobsResponseDto {
+  @ApiProperty({ type: () => [PipelineJobResponseDto] })
+  items!: PipelineJobResponseDto[];
+}
+
 export class IdempotencyHeaderDto {
   @IsString()
   @MaxLength(200)

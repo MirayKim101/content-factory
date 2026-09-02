@@ -7,7 +7,14 @@ export type LibraryPage = components["schemas"]["ProjectLibraryPageDto"];
 const authorizationSchema = z.object({
   sourceVersion: z.number().int().positive(),
   status: z.enum(["NOT_REVIEWED", "CLEARED"]),
-  basis: z.enum(["LEGACY_ATTESTATION", "OPERATOR_ATTESTATION"]).optional(),
+  usable: z.boolean(),
+  basis: z
+    .enum([
+      "LEGACY_ATTESTATION",
+      "OPERATOR_ATTESTATION",
+      "LOCAL_DEVELOPMENT_AUTO",
+    ])
+    .optional(),
   declarationVersion: z.string().optional(),
   decidedAt: z.iso.datetime().optional(),
   revision: z.number().int().positive(),

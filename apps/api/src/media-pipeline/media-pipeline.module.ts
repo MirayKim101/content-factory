@@ -3,6 +3,7 @@ import { Module } from "@nestjs/common";
 import { ProjectsModule } from "../projects/projects.module.js";
 import { CreateCuts } from "./application/create-cuts.js";
 import { GetPipelineJob } from "./application/get-pipeline-job.js";
+import { ListProjectCutJobs } from "./application/list-project-cut-jobs.js";
 import { JOB_DISPATCH } from "./application/job-dispatch.port.js";
 import { PIPELINE_REPOSITORY } from "./application/pipeline-repository.port.js";
 import { ReconcileMediaJobs } from "./application/reconcile-media-jobs.js";
@@ -23,6 +24,7 @@ import { MediaPipelineController } from "./presentation/media-pipeline.controlle
     BullMqJobDispatch,
     CreateCuts,
     GetPipelineJob,
+    ListProjectCutJobs,
     ReconcileMediaJobs,
     MediaReconciliationStartup,
     { provide: PIPELINE_REPOSITORY, useExisting: PrismaPipelineRepository },

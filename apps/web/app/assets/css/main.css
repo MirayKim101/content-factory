@@ -1,1 +1,56 @@
 @import "tailwindcss";
+
+:where(.p-button, [data-pc-name="button"]) {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #245d42;
+  border-radius: 0.55rem;
+  background: #245d42;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+:where(.p-button, [data-pc-name="button"]):hover:not(:disabled) {
+  background: #194a33;
+}
+
+:where(.p-button, [data-pc-name="button"]):focus-visible {
+  outline: 3px solid #8ac7a5;
+  outline-offset: 2px;
+}
+
+:where(.p-button, [data-pc-name="button"])[data-p-severity="secondary"] {
+  border-color: #9ba9a0;
+  background: #fff;
+  color: #183c2b;
+}
+
+:where(.p-button, [data-pc-name="button"]):disabled,
+:where(.p-button, [data-pc-name="button"])[data-p-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+a.download,
+a.action-link {
+  display: inline-flex;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.55rem;
+  background: #245d42;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+a.download:hover,
+a.action-link:hover {
+  background: #194a33;
+}

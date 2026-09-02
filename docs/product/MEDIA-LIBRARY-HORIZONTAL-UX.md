@@ -70,9 +70,11 @@ API, не из localStorage.
 
 ### Очередь загрузки
 
-Действие «Загрузить видео» открывает inline panel: имя проекта и MP4. После
-готовности файла медиатека показывает `NOT_REVIEWED`; отдельный диалог явно
-подтверждает права только для текущей версии исходника. «Добавить ещё файл» создаёт очередь строк. Оператор выбирает один или
+Действие «Загрузить видео» открывает inline panel: имя проекта и MP4. В
+production/manual policy готовый файл показывает `NOT_REVIEWED`, и отдельный
+диалог подтверждает права только для текущей версии. В explicit local-auto
+profile backend сразу создаёт local-only решение, поэтому диалог не появляется.
+«Добавить ещё файл» создаёт очередь строк. Оператор выбирает один или
 пять+ файлов, но одновременно выполняется ровно одна HTTP-загрузка
 (`concurrency = 1`), без конкуренции за сеть и локальные ресурсы.
 
@@ -115,9 +117,12 @@ non-blocking сообщение «Некоторые ссылки на виде�
 медиатеку с `returnTo=/horizontal?...`; подтверждение возвращает объединённый,
 deduplicated набор.
 
-Всегда есть один `activeProjectId`. Первый доступный source активируется
-автоматически; «Открыть в плеере» другой строки переключает только player и
-marker buttons. Таймкоды/jobs принадлежат строке и не теряются при переключении.
+Desktop workspace показывает grid независимых карточек. В каждой разрешённой
+карточке есть собственный native video player; PrimeVue не предоставляет media
+player, поэтому это намеренное исключение. Одновременно воспроизводится не более
+одного видео. Кнопка PrimeVue «Настроить нарезки» открывает один Dialog для
+выбранного source. Таймкоды/jobs принадлежат source и не теряются при закрытии
+или переключении диалога.
 
 ### Desktop wireframe (>= 1024 px)
 
@@ -126,28 +131,21 @@ marker buttons. Таймкоды/jobs принадлежат строке и н�
 │ [▣] Горизонтальные видео            │ Горизонтальные видео    [Добавить видео]     │
 │ [▤] Медиатека                       │ Выбрано: 5 источников                       │
 │ [▯] Вертикальные видео               ├──────────────────────────────────────────────┤
-│     Появится на Этапе 3              │ ┌─ Sticky active player ───────────────────┐ │
-│                                      │ │ stream-01.mp4 · 02:00:00.000             │ │
-│                                      │ │              [ native video ]             │ │
-│                                      │ │ Позиция 00:12:04.250                     │ │
-│                                      │ │ [Установить начало] [Установить конец]    │ │
-│                                      │ └───────────────────────────────────────────┘ │
-│                                      ├──────────────────────────────────────────────┤
-│                                      │ stream-01.mp4 [В плеере] [Убрать]           │
-│                                      │ 1 Начало [00:12:04.250] Конец [00:13:31.500] │
-│                                      │ [+ Отрезок] [Запустить нарезку (1)]         │
-│                                      │ Готово · [Скачать MP4]                      │
-│                                      ├──────────────────────────────────────────────┤
-│                                      │ stream-02.mp4 [Открыть в плеере] [Убрать]   │
-│                                      │ 1 Начало […] Конец […]  [+ Отрезок]         │
-│                                      │ [Запустить нарезку (2)] · В очереди          │
-│                                      └──────────────────────────────────────────────┘
+│     Появится на Этапе 3              │ ┌─ Карточка 1 ─────┐ ┌─ Карточка 2 ─────┐ │
+│                                      │ │ [video 16:9]     │ │ [video 16:9]     │ │
+│                                      │ │ [Настройки]      │ │ [Настройки]      │ │
+│                                      │ └────────────────┘ └────────────────┘       │
+│                                      │ ┌─ Карточка 3 ─────┐ ┌─ Карточка 4 ─────┐ │
+│                                      │ │ [video 16:9]      │ │ [video 16:9]      │ │
+│                                      │ │ [Настройки]       │ │ [Настройки]       │ │
+│                                      │ └───────────────────┘ └───────────────────┘ │
+│                                      │ Dialog: player, markers, segments, submit   │
 └──────────────────────────────────────┴──────────────────────────────────────────────┘
 ```
 
-Sidebar занимает 224–272 px, контент имеет ограниченную читаемую ширину. Player
-закреплён в верху scroll container, но при недостаточной высоте перестаёт быть
-sticky, а не перекрывает поля или native controls.
+Sidebar занимает 224–272 px. Рабочая область использует desktop grid: 2 колонки
+на базовой ширине, 3 на широком экране и 4 от 1600 px. Пятая карточка переносится
+в следующий ряд. Карточки не фиксируются и не перекрывают native controls.
 
 ### Mobile — deferred
 
@@ -156,28 +154,29 @@ sticky, а не перекрывает поля или native controls.
 ломаться при уменьшении окна, но mobile-specific UX будет спроектирован и
 проверен отдельным срезом.
 
-### Строка источника
+### Карточка источника и Dialog настроек
 
-Каждая source row содержит:
+Каждая карточка содержит:
 
 1. название проекта, filename, size, duration и source status;
-2. `Открыть в плеере` / `В плеере` и `Убрать из рабочего места`;
-3. локальные SegmentDraft rows с Stage 1 правилами: `HH:MM:SS.mmm`, exact
+2. собственный native player, `Настроить нарезки` и `Убрать`;
+3. PrimeVue Dialog с отдельным player и SegmentDraft rows по правилам
+   `HH:MM:SS.mmm`, exact
    integer milliseconds, `start < end`, `end <= duration`; пересечения можно,
    одинаковые пары нельзя;
 4. «Добавить отрезок»;
 5. действие только этого source: `Запустить нарезку (N)`;
-6. созданные job cards: queue/processing progress, safe failure, clone failed
-   bounds и `Скачать MP4` при READY.
+6. созданные job cards на основной source card вне Dialog: queue/processing
+   progress, safe failure, clone failed bounds и `Скачать MP4` при READY.
 
 Кнопки «Запустить всё» здесь нет. Каждый source создаёт отдельный `POST cuts`
 со своим idempotency key; ошибки и статусы изолированы. Можно запустить A,
 работать с B и потом запустить B. Повтор неясного сетевого результата использует
 тот же key и нормализованное body.
 
-Marker buttons пишут `video.currentTime` только в active segment active source.
-Если фокус переходит в segment другого source, он становится active, player
-переключается до записи, live message сообщает: «В плеере открыт файл
+Marker buttons пишут `video.currentTime` только из player открытого Dialog в
+active segment выбранного source. Dialog и player переключаются вместе, live
+message сообщает: «В плеере открыт файл
 stream-02.mp4. Начало отрезка 2: 00:12:04.250». Это исключает тихую запись
 времени в чужой файл.
 
@@ -190,7 +189,7 @@ Stage 1 semantics сохраняются. Процент нарезки пока
 terminal states останавливают polling; более низкий `revision` не заменяет
 свежий ответ.
 
-## Proposed API semantics (pending implementation)
+## Implemented API semantics
 
 Спецификация не меняет контракт сама. Ниже — обязательная для реализации
 семантика, которую API owner добавляет в OpenAPI. Frontend использует generated
@@ -203,7 +202,8 @@ client через один typed adapter, не raw HTTP.
 | source playback                              | Существующий safe browser-playable Range endpoint без presigned URL в DTO.                                                                                                                                                                                         |
 | upload project/source                        | Существующий per-file idempotent upload. UI отправляет строго последовательно; batch API не требуется. XHR exposes bytes/total только пока браузер их измеряет.                                                                                                    |
 | `POST cuts`                                  | Существующий per-project `projectId + segments`. Нет batch endpoint и нет atomic run-all across projects; каждая source row хранит свой idempotency identity.                                                                                                      |
-| job/status/download                          | Существующие Stage 1 адресные DTO, progress/revision/failure/download semantics.                                                                                                                                                                                   |
+| `GET projects/:id/pipeline-jobs?limit`       | Возвращает до 100 persisted `CUT_SEGMENT` jobs только current source version, newest first; authorization проверяется server-side. Используется для восстановления progress/READY/download после reload.                                                           |
+| job/status/download                          | Адресные DTO сохраняют progress/revision/failure/download semantics и polling отдельного активного job.                                                                                                                                                            |
 
 `cursor` frontend не конструирует и не меняет; URL хранит лишь фильтры и поиск,
 next opaque cursor — Vue Query pagination state. Новые uploads появляются через
@@ -215,7 +215,7 @@ query invalidation, не через несогласованное ручное 
 pages/library.vue, pages/horizontal.vue          route composition/query validation
 widgets/app-shell/                               persistent navigation/sidebar
 widgets/media-library/                           toolbar, upload queue, list composition
-widgets/horizontal-workspace/                    sticky player + source rows composition
+widgets/horizontal-workspace/                    source card grid + settings Dialog
 features/upload-video-queue/                     per-file queue/idempotency/progress
 features/select-library-sources/                 multiple selection and navigation
 features/edit-cut-segments/                      Stage 1 rules, source scoped
@@ -228,9 +228,10 @@ shared/ui/                                       navigation and accessible contr
 ```
 
 Dependency direction is `pages -> widgets -> features -> entities -> shared`.
-Vue Query owns list/details/jobs; component state owns active player, temporary
-selection and unsent per-source drafts. URL owns project selection and library
-filters. Pinia is not introduced for server state.
+Vue Query owns list/details/persisted jobs; PostgreSQL восстанавливает job
+history после reload. Component state owns active player, temporary selection и
+unsent per-source drafts. URL owns project selection and library filters. Pinia
+is not introduced for server state.
 
 ## Accessibility and keyboard behaviour
 
@@ -262,9 +263,9 @@ filters. Pinia is not introduced for server state.
    reloads it without browser storage, and invalid IDs do not block valid rows.
 4. Upload queue accepts 5+ files, performs one active upload, shows genuine byte
    percent while measurable, distinct finalization, and isolated row failure.
-5. Workspace has independent source rows and one sticky active player desktop;
-   selecting a segment makes the correct source active before marker write.
-6. Each row supports multiple validated timecode pairs and its own submit;
+5. Workspace renders five independent source cards as a desktop grid; each
+   settings Dialog has the correct player before marker write.
+6. Each Dialog supports multiple validated timecode pairs and its own submit;
    no run-all button or cross-source atomicity is implied.
 7. Job cards retain Stage 1 queue/processing/ready/failed/download semantics;
    cut percent is real, not invented.
@@ -276,7 +277,7 @@ filters. Pinia is not introduced for server state.
 1. Open empty `/library`, upload five small authorized MP4s, observe exactly one
    active XHR upload at a time and real percent while bytes are sent.
 2. Select two ready sources, open horizontal workspace, copy/reload its URL,
-   and verify both rows and the first active player return.
+   and verify both cards and their players return.
 3. Create two pairs for A and one for B. Start A, edit B, start B; verify
    separate jobs and independent downloadable MP4s.
 4. A pending/failed/`NOT_REVIEWED` source is visibly nonselectable; direct URLs
@@ -286,7 +287,8 @@ filters. Pinia is not introduced for server state.
 
 ## Deferred decisions
 
-- Source authorization follows ADR-003; upload never auto-confirms rights.
+- Source authorization follows ADR-003. Only the explicit loopback local profile
+  may auto-authorize server-side under ADR-004; manual/production never does.
 - Project/artifact deletion, sorting and tags need durable API semantics before
   destructive or misleading controls appear.
 - Vertical source selection may reuse this projection only when Stage 3 defines

@@ -51,7 +51,49 @@ const API_ENVIRONMENT_KEYS = [
   "MEDIA_RECONCILE_LIMIT",
   "MEDIA_QUEUE_NAME",
   "MEDIA_QUEUE_DISABLED",
+  "DEPLOYMENT_PROFILE",
+  "SOURCE_AUTHORIZATION_POLICY",
+  "API_HOST",
 ] as const;
+
+export type DeploymentProfile = "local" | "other";
+export type SourceAuthorizationPolicy = "manual" | "local-auto";
+
+export interface SourceAuthorizationRuntime {
+  deploymentProfile: DeploymentProfile;
+  policy: SourceAuthorizationPolicy;
+  apiHost: string;
+}
+
+export function resolveSourceAuthorizationRuntime(
+  environment: NodeJS.ProcessEnv,
+): SourceAuthorizationRuntime {
+  const deploymentProfile =
+    environment.DEPLOYMENT_PROFILE?.trim() === "local" ? "local" : "other";
+  const policy =
+    environment.SOURCE_AUTHORIZATION_POLICY?.trim() === "local-auto"
+      ? "local-auto"
+      : "manual";
+  const apiHost = environment.API_HOST?.trim() || "127.0.0.1";
+
+  if (
+    policy === "local-auto" &&
+    (deploymentProfile !== "local" || !isLoopbackHost(apiHost))
+  ) {
+    throw new Error("CONFIG_SOURCE_AUTHORIZATION_LOCAL_AUTO_UNSAFE");
+  }
+
+  return { deploymentProfile, policy, apiHost };
+}
+
+export function sourceAuthorizationRuntime(): SourceAuthorizationRuntime {
+  loadEnvironment();
+  return resolveSourceAuthorizationRuntime(process.env);
+}
+
+function isLoopbackHost(host: string): boolean {
+  return host === "127.0.0.1" || host === "localhost" || host === "::1";
+}
 
 function required(name: string): string {
   loadEnvironment();
@@ -93,6 +135,9 @@ export function databaseUrl(): string {
 }
 
 export interface ApiEnvironment {
+  apiHost: string;
+  deploymentProfile: DeploymentProfile;
+  sourceAuthorizationPolicy: SourceAuthorizationPolicy;
   maxUploadBytes: number;
   uploadTempDirectory: string;
   uploadTempStaleAfterMs: number;
@@ -118,7 +163,11 @@ export interface ApiEnvironment {
 
 export function apiEnvironment(): ApiEnvironment {
   loadEnvironment();
+  const authorization = resolveSourceAuthorizationRuntime(process.env);
   return {
+    apiHost: authorization.apiHost,
+    deploymentProfile: authorization.deploymentProfile,
+    sourceAuthorizationPolicy: authorization.policy,
     maxUploadBytes: boundedInteger(
       "API_MAX_UPLOAD_BYTES",
       10 * 1024 ** 3,

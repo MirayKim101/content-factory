@@ -45,7 +45,7 @@ let retryIdentity: { fingerprint: string; key: string } | undefined;
 
 const durationMs = computed(() => projectQuery.data.value?.source.durationMs);
 const authorizationCleared = computed(
-  () => projectQuery.data.value?.source.authorization.status === "CLEARED",
+  () => projectQuery.data.value?.source.authorization.usable === true,
 );
 const validation = computed(() =>
   durationMs.value === undefined

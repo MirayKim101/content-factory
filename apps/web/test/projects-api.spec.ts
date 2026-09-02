@@ -23,6 +23,7 @@ const readyProject = {
     authorization: {
       sourceVersion: 1,
       status: "CLEARED",
+      usable: true,
       basis: "LEGACY_ATTESTATION",
       declarationVersion: "upload-rights-v1",
       decidedAt: "2026-09-01T00:00:00.000Z",

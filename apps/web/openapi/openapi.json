@@ -321,6 +321,18 @@
         ],
         "type": "object"
       },
+      "ProjectCutJobsResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PipelineJobResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "type": "object"
+      },
       "ProjectLibraryItemDto": {
         "properties": {
           "createdAt": {
@@ -507,7 +519,11 @@
       "SourceAuthorizationResponseDto": {
         "properties": {
           "basis": {
-            "enum": ["LEGACY_ATTESTATION", "OPERATOR_ATTESTATION"],
+            "enum": [
+              "LEGACY_ATTESTATION",
+              "OPERATOR_ATTESTATION",
+              "LOCAL_DEVELOPMENT_AUTO"
+            ],
             "type": "string"
           },
           "decidedAt": {
@@ -528,9 +544,13 @@
           "status": {
             "enum": ["NOT_REVIEWED", "CLEARED"],
             "type": "string"
+          },
+          "usable": {
+            "description": "Policy-aware authorization eligibility for playback and processing.",
+            "type": "boolean"
           }
         },
-        "required": ["sourceVersion", "status", "revision"],
+        "required": ["sourceVersion", "status", "usable", "revision"],
         "type": "object"
       },
       "SourceResponseDto": {
@@ -1078,6 +1098,26 @@
           }
         },
         "summary": "Atomically create one independent background job per cut segment",
+        "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/projects/{projectId}/pipeline-jobs": {
+      "get": {
+        "operationId": "MediaPipelineController_projectJobs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectCutJobsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List persisted cut jobs for the current source",
         "tags": ["media-pipeline"]
       }
     },

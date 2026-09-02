@@ -120,6 +120,19 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
       }),
     ).toBe(1);
 
+    const history = await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectId}/pipeline-jobs?limit=50`)
+      .expect(200);
+    expect(history.body.items).toHaveLength(2);
+    expect(
+      new Set(history.body.items.map((job: { id: string }) => job.id)),
+    ).toEqual(new Set(first.body.jobs.map((job: { id: string }) => job.id)));
+    expect(
+      history.body.items.every(
+        (job: { startMs: number; endMs: number }) => job.endMs > job.startMs,
+      ),
+    ).toBe(true);
+
     await request(app.getHttpServer())
       .post(`/api/v1/projects/${projectId}/cuts`)
       .set("Idempotency-Key", "integration-cuts-0001")
@@ -153,6 +166,12 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
     const projectId = await readyProject(5_000, false);
     await request(app.getHttpServer())
       .get(`/api/v1/projects/${projectId}/source`)
+      .expect(403)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_AUTHORIZATION_REQUIRED"),
+      );
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectId}/pipeline-jobs`)
       .expect(403)
       .expect(({ body }) =>
         expect(body.error.code).toBe("SOURCE_AUTHORIZATION_REQUIRED"),
@@ -214,6 +233,10 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
         },
       },
     });
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectId}/pipeline-jobs`)
+      .expect(200)
+      .expect(({ body }) => expect(body.items).toEqual([]));
     await request(app.getHttpServer())
       .get(`/api/v1/projects/${projectId}/source`)
       .expect(404);
