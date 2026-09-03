@@ -7,6 +7,7 @@ import InputText from "primevue/inputtext";
 import { computed, nextTick, ref, watch } from "vue";
 
 import PipelineJobCard from "~/entities/pipeline-job/ui/pipeline-job-card.vue";
+import EditorialPackageDialog from "~/features/edit-editorial-package/ui/editorial-package-dialog.vue";
 import {
   emptySegment,
   createCutSubmissionSummary,
@@ -30,6 +31,7 @@ import {
   MediaPipelineApiError,
 } from "~/shared/api/media-pipeline";
 import { createProjectsApi } from "~/shared/api/projects";
+import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -45,6 +47,11 @@ const players = new Map<string, HTMLVideoElement>();
 const editorPlayer = ref<HTMLVideoElement>();
 const currentMsById = ref<Record<string, number>>({});
 const announcement = ref("");
+const editorialTarget = ref<{
+  projectId: string;
+  jobId: string;
+  filename: string;
+}>();
 const projectQueries = useQueries({
   queries: computed(() =>
     ids.value.map((id) => ({
@@ -264,6 +271,14 @@ function cloneSegment(
   state.activeSegment = state.drafts.length - 1;
   openEditor(id);
 }
+function openEditorial(
+  projectId: string,
+  jobId: string,
+  filename: string,
+): void {
+  editorialTarget.value = { projectId, jobId, filename };
+  announcement.value = "Открыт редактор metadata готовой нарезки.";
+}
 watch(
   ids,
   (next) => {
@@ -385,7 +400,7 @@ watch(
                 {{
                   row.query.data.source.durationMs === undefined
                     ? "длительность проверяется"
-                    : formatTimecode(row.query.data.source.durationMs)
+                    : formatDisplayTimecode(row.query.data.source.durationMs)
                 }}
               </div>
             </div>
@@ -412,7 +427,9 @@ watch(
             </p>
             <p class="position">
               Позиция:
-              <strong>{{ formatTimecode(currentMsById[row.id] ?? 0) }}</strong>
+              <strong>{{
+                formatDisplayTimecode(currentMsById[row.id] ?? 0)
+              }}</strong>
             </p>
             <div class="card-actions">
               <Button
@@ -461,6 +478,13 @@ watch(
                 :key="jobId"
                 :job-id="jobId"
                 @clone-segment="cloneSegment(row.id, $event)"
+                @edit-editorial="
+                  openEditorial(
+                    row.id,
+                    $event,
+                    row.query.data!.source.originalFilename,
+                  )
+                "
               />
             </section>
           </template>
@@ -506,7 +530,7 @@ watch(
           <p>
             Позиция:
             <strong>{{
-              formatTimecode(currentMsById[editorProjectId] ?? 0)
+              formatDisplayTimecode(currentMsById[editorProjectId] ?? 0)
             }}</strong>
           </p>
           <div class="marker-actions">
@@ -539,7 +563,7 @@ watch(
                 <InputText
                   :id="`horizontal-${editorProjectId}-${index}-start`"
                   v-model="draft.startText"
-                  placeholder="00:00:00.000"
+                  placeholder="00:00:00"
                   :invalid="
                     Boolean(
                       draftError(
@@ -559,7 +583,7 @@ watch(
                 <InputText
                   :id="`horizontal-${editorProjectId}-${index}-end`"
                   v-model="draft.endText"
-                  placeholder="00:00:10.000"
+                  placeholder="00:00:10"
                   :invalid="
                     Boolean(
                       draftError(
@@ -612,17 +636,17 @@ watch(
                 :key="segment.clientSegmentId"
               >
                 Отрезок {{ index + 1 }}:
-                {{ formatTimecode(segment.startMs) }}–{{
-                  formatTimecode(segment.endMs)
+                {{ formatDisplayTimecode(segment.startMs) }}–{{
+                  formatDisplayTimecode(segment.endMs)
                 }}
                 · длительность
-                {{ formatTimecode(segment.endMs - segment.startMs) }}
+                {{ formatDisplayTimecode(segment.endMs - segment.startMs) }}
               </li>
             </ol>
             <p>
               Всего материала:
               {{
-                formatTimecode(
+                formatDisplayTimecode(
                   ensureState(editorProjectId).confirmation?.totalDurationMs ??
                     0,
                 )
@@ -674,6 +698,19 @@ watch(
         </form>
       </div>
     </Dialog>
+    <EditorialPackageDialog
+      v-if="editorialTarget"
+      :key="`${editorialTarget.projectId}:${editorialTarget.jobId}`"
+      :visible="true"
+      :project-id="editorialTarget.projectId"
+      :job-id="editorialTarget.jobId"
+      :filename="editorialTarget.filename"
+      @update:visible="
+        (visible) => {
+          if (!visible) editorialTarget = undefined;
+        }
+      "
+    />
   </main>
 </template>
 
@@ -773,6 +810,19 @@ video {
 }
 .time-fields :deep(.p-inputtext) {
   width: 100%;
+}
+.time-fields :deep(input) {
+  box-sizing: border-box;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #9aa89f;
+  border-radius: 0.45rem;
+  background: #fff;
+}
+.time-fields :deep(input:focus) {
+  outline: 3px solid rgb(35 77 53 / 0.24);
+  outline-offset: 1px;
+  border-color: #234d35;
 }
 .warning {
   padding: 0.75rem;

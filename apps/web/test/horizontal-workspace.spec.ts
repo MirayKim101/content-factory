@@ -228,8 +228,8 @@ describe("HorizontalWorkspace cut confirmation", () => {
 
     await confirmSingleSegment(wrapper);
 
-    expect(wrapper.text()).toContain("00:12:46.000–00:13:21.000");
-    expect(wrapper.text()).toContain("длительность 00:00:35.000");
+    expect(wrapper.text()).toContain("00:12:46–00:13:21");
+    expect(wrapper.text()).toContain("длительность 00:00:35");
     expect(launchButton(wrapper).attributes("disabled")).toBeUndefined();
 
     await launchButton(wrapper).trigger("submit");

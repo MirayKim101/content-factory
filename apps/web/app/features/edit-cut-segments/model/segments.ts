@@ -1,4 +1,4 @@
-import { formatTimecode } from "~/shared/lib/timecode";
+import { formatDisplayTimecode, formatTimecode } from "~/shared/lib/timecode";
 
 export { formatTimecode } from "~/shared/lib/timecode";
 
@@ -83,7 +83,7 @@ export function validateSegments(
     }
     if (endMs > durationMs) {
       errors[draft.clientKey] =
-        `Конец выходит за длительность исходного видео (${formatTimecode(durationMs)}).`;
+        `Конец выходит за длительность исходного видео (${formatDisplayTimecode(durationMs)}).`;
       continue;
     }
     const key = `${startMs}:${endMs}`;

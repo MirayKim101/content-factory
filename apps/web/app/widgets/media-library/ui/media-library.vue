@@ -16,7 +16,7 @@ import {
   toggleProjectSelection,
   MAX_SELECTED_PROJECTS,
 } from "~/features/select-library-sources/model/selection";
-import { formatTimecode } from "~/shared/lib/timecode";
+import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -218,7 +218,7 @@ watch(
               {{
                 item.source.durationMs === undefined
                   ? "проверяется"
-                  : formatTimecode(item.source.durationMs)
+                  : formatDisplayTimecode(item.source.durationMs)
               }}
               · Нарезки: {{ item.cutJobCounts.total }}, готово:
               {{ item.cutJobCounts.ready }}, ошибок:

@@ -19,6 +19,7 @@ import {
   createMediaPipelineApi,
   MediaPipelineApiError,
 } from "~/shared/api/media-pipeline";
+import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
 const route = useRoute();
 const projectIdSchema = z.uuid();
@@ -102,7 +103,7 @@ function cloneFailedSegment(bounds: { startMs: number; endMs: number }): void {
     activeIndex.value = drafts.value.length - 1;
   }
   submitted.value = false;
-  announcement.value = `Создан новый отрезок ${formatTimecode(bounds.startMs)}–${formatTimecode(bounds.endMs)}.`;
+  announcement.value = `Создан новый отрезок ${formatDisplayTimecode(bounds.startMs)}–${formatDisplayTimecode(bounds.endMs)}.`;
   void nextTick(() =>
     document.getElementById(`segment-${activeIndex.value}-start`)?.focus(),
   );
@@ -138,7 +139,7 @@ function setMarker(field: "startText" | "endText"): void {
   const value = Math.round((player.value?.currentTime ?? 0) * 1_000);
   draft[field] = formatTimecode(value);
   const label = field === "startText" ? "Начало" : "Конец";
-  announcement.value = `${label} отрезка ${activeIndex.value + 1} установлено: ${formatTimecode(value)}`;
+  announcement.value = `${label} отрезка ${activeIndex.value + 1} установлено: ${formatDisplayTimecode(value)}`;
 }
 
 function onTimeUpdate(): void {
@@ -225,7 +226,9 @@ async function submit(): Promise<void> {
         {{ projectQuery.data.value.source.originalFilename }} ·
         {{ projectQuery.data.value.source.sizeBytes }} байт · Длительность:
         {{
-          durationMs === undefined ? "проверяется" : formatTimecode(durationMs)
+          durationMs === undefined
+            ? "проверяется"
+            : formatDisplayTimecode(durationMs)
         }}
       </p>
 
@@ -275,7 +278,8 @@ async function submit(): Promise<void> {
             @timeupdate="onTimeUpdate"
           />
           <p>
-            Текущая позиция: <strong>{{ formatTimecode(currentMs) }}</strong>
+            Текущая позиция:
+            <strong>{{ formatDisplayTimecode(currentMs) }}</strong>
           </p>
           <div class="marker-actions">
             <Button
@@ -311,7 +315,7 @@ async function submit(): Promise<void> {
               :id="`segment-${index}-start`"
               v-model="draft.startText"
               class="text-input"
-              placeholder="00:00:00.000"
+              placeholder="00:00:00"
               :disabled="
                 durationMs === undefined || submitMutation.isPending.value
               "
@@ -328,7 +332,7 @@ async function submit(): Promise<void> {
               :id="`segment-${index}-end`"
               v-model="draft.endText"
               class="text-input"
-              placeholder="00:00:10.000"
+              placeholder="00:00:10"
               :disabled="
                 durationMs === undefined || submitMutation.isPending.value
               "

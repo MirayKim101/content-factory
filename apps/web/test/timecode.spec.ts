@@ -7,12 +7,19 @@ import {
   segmentFromBounds,
   validateSegments,
 } from "../app/features/edit-cut-segments/model/segments";
+import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
 describe("manual cut timecodes", () => {
   it("parses accepted values to exact integer milliseconds", () => {
     expect(parseTimecode("00:00:00.1")).toBe(100);
     expect(parseTimecode("12:04.250")).toBe(724_250);
     expect(parseTimecode("01:12:04.250")).toBe(4_324_250);
+    expect(formatTimecode(4_324_250)).toBe("01:12:04.250");
+  });
+
+  it("rounds presentation without changing editable millisecond timecodes", () => {
+    expect(formatDisplayTimecode(4_324_250)).toBe("01:12:04");
+    expect(formatDisplayTimecode(4_324_750)).toBe("01:12:05");
     expect(formatTimecode(4_324_250)).toBe("01:12:04.250");
   });
 
@@ -70,13 +77,9 @@ describe("manual cut timecodes", () => {
       totalDurationMs: 35_000,
     });
     expect(formatTimecode(result.summary!.segments[0]!.startMs)).toBe(
-      "00:12:46.000",
+      "00:12:46",
     );
-    expect(formatTimecode(result.summary!.segments[0]!.endMs)).toBe(
-      "00:13:21.000",
-    );
-    expect(formatTimecode(result.summary!.totalDurationMs)).toBe(
-      "00:00:35.000",
-    );
+    expect(formatTimecode(result.summary!.segments[0]!.endMs)).toBe("00:13:21");
+    expect(formatTimecode(result.summary!.totalDurationMs)).toBe("00:00:35");
   });
 });

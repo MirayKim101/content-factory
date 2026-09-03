@@ -7,11 +7,12 @@ import {
   createMediaPipelineApi,
   type PipelineJob,
 } from "~/shared/api/media-pipeline";
-import { formatTimecode } from "~/shared/lib/timecode";
+import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
 const props = defineProps<{ jobId: string }>();
 const emit = defineEmits<{
   cloneSegment: [bounds: { startMs: number; endMs: number }];
+  editEditorial: [jobId: string];
 }>();
 const config = useRuntimeConfig();
 const api = createMediaPipelineApi(config.public.apiBasePath);
@@ -58,8 +59,8 @@ const label = computed(
     <template v-else-if="query.data.value">
       <div class="job-heading">
         <strong
-          >{{ formatTimecode(query.data.value.startMs) }}–{{
-            formatTimecode(query.data.value.endMs)
+          >{{ formatDisplayTimecode(query.data.value.startMs) }}–{{
+            formatDisplayTimecode(query.data.value.endMs)
           }}</strong
         >
         <span class="status-tag">{{ label }}</span>
@@ -73,8 +74,11 @@ const label = computed(
       </p>
       <div v-else-if="query.data.value.state === 'PROCESSING'">
         <p v-if="percent !== null">
-          Обработано {{ formatTimecode(query.data.value.processedMs ?? 0) }} из
-          {{ formatTimecode(query.data.value.totalMs ?? 0) }} ({{ percent }}%).
+          Обработано
+          {{ formatDisplayTimecode(query.data.value.processedMs ?? 0) }} из
+          {{ formatDisplayTimecode(query.data.value.totalMs ?? 0) }} ({{
+            percent
+          }}%).
         </p>
         <p v-else>Обработка началась. Точный прогресс пока недоступен.</p>
         <progress
@@ -96,6 +100,12 @@ const label = computed(
         </p>
         <a class="download" :href="query.data.value.result.downloadUrl"
           >Скачать MP4</a
+        >
+        <Button
+          type="button"
+          severity="secondary"
+          @click="emit('editEditorial', query.data.value.id)"
+          >Заголовок и обложка</Button
         >
       </div>
       <div v-else-if="query.data.value.failure" class="error" role="alert">
