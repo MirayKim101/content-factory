@@ -1,10 +1,11 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-02
+Обновлено: 2026-09-03 (продолжение разработки)
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
-Текущий сохранённый commit: `HEAD feat: add manual editorial package backend`
-Рабочее дерево после ночной фиксации: clean
+Текущий сохранённый commit: `1552490 feat: add manual editorial workspace and clear timecode UI`
+Сохранённый backend: `406326a`. Frontend manual editorial workspace прошёл
+проверку и сохранён локально в `1552490` (без push).
 
 ## Решение владельца
 
@@ -123,19 +124,51 @@ Independent review: `CLEAN`.
 - media-worker не перезапускался, 15 benchmark results и пользовательские
   данные сохранены.
 
-Frontend для manual editorial draft намеренно не начинался: владелец попросил
-зафиксировать состояние и остановиться до завтра.
+Frontend manual editorial draft принят 2026-09-03: independent review CLEAN.
+72/72 штатных и 16/16 независимых regression probes; lint, typecheck, build,
+OpenAPI, formatting и diff check passed. Retry identity, late response,
+stale-cache hydration и error/retry исправлены и независимо воспроизведены.
+Browser smoke подтвердил save/reload разных текстов и ordered tags на jobs
+`62d27cd1-68a1-47ee-8ae6-10ea2abffa0a` (revision 2) и
+`4a15a08f-745a-4163-854d-b8495b5aa018` (revision 1), с одним шаблоном
+`MVP smoke 2026-09-03` и синтетической PNG-обложкой `cf-editorial-smoke.png`.
+Проверены непрозрачный Dialog, видимые границы полей/actions, dirty reload с
+явным подтверждением, валидация `12:46–42:46` как 30 минут и download Range
+`206 / 1024 bytes`. Целые секунды в полях и placeholders больше не имеют `.000`.
+Владелец дополнительно запросил улучшение отступов/группировки UI и отображение
+таймкодов без миллисекунд, без изменения точности сохранённых границ.
+
+Runtime проверен 2026-09-03: `MEDIA_WORKER_CONCURRENCY=1`, container limit 2 CPU.
+Параллельный benchmark 2/4 ещё НЕ выполнен. 2026-09-03 в 21:06:42 UTC+7
+отправлена пачка 4×30 минут для concurrency 1. Runner упал на Bash 3 `mapfile`,
+а ошибочный EXIT handler пересоздал worker. Прогон НЕвалиден как performance
+baseline. Новые пачки и переключения запрещены до независимого review runner.
+DevOps сохраняет recovery/attempt evidence, не удаляя результаты; точный каталог:
+`tmp/benchmarks/parallel-cut/level-1-20260903T210631+0700-b5524440-b600-40da-8eff-6370a21558cd/`.
+Worker восстановлен с concurrency 1 / 2 CPU; четыре принятых job не подавать снова.
+Повторные WORKER_LEASE_EXPIRED в 21:12 после первоначального restart требуют
+отдельного расследования: причина НЕ доказана. DevOps и Independent Reviewer
+проверяют runtime/lease и runner read-only. Исправление Bash 3 и безопасный
+memory gate должны пройти review до любых новых пачек/перезапусков.
+Docker dependencies healthy, API и
+web запущены локально. GET result через порт 3000 с Range 0–1023 дал 206/1024 B.
+В 21:18:56 UTC+7 API dev watcher остановлен root, запущен существующий compiled
+`node dist/main.js` без watch (exec session 27566, PID 23841), health 200.
+Это изолирует live runtime от новых source/codegen изменений Stage2a. Worker не
+перезапускался этим действием. После новых builds НЕ перезапускать API из dist
+до проверки migration compatibility и согласованного deployment.
 
 ## Первый следующий шаг
 
-Завтра перед новым implementation slice восстановить состояние по этому handoff
-и проверить `git status`, migration status и healthy containers. Затем передать
-замороженный editorial OpenAPI contract одному `Frontend Engineer — Manual
-Editorial Workspace`: добавить ручное редактирование title/description/tags,
-загрузку/выбор собственной обложки и reload сохранённой revision на desktop
-`/horizontal`. После browser smoke продолжить Stage 2 overlays/intro/outro/audio,
-preview/approval/export. Capacity concurrency `2`, затем `4` — отдельный
-измеряемый experiment, не смешивать его с frontend slice.
+Следующий slice Stage 2a уже назначен `Backend Engineer — Montage assets`:
+`docs/decisions/ADR-005-montage-assets-and-recipes.md` accepted после Architect
+review; acceptance в `docs/engineering/tasks/stage2-montage-assets.md`.
+Сначала ресурсы upload/probe/list/content; затем отдельный slice 2b recipes.
+Live migrations/worker restart запрещены, пока capacity batch не завершён;
+разработка и изолированные проверки не меняют работающий runtime.
+После freeze OpenAPI — frontend, independent review и browser smoke. Фоновая сборка,
+preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
+остаётся отдельным измеряемым experiment после восстановления безопасного runner.
 
 ## Локальные данные
 
