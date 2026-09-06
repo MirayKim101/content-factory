@@ -3,7 +3,7 @@
 Обновлено: 2026-09-03 (продолжение разработки)
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
-Текущий сохранённый commit: `1552490 feat: add manual editorial workspace and clear timecode UI`
+Текущий сохранённый commit: `3994fa7 test: add guarded parallel cutting benchmark and recovery monitoring`
 Сохранённый backend: `406326a`. Frontend manual editorial workspace прошёл
 проверку и сохранён локально в `1552490` (без push).
 
@@ -146,10 +146,20 @@ baseline. Новые пачки и переключения запрещены �
 DevOps сохраняет recovery/attempt evidence, не удаляя результаты; точный каталог:
 `tmp/benchmarks/parallel-cut/level-1-20260903T210631+0700-b5524440-b600-40da-8eff-6370a21558cd/`.
 Worker восстановлен с concurrency 1 / 2 CPU; четыре принятых job не подавать снова.
-Повторные WORKER_LEASE_EXPIRED в 21:12 после первоначального restart требуют
-отдельного расследования: причина НЕ доказана. DevOps и Independent Reviewer
-проверяют runtime/lease и runner read-only. Исправление Bash 3 и безопасный
-memory gate должны пройти review до любых новых пачек/перезапусков.
+Независимо подтверждён Idle Sleep 21:12:02–21:12:49 (47 секунд) при lease 30s,
+stable container и OOM=false. Это сильное объяснение повторного lease loss в том
+окне, не доказательство причины каждого предыдущего expiry. Runner исправлен,
+review CLEAN: 8 mocks + 4 независимых probes, сохранён `3994fa7`.
+Единственный read-only monitor PID 23080; scoped `caffeinate -i -w 23080`
+PID 32447, assertion завершается вместе с monitor. Перед действиями проверять
+актуальность PID, не использовать broad kill. Текущую пачку не прерывать.
+Три результата (`19cfc2af…`, `03584f46…`, `f8292dbe…`) READY; один
+`c6052e33…` FAILED_FINAL после исчерпания retry budget. Пачка terminal, но
+невалидна для performance comparison из-за runner incident и sleep. Продолжение:
+AC power → scoped idle-sleep inhibition → чистый
+level 1 → только после успеха level 2. На батарее новые прогоны запрещены.
+Level 4 закрыт: расчетный budget ~8.07GiB выше текущих 7.75GiB Docker VM;
+память VM автоматически не увеличивать. См. benchmark task для exact evidence.
 Docker dependencies healthy, API и
 web запущены локально. GET result через порт 3000 с Range 0–1023 дал 206/1024 B.
 В 21:18:56 UTC+7 API dev watcher остановлен root, запущен существующий compiled
@@ -166,6 +176,12 @@ review; acceptance в `docs/engineering/tasks/stage2-montage-assets.md`.
 Сначала ресурсы upload/probe/list/content; затем отдельный slice 2b recipes.
 Live migrations/worker restart запрещены, пока capacity batch не завершён;
 разработка и изолированные проверки не меняют работающий runtime.
+Backend implementation и OpenAPI прошли independent CLEAN review: API 72,
+worker 61, contracts 2, isolated PostgreSQL/HTTP 2; lint/typecheck/build,
+Prisma validate, OpenAPI drift, formatting и diff check passed. Real disposable
+FFprobe: H.264 MP4 принят, QuickTime MOV и corrupt input отклонены controlled.
+Malformed UUID дают HTTP 400; `реклама.mp4` сохраняется без mojibake. Миграция
+ещё НЕ применялась к рабочей базе; live smoke и frontend montage не выполнены.
 После freeze OpenAPI — frontend, independent review и browser smoke. Фоновая сборка,
 preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
 остаётся отдельным измеряемым experiment после восстановления безопасного runner.

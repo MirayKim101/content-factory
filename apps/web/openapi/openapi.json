@@ -529,6 +529,201 @@
         "required": ["filename", "sizeBytes", "sha256", "downloadUrl"],
         "type": "object"
       },
+      "MontageAssetDto": {
+        "properties": {
+          "contentType": {
+            "enum": ["video/mp4", "image/jpeg", "image/png", "image/webp"],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "durationMs": {
+            "nullable": true,
+            "type": "number"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MontageFailureDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "hasAudio": {
+            "nullable": true,
+            "type": "boolean"
+          },
+          "height": {
+            "nullable": true,
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "enum": ["ADVERTISEMENT", "INTRO", "OUTRO", "BANNER"],
+            "type": "string"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "probe": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MontageProbeDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "probeJobId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^[0-9]+$",
+            "type": "string"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "type": "number"
+          },
+          "status": {
+            "enum": ["UPLOADING", "PROBE_PENDING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "width": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "kind",
+          "status",
+          "revision",
+          "originalFilename",
+          "contentType",
+          "sizeBytes",
+          "sha256",
+          "width",
+          "height",
+          "durationMs",
+          "hasAudio",
+          "probeJobId",
+          "probe",
+          "failure",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "MontageAssetListDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MontageAssetDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "MontageFailureDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": ["code", "message", "retryable"],
+        "type": "object"
+      },
+      "MontageProbeDto": {
+        "properties": {
+          "attempt": {
+            "type": "number"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MontageFailureDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "retryBudget": {
+            "type": "number"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          }
+        },
+        "required": ["state", "revision", "attempt", "retryBudget", "failure"],
+        "type": "object"
+      },
+      "MontageUploadDto": {
+        "properties": {
+          "file": {
+            "description": "MP4 ≤256 MiB: 1–180000 ms, one H.264 video, ≤1 AAC audio, ≤3840×2160/60 fps. BANNER: static JPEG/PNG/WebP ≤10 MiB/40M pixels.",
+            "format": "binary",
+            "type": "string"
+          },
+          "kind": {
+            "enum": ["ADVERTISEMENT", "INTRO", "OUTRO", "BANNER"],
+            "type": "string"
+          }
+        },
+        "required": ["kind", "file"],
+        "type": "object"
+      },
       "PipelineJobResponseDto": {
         "properties": {
           "attempt": {
@@ -2001,6 +2196,441 @@
           }
         },
         "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/projects/{projectId}/montage-assets": {
+      "get": {
+        "operationId": "MontageController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "enum": ["ADVERTISEMENT", "INTRO", "OUTRO", "BANNER"],
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MontageAssetListDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["montage-assets"]
+      },
+      "post": {
+        "operationId": "MontageController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/MontageUploadDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MontageAssetDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["montage-assets"]
+      }
+    },
+    "/api/v1/projects/{projectId}/montage-assets/{assetId}": {
+      "get": {
+        "operationId": "MontageController_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MontageAssetDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["montage-assets"]
+      }
+    },
+    "/api/v1/projects/{projectId}/montage-assets/{assetId}/content": {
+      "get": {
+        "operationId": "MontageController_content",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          },
+          "206": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["montage-assets"]
       }
     },
     "/api/v1/projects/{projectId}/pipeline-jobs": {

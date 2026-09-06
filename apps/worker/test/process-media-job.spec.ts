@@ -15,7 +15,7 @@ import type {
 import type { ClaimedMediaJob } from "../src/domain/media-job.js";
 import { ControlledMediaError } from "../src/domain/media-job.js";
 
-function claimed(type: ClaimedMediaJob["type"]): ClaimedMediaJob {
+function claimed(type: "SOURCE_PROBE" | "CUT_SEGMENT"): ClaimedMediaJob {
   return {
     id: "00000000-0000-4000-8000-000000000001",
     type,
@@ -51,6 +51,7 @@ function dependencies(job: ClaimedMediaJob) {
     prepareAttemptOutput: vi.fn(async () => undefined),
     completeAttemptCleanup: vi.fn(async () => undefined),
     completeProbe: vi.fn(async () => undefined),
+    completeMontageProbe: vi.fn(async () => undefined),
     completeCut: vi.fn(async () => undefined),
     fail: vi.fn(async () => "FAILED_FINAL" as const),
     close: vi.fn(async () => undefined),
@@ -64,6 +65,14 @@ function dependencies(job: ClaimedMediaJob) {
     close: vi.fn(),
   };
   const processor: MediaProcessor = {
+    inspectMontage: vi.fn(async () => ({
+      schemaVersion: 1 as const,
+      durationMs: 1000,
+      width: 1280,
+      height: 720,
+      hasAudio: false,
+      version: "ffprobe test",
+    })),
     probe: vi.fn(async () => ({ durationMs: 10_000, version: "ffprobe test" })),
     inspectOutput: vi.fn(async () => ({
       durationMs: 1_000,
@@ -81,6 +90,42 @@ function dependencies(job: ClaimedMediaJob) {
 }
 
 describe("ProcessMediaJob", () => {
+  it("probes montage bytes using the asset identity, never the VOD probe or cutter", async () => {
+    const job: ClaimedMediaJob = {
+      ...claimed("SOURCE_PROBE"),
+      type: "MONTAGE_ASSET_PROBE",
+      montageAssetId: "00000000-0000-4000-8000-000000000009",
+      sourceObjectKey: "editorial/project/montage/asset/original",
+      recipeVersion: "montage-asset-probe-v1",
+    };
+    const deps = dependencies(job);
+    await worker(deps).execute(job.id);
+    expect(deps.processor.inspectMontage).toHaveBeenCalledOnce();
+    expect(deps.processor.probe).not.toHaveBeenCalled();
+    expect(deps.processor.cut).not.toHaveBeenCalled();
+    expect(deps.repository.completeMontageProbe).toHaveBeenCalledWith(
+      job,
+      expect.objectContaining({ schemaVersion: 1, width: 1280 }),
+    );
+    expect(deps.storage.upload).not.toHaveBeenCalled();
+  });
+  it("does not finalize a montage after losing its lease", async () => {
+    const job: ClaimedMediaJob = {
+      ...claimed("SOURCE_PROBE"),
+      type: "MONTAGE_ASSET_PROBE",
+      montageAssetId: "00000000-0000-4000-8000-000000000009",
+    };
+    const deps = dependencies(job);
+    vi.mocked(deps.repository.isLeaseActive).mockResolvedValue(false);
+    await worker(deps).execute(job.id);
+    expect(deps.repository.completeMontageProbe).not.toHaveBeenCalled();
+    expect(deps.repository.fail).toHaveBeenCalledWith(
+      job,
+      "JOB_LEASE_LOST",
+      expect.any(String),
+      true,
+    );
+  });
   it("persists authoritative probe duration", async () => {
     const job = claimed("SOURCE_PROBE");
     const deps = dependencies(job);

@@ -33,6 +33,21 @@ enum MediaArtifactRole {
 enum PipelineJobType {
   SOURCE_PROBE
   CUT_SEGMENT
+  MONTAGE_ASSET_PROBE
+}
+
+enum MontageAssetKind {
+  ADVERTISEMENT
+  INTRO
+  OUTRO
+  BANNER
+}
+
+enum MontageAssetStatus {
+  UPLOADING
+  PROBE_PENDING
+  READY
+  FAILED_FINAL
 }
 
 enum PipelineJobState {
@@ -96,6 +111,7 @@ model Project {
   pipelineJobs             PipelineJob[]
   editorialAssets          EditorialAsset[]
   editorialPackages        EditorialPackage[]
+  montageAssets            MontageAsset[]
 }
 
 model VideoSource {
@@ -116,6 +132,7 @@ model VideoSource {
   artifacts        MediaArtifact[]
   pipelineJobs     PipelineJob[]
   authorizations   SourceAuthorization[]
+  montageAssets    MontageAsset[]
 }
 
 model SourceAuthorization {
@@ -217,11 +234,58 @@ model PipelineJob {
   attempts         JobAttempt[]
   resultArtifact   MediaArtifact?    @relation("PipelineJobResult")
   editorialPackage EditorialPackage?
+  montageAssetId   String?           @unique @db.Uuid
+  montageAsset     MontageAsset?     @relation(fields: [montageAssetId], references: [id], onDelete: Restrict)
 
   @@index([state, type, priority, queuedAt])
   @@index([leaseExpiresAt])
   @@index([projectId, createdAt])
   @@index([sourceId, sourceVersion])
+}
+
+model MontageAsset {
+  id                   String                @id @db.Uuid
+  projectId            String                @db.Uuid
+  project              Project               @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId             String                @db.Uuid
+  source               VideoSource           @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  sourceVersion        Int
+  kind                 MontageAssetKind
+  status               MontageAssetStatus    @default(UPLOADING)
+  revision             Int                   @default(1)
+  idempotencyKey       String                @unique
+  requestFingerprint   String
+  objectKey            String                @unique
+  originalFilename     String
+  contentType          String
+  sizeBytes            BigInt
+  sha256               String
+  width                Int?
+  height               Int?
+  durationMs           Int?
+  hasAudio             Boolean?
+  probeVersion         String?
+  probedAt             DateTime?
+  rightsBasis          String
+  rightsDeclaration    String
+  rightsDecidedAt      DateTime
+  uploadExpiresAt      DateTime
+  storageEtag          String?
+  storageVersion       String?
+  failureCode          String?
+  failureMessage       String?
+  cleanupStatus        ArtifactCleanupStatus @default(NOT_REQUIRED)
+  cleanupAttemptCount  Int                   @default(0)
+  cleanupLastErrorCode String?
+  cleanupCompletedAt   DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  probeJob             PipelineJob?
+
+  @@unique([id, projectId, sourceId, sourceVersion])
+  @@index([projectId, kind, createdAt, id])
+  @@index([status, uploadExpiresAt])
+  @@index([cleanupStatus, updatedAt])
 }
 
 model ProcessingTemplate {

@@ -55,7 +55,9 @@ export class ProcessMediaJob {
             true,
           ),
         ),
-      this.limits.jobTimeoutMs,
+      job.type === "MONTAGE_ASSET_PROBE"
+        ? Math.min(120_000, this.limits.jobTimeoutMs)
+        : this.limits.jobTimeoutMs,
     );
     timeout.unref();
     let scratch: string | undefined;
@@ -169,6 +171,16 @@ export class ProcessMediaJob {
     };
 
     try {
+      if (
+        !["SOURCE_PROBE", "CUT_SEGMENT", "MONTAGE_ASSET_PROBE"].includes(
+          job.type,
+        )
+      )
+        throw new ControlledMediaError(
+          "MEDIA_JOB_TYPE_UNSUPPORTED",
+          "Unsupported job type.",
+          false,
+        );
       await heartbeat();
       if (abort.signal.aborted) throw abort.signal.reason;
       heartbeatTimer = setInterval(
@@ -179,16 +191,28 @@ export class ProcessMediaJob {
 
       cachedSource = await this.sourceCache.acquire({
         identity: {
-          sourceId: job.sourceId,
-          sourceVersion: job.sourceVersion,
+          sourceId:
+            job.type === "MONTAGE_ASSET_PROBE"
+              ? job.montageAssetId
+              : job.sourceId,
+          sourceVersion:
+            job.type === "MONTAGE_ASSET_PROBE" ? 1 : job.sourceVersion,
           sha256: job.sourceSha256,
           sizeBytes: job.sourceSizeBytes,
         },
-        outputReservationBytes: job.sourceSizeBytes,
+        outputReservationBytes:
+          job.type === "MONTAGE_ASSET_PROBE" ? 0n : job.sourceSizeBytes,
         safetyBytes: this.limits.scratchSafetyBytes,
         signal: abort.signal,
         fill: (destination, signal) =>
-          this.storage.download(job.sourceObjectKey, destination, signal),
+          this.storage.download(
+            job.sourceObjectKey,
+            destination,
+            signal,
+            job.type === "MONTAGE_ASSET_PROBE"
+              ? job.sourceSizeBytes
+              : undefined,
+          ),
         onTelemetry: ({ phase, durationMs, outcome, ...details }) =>
           recordPhase(phase, durationMs, outcome, details),
       });
@@ -196,6 +220,19 @@ export class ProcessMediaJob {
         join(this.limits.scratchDirectory, "content-factory-media-"),
       );
       const sourcePath = cachedSource.path;
+      if (job.type === "MONTAGE_ASSET_PROBE") {
+        const result = await measurePhase("source_probe", () =>
+          this.processor.inspectMontage(
+            sourcePath,
+            AbortSignal.any([abort.signal, AbortSignal.timeout(30_000)]),
+          ),
+        );
+        if (abort.signal.aborted) throw abort.signal.reason;
+        await this.assertActiveLease(job);
+        await this.repository.completeMontageProbe(job, result);
+        succeeded = true;
+        return;
+      }
       const cachedProbe = await measurePhase(
         "source_probe",
         () =>

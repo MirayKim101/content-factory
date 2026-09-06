@@ -1,5 +1,7 @@
 import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
+import { Transform } from "node:stream";
+import { ControlledMediaError } from "../domain/media-job.js";
 
 import {
   DeleteObjectCommand,
@@ -37,14 +39,31 @@ export class S3WorkerObjectStorage implements WorkerObjectStorage {
     objectKey: string,
     destination: string,
     signal: AbortSignal,
+    maxBytes?: bigint,
   ): Promise<void> {
     const result = await this.client.send(
       new GetObjectCommand({ Bucket: this.bucket, Key: objectKey }),
       { abortSignal: signal },
     );
     if (!result.Body) throw new Error("SOURCE_OBJECT_BODY_MISSING");
+    let transferred = 0n;
+    const bounded = new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        transferred += BigInt(chunk.length);
+        if (maxBytes !== undefined && transferred > maxBytes)
+          callback(
+            new ControlledMediaError(
+              "MONTAGE_SIZE_MISMATCH",
+              "Stored montage size exceeds its persisted identity.",
+              false,
+            ),
+          );
+        else callback(null, chunk);
+      },
+    });
     await pipeline(
       result.Body as NodeJS.ReadableStream,
+      bounded,
       createWriteStream(destination),
       { signal },
     );

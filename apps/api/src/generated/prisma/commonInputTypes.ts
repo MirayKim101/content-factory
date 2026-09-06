@@ -436,6 +436,40 @@ export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>
 }
 
+export type EnumMontageAssetKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetKind | Prisma.EnumMontageAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetKindFilter<$PrismaModel> | $Enums.MontageAssetKind
+}
+
+export type EnumMontageAssetStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetStatus | Prisma.EnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel> | $Enums.MontageAssetStatus
+}
+
+export type EnumMontageAssetKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetKind | Prisma.EnumMontageAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetKindWithAggregatesFilter<$PrismaModel> | $Enums.MontageAssetKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMontageAssetKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMontageAssetKindFilter<$PrismaModel>
+}
+
+export type EnumMontageAssetStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetStatus | Prisma.EnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetStatusWithAggregatesFilter<$PrismaModel> | $Enums.MontageAssetStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel>
+}
+
 export type EnumEditorialAssetTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.EditorialAssetType | Prisma.EnumEditorialAssetTypeFieldRefInput<$PrismaModel>
   in?: $Enums.EditorialAssetType[] | Prisma.ListEnumEditorialAssetTypeFieldRefInput<$PrismaModel>
@@ -969,6 +1003,40 @@ export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>
 }
 
+export type NestedEnumMontageAssetKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetKind | Prisma.EnumMontageAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetKindFilter<$PrismaModel> | $Enums.MontageAssetKind
+}
+
+export type NestedEnumMontageAssetStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetStatus | Prisma.EnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel> | $Enums.MontageAssetStatus
+}
+
+export type NestedEnumMontageAssetKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetKind | Prisma.EnumMontageAssetKindFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetKind[] | Prisma.ListEnumMontageAssetKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetKindWithAggregatesFilter<$PrismaModel> | $Enums.MontageAssetKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMontageAssetKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMontageAssetKindFilter<$PrismaModel>
+}
+
+export type NestedEnumMontageAssetStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MontageAssetStatus | Prisma.EnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MontageAssetStatus[] | Prisma.ListEnumMontageAssetStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMontageAssetStatusWithAggregatesFilter<$PrismaModel> | $Enums.MontageAssetStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel>
+}
+
 export type NestedEnumEditorialAssetTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.EditorialAssetType | Prisma.EnumEditorialAssetTypeFieldRefInput<$PrismaModel>
   in?: $Enums.EditorialAssetType[] | Prisma.ListEnumEditorialAssetTypeFieldRefInput<$PrismaModel>
@@ -1043,5 +1111,3 @@ export type NestedEnumJobAttemptStateWithAggregatesFilter<$PrismaModel = never> 
   _min?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel>
   _max?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel>
 }
-
-

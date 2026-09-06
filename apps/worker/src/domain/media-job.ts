@@ -1,6 +1,7 @@
-export type MediaJobType = "SOURCE_PROBE" | "CUT_SEGMENT";
+export type MediaJobType =
+  "SOURCE_PROBE" | "CUT_SEGMENT" | "MONTAGE_ASSET_PROBE";
 
-export interface ClaimedMediaJob {
+interface ClaimedMediaJobBase {
   id: string;
   type: MediaJobType;
   projectId: string;
@@ -21,6 +22,12 @@ export interface ClaimedMediaJob {
     endMs: number;
   };
 }
+
+export type ClaimedMediaJob = ClaimedMediaJobBase &
+  (
+    | { type: "SOURCE_PROBE" | "CUT_SEGMENT"; montageAssetId?: never }
+    | { type: "MONTAGE_ASSET_PROBE"; montageAssetId: string }
+  );
 
 export class ControlledMediaError extends Error {
   constructor(

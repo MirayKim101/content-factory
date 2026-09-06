@@ -57,6 +57,7 @@ export const ModelName = {
   MediaArtifact: 'MediaArtifact',
   CutRequest: 'CutRequest',
   PipelineJob: 'PipelineJob',
+  MontageAsset: 'MontageAsset',
   ProcessingTemplate: 'ProcessingTemplate',
   ProcessingTemplateRevision: 'ProcessingTemplateRevision',
   EditorialAsset: 'EditorialAsset',
@@ -203,10 +204,51 @@ export const PipelineJobScalarFieldEnum = {
   startedAt: 'startedAt',
   finishedAt: 'finishedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  montageAssetId: 'montageAssetId'
 } as const
 
 export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+
+
+export const MontageAssetScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  kind: 'kind',
+  status: 'status',
+  revision: 'revision',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  objectKey: 'objectKey',
+  originalFilename: 'originalFilename',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  durationMs: 'durationMs',
+  hasAudio: 'hasAudio',
+  probeVersion: 'probeVersion',
+  probedAt: 'probedAt',
+  rightsBasis: 'rightsBasis',
+  rightsDeclaration: 'rightsDeclaration',
+  rightsDecidedAt: 'rightsDecidedAt',
+  uploadExpiresAt: 'uploadExpiresAt',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MontageAssetScalarFieldEnum = (typeof MontageAssetScalarFieldEnum)[keyof typeof MontageAssetScalarFieldEnum]
 
 
 export const ProcessingTemplateScalarFieldEnum = {
@@ -380,4 +422,3 @@ export const JsonNullValueFilter = {
 } as const
 
 export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
-

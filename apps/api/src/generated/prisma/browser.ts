@@ -48,6 +48,11 @@ export type CutRequest = Prisma.CutRequestModel
  */
 export type PipelineJob = Prisma.PipelineJobModel
 /**
+ * Model MontageAsset
+ *
+ */
+export type MontageAsset = Prisma.MontageAssetModel
+/**
  * Model ProcessingTemplate
  *
  */

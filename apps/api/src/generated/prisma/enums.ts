@@ -46,10 +46,31 @@ export type MediaArtifactRole = (typeof MediaArtifactRole)[keyof typeof MediaArt
 
 export const PipelineJobType = {
   SOURCE_PROBE: 'SOURCE_PROBE',
-  CUT_SEGMENT: 'CUT_SEGMENT'
+  CUT_SEGMENT: 'CUT_SEGMENT',
+  MONTAGE_ASSET_PROBE: 'MONTAGE_ASSET_PROBE'
 } as const
 
 export type PipelineJobType = (typeof PipelineJobType)[keyof typeof PipelineJobType]
+
+
+export const MontageAssetKind = {
+  ADVERTISEMENT: 'ADVERTISEMENT',
+  INTRO: 'INTRO',
+  OUTRO: 'OUTRO',
+  BANNER: 'BANNER'
+} as const
+
+export type MontageAssetKind = (typeof MontageAssetKind)[keyof typeof MontageAssetKind]
+
+
+export const MontageAssetStatus = {
+  UPLOADING: 'UPLOADING',
+  PROBE_PENDING: 'PROBE_PENDING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type MontageAssetStatus = (typeof MontageAssetStatus)[keyof typeof MontageAssetStatus]
 
 
 export const PipelineJobState = {

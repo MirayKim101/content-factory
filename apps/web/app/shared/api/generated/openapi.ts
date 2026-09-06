@@ -204,6 +204,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/montage-assets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MontageController_list"];
+    put?: never;
+    post: operations["MontageController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/montage-assets/{assetId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MontageController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/montage-assets/{assetId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MontageController_content"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{projectId}/pipeline-jobs": {
     parameters: {
       query?: never;
@@ -424,6 +472,63 @@ export interface components {
       sha256: string;
       /** @description Decimal bigint string. */
       sizeBytes: string;
+    };
+    MontageAssetDto: {
+      /** @enum {string} */
+      contentType: "video/mp4" | "image/jpeg" | "image/png" | "image/webp";
+      /** Format: date-time */
+      createdAt: string;
+      durationMs: number | null;
+      failure: components["schemas"]["MontageFailureDto"] | null;
+      hasAudio: boolean | null;
+      height: number | null;
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      kind: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
+      originalFilename: string;
+      probe: components["schemas"]["MontageProbeDto"] | null;
+      /** Format: uuid */
+      probeJobId: string | null;
+      /** Format: uuid */
+      projectId: string;
+      revision: number;
+      sha256: string;
+      sizeBytes: string;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "UPLOADING" | "PROBE_PENDING" | "READY" | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+      width: number | null;
+    };
+    MontageAssetListDto: {
+      items: components["schemas"]["MontageAssetDto"][];
+      nextCursor: string | null;
+    };
+    MontageFailureDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    MontageProbeDto: {
+      attempt: number;
+      failure: components["schemas"]["MontageFailureDto"] | null;
+      retryBudget: number;
+      revision: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    };
+    MontageUploadDto: {
+      /**
+       * Format: binary
+       * @description MP4 ≤256 MiB: 1–180000 ms, one H.264 video, ≤1 AAC audio, ≤3840×2160/60 fps. BANNER: static JPEG/PNG/WebP ≤10 MiB/40M pixels.
+       */
+      file: string;
+      /** @enum {string} */
+      kind: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
     };
     PipelineJobResponseDto: {
       attempt: number;
@@ -1304,6 +1409,291 @@ export interface operations {
         };
       };
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MontageController_list: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string;
+        kind?: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
+      };
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MontageAssetListDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MontageController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["MontageUploadDto"];
+      };
+    };
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MontageAssetDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MontageController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        assetId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MontageAssetDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MontageController_content: {
+    parameters: {
+      query?: never;
+      header?: {
+        Range?: string;
+      };
+      path: {
+        assetId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "image/jpeg": string;
+          "image/png": string;
+          "image/webp": string;
+          "video/mp4": string;
+        };
+      };
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      416: {
         headers: {
           [name: string]: unknown;
         };

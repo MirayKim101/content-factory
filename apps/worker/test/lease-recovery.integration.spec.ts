@@ -429,6 +429,9 @@ class MemoryStorage implements WorkerObjectStorage {
 }
 
 class DistinctAttemptProcessor implements MediaProcessor {
+  async inspectMontage(): Promise<never> {
+    throw new Error("UNEXPECTED_MONTAGE_JOB");
+  }
   private cutNumber = 0;
 
   async probe(): Promise<{ durationMs: number; version: string }> {

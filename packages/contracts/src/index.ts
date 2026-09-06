@@ -1,6 +1,16 @@
 export const MEDIA_QUEUE_NAME = "media-v1";
 export const MEDIA_JOB_SCHEMA_VERSION = 1 as const;
 
+export const MONTAGE_PROBE_RECIPE_VERSION = "montage-asset-probe-v1" as const;
+export interface MontageProbeResultV1 {
+  schemaVersion: 1;
+  durationMs: number;
+  width: number;
+  height: number;
+  hasAudio: boolean;
+  version: string;
+}
+
 export interface MediaJobReferenceV1 {
   schemaVersion: typeof MEDIA_JOB_SCHEMA_VERSION;
   jobId: string;

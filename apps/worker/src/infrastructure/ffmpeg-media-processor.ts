@@ -2,8 +2,42 @@ import { spawn } from "node:child_process";
 
 import type { MediaProcessor } from "../application/ports.js";
 import { ControlledMediaError } from "../domain/media-job.js";
+import { parseMontageProbe } from "../domain/montage-probe.js";
 
 export class FfmpegMediaProcessor implements MediaProcessor {
+  async inspectMontage(filePath: string, signal: AbortSignal) {
+    const timeout = AbortSignal.any([signal, AbortSignal.timeout(30_000)]);
+    const probe = await runProcess(
+      this.ffprobePath,
+      [
+        "-v",
+        "error",
+        "-protocol_whitelist",
+        "file,pipe",
+        "-show_format",
+        "-show_streams",
+        "-of",
+        "json",
+        filePath,
+      ],
+      timeout,
+    );
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(probe.stdout);
+    } catch {
+      throw new ControlledMediaError(
+        "MONTAGE_PROBE_INVALID",
+        "The montage MP4 could not be inspected.",
+        false,
+      );
+    }
+    const version = await runProcess(this.ffprobePath, ["-version"], timeout);
+    return parseMontageProbe(
+      parsed,
+      firstLine(version.stdout, "ffprobe-unknown"),
+    );
+  }
   constructor(
     private readonly ffmpegPath: string,
     private readonly ffprobePath: string,
@@ -253,7 +287,13 @@ async function runProcess(
   let stderr = "";
   child.stdout.setEncoding("utf8");
   child.stderr.setEncoding("utf8");
-  child.stdout.on("data", (chunk: string) => (stdout += chunk));
+  let exceeded = false;
+  child.stdout.on("data", (chunk: string) => {
+    if (stdout.length + chunk.length > 1024 * 1024) {
+      exceeded = true;
+      child.kill("SIGKILL");
+    } else stdout += chunk;
+  });
   child.stderr.on(
     "data",
     (chunk: string) => (stderr = `${stderr}${chunk}`.slice(-16_384)),
@@ -262,7 +302,7 @@ async function runProcess(
     child.once("error", reject);
     child.once("close", resolve);
   });
-  if (code !== 0) {
+  if (code !== 0 || exceeded) {
     throw new ControlledMediaError(
       "SOURCE_PROBE_FAILED",
       "Исходный MP4 повреждён или не поддерживается.",

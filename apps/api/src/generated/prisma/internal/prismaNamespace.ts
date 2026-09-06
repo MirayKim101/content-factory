@@ -403,6 +403,7 @@ export const ModelName = {
   MediaArtifact: 'MediaArtifact',
   CutRequest: 'CutRequest',
   PipelineJob: 'PipelineJob',
+  MontageAsset: 'MontageAsset',
   ProcessingTemplate: 'ProcessingTemplate',
   ProcessingTemplateRevision: 'ProcessingTemplateRevision',
   EditorialAsset: 'EditorialAsset',
@@ -426,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "cutSegment" | "jobAttempt"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "cutSegment" | "jobAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -871,6 +872,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.PipelineJobCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.PipelineJobCountAggregateOutputType> | number
+        }
+      }
+    }
+    MontageAsset: {
+      payload: Prisma.$MontageAssetPayload<ExtArgs>
+      fields: Prisma.MontageAssetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MontageAssetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MontageAssetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>
+        }
+        findFirst: {
+          args: Prisma.MontageAssetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MontageAssetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>
+        }
+        findMany: {
+          args: Prisma.MontageAssetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>[]
+        }
+        create: {
+          args: Prisma.MontageAssetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>
+        }
+        createMany: {
+          args: Prisma.MontageAssetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MontageAssetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>[]
+        }
+        delete: {
+          args: Prisma.MontageAssetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>
+        }
+        update: {
+          args: Prisma.MontageAssetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>
+        }
+        deleteMany: {
+          args: Prisma.MontageAssetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MontageAssetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MontageAssetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>[]
+        }
+        upsert: {
+          args: Prisma.MontageAssetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MontageAssetPayload>
+        }
+        aggregate: {
+          args: Prisma.MontageAssetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMontageAsset>
+        }
+        groupBy: {
+          args: Prisma.MontageAssetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MontageAssetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MontageAssetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MontageAssetCountAggregateOutputType> | number
         }
       }
     }
@@ -1625,10 +1700,51 @@ export const PipelineJobScalarFieldEnum = {
   startedAt: 'startedAt',
   finishedAt: 'finishedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  montageAssetId: 'montageAssetId'
 } as const
 
 export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+
+
+export const MontageAssetScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  kind: 'kind',
+  status: 'status',
+  revision: 'revision',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  objectKey: 'objectKey',
+  originalFilename: 'originalFilename',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  durationMs: 'durationMs',
+  hasAudio: 'hasAudio',
+  probeVersion: 'probeVersion',
+  probedAt: 'probedAt',
+  rightsBasis: 'rightsBasis',
+  rightsDeclaration: 'rightsDeclaration',
+  rightsDecidedAt: 'rightsDecidedAt',
+  uploadExpiresAt: 'uploadExpiresAt',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MontageAssetScalarFieldEnum = (typeof MontageAssetScalarFieldEnum)[keyof typeof MontageAssetScalarFieldEnum]
 
 
 export const ProcessingTemplateScalarFieldEnum = {
@@ -2000,6 +2116,34 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'MontageAssetKind'
+ */
+export type EnumMontageAssetKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MontageAssetKind'>
+
+
+
+/**
+ * Reference to a field of type 'MontageAssetKind[]'
+ */
+export type ListEnumMontageAssetKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MontageAssetKind[]'>
+
+
+
+/**
+ * Reference to a field of type 'MontageAssetStatus'
+ */
+export type EnumMontageAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MontageAssetStatus'>
+
+
+
+/**
+ * Reference to a field of type 'MontageAssetStatus[]'
+ */
+export type ListEnumMontageAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MontageAssetStatus[]'>
+
+
+
+/**
  * Reference to a field of type 'EditorialAssetType'
  */
 export type EnumEditorialAssetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialAssetType'>
@@ -2225,6 +2369,7 @@ export type GlobalOmitConfig = {
   mediaArtifact?: Prisma.MediaArtifactOmit
   cutRequest?: Prisma.CutRequestOmit
   pipelineJob?: Prisma.PipelineJobOmit
+  montageAsset?: Prisma.MontageAssetOmit
   processingTemplate?: Prisma.ProcessingTemplateOmit
   processingTemplateRevision?: Prisma.ProcessingTemplateRevisionOmit
   editorialAsset?: Prisma.EditorialAssetOmit

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { Prisma } from "../../generated/prisma/client.js";
 
 import { Injectable } from "@nestjs/common";
 
@@ -210,7 +211,10 @@ export class PrismaPipelineRepository implements PipelineRepository {
 
   async getRunnableJobs(limit: number) {
     const rows = await this.prisma.pipelineJob.findMany({
-      where: { state: { in: ["QUEUED", "RETRY_WAIT"] } },
+      where: {
+        state: { in: ["QUEUED", "RETRY_WAIT"] },
+        AND: this.dispatchableType(),
+      },
       orderBy: [{ priority: "desc" }, { queuedAt: "asc" }],
       take: Math.max(limit, limit * 4),
       select: {
@@ -242,6 +246,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
       where: {
         id: { in: jobIds },
         state: { in: ["QUEUED", "RETRY_WAIT"] },
+        AND: this.dispatchableType(),
       },
       select: {
         id: true,
@@ -275,6 +280,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
         id: delivery.jobId,
         state: { in: ["QUEUED", "RETRY_WAIT"] },
         attemptCount: delivery.attemptNumber - 1,
+        AND: this.dispatchableType(),
       },
       include: { source: { include: { authorizations: true } } },
     });
@@ -690,5 +696,30 @@ export class PrismaPipelineRepository implements PipelineRepository {
       "code" in error &&
       error.code === "P2002"
     );
+  }
+
+  private dispatchableType(): Prisma.PipelineJobWhereInput {
+    return {
+      payloadVersion: 1,
+      OR: [
+        { type: { in: ["SOURCE_PROBE", "CUT_SEGMENT"] }, montageAssetId: null },
+        ...(sourceAuthorizationRuntime().policy === "local-auto"
+          ? [
+              {
+                type: "MONTAGE_ASSET_PROBE" as const,
+                recipeVersion: "montage-asset-probe-v1",
+                montageAsset: {
+                  is: {
+                    status: "PROBE_PENDING" as const,
+                    kind: { not: "BANNER" as const },
+                    rightsBasis: "LOCAL_DEVELOPMENT_AUTO",
+                    rightsDeclaration: "montage-local-development-auto-v1",
+                  },
+                },
+              },
+            ]
+          : []),
+      ],
+    };
   }
 }

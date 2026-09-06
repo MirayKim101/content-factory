@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { MontageProbeResultV1 } from "@content-factory/contracts";
 
 import { Pool, type PoolClient } from "pg";
 
@@ -28,6 +29,7 @@ interface ClaimRow {
   clientSegmentId: string | null;
   startMs: number | null;
   endMs: number | null;
+  montageAssetId: string | null;
 }
 
 export class PgMediaJobRepository implements MediaJobRepository {
@@ -51,11 +53,12 @@ export class PgMediaJobRepository implements MediaJobRepository {
         `SELECT j."id", j."type", j."state", j."projectId", j."sourceId",
                 j."attemptCount", j."retryBudget", j."recipeVersion", j."leaseExpiresAt",
                 j."queuedAt", j."startedAt" AS "jobStartedAt",
-                j."sourceVersion", s."originalFilename", a."sha256" AS "sourceSha256",
-                a."objectKey" AS "sourceObjectKey", a."sizeBytes"::text AS "sourceSizeBytes",
+                j."sourceVersion", j."montageAssetId", COALESCE(m."originalFilename", s."originalFilename") AS "originalFilename",
+                COALESCE(m."sha256", a."sha256") AS "sourceSha256",
+                COALESCE(m."objectKey", a."objectKey") AS "sourceObjectKey", COALESCE(m."sizeBytes", a."sizeBytes")::text AS "sourceSizeBytes",
                 c."clientSegmentId", c."startMs", c."endMs"
            FROM "PipelineJob" j
-           JOIN "VideoSource" s ON s."id" = j."sourceId"
+           JOIN "VideoSource" s ON s."id" = j."sourceId" AND s."projectId" = j."projectId" AND s."sourceVersion" = j."sourceVersion" AND s."status" = 'READY'
            JOIN "SourceAuthorization" auth
              ON auth."sourceId" = s."id"
             AND auth."sourceVersion" = j."sourceVersion"
@@ -66,11 +69,19 @@ export class PgMediaJobRepository implements MediaJobRepository {
             )
             AND auth."declarationVersion" IS NOT NULL
             AND auth."decidedAt" IS NOT NULL
-           JOIN "MediaArtifact" a ON a."sourceId" = s."id"
+      LEFT JOIN "MediaArtifact" a ON a."sourceId" = s."id"
             AND a."lineageSourceVersion" = j."sourceVersion"
             AND a."role" = 'SOURCE' AND a."status" = 'READY'
+            AND j."type" IN ('SOURCE_PROBE','CUT_SEGMENT')
+      LEFT JOIN "MontageAsset" m ON m."id" = j."montageAssetId"
+            AND m."projectId" = j."projectId" AND m."sourceId" = j."sourceId" AND m."sourceVersion" = j."sourceVersion"
+            AND m."status" = 'PROBE_PENDING' AND m."kind" <> 'BANNER'
+            AND m."rightsBasis" = 'LOCAL_DEVELOPMENT_AUTO' AND m."rightsDeclaration" = 'montage-local-development-auto-v1'
+            AND m."rightsDecidedAt" IS NOT NULL AND $2 = 'local-auto'
       LEFT JOIN "CutSegment" c ON c."jobId" = j."id"
-          WHERE j."id" = $1
+          WHERE j."id" = $1 AND j."payloadVersion" = 1
+            AND ((j."type" IN ('SOURCE_PROBE','CUT_SEGMENT') AND a."id" IS NOT NULL AND j."montageAssetId" IS NULL)
+              OR (j."type" = 'MONTAGE_ASSET_PROBE' AND m."id" IS NOT NULL AND j."recipeVersion" = 'montage-asset-probe-v1'))
           FOR UPDATE OF j`,
         [jobId, this.sourceAuthorizationPolicy],
       );
@@ -87,6 +98,11 @@ export class PgMediaJobRepository implements MediaJobRepository {
             WHERE "id"=$1`,
           [jobId],
         );
+        if (row.type === "MONTAGE_ASSET_PROBE")
+          await client.query(
+            `UPDATE "MontageAsset" SET "status"='FAILED_FINAL', "failureCode"='RETRY_BUDGET_EXHAUSTED', "failureMessage"='Probe retry budget exhausted.', "cleanupStatus"='PENDING', "revision"="revision"+1, "updatedAt"=now() WHERE "id"=$1 AND "status"='PROBE_PENDING'`,
+            [row.montageAssetId],
+          );
         return null;
       }
       const leaseToken = randomUUID();
@@ -110,7 +126,9 @@ export class PgMediaJobRepository implements MediaJobRepository {
       );
       return {
         id: row.id,
-        type: row.type,
+        ...(row.type === "MONTAGE_ASSET_PROBE"
+          ? { type: row.type, montageAssetId: row.montageAssetId! }
+          : { type: row.type }),
         projectId: row.projectId,
         sourceId: row.sourceId,
         sourceVersion: row.sourceVersion,
@@ -230,6 +248,56 @@ export class PgMediaJobRepository implements MediaJobRepository {
     });
   }
 
+  async completeMontageProbe(
+    job: ClaimedMediaJob,
+    result: MontageProbeResultV1,
+  ): Promise<void> {
+    if (job.type !== "MONTAGE_ASSET_PROBE" || result.schemaVersion !== 1)
+      throw new ControlledMediaError(
+        "MONTAGE_PROBE_SCHEMA_INVALID",
+        "Invalid montage probe job/result schema.",
+        false,
+      );
+    await this.transaction(async (client) => {
+      await this.assertLease(client, job);
+      const updated = await client.query(
+        `UPDATE "MontageAsset" m
+        SET "status"='READY', "durationMs"=$8, "width"=$9, "height"=$10, "hasAudio"=$11,
+            "probeVersion"=$12, "probedAt"=now(), "revision"="revision"+1, "updatedAt"=now()
+        WHERE m."id"=$1 AND m."projectId"=$2 AND m."sourceId"=$3 AND m."sourceVersion"=$4
+          AND m."sha256"=$5 AND m."sizeBytes"=$6 AND m."objectKey"=$7 AND m."status"='PROBE_PENDING'
+          AND m."rightsBasis"='LOCAL_DEVELOPMENT_AUTO' AND m."rightsDeclaration"='montage-local-development-auto-v1' AND $13='local-auto'
+          AND EXISTS (SELECT 1 FROM "PipelineJob" j WHERE j."id"=$14 AND j."montageAssetId"=m."id" AND j."type"='MONTAGE_ASSET_PROBE')
+          AND EXISTS (SELECT 1 FROM "SourceAuthorization" a JOIN "VideoSource" s ON s."id"=a."sourceId"
+            WHERE a."sourceId"=m."sourceId" AND a."sourceVersion"=m."sourceVersion" AND s."sourceVersion"=m."sourceVersion"
+            AND a."status"='CLEARED' AND a."basis" IS NOT NULL AND a."declarationVersion" IS NOT NULL AND a."decidedAt" IS NOT NULL)`,
+        [
+          job.montageAssetId,
+          job.projectId,
+          job.sourceId,
+          job.sourceVersion,
+          job.sourceSha256,
+          job.sourceSizeBytes.toString(),
+          job.sourceObjectKey,
+          result.durationMs,
+          result.width,
+          result.height,
+          result.hasAudio,
+          result.version,
+          this.sourceAuthorizationPolicy,
+          job.id,
+        ],
+      );
+      if (updated.rowCount !== 1)
+        throw new ControlledMediaError(
+          "MONTAGE_IDENTITY_CONFLICT",
+          "Montage identity or authorization changed before finalization.",
+          false,
+        );
+      await this.finishReady(client, job);
+    });
+  }
+
   async completeCut(
     job: ClaimedMediaJob,
     result: {
@@ -311,6 +379,12 @@ export class PgMediaJobRepository implements MediaJobRepository {
         [job.id, job.leaseToken, state, code, message, retryScheduled],
       );
       if (result.rowCount !== 1) return "LEASE_LOST";
+      if (!retryScheduled && job.type === "MONTAGE_ASSET_PROBE") {
+        await client.query(
+          `UPDATE "MontageAsset" SET "status"='FAILED_FINAL', "failureCode"=$2, "failureMessage"=$3, "cleanupStatus"='PENDING', "revision"="revision"+1, "updatedAt"=now() WHERE "id"=$1 AND "status"='PROBE_PENDING'`,
+          [job.montageAssetId, code, message],
+        );
+      }
       await client.query(
         `UPDATE "JobAttempt" SET "state"=$3::"JobAttemptState", "failureCode"=$4, "finishedAt"=now(), "updatedAt"=now()
           WHERE "jobId"=$1 AND "attemptNumber"=$2`,

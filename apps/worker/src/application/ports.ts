@@ -1,6 +1,11 @@
 import type { ClaimedMediaJob } from "../domain/media-job.js";
+import type { MontageProbeResultV1 } from "@content-factory/contracts";
 
 export interface MediaJobRepository {
+  completeMontageProbe(
+    job: ClaimedMediaJob,
+    result: MontageProbeResultV1,
+  ): Promise<void>;
   claim(
     jobId: string,
     workerId: string,
@@ -49,6 +54,7 @@ export interface WorkerObjectStorage {
     objectKey: string,
     destination: string,
     signal: AbortSignal,
+    maxBytes?: bigint,
   ): Promise<void>;
   upload(input: {
     objectKey: string;
@@ -140,6 +146,10 @@ export interface MediaJobPhaseTelemetry {
 export type MediaJobTelemetry = (event: MediaJobPhaseTelemetry) => void;
 
 export interface MediaProcessor {
+  inspectMontage(
+    filePath: string,
+    signal: AbortSignal,
+  ): Promise<MontageProbeResultV1>;
   probe(
     filePath: string,
     signal: AbortSignal,
