@@ -54,6 +54,359 @@
         ],
         "type": "object"
       },
+      "AssemblyAdvertisementDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "insertAtMs": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": ["assetId", "insertAtMs"],
+        "type": "object"
+      },
+      "AssemblyAssetSnapshotResponseDto": {
+        "properties": {
+          "durationMs": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "enum": ["ADVERTISEMENT", "INTRO", "OUTRO", "BANNER"],
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "sha256",
+          "sizeBytes",
+          "kind",
+          "durationMs"
+        ],
+        "type": "object"
+      },
+      "AssemblyAssetSnapshotsResponseDto": {
+        "properties": {
+          "advertisement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyAssetSnapshotResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "banners": {
+            "items": {
+              "$ref": "#/components/schemas/AssemblyAssetSnapshotResponseDto"
+            },
+            "type": "array"
+          },
+          "intro": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyAssetSnapshotResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "outro": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyAssetSnapshotResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          }
+        },
+        "required": ["intro", "outro", "advertisement", "banners"],
+        "type": "object"
+      },
+      "AssemblyBannerDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "clientItemId": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "endMs": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "position": {
+            "enum": ["TOP_LEFT", "TOP_RIGHT", "BOTTOM_LEFT", "BOTTOM_RIGHT"],
+            "type": "string"
+          },
+          "startMs": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": ["clientItemId", "assetId", "startMs", "endMs", "position"],
+        "type": "object"
+      },
+      "AssemblyConfigurationResponseDto": {
+        "properties": {
+          "advertisement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyAdvertisementDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "audioProfileVersion": {
+            "enum": ["youtube-stereo-v1"],
+            "type": "string"
+          },
+          "banners": {
+            "items": {
+              "$ref": "#/components/schemas/AssemblyBannerDto"
+            },
+            "type": "array"
+          },
+          "cta": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyCtaDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "encodingProfileVersion": {
+            "enum": ["youtube-h264-v1"],
+            "type": "string"
+          },
+          "introAssetId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "outroAssetId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "introAssetId",
+          "outroAssetId",
+          "advertisement",
+          "banners",
+          "cta",
+          "audioProfileVersion",
+          "encodingProfileVersion"
+        ],
+        "type": "object"
+      },
+      "AssemblyCtaDto": {
+        "properties": {
+          "endMs": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "position": {
+            "enum": ["TOP_LEFT", "TOP_RIGHT", "BOTTOM_LEFT", "BOTTOM_RIGHT"],
+            "type": "string"
+          },
+          "startMs": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "text": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["text", "startMs", "endMs", "position"],
+        "type": "object"
+      },
+      "AssemblyCutSnapshotResponseDto": {
+        "properties": {
+          "durationMs": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipeVersion": {
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "sizeBytes",
+          "sourceId",
+          "sourceVersion",
+          "recipeVersion",
+          "durationMs"
+        ],
+        "type": "object"
+      },
+      "AssemblyRecipeListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssemblyRecipeResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "AssemblyRecipeResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutResultArtifact": {
+            "$ref": "#/components/schemas/AssemblyCutSnapshotResponseDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "pipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/AssemblyRecipeRevisionResponseDto"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/AssemblyRecipeValidationResponseDto"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "pipelineJobId",
+          "cutResultArtifact",
+          "revision",
+          "validation",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AssemblyRecipeRevisionResponseDto": {
+        "properties": {
+          "assets": {
+            "$ref": "#/components/schemas/AssemblyAssetSnapshotsResponseDto"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/AssemblyConfigurationResponseDto"
+          },
+          "configurationFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "schemaVersion": {
+            "enum": ["horizontal-assembly-v1"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "schemaVersion",
+          "configurationFingerprint",
+          "configuration",
+          "assets",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "AssemblyRecipeValidationResponseDto": {
+        "properties": {
+          "valid": {
+            "enum": [true],
+            "type": "boolean"
+          }
+        },
+        "required": ["valid"],
+        "type": "object"
+      },
       "AttestSourceAuthorizationDto": {
         "properties": {
           "attested": {
@@ -1033,6 +1386,65 @@
         "required": ["confirmedAt", "declarationVersion"],
         "type": "object"
       },
+      "SaveAssemblyRecipeDto": {
+        "properties": {
+          "advertisement": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyAdvertisementDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "audioProfileVersion": {
+            "enum": ["youtube-stereo-v1"],
+            "type": "string"
+          },
+          "banners": {
+            "items": {
+              "$ref": "#/components/schemas/AssemblyBannerDto"
+            },
+            "maxItems": 8,
+            "type": "array"
+          },
+          "cta": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyCtaDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "encodingProfileVersion": {
+            "enum": ["youtube-h264-v1"],
+            "type": "string"
+          },
+          "expectedRevision": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "introAssetId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "outroAssetId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "banners",
+          "audioProfileVersion",
+          "encodingProfileVersion"
+        ],
+        "type": "object"
+      },
       "SaveEditorialPackageDto": {
         "properties": {
           "description": {
@@ -1319,6 +1731,228 @@
           }
         },
         "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{jobId}/assembly-recipe": {
+      "get": {
+        "operationId": "AssemblyRecipeController_current",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyRecipeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      },
+      "put": {
+        "operationId": "AssemblyRecipeController_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAssemblyRecipeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyRecipeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{jobId}/assembly-recipe/revisions/{revision}": {
+      "get": {
+        "operationId": "AssemblyRecipeController_historical",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyRecipeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
       }
     },
     "/api/v1/pipeline-jobs/{jobId}/editorial-package": {
@@ -1859,6 +2493,95 @@
         },
         "summary": "Explicitly attest the current source version",
         "tags": ["projects"]
+      }
+    },
+    "/api/v1/projects/{projectId}/assembly-recipes": {
+      "get": {
+        "operationId": "AssemblyRecipeController_project",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyRecipeListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
       }
     },
     "/api/v1/projects/{projectId}/cuts": {

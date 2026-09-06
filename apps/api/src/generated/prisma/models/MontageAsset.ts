@@ -475,6 +475,7 @@ export type MontageAssetWhereInput = {
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
   probeJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceListRelationFilter
 }
 
 export type MontageAssetOrderByWithRelationInput = {
@@ -515,6 +516,7 @@ export type MontageAssetOrderByWithRelationInput = {
   project?: Prisma.ProjectOrderByWithRelationInput
   source?: Prisma.VideoSourceOrderByWithRelationInput
   probeJob?: Prisma.PipelineJobOrderByWithRelationInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceOrderByRelationAggregateInput
 }
 
 export type MontageAssetWhereUniqueInput = Prisma.AtLeast<{
@@ -559,6 +561,7 @@ export type MontageAssetWhereUniqueInput = Prisma.AtLeast<{
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
   probeJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceListRelationFilter
 }, "id" | "idempotencyKey" | "objectKey" | "id_projectId_sourceId_sourceVersion">
 
 export type MontageAssetOrderByWithAggregationInput = {
@@ -679,6 +682,7 @@ export type MontageAssetCreateInput = {
   project: Prisma.ProjectCreateNestedOneWithoutMontageAssetsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutMontageAssetsInput
   probeJob?: Prisma.PipelineJobCreateNestedOneWithoutMontageAssetInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetUncheckedCreateInput = {
@@ -717,6 +721,7 @@ export type MontageAssetUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   probeJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutMontageAssetInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetUpdateInput = {
@@ -755,6 +760,7 @@ export type MontageAssetUpdateInput = {
   project?: Prisma.ProjectUpdateOneRequiredWithoutMontageAssetsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutMontageAssetsNestedInput
   probeJob?: Prisma.PipelineJobUpdateOneWithoutMontageAssetNestedInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUpdateManyWithoutAssetNestedInput
 }
 
 export type MontageAssetUncheckedUpdateInput = {
@@ -793,6 +799,7 @@ export type MontageAssetUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   probeJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutMontageAssetNestedInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedUpdateManyWithoutAssetNestedInput
 }
 
 export type MontageAssetCreateManyInput = {
@@ -1057,6 +1064,11 @@ export type MontageAssetSumOrderByAggregateInput = {
   cleanupAttemptCount?: Prisma.SortOrder
 }
 
+export type MontageAssetScalarRelationFilter = {
+  is?: Prisma.MontageAssetWhereInput
+  isNot?: Prisma.MontageAssetWhereInput
+}
+
 export type MontageAssetCreateNestedManyWithoutProjectInput = {
   create?: Prisma.XOR<Prisma.MontageAssetCreateWithoutProjectInput, Prisma.MontageAssetUncheckedCreateWithoutProjectInput> | Prisma.MontageAssetCreateWithoutProjectInput[] | Prisma.MontageAssetUncheckedCreateWithoutProjectInput[]
   connectOrCreate?: Prisma.MontageAssetCreateOrConnectWithoutProjectInput | Prisma.MontageAssetCreateOrConnectWithoutProjectInput[]
@@ -1165,6 +1177,20 @@ export type EnumMontageAssetStatusFieldUpdateOperationsInput = {
   set?: $Enums.MontageAssetStatus
 }
 
+export type MontageAssetCreateNestedOneWithoutAssemblyReferencesInput = {
+  create?: Prisma.XOR<Prisma.MontageAssetCreateWithoutAssemblyReferencesInput, Prisma.MontageAssetUncheckedCreateWithoutAssemblyReferencesInput>
+  connectOrCreate?: Prisma.MontageAssetCreateOrConnectWithoutAssemblyReferencesInput
+  connect?: Prisma.MontageAssetWhereUniqueInput
+}
+
+export type MontageAssetUpdateOneRequiredWithoutAssemblyReferencesNestedInput = {
+  create?: Prisma.XOR<Prisma.MontageAssetCreateWithoutAssemblyReferencesInput, Prisma.MontageAssetUncheckedCreateWithoutAssemblyReferencesInput>
+  connectOrCreate?: Prisma.MontageAssetCreateOrConnectWithoutAssemblyReferencesInput
+  upsert?: Prisma.MontageAssetUpsertWithoutAssemblyReferencesInput
+  connect?: Prisma.MontageAssetWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MontageAssetUpdateToOneWithWhereWithoutAssemblyReferencesInput, Prisma.MontageAssetUpdateWithoutAssemblyReferencesInput>, Prisma.MontageAssetUncheckedUpdateWithoutAssemblyReferencesInput>
+}
+
 export type MontageAssetCreateWithoutProjectInput = {
   id: string
   sourceVersion: number
@@ -1200,6 +1226,7 @@ export type MontageAssetCreateWithoutProjectInput = {
   updatedAt?: Date | string
   source: Prisma.VideoSourceCreateNestedOneWithoutMontageAssetsInput
   probeJob?: Prisma.PipelineJobCreateNestedOneWithoutMontageAssetInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetUncheckedCreateWithoutProjectInput = {
@@ -1237,6 +1264,7 @@ export type MontageAssetUncheckedCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   probeJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutMontageAssetInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetCreateOrConnectWithoutProjectInput = {
@@ -1340,6 +1368,7 @@ export type MontageAssetCreateWithoutSourceInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutMontageAssetsInput
   probeJob?: Prisma.PipelineJobCreateNestedOneWithoutMontageAssetInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetUncheckedCreateWithoutSourceInput = {
@@ -1377,6 +1406,7 @@ export type MontageAssetUncheckedCreateWithoutSourceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   probeJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutMontageAssetInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetCreateOrConnectWithoutSourceInput = {
@@ -1440,6 +1470,7 @@ export type MontageAssetCreateWithoutProbeJobInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutMontageAssetsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutMontageAssetsInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetUncheckedCreateWithoutProbeJobInput = {
@@ -1477,6 +1508,7 @@ export type MontageAssetUncheckedCreateWithoutProbeJobInput = {
   cleanupCompletedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedCreateNestedManyWithoutAssetInput
 }
 
 export type MontageAssetCreateOrConnectWithoutProbeJobInput = {
@@ -1530,6 +1562,7 @@ export type MontageAssetUpdateWithoutProbeJobInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutMontageAssetsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutMontageAssetsNestedInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUpdateManyWithoutAssetNestedInput
 }
 
 export type MontageAssetUncheckedUpdateWithoutProbeJobInput = {
@@ -1567,6 +1600,175 @@ export type MontageAssetUncheckedUpdateWithoutProbeJobInput = {
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedUpdateManyWithoutAssetNestedInput
+}
+
+export type MontageAssetCreateWithoutAssemblyReferencesInput = {
+  id: string
+  sourceVersion: number
+  kind: $Enums.MontageAssetKind
+  status?: $Enums.MontageAssetStatus
+  revision?: number
+  idempotencyKey: string
+  requestFingerprint: string
+  objectKey: string
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  width?: number | null
+  height?: number | null
+  durationMs?: number | null
+  hasAudio?: boolean | null
+  probeVersion?: string | null
+  probedAt?: Date | string | null
+  rightsBasis: string
+  rightsDeclaration: string
+  rightsDecidedAt: Date | string
+  uploadExpiresAt: Date | string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupCompletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutMontageAssetsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutMontageAssetsInput
+  probeJob?: Prisma.PipelineJobCreateNestedOneWithoutMontageAssetInput
+}
+
+export type MontageAssetUncheckedCreateWithoutAssemblyReferencesInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  kind: $Enums.MontageAssetKind
+  status?: $Enums.MontageAssetStatus
+  revision?: number
+  idempotencyKey: string
+  requestFingerprint: string
+  objectKey: string
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  width?: number | null
+  height?: number | null
+  durationMs?: number | null
+  hasAudio?: boolean | null
+  probeVersion?: string | null
+  probedAt?: Date | string | null
+  rightsBasis: string
+  rightsDeclaration: string
+  rightsDecidedAt: Date | string
+  uploadExpiresAt: Date | string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupCompletedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  probeJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutMontageAssetInput
+}
+
+export type MontageAssetCreateOrConnectWithoutAssemblyReferencesInput = {
+  where: Prisma.MontageAssetWhereUniqueInput
+  create: Prisma.XOR<Prisma.MontageAssetCreateWithoutAssemblyReferencesInput, Prisma.MontageAssetUncheckedCreateWithoutAssemblyReferencesInput>
+}
+
+export type MontageAssetUpsertWithoutAssemblyReferencesInput = {
+  update: Prisma.XOR<Prisma.MontageAssetUpdateWithoutAssemblyReferencesInput, Prisma.MontageAssetUncheckedUpdateWithoutAssemblyReferencesInput>
+  create: Prisma.XOR<Prisma.MontageAssetCreateWithoutAssemblyReferencesInput, Prisma.MontageAssetUncheckedCreateWithoutAssemblyReferencesInput>
+  where?: Prisma.MontageAssetWhereInput
+}
+
+export type MontageAssetUpdateToOneWithWhereWithoutAssemblyReferencesInput = {
+  where?: Prisma.MontageAssetWhereInput
+  data: Prisma.XOR<Prisma.MontageAssetUpdateWithoutAssemblyReferencesInput, Prisma.MontageAssetUncheckedUpdateWithoutAssemblyReferencesInput>
+}
+
+export type MontageAssetUpdateWithoutAssemblyReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  kind?: Prisma.EnumMontageAssetKindFieldUpdateOperationsInput | $Enums.MontageAssetKind
+  status?: Prisma.EnumMontageAssetStatusFieldUpdateOperationsInput | $Enums.MontageAssetStatus
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  width?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  height?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  hasAudio?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  probeVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  probedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsBasis?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsDeclaration?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsDecidedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  uploadExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutMontageAssetsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutMontageAssetsNestedInput
+  probeJob?: Prisma.PipelineJobUpdateOneWithoutMontageAssetNestedInput
+}
+
+export type MontageAssetUncheckedUpdateWithoutAssemblyReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  kind?: Prisma.EnumMontageAssetKindFieldUpdateOperationsInput | $Enums.MontageAssetKind
+  status?: Prisma.EnumMontageAssetStatusFieldUpdateOperationsInput | $Enums.MontageAssetStatus
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  width?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  height?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  hasAudio?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  probeVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  probedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsBasis?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsDeclaration?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsDecidedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  uploadExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  probeJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutMontageAssetNestedInput
 }
 
 export type MontageAssetCreateManyProjectInput = {
@@ -1640,6 +1842,7 @@ export type MontageAssetUpdateWithoutProjectInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutMontageAssetsNestedInput
   probeJob?: Prisma.PipelineJobUpdateOneWithoutMontageAssetNestedInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUpdateManyWithoutAssetNestedInput
 }
 
 export type MontageAssetUncheckedUpdateWithoutProjectInput = {
@@ -1677,6 +1880,7 @@ export type MontageAssetUncheckedUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   probeJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutMontageAssetNestedInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedUpdateManyWithoutAssetNestedInput
 }
 
 export type MontageAssetUncheckedUpdateManyWithoutProjectInput = {
@@ -1786,6 +1990,7 @@ export type MontageAssetUpdateWithoutSourceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutMontageAssetsNestedInput
   probeJob?: Prisma.PipelineJobUpdateOneWithoutMontageAssetNestedInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUpdateManyWithoutAssetNestedInput
 }
 
 export type MontageAssetUncheckedUpdateWithoutSourceInput = {
@@ -1823,6 +2028,7 @@ export type MontageAssetUncheckedUpdateWithoutSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   probeJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutMontageAssetNestedInput
+  assemblyReferences?: Prisma.AssemblyRecipeAssetReferenceUncheckedUpdateManyWithoutAssetNestedInput
 }
 
 export type MontageAssetUncheckedUpdateManyWithoutSourceInput = {
@@ -1861,6 +2067,35 @@ export type MontageAssetUncheckedUpdateManyWithoutSourceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type MontageAssetCountOutputType
+ */
+
+export type MontageAssetCountOutputType = {
+  assemblyReferences: number
+}
+
+export type MontageAssetCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  assemblyReferences?: boolean | MontageAssetCountOutputTypeCountAssemblyReferencesArgs
+}
+
+/**
+ * MontageAssetCountOutputType without action
+ */
+export type MontageAssetCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MontageAssetCountOutputType
+   */
+  select?: Prisma.MontageAssetCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * MontageAssetCountOutputType without action
+ */
+export type MontageAssetCountOutputTypeCountAssemblyReferencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AssemblyRecipeAssetReferenceWhereInput
+}
 
 
 export type MontageAssetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1901,6 +2136,8 @@ export type MontageAssetSelect<ExtArgs extends runtime.Types.Extensions.Internal
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
   probeJob?: boolean | Prisma.MontageAsset$probeJobArgs<ExtArgs>
+  assemblyReferences?: boolean | Prisma.MontageAsset$assemblyReferencesArgs<ExtArgs>
+  _count?: boolean | Prisma.MontageAssetCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["montageAsset"]>
 
 export type MontageAssetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2023,6 +2260,8 @@ export type MontageAssetInclude<ExtArgs extends runtime.Types.Extensions.Interna
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
   probeJob?: boolean | Prisma.MontageAsset$probeJobArgs<ExtArgs>
+  assemblyReferences?: boolean | Prisma.MontageAsset$assemblyReferencesArgs<ExtArgs>
+  _count?: boolean | Prisma.MontageAssetCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MontageAssetIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -2039,6 +2278,7 @@ export type $MontageAssetPayload<ExtArgs extends runtime.Types.Extensions.Intern
     project: Prisma.$ProjectPayload<ExtArgs>
     source: Prisma.$VideoSourcePayload<ExtArgs>
     probeJob: Prisma.$PipelineJobPayload<ExtArgs> | null
+    assemblyReferences: Prisma.$AssemblyRecipeAssetReferencePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2472,6 +2712,7 @@ export interface Prisma__MontageAssetClient<T, Null = never, ExtArgs extends run
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   source<T extends Prisma.VideoSourceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSourceDefaultArgs<ExtArgs>>): Prisma.Prisma__VideoSourceClient<runtime.Types.Result.GetResult<Prisma.$VideoSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   probeJob<T extends Prisma.MontageAsset$probeJobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MontageAsset$probeJobArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  assemblyReferences<T extends Prisma.MontageAsset$assemblyReferencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MontageAsset$assemblyReferencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssemblyRecipeAssetReferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2952,6 +3193,30 @@ export type MontageAsset$probeJobArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   include?: Prisma.PipelineJobInclude<ExtArgs> | null
   where?: Prisma.PipelineJobWhereInput
+}
+
+/**
+ * MontageAsset.assemblyReferences
+ */
+export type MontageAsset$assemblyReferencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssemblyRecipeAssetReference
+   */
+  select?: Prisma.AssemblyRecipeAssetReferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AssemblyRecipeAssetReference
+   */
+  omit?: Prisma.AssemblyRecipeAssetReferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssemblyRecipeAssetReferenceInclude<ExtArgs> | null
+  where?: Prisma.AssemblyRecipeAssetReferenceWhereInput
+  orderBy?: Prisma.AssemblyRecipeAssetReferenceOrderByWithRelationInput | Prisma.AssemblyRecipeAssetReferenceOrderByWithRelationInput[]
+  cursor?: Prisma.AssemblyRecipeAssetReferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AssemblyRecipeAssetReferenceScalarFieldEnum | Prisma.AssemblyRecipeAssetReferenceScalarFieldEnum[]
 }
 
 /**

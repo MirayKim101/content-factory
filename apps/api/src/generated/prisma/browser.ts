@@ -53,6 +53,26 @@ export type PipelineJob = Prisma.PipelineJobModel
  */
 export type MontageAsset = Prisma.MontageAssetModel
 /**
+ * Model AssemblyRecipe
+ *
+ */
+export type AssemblyRecipe = Prisma.AssemblyRecipeModel
+/**
+ * Model AssemblyRecipeRevision
+ *
+ */
+export type AssemblyRecipeRevision = Prisma.AssemblyRecipeRevisionModel
+/**
+ * Model AssemblyRecipeAssetReference
+ *
+ */
+export type AssemblyRecipeAssetReference = Prisma.AssemblyRecipeAssetReferenceModel
+/**
+ * Model AssemblyRecipeMutationRequest
+ *
+ */
+export type AssemblyRecipeMutationRequest = Prisma.AssemblyRecipeMutationRequestModel
+/**
  * Model ProcessingTemplate
  *
  */

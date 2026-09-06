@@ -58,6 +58,10 @@ export const ModelName = {
   CutRequest: 'CutRequest',
   PipelineJob: 'PipelineJob',
   MontageAsset: 'MontageAsset',
+  AssemblyRecipe: 'AssemblyRecipe',
+  AssemblyRecipeRevision: 'AssemblyRecipeRevision',
+  AssemblyRecipeAssetReference: 'AssemblyRecipeAssetReference',
+  AssemblyRecipeMutationRequest: 'AssemblyRecipeMutationRequest',
   ProcessingTemplate: 'ProcessingTemplate',
   ProcessingTemplateRevision: 'ProcessingTemplateRevision',
   EditorialAsset: 'EditorialAsset',
@@ -249,6 +253,76 @@ export const MontageAssetScalarFieldEnum = {
 } as const
 
 export type MontageAssetScalarFieldEnum = (typeof MontageAssetScalarFieldEnum)[keyof typeof MontageAssetScalarFieldEnum]
+
+
+export const AssemblyRecipeScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  pipelineJobId: 'pipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutResultRecipeVersion: 'cutResultRecipeVersion',
+  lineageSourceId: 'lineageSourceId',
+  lineageSourceVersion: 'lineageSourceVersion',
+  cutDurationMs: 'cutDurationMs',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssemblyRecipeScalarFieldEnum = (typeof AssemblyRecipeScalarFieldEnum)[keyof typeof AssemblyRecipeScalarFieldEnum]
+
+
+export const AssemblyRecipeRevisionScalarFieldEnum = {
+  id: 'id',
+  recipeId: 'recipeId',
+  revision: 'revision',
+  schemaVersion: 'schemaVersion',
+  configurationFingerprint: 'configurationFingerprint',
+  audioProfileVersion: 'audioProfileVersion',
+  encodingProfileVersion: 'encodingProfileVersion',
+  advertisementInsertAtMs: 'advertisementInsertAtMs',
+  ctaText: 'ctaText',
+  ctaStartMs: 'ctaStartMs',
+  ctaEndMs: 'ctaEndMs',
+  ctaPosition: 'ctaPosition',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRecipeRevisionScalarFieldEnum = (typeof AssemblyRecipeRevisionScalarFieldEnum)[keyof typeof AssemblyRecipeRevisionScalarFieldEnum]
+
+
+export const AssemblyRecipeAssetReferenceScalarFieldEnum = {
+  id: 'id',
+  recipeRevisionId: 'recipeRevisionId',
+  role: 'role',
+  ordinal: 'ordinal',
+  assetId: 'assetId',
+  assetRevision: 'assetRevision',
+  assetSha256: 'assetSha256',
+  assetSizeBytes: 'assetSizeBytes',
+  assetKind: 'assetKind',
+  assetDurationMs: 'assetDurationMs',
+  clientItemId: 'clientItemId',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  position: 'position',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRecipeAssetReferenceScalarFieldEnum = (typeof AssemblyRecipeAssetReferenceScalarFieldEnum)[keyof typeof AssemblyRecipeAssetReferenceScalarFieldEnum]
+
+
+export const AssemblyRecipeMutationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  recipeRevisionId: 'recipeRevisionId',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRecipeMutationRequestScalarFieldEnum = (typeof AssemblyRecipeMutationRequestScalarFieldEnum)[keyof typeof AssemblyRecipeMutationRequestScalarFieldEnum]
 
 
 export const ProcessingTemplateScalarFieldEnum = {

@@ -52,6 +52,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/pipeline-jobs/{jobId}/assembly-recipe": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRecipeController_current"];
+    put: operations["AssemblyRecipeController_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{jobId}/assembly-recipe/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRecipeController_historical"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/pipeline-jobs/{jobId}/editorial-package": {
     parameters: {
       query?: never;
@@ -131,6 +163,22 @@ export interface paths {
     get?: never;
     /** Explicitly attest the current source version */
     put: operations["ProjectsController_authorize"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/assembly-recipes": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRecipeController_project"];
+    put?: never;
     post?: never;
     delete?: never;
     options?: never;
@@ -310,6 +358,109 @@ export interface components {
       sizeBytes: string;
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
+    };
+    AssemblyAdvertisementDto: {
+      /** Format: uuid */
+      assetId: string;
+      /** Format: int32 */
+      insertAtMs: number;
+    };
+    AssemblyAssetSnapshotResponseDto: {
+      durationMs: number | null;
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      kind: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
+      revision: number;
+      sha256: string;
+      sizeBytes: string;
+    };
+    AssemblyAssetSnapshotsResponseDto: {
+      advertisement:
+        components["schemas"]["AssemblyAssetSnapshotResponseDto"] | null;
+      banners: components["schemas"]["AssemblyAssetSnapshotResponseDto"][];
+      intro: components["schemas"]["AssemblyAssetSnapshotResponseDto"] | null;
+      outro: components["schemas"]["AssemblyAssetSnapshotResponseDto"] | null;
+    };
+    AssemblyBannerDto: {
+      /** Format: uuid */
+      assetId: string;
+      clientItemId: string;
+      /** Format: int32 */
+      endMs: number;
+      /** @enum {string} */
+      position: "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_RIGHT";
+      /** Format: int32 */
+      startMs: number;
+    };
+    AssemblyConfigurationResponseDto: {
+      advertisement: components["schemas"]["AssemblyAdvertisementDto"] | null;
+      /** @enum {string} */
+      audioProfileVersion: "youtube-stereo-v1";
+      banners: components["schemas"]["AssemblyBannerDto"][];
+      cta: components["schemas"]["AssemblyCtaDto"] | null;
+      /** @enum {string} */
+      encodingProfileVersion: "youtube-h264-v1";
+      /** Format: uuid */
+      introAssetId: string | null;
+      /** Format: uuid */
+      outroAssetId: string | null;
+    };
+    AssemblyCtaDto: {
+      /** Format: int32 */
+      endMs: number;
+      /** @enum {string} */
+      position: "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_RIGHT";
+      /** Format: int32 */
+      startMs: number;
+      text: string;
+    };
+    AssemblyCutSnapshotResponseDto: {
+      durationMs: number;
+      /** Format: uuid */
+      id: string;
+      recipeVersion: string;
+      sha256: string;
+      sizeBytes: string;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+    };
+    AssemblyRecipeListResponseDto: {
+      items: components["schemas"]["AssemblyRecipeResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    AssemblyRecipeResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      cutResultArtifact: components["schemas"]["AssemblyCutSnapshotResponseDto"];
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      pipelineJobId: string;
+      /** Format: uuid */
+      projectId: string;
+      revision: components["schemas"]["AssemblyRecipeRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+      validation: components["schemas"]["AssemblyRecipeValidationResponseDto"];
+    };
+    AssemblyRecipeRevisionResponseDto: {
+      assets: components["schemas"]["AssemblyAssetSnapshotsResponseDto"];
+      configuration: components["schemas"]["AssemblyConfigurationResponseDto"];
+      configurationFingerprint: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      id: string;
+      revision: number;
+      /** @enum {string} */
+      schemaVersion: "horizontal-assembly-v1";
+    };
+    AssemblyRecipeValidationResponseDto: {
+      /** @enum {boolean} */
+      valid: true;
     };
     AttestSourceAuthorizationDto: {
       /** @enum {boolean} */
@@ -634,6 +785,21 @@ export interface components {
       /** @example upload-rights-v1 */
       declarationVersion: string;
     };
+    SaveAssemblyRecipeDto: {
+      advertisement?: components["schemas"]["AssemblyAdvertisementDto"] | null;
+      /** @enum {string} */
+      audioProfileVersion: "youtube-stereo-v1";
+      banners: components["schemas"]["AssemblyBannerDto"][];
+      cta?: components["schemas"]["AssemblyCtaDto"] | null;
+      /** @enum {string} */
+      encodingProfileVersion: "youtube-h264-v1";
+      /** Format: int32 */
+      expectedRevision: number;
+      /** Format: uuid */
+      introAssetId?: string | null;
+      /** Format: uuid */
+      outroAssetId?: string | null;
+    };
     SaveEditorialPackageDto: {
       description?: string | null;
       /** Format: int32 */
@@ -781,6 +947,164 @@ export interface operations {
           "Accept-Ranges"?: string;
           /** @description Unsatisfied range with the authoritative object size. */
           "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRecipeController_current: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRecipeResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRecipeController_put: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SaveAssemblyRecipeDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRecipeResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRecipeController_historical: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        revision: number;
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRecipeResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
           [name: string]: unknown;
         };
         content: {
@@ -1177,6 +1501,62 @@ export interface operations {
       };
       /** @description The declaration version or explicit attestation is unsupported. */
       422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRecipeController_project: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: string;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRecipeListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
         headers: {
           [name: string]: unknown;
         };

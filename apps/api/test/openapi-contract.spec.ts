@@ -82,6 +82,8 @@ describe("authoritative OpenAPI export", () => {
           ProcessingTemplateRevisionResponseDto: {},
           EditorialAssetResponseDto: {},
           EditorialPackageResponseDto: {},
+          AssemblyRecipeResponseDto: {},
+          SaveAssemblyRecipeDto: {},
         },
       },
     });
@@ -120,7 +122,16 @@ describe("authoritative OpenAPI export", () => {
     expect(
       document.paths["/api/v1/pipeline-jobs/{jobId}/editorial-package"],
     ).toMatchObject({
-      get: { responses: { "200": {}, "403": {}, "404": {}, "409": {} } },
+      get: {
+        parameters: expect.arrayContaining([
+          expect.objectContaining({
+            in: "path",
+            name: "jobId",
+            required: true,
+          }),
+        ]),
+        responses: { "200": {}, "403": {}, "404": {}, "409": {} },
+      },
       put: {
         parameters: expect.arrayContaining([
           expect.objectContaining({
@@ -152,6 +163,107 @@ describe("authoritative OpenAPI export", () => {
       document.paths["/api/v1/projects/{projectId}/editorial-packages"]?.get,
     ).toMatchObject({
       responses: { "200": {}, "403": {}, "404": {}, "409": {} },
+    });
+    expect(
+      document.paths["/api/v1/pipeline-jobs/{jobId}/assembly-recipe"],
+    ).toMatchObject({
+      get: {
+        parameters: expect.arrayContaining([
+          expect.objectContaining({
+            in: "path",
+            name: "jobId",
+            required: true,
+          }),
+        ]),
+        responses: { "200": {}, "403": {}, "404": {}, "409": {} },
+      },
+      put: {
+        parameters: expect.arrayContaining([
+          expect.objectContaining({
+            in: "header",
+            name: "Idempotency-Key",
+            required: true,
+          }),
+          expect.objectContaining({ in: "path", name: "jobId" }),
+        ]),
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/SaveAssemblyRecipeDto",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {},
+          "400": {},
+          "403": {},
+          "404": {},
+          "409": {},
+          "422": {},
+        },
+      },
+    });
+    expect(
+      document.paths[
+        "/api/v1/pipeline-jobs/{jobId}/assembly-recipe/revisions/{revision}"
+      ]?.get,
+    ).toMatchObject({
+      responses: { "200": {}, "403": {}, "404": {}, "409": {} },
+    });
+    expect(
+      document.paths["/api/v1/projects/{projectId}/assembly-recipes"]?.get,
+    ).toMatchObject({
+      parameters: expect.arrayContaining([
+        expect.objectContaining({
+          in: "query",
+          name: "cursor",
+          required: false,
+          schema: { type: "string", format: "uuid" },
+        }),
+        expect.objectContaining({
+          in: "query",
+          name: "limit",
+          required: false,
+          schema: {
+            type: "integer",
+            minimum: 1,
+            maximum: 100,
+            default: 20,
+          },
+        }),
+      ]),
+      responses: { "200": {}, "400": {}, "403": {}, "404": {}, "409": {} },
+    });
+    expect(document).toMatchObject({
+      components: {
+        schemas: {
+          SaveAssemblyRecipeDto: {
+            required: [
+              "expectedRevision",
+              "banners",
+              "audioProfileVersion",
+              "encodingProfileVersion",
+            ],
+            properties: {
+              banners: { type: "array", maxItems: 8 },
+              audioProfileVersion: { enum: ["youtube-stereo-v1"] },
+              encodingProfileVersion: { enum: ["youtube-h264-v1"] },
+            },
+          },
+          AssemblyRecipeResponseDto: {
+            properties: {
+              cutResultArtifact: {
+                $ref: "#/components/schemas/AssemblyCutSnapshotResponseDto",
+              },
+              revision: {
+                $ref: "#/components/schemas/AssemblyRecipeRevisionResponseDto",
+              },
+            },
+          },
+        },
+      },
     });
     expect(document).toMatchObject({
       components: {

@@ -73,6 +73,26 @@ export const MontageAssetStatus = {
 export type MontageAssetStatus = (typeof MontageAssetStatus)[keyof typeof MontageAssetStatus]
 
 
+export const AssemblyAssetRole = {
+  INTRO: 'INTRO',
+  OUTRO: 'OUTRO',
+  ADVERTISEMENT: 'ADVERTISEMENT',
+  BANNER: 'BANNER'
+} as const
+
+export type AssemblyAssetRole = (typeof AssemblyAssetRole)[keyof typeof AssemblyAssetRole]
+
+
+export const AssemblyOverlayPosition = {
+  TOP_LEFT: 'TOP_LEFT',
+  TOP_RIGHT: 'TOP_RIGHT',
+  BOTTOM_LEFT: 'BOTTOM_LEFT',
+  BOTTOM_RIGHT: 'BOTTOM_RIGHT'
+} as const
+
+export type AssemblyOverlayPosition = (typeof AssemblyOverlayPosition)[keyof typeof AssemblyOverlayPosition]
+
+
 export const PipelineJobState = {
   QUEUED: 'QUEUED',
   PROCESSING: 'PROCESSING',

@@ -470,6 +470,40 @@ export type EnumMontageAssetStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel>
 }
 
+export type EnumAssemblyOverlayPositionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyOverlayPosition | Prisma.EnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyOverlayPositionNullableFilter<$PrismaModel> | $Enums.AssemblyOverlayPosition | null
+}
+
+export type EnumAssemblyOverlayPositionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyOverlayPosition | Prisma.EnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyOverlayPositionNullableWithAggregatesFilter<$PrismaModel> | $Enums.AssemblyOverlayPosition | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssemblyOverlayPositionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssemblyOverlayPositionNullableFilter<$PrismaModel>
+}
+
+export type EnumAssemblyAssetRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyAssetRole | Prisma.EnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel> | $Enums.AssemblyAssetRole
+}
+
+export type EnumAssemblyAssetRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyAssetRole | Prisma.EnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssemblyAssetRoleWithAggregatesFilter<$PrismaModel> | $Enums.AssemblyAssetRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
+}
+
 export type EnumEditorialAssetTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.EditorialAssetType | Prisma.EnumEditorialAssetTypeFieldRefInput<$PrismaModel>
   in?: $Enums.EditorialAssetType[] | Prisma.ListEnumEditorialAssetTypeFieldRefInput<$PrismaModel>
@@ -1035,6 +1069,40 @@ export type NestedEnumMontageAssetStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumMontageAssetStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumAssemblyOverlayPositionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyOverlayPosition | Prisma.EnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyOverlayPositionNullableFilter<$PrismaModel> | $Enums.AssemblyOverlayPosition | null
+}
+
+export type NestedEnumAssemblyOverlayPositionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyOverlayPosition | Prisma.EnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyOverlayPosition[] | Prisma.ListEnumAssemblyOverlayPositionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyOverlayPositionNullableWithAggregatesFilter<$PrismaModel> | $Enums.AssemblyOverlayPosition | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssemblyOverlayPositionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssemblyOverlayPositionNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumAssemblyAssetRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyAssetRole | Prisma.EnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel> | $Enums.AssemblyAssetRole
+}
+
+export type NestedEnumAssemblyAssetRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyAssetRole | Prisma.EnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AssemblyAssetRole[] | Prisma.ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAssemblyAssetRoleWithAggregatesFilter<$PrismaModel> | $Enums.AssemblyAssetRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
 }
 
 export type NestedEnumEditorialAssetTypeFilter<$PrismaModel = never> = {

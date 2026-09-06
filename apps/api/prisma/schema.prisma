@@ -50,6 +50,20 @@ enum MontageAssetStatus {
   FAILED_FINAL
 }
 
+enum AssemblyAssetRole {
+  INTRO
+  OUTRO
+  ADVERTISEMENT
+  BANNER
+}
+
+enum AssemblyOverlayPosition {
+  TOP_LEFT
+  TOP_RIGHT
+  BOTTOM_LEFT
+  BOTTOM_RIGHT
+}
+
 enum PipelineJobState {
   QUEUED
   PROCESSING
@@ -112,6 +126,7 @@ model Project {
   editorialAssets          EditorialAsset[]
   editorialPackages        EditorialPackage[]
   montageAssets            MontageAsset[]
+  assemblyRecipes          AssemblyRecipe[]
 }
 
 model VideoSource {
@@ -181,7 +196,9 @@ model MediaArtifact {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   editorialPackage     EditorialPackage?
+  assemblyRecipe       AssemblyRecipe?
 
+  @@unique([id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "MediaArtifact_id_projectId_lineage_pipelineJob_key")
   @@index([status, createdAt])
   @@index([cleanupStatus, updatedAt])
 }
@@ -234,9 +251,11 @@ model PipelineJob {
   attempts         JobAttempt[]
   resultArtifact   MediaArtifact?    @relation("PipelineJobResult")
   editorialPackage EditorialPackage?
+  assemblyRecipe   AssemblyRecipe?
   montageAssetId   String?           @unique @db.Uuid
   montageAsset     MontageAsset?     @relation(fields: [montageAssetId], references: [id], onDelete: Restrict)
 
+  @@unique([id, projectId, sourceId, sourceVersion])
   @@index([state, type, priority, queuedAt])
   @@index([leaseExpiresAt])
   @@index([projectId, createdAt])
@@ -244,18 +263,18 @@ model PipelineJob {
 }
 
 model MontageAsset {
-  id                   String                @id @db.Uuid
-  projectId            String                @db.Uuid
-  project              Project               @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  sourceId             String                @db.Uuid
-  source               VideoSource           @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  id                   String                         @id @db.Uuid
+  projectId            String                         @db.Uuid
+  project              Project                        @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId             String                         @db.Uuid
+  source               VideoSource                    @relation(fields: [sourceId], references: [id], onDelete: Restrict)
   sourceVersion        Int
   kind                 MontageAssetKind
-  status               MontageAssetStatus    @default(UPLOADING)
-  revision             Int                   @default(1)
-  idempotencyKey       String                @unique
+  status               MontageAssetStatus             @default(UPLOADING)
+  revision             Int                            @default(1)
+  idempotencyKey       String                         @unique
   requestFingerprint   String
-  objectKey            String                @unique
+  objectKey            String                         @unique
   originalFilename     String
   contentType          String
   sizeBytes            BigInt
@@ -274,18 +293,97 @@ model MontageAsset {
   storageVersion       String?
   failureCode          String?
   failureMessage       String?
-  cleanupStatus        ArtifactCleanupStatus @default(NOT_REQUIRED)
-  cleanupAttemptCount  Int                   @default(0)
+  cleanupStatus        ArtifactCleanupStatus          @default(NOT_REQUIRED)
+  cleanupAttemptCount  Int                            @default(0)
   cleanupLastErrorCode String?
   cleanupCompletedAt   DateTime?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
+  createdAt            DateTime                       @default(now())
+  updatedAt            DateTime                       @updatedAt
   probeJob             PipelineJob?
+  assemblyReferences   AssemblyRecipeAssetReference[]
 
   @@unique([id, projectId, sourceId, sourceVersion])
   @@index([projectId, kind, createdAt, id])
   @@index([status, uploadExpiresAt])
   @@index([cleanupStatus, updatedAt])
+}
+
+model AssemblyRecipe {
+  id                     String                   @id @db.Uuid
+  projectId              String                   @db.Uuid
+  project                Project                  @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  pipelineJobId          String                   @unique @db.Uuid
+  pipelineJob            PipelineJob              @relation(fields: [pipelineJobId, projectId, lineageSourceId, lineageSourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "AssemblyRecipe_exact_job_lineage")
+  cutResultArtifactId    String                   @unique @db.Uuid
+  cutResultArtifact      MediaArtifact            @relation(fields: [cutResultArtifactId, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "AssemblyRecipe_exact_artifact_lineage")
+  cutResultSha256        String
+  cutResultSizeBytes     BigInt
+  cutResultRecipeVersion String
+  lineageSourceId        String                   @db.Uuid
+  lineageSourceVersion   Int
+  cutDurationMs          Int
+  currentRevision        Int
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  revisions              AssemblyRecipeRevision[]
+
+  @@unique([pipelineJobId, projectId, lineageSourceId, lineageSourceVersion], map: "AssemblyRecipe_pipeline_exact_key")
+  @@unique([cutResultArtifactId, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "AssemblyRecipe_artifact_exact_key")
+  @@index([projectId, updatedAt, id])
+}
+
+model AssemblyRecipeRevision {
+  id                       String                          @id @db.Uuid
+  recipeId                 String                          @db.Uuid
+  recipe                   AssemblyRecipe                  @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+  revision                 Int
+  schemaVersion            String                          @default("horizontal-assembly-v1")
+  configurationFingerprint String
+  audioProfileVersion      String                          @default("youtube-stereo-v1")
+  encodingProfileVersion   String                          @default("youtube-h264-v1")
+  advertisementInsertAtMs  Int?
+  ctaText                  String?
+  ctaStartMs               Int?
+  ctaEndMs                 Int?
+  ctaPosition              AssemblyOverlayPosition?
+  createdAt                DateTime                        @default(now())
+  assetReferences          AssemblyRecipeAssetReference[]
+  mutationRequests         AssemblyRecipeMutationRequest[]
+
+  @@unique([recipeId, revision], map: "AssemblyRecipeRevision_recipe_revision_key")
+  @@index([createdAt, id])
+}
+
+model AssemblyRecipeAssetReference {
+  id               String                   @id @db.Uuid
+  recipeRevisionId String                   @db.Uuid
+  recipeRevision   AssemblyRecipeRevision   @relation(fields: [recipeRevisionId], references: [id], onDelete: Restrict)
+  role             AssemblyAssetRole
+  ordinal          Int
+  assetId          String                   @db.Uuid
+  asset            MontageAsset             @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  assetRevision    Int
+  assetSha256      String
+  assetSizeBytes   BigInt
+  assetKind        MontageAssetKind
+  assetDurationMs  Int?
+  clientItemId     String?
+  startMs          Int?
+  endMs            Int?
+  position         AssemblyOverlayPosition?
+  createdAt        DateTime                 @default(now())
+
+  @@unique([recipeRevisionId, role, ordinal], map: "AssemblyRecipeAssetReference_role_ordinal_key")
+  @@index([assetId])
+}
+
+model AssemblyRecipeMutationRequest {
+  id                 String                 @id @db.Uuid
+  idempotencyKey     String                 @unique
+  requestFingerprint String
+  recipeRevisionId   String                 @db.Uuid
+  recipeRevision     AssemblyRecipeRevision @relation(fields: [recipeRevisionId], references: [id], onDelete: Restrict)
+  createdAt          DateTime               @default(now())
 }
 
 model ProcessingTemplate {

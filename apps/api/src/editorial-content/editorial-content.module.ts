@@ -6,6 +6,15 @@ import { PrismaMontageRepository } from "./infrastructure/prisma-montage.reposit
 import { MontageReconciliationStartup } from "./infrastructure/montage-reconciliation.startup.js";
 import { MontageController } from "./presentation/montage.controller.js";
 import { MontageUploadAdmissionInterceptor } from "./presentation/montage-upload-admission.interceptor.js";
+import { ASSEMBLY_RECIPE_REPOSITORY } from "./application/assembly-recipe-repository.port.js";
+import {
+  GetAssemblyRecipe,
+  GetAssemblyRecipeRevision,
+  ListAssemblyRecipes,
+} from "./application/assembly-recipe-queries.js";
+import { SaveAssemblyRecipe } from "./application/save-assembly-recipe.js";
+import { PrismaAssemblyRecipeRepository } from "./infrastructure/prisma-assembly-recipe.repository.js";
+import { AssemblyRecipeController } from "./presentation/assembly-recipe.controller.js";
 
 import { ProjectsModule } from "../projects/projects.module.js";
 import { TempUploadLifecycleInterceptor } from "../projects/presentation/temp-upload-lifecycle.interceptor.js";
@@ -29,8 +38,21 @@ import { EditorialController } from "./presentation/editorial.controller.js";
 
 @Module({
   imports: [ProjectsModule],
-  controllers: [EditorialController, MontageController],
+  controllers: [
+    EditorialController,
+    MontageController,
+    AssemblyRecipeController,
+  ],
   providers: [
+    PrismaAssemblyRecipeRepository,
+    SaveAssemblyRecipe,
+    GetAssemblyRecipe,
+    GetAssemblyRecipeRevision,
+    ListAssemblyRecipes,
+    {
+      provide: ASSEMBLY_RECIPE_REPOSITORY,
+      useExisting: PrismaAssemblyRecipeRepository,
+    },
     PrismaMontageRepository,
     UploadMontageAsset,
     ReconcileMontageAssets,
