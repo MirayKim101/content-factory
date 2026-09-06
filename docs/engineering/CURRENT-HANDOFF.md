@@ -191,11 +191,24 @@ OpenAPI drift; recovery сохраняет idempotency key, корректно �
 `http://127.0.0.1:3000/montage-assets` запущена, финальная ручная визуальная
 приёмка владельцем ещё нужна.
 
-Следующий slice Stage 2b назначен `Backend Engineer — Montage Recipe` по
+Stage 2b выполнен `Backend Engineer — Montage Recipe` по
 Architect-CLEAN спецификации `docs/engineering/tasks/stage2-montage-recipes.md`,
-сохранённой в `0ddba01`. Он сохраняет append-only recipe с CAS/idempotency и
-exact cut/asset snapshots, но ещё не запускает FFmpeg и не создаёт output.
-Фоновая сборка, preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
+сохранённой в `0ddba01`. Backend прошёл independent CLEAN review (API 74/74,
+existing integration 38/38, isolated PostgreSQL/HTTP 4/4, contracts 2/2),
+сохранён `14d03b3`; additive migration `20260906100000_assembly_recipes`
+применена локально. Live smoke на 30-минутном READY cut сохранил revision 1 с
+exact intro/CTA, затем current/history/project list вернули ту же конфигурацию;
+число pipeline jobs не изменилось. Frontend editor прошёл independent CLEAN:
+107/107 tests, typecheck/lint/build/format/OpenAPI; exact non-whole milliseconds,
+draft reload, strict 404, durable idempotency, pagination >50 и source/project
+switch защищены. Сохранён `adc7c6a`.
+
+Следующий slice Stage 2c назначен `Backend Engineer — Horizontal Assembly
+Render` по accepted `docs/decisions/ADR-006-horizontal-assembly-render.md`,
+сохранённой в `66e6903`. Он создаёт durable render intent/job, exact-revision
+FFmpeg assembly, real progress и immutable Range-ready result. Live migration,
+runtime restart, concurrency change и 30-minute benchmark запрещены до review.
+Preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
 остаётся отдельным измеряемым experiment после восстановления безопасного runner.
 
 ## Локальные данные
