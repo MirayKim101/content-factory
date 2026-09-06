@@ -166,7 +166,7 @@ worker пересобран и восстановлен с concurrency 1 / 2 CPU
 
 ## Первый следующий шаг
 
-Следующий slice Stage 2a уже назначен `Backend Engineer — Montage assets`:
+Stage 2a начат как `Backend Engineer — Montage assets`:
 `docs/decisions/ADR-005-montage-assets-and-recipes.md` accepted после Architect
 review; acceptance в `docs/engineering/tasks/stage2-montage-assets.md`.
 Сначала ресурсы upload/probe/list/content; затем отдельный slice 2b recipes.
@@ -183,10 +183,19 @@ Malformed UUID дают HTTP 400; `реклама.mp4` сохраняется б
 audio=true), list/get сохранили результат, Range 0–1023 вернул 206/1024 B,
 повтор с тем же idempotency key вернул тот же asset/job. Повреждённый MP4
 завершился `FAILED_FINAL` с `SOURCE_PROBE_FAILED`; старый cut result после
-миграции также вернул 206/1024 B. Frontend montage назначен
-`Frontend Engineer — Montage Assets Workspace`; independent review и browser
-smoke ещё не выполнены. После freeze OpenAPI — frontend, independent review и browser smoke. Фоновая сборка,
-preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
+миграции также вернул 206/1024 B. Frontend `Montage Assets Workspace` прошёл
+independent CLEAN review: 88/88 web tests, typecheck, lint, format, build и
+OpenAPI drift; recovery сохраняет idempotency key, корректно отменяет upload
+при unmount/project switch, не переносит файл между проектами и показывает
+реальный процент каждого XHR. Сохранён `df0960e`; локальная страница
+`http://127.0.0.1:3000/montage-assets` запущена, финальная ручная визуальная
+приёмка владельцем ещё нужна.
+
+Следующий slice Stage 2b назначен `Backend Engineer — Montage Recipe` по
+Architect-CLEAN спецификации `docs/engineering/tasks/stage2-montage-recipes.md`,
+сохранённой в `0ddba01`. Он сохраняет append-only recipe с CAS/idempotency и
+exact cut/asset snapshots, но ещё не запускает FFmpeg и не создаёт output.
+Фоновая сборка, preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
 остаётся отдельным измеряемым experiment после восстановления безопасного runner.
 
 ## Локальные данные
