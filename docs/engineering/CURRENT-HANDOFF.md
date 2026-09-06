@@ -3,9 +3,9 @@
 Обновлено: 2026-09-06 (продолжение разработки)
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
-Текущий сохранённый commit: `2e31427 feat: add montage asset ingestion and probe`
-Сохранённый backend: `406326a`. Frontend manual editorial workspace прошёл
-проверку и сохранён локально в `1552490` (без push).
+Текущий сохранённый commit: `d33b57c feat: add editorial export workspace`.
+Stage 2 полностью сохранён локальными коммитами без push. Рабочее дерево содержит
+только это обновление handoff до его отдельной фиксации.
 
 ## Решение владельца
 
@@ -219,16 +219,39 @@ bytes; scratch/cache после завершения пусты. Range 0–10485
 1048576 bytes. UI после reload показывает READY external status и ссылку
 «Скачать готовое видео» на source card.
 
-До полного Stage 2 остаются два slice: Stage 2d preview + exact manual approval
-+ versioned metrics snapshot и Stage 2e background ZIP64 export + download.
-Они зафиксированы в accepted
-`docs/decisions/ADR-007-exact-editorial-approval-and-background-export.md` после
-independent architecture `CLEAN`. Stage 2d preview + exact approval + metrics
-авторизован следующим; Stage 2e начинается только после independent `CLEAN`
-и приёмки Stage 2d. Live migration/runtime каждого slice остаются запрещены до
-independent implementation review и rollout gate.
-Capacity concurrency `2`, затем `4` остаётся отдельным измеряемым experiment
-после восстановления безопасного runner и не блокирует последовательный MVP.
+Stage 2d завершён и сохранён в `4d4fcbb` и `b8c3c64`; backend и frontend получили
+independent `CLEAN`. Additive migration
+`20260906200000_editorial_approval_metrics` применена локально. Экран review
+восстанавливает exact candidate, считает только видимое время внимания и создаёт
+подтверждение только для CURRENT revision. Для live smoke создано техническое
+подтверждение `500d6620-7732-48b6-b97f-d0508aebbb62` с
+`manualAttentionMs = 0`; это проверка API/lineage, а не утверждение, что владелец
+посмотрел весь ролик.
+
+Stage 2e завершён. Backend/worker сохранён в `f194775`, frontend — в `d33b57c`;
+оба slice получили independent `CLEAN`. Additive migration
+`20260906230000_editorial_export_package` применена локально. Worker запущен с
+capability `EXPORT_EDITORIAL_PACKAGE`, concurrency `1`; local API admission
+включён через `EDITORIAL_EXPORT_ENABLED=1`. Интерфейс даёт export только для
+CURRENT approval, хранит idempotency key, показывает внешний реальный прогресс,
+восстанавливается после reload/project switch и fail-closed скрывает stale или
+чужой project result.
+
+Live export `42ef982a-3bb4-473a-9526-91ab6cd02f3c` завершился READY с первой
+попытки примерно за 4 секунды. ZIP64: `527497315` bytes, SHA-256
+`006e2b034c87b5621cf73a12e0d80a81ea99869da4d0eaaf5c37eb18cc84053c`.
+Range `0-1048575` вернул `206` и ровно `1048576` bytes. Полное скачивание,
+внешний `unzip -t` и SHA каждого entry прошли; архив содержит ровно
+`video.mp4`, `thumbnail.png`, `metadata.txt`, `metadata.json`, `manifest.json`.
+Manifest фиксирует exact approval/editorial/recipe/render lineage. Визуальный
+smoke новой карточки после reload остаётся единственным ручным gate: автоматический
+browser доступ был заблокирован экраном входа macOS.
+
+Полный ручной Stage 2 функционально завершён. Первый следующий продуктовый шаг —
+Stage 2B: сначала architecture/ADR и acceptance для `CreatorProfile`, source/cut
+context, transcript/frame lineage и provider-neutral research/text/image ports;
+затем отдельные вертикальные slice. Capacity concurrency `2`, затем `4` остаётся
+отдельным измеряемым experiment и не блокирует последовательный MVP.
 
 ## Локальные данные
 
