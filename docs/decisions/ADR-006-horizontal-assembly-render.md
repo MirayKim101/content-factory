@@ -455,5 +455,7 @@ Physical cleanup или down migration с потерей lineage не входя
 
 ## Решение tech lead
 
-Pending. Реализация не авторизована до independent architect/reviewer acceptance
-этого ADR и CLEAN acceptance Stage 2b immutable recipe slice.
+Approved. Independent review ADR-006 и CLEAN acceptance Stage 2b immutable
+recipe slice получены; реализация Stage 2c авторизована в границах этого ADR.
+Live deployment остаётся запрещён до CLEAN review реализации и выполнения
+описанного rollout gate.
