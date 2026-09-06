@@ -222,6 +222,26 @@ describe("EditorialPackageDialog", () => {
     await flushPromises();
   });
 
+  it("removes a ready export from cache before a new metadata revision can make it stale", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    queryClient.setQueryData(
+      ["editorial-exports", ids.projectA],
+      [{ id: "ready-export", approvalCurrent: true }],
+    );
+    mocks.savePackage.mockResolvedValue(
+      pack(ids.projectA, ids.jobA, "A title", 2),
+    );
+    const wrapper = mountDialog(queryClient);
+    await flushPromises();
+    await wrapper.find("form").trigger("submit");
+    await flushPromises();
+    expect(
+      queryClient.getQueryData(["editorial-exports", ids.projectA]),
+    ).toEqual([]);
+  });
+
   it("does not write a late save for job A into job B state", async () => {
     let resolveSave: ((value: ReturnType<typeof pack>) => void) | undefined;
     mocks.savePackage.mockImplementation(

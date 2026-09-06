@@ -12,10 +12,19 @@ import {
   saveApprovalDraft,
 } from "~/features/review-editorial-package/model/approval-draft";
 import {
+  clearExportAttempt,
+  exportIdempotency,
+  saveExportAttempt,
+} from "~/features/export-editorial-package/model/export-attempt-storage";
+import {
   createEditorialApprovalsApi,
   EditorialApprovalApiError,
   type EditorialReview,
 } from "~/shared/api/editorial-approvals";
+import {
+  createEditorialExportsApi,
+  EditorialExportsApiError,
+} from "~/shared/api/editorial-exports";
 
 const props = defineProps<{
   visible: boolean;
@@ -24,9 +33,13 @@ const props = defineProps<{
   renderId: string;
   filename: string;
 }>();
-const emit = defineEmits<{ "update:visible": [value: boolean] }>();
+const emit = defineEmits<{
+  "update:visible": [value: boolean];
+  exportCreated: [payload: { projectId: string; exportId: string }];
+}>();
 const config = useRuntimeConfig();
 const api = createEditorialApprovalsApi(config.public.apiBasePath);
+const exportsApi = createEditorialExportsApi(config.public.apiBasePath);
 const queryClient = useQueryClient();
 const checked = ref(false);
 const attentionMs = ref(0);
@@ -34,6 +47,7 @@ const draftFingerprint = ref<string>();
 const draftJobId = ref<string>();
 const idempotencyKey = ref<string>();
 const error = ref<string>();
+const exportError = ref<string>();
 const now = ref(Date.now());
 let timer: ReturnType<typeof setInterval> | undefined;
 let foregroundStart: number | undefined;
@@ -68,6 +82,12 @@ const canApprove = computed(() =>
     !review.isFetching.value &&
     !approval.isPending.value,
   ),
+);
+const canExport = computed(
+  () =>
+    candidate.value?.currentApproval?.state === "CURRENT" &&
+    !review.isFetching.value &&
+    !exportMutation.isPending.value,
 );
 
 function addForegroundTime(): void {
@@ -193,6 +213,18 @@ function requestApproval(): void {
     identity: `${props.projectId}:${props.jobId}:${props.renderId}:${value.candidateFingerprint}`,
   });
 }
+function requestExport(): void {
+  const approval = candidate.value?.currentApproval;
+  if (!approval || !canExport.value) return;
+  const key = exportIdempotency(approval.id);
+  saveExportAttempt(approval.id, key);
+  exportError.value = undefined;
+  exportMutation.mutate({
+    approvalId: approval.id,
+    key,
+    identity: `${props.projectId}:${props.jobId}:${approval.id}`,
+  });
+}
 const approval = useMutation({
   mutationFn: (request: {
     renderId: string;
@@ -234,6 +266,42 @@ const approval = useMutation({
               ? "Сборка больше недоступна. Закройте окно и обновите список."
               : reason.message
         : "Не удалось подтвердить версию. Повторите запрос — он использует тот же ключ.";
+  },
+});
+const exportMutation = useMutation({
+  mutationFn: (request: {
+    approvalId: string;
+    key: string;
+    identity: string;
+  }) => exportsApi.create(request.approvalId, request.key),
+  onSuccess: async (result, request) => {
+    if (
+      request.identity !==
+      `${props.projectId}:${props.jobId}:${candidate.value?.currentApproval?.id ?? ""}`
+    )
+      return;
+    clearExportAttempt(request.approvalId);
+    exportError.value = undefined;
+    queryClient.setQueryData(["editorial-export", result.id], result);
+    await queryClient.invalidateQueries({
+      queryKey: ["editorial-exports", props.projectId],
+    });
+    emit("exportCreated", { projectId: props.projectId, exportId: result.id });
+  },
+  onError: (reason, request) => {
+    if (
+      request.identity !==
+      `${props.projectId}:${props.jobId}:${candidate.value?.currentApproval?.id ?? ""}`
+    )
+      return;
+    exportError.value =
+      reason instanceof EditorialExportsApiError
+        ? reason.status === 409
+          ? "Подтверждение перестало быть актуальным. Экспорт безопасно заблокирован. Обновите проверку."
+          : reason.status === 503
+            ? "Экспорт временно выключен на сервере. Версия не была поставлена в очередь."
+            : reason.message
+        : "Не удалось создать экспорт. Повторите запрос: он использует тот же ключ.";
   },
 });
 
@@ -312,8 +380,8 @@ onBeforeUnmount(stopTimer);
           }}</strong>
           <p v-if="candidate.currentApproval?.state === 'CURRENT'">
             Подтверждена revision
-            {{ candidate.currentApproval.editorialRevision }}. Экспорт будет
-            доступен на следующем шаге.
+            {{ candidate.currentApproval.editorialRevision }}. ZIP-пакет можно
+            создать ниже.
           </p>
           <p v-else>
             Причины:
@@ -444,10 +512,17 @@ onBeforeUnmount(stopTimer);
         <section v-else class="export-next">
           <strong>Версия готова к экспорту.</strong>
           <p>
-            Кнопка создания ZIP появится на следующем шаге после реализации
-            фонового экспорта.
+            Сервер создаст ZIP-пакет в фоне. После закрытия окна статус и
+            скачивание останутся у этой нарезки.
           </p>
-          <Button label="Экспорт пока недоступен" disabled />
+          <p v-if="exportError" class="error" role="alert">{{ exportError }}</p>
+          <Button
+            label="Экспортировать пакет"
+            icon="pi pi-file-export"
+            :disabled="!canExport"
+            :loading="exportMutation.isPending.value"
+            @click="requestExport"
+          />
         </section>
       </template>
       <p v-else class="warning" role="alert">

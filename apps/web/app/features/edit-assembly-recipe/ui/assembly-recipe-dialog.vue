@@ -287,8 +287,14 @@ function requestSave(): void {
 const save = useMutation({
   mutationFn: (request: SaveRequest) =>
     recipesApi.save(request.jobId, request.body, request.idempotencyKey),
-  onSuccess: (value, request) => {
+  onSuccess: async (value, request) => {
     if (request.identity !== currentIdentity()) return;
+    // Recipe revisions invalidate exact approvals. Make the external export
+    // card fail closed until its authoritative project list is refreshed.
+    const exportsKey = ["editorial-exports", request.projectId];
+    await queryClient.cancelQueries({ queryKey: exportsKey });
+    queryClient.setQueryData(exportsKey, []);
+    await queryClient.invalidateQueries({ queryKey: exportsKey });
     queryClient.setQueryData<AssemblyRecipe>(
       ["assembly-recipe", request.jobId],
       value,

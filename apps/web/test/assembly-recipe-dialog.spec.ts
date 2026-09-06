@@ -126,7 +126,7 @@ function persistedRender(
     job: { state },
   };
 }
-function mountDialog() {
+function mountDialog(queryClient?: QueryClient) {
   vi.stubGlobal("useRuntimeConfig", () => ({
     public: { apiBasePath: "/api/v1" },
   }));
@@ -143,9 +143,11 @@ function mountDialog() {
         [
           VueQueryPlugin,
           {
-            queryClient: new QueryClient({
-              defaultOptions: { queries: { retry: false } },
-            }),
+            queryClient:
+              queryClient ??
+              new QueryClient({
+                defaultOptions: { queries: { retry: false } },
+              }),
           },
         ],
       ],
@@ -236,6 +238,24 @@ describe("AssemblyRecipeDialog", () => {
     await reload.trigger("click");
     await flushPromises();
     expect(wrapper.text()).not.toContain("несохранённые изменения");
+  });
+
+  it("removes a ready export from cache before a recipe revision can make it stale", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    queryClient.setQueryData(
+      ["editorial-exports", ids.project],
+      [{ id: "ready-export", approvalCurrent: true }],
+    );
+    mocks.save.mockResolvedValue(recipe(2));
+    const wrapper = mountDialog(queryClient);
+    await flushPromises();
+    await wrapper.find("form").trigger("submit");
+    await flushPromises();
+    expect(
+      queryClient.getQueryData(["editorial-exports", ids.project]),
+    ).toEqual([]);
   });
 
   it("reuses the same save key for an unknown-response retry", async () => {

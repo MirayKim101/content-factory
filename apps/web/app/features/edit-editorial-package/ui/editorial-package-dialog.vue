@@ -228,8 +228,15 @@ function requestSave(): void {
 const save = useMutation({
   mutationFn: (request: SaveRequest) =>
     api.savePackage(request.jobId, request.body, request.idempotencyKey),
-  onSuccess: (value, request) => {
+  onSuccess: async (value, request) => {
     if (request.identity !== currentIdentity()) return;
+    // A new editorial revision can make an already READY package stale. Drop
+    // the old cached export before the next read so a download is never shown
+    // while currentness is unknown.
+    const exportsKey = ["editorial-exports", request.projectId];
+    await queryClient.cancelQueries({ queryKey: exportsKey });
+    queryClient.setQueryData(exportsKey, []);
+    await queryClient.invalidateQueries({ queryKey: exportsKey });
     serverRevision.value = value.revision.revision;
     queryClient.setQueryData<EditorialPackage[]>(
       ["editorial-packages", request.projectId],

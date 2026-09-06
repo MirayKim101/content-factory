@@ -4,12 +4,20 @@ import PrimeVue from "primevue/config";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { reactive } from "vue";
 
-const mocks = vi.hoisted(() => ({ review: vi.fn(), approve: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  review: vi.fn(),
+  approve: vi.fn(),
+  createExport: vi.fn(),
+}));
 vi.mock("~/shared/api/editorial-approvals", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("~/shared/api/editorial-approvals")
   >()),
   createEditorialApprovalsApi: () => mocks,
+}));
+vi.mock("~/shared/api/editorial-exports", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("~/shared/api/editorial-exports")>()),
+  createEditorialExportsApi: () => ({ create: mocks.createExport }),
 }));
 
 import EditorialReviewDialog from "~/features/review-editorial-package/ui/editorial-review-dialog.vue";
@@ -148,6 +156,7 @@ describe("editorial review dialog", () => {
     });
     mocks.review.mockReset();
     mocks.approve.mockReset();
+    mocks.createExport.mockReset();
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -212,6 +221,28 @@ describe("editorial review dialog", () => {
     await flushPromises();
     expect(wrapper.text()).toContain("Подтверждение устарело");
     expect(wrapper.text()).toContain("EDITORIAL_REVISION_CHANGED");
+  });
+
+  it("creates a background ZIP only from the current approval", async () => {
+    const value = candidate();
+    value.currentApproval = {
+      id: "00000000-0000-4000-8000-000000000017",
+      state: "CURRENT",
+      editorialRevision: 1,
+      staleReasons: [],
+    };
+    mocks.review.mockResolvedValue(value);
+    mocks.createExport.mockResolvedValue({ id: "export-id" });
+    const { wrapper } = mountDialog();
+    await flushPromises();
+    await wrapper
+      .findAll("button")
+      .find((item) => item.text().includes("Экспортировать пакет"))!
+      .trigger("click");
+    expect(mocks.createExport).toHaveBeenCalledWith(
+      value.currentApproval.id,
+      expect.any(String),
+    );
   });
 
   it("retries a response-lost approval with the frozen saved tuple after reload", async () => {

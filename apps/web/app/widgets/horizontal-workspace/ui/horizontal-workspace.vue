@@ -7,6 +7,7 @@ import InputText from "primevue/inputtext";
 import { computed, nextTick, ref, watch } from "vue";
 
 import PipelineJobCard from "~/entities/pipeline-job/ui/pipeline-job-card.vue";
+import EditorialExportCard from "~/entities/editorial-export/ui/editorial-export-card.vue";
 import AssemblyRecipeDialog from "~/features/edit-assembly-recipe/ui/assembly-recipe-dialog.vue";
 import EditorialPackageDialog from "~/features/edit-editorial-package/ui/editorial-package-dialog.vue";
 import EditorialReviewDialog from "~/features/review-editorial-package/ui/editorial-review-dialog.vue";
@@ -516,35 +517,36 @@ watch(
               :aria-label="`Статус нарезок ${row.query.data.source.originalFilename}`"
             >
               <h2>Нарезки</h2>
-              <PipelineJobCard
-                v-for="jobId in ensureState(row.id).jobs"
-                :key="jobId"
-                :job-id="jobId"
-                :project-id="row.id"
-                @clone-segment="cloneSegment(row.id, $event)"
-                @edit-editorial="
-                  openEditorial(
-                    row.id,
-                    $event,
-                    row.query.data!.source.originalFilename,
-                  )
-                "
-                @edit-assembly="
-                  openAssembly(
-                    row.id,
-                    $event.jobId,
-                    row.query.data!.source.originalFilename,
-                    $event.durationMs,
-                  )
-                "
-                @review-editorial="
-                  openReview(
-                    row.id,
-                    $event,
-                    row.query.data!.source.originalFilename,
-                  )
-                "
-              />
+              <template v-for="jobId in ensureState(row.id).jobs" :key="jobId">
+                <PipelineJobCard
+                  :job-id="jobId"
+                  :project-id="row.id"
+                  @clone-segment="cloneSegment(row.id, $event)"
+                  @edit-editorial="
+                    openEditorial(
+                      row.id,
+                      $event,
+                      row.query.data!.source.originalFilename,
+                    )
+                  "
+                  @edit-assembly="
+                    openAssembly(
+                      row.id,
+                      $event.jobId,
+                      row.query.data!.source.originalFilename,
+                      $event.durationMs,
+                    )
+                  "
+                  @review-editorial="
+                    openReview(
+                      row.id,
+                      $event,
+                      row.query.data!.source.originalFilename,
+                    )
+                  "
+                />
+                <EditorialExportCard :project-id="row.id" :cut-job-id="jobId" />
+              </template>
             </section>
           </template>
         </template>
