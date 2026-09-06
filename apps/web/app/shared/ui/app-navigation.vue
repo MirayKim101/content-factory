@@ -28,6 +28,12 @@ function close(): void {
       @click="close"
       >Медиатека</NuxtLink
     >
+    <NuxtLink
+      to="/montage-assets"
+      :aria-current="currentPath === '/montage-assets' ? 'page' : undefined"
+      @click="close"
+      >Монтажные материалы</NuxtLink
+    >
     <span class="disabled" aria-disabled="true"
       >Вертикальные видео <small>Появится на Этапе 3</small></span
     >
