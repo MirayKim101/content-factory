@@ -9,6 +9,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import PipelineJobCard from "~/entities/pipeline-job/ui/pipeline-job-card.vue";
 import AssemblyRecipeDialog from "~/features/edit-assembly-recipe/ui/assembly-recipe-dialog.vue";
 import EditorialPackageDialog from "~/features/edit-editorial-package/ui/editorial-package-dialog.vue";
+import EditorialReviewDialog from "~/features/review-editorial-package/ui/editorial-review-dialog.vue";
 import {
   emptySegment,
   createCutSubmissionSummary,
@@ -58,6 +59,12 @@ const assemblyTarget = ref<{
   jobId: string;
   filename: string;
   durationMs: number;
+}>();
+const reviewTarget = ref<{
+  projectId: string;
+  jobId: string;
+  renderId: string;
+  filename: string;
 }>();
 const projectQueries = useQueries({
   queries: computed(() =>
@@ -295,6 +302,14 @@ function openAssembly(
   assemblyTarget.value = { projectId, jobId, filename, durationMs };
   announcement.value = "Открыт редактор монтажного рецепта готовой нарезки.";
 }
+function openReview(
+  projectId: string,
+  payload: { jobId: string; renderId: string },
+  filename: string,
+): void {
+  reviewTarget.value = { projectId, ...payload, filename };
+  announcement.value = "Открыта проверка точной собранной версии.";
+}
 watch(
   ids,
   (next) => {
@@ -305,6 +320,8 @@ watch(
       editorialTarget.value = undefined;
     if (!next.includes(assemblyTarget.value?.projectId ?? ""))
       assemblyTarget.value = undefined;
+    if (!next.includes(reviewTarget.value?.projectId ?? ""))
+      reviewTarget.value = undefined;
   },
   { immediate: true },
 );
@@ -336,6 +353,8 @@ watch(
           editorialTarget.value = undefined;
         if (assemblyTarget.value?.projectId === source.id)
           assemblyTarget.value = undefined;
+        if (reviewTarget.value?.projectId === source.id)
+          reviewTarget.value = undefined;
       }
     }
   },
@@ -518,6 +537,13 @@ watch(
                     $event.durationMs,
                   )
                 "
+                @review-editorial="
+                  openReview(
+                    row.id,
+                    $event,
+                    row.query.data!.source.originalFilename,
+                  )
+                "
               />
             </section>
           </template>
@@ -525,6 +551,20 @@ watch(
       </Card>
     </section>
     <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+
+    <EditorialReviewDialog
+      v-if="reviewTarget"
+      :visible="Boolean(reviewTarget)"
+      :project-id="reviewTarget.projectId"
+      :job-id="reviewTarget.jobId"
+      :render-id="reviewTarget.renderId"
+      :filename="reviewTarget.filename"
+      @update:visible="
+        (value) => {
+          if (!value) reviewTarget = undefined;
+        }
+      "
+    />
 
     <Dialog
       :visible="editorProjectId !== undefined"

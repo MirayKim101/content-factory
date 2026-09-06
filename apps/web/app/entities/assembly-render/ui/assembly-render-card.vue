@@ -9,6 +9,9 @@ import {
 } from "~/shared/api/assembly-renders";
 
 const props = defineProps<{ projectId: string; cutJobId: string }>();
+const emit = defineEmits<{
+  review: [payload: { jobId: string; renderId: string }];
+}>();
 const config = useRuntimeConfig();
 const api = createAssemblyRendersApi(config.public.apiBasePath);
 const query = useQuery({
@@ -120,6 +123,13 @@ function percent(render: AssemblyRender): number | undefined {
         <a class="download" :href="render.result.downloadUrl"
           >Скачать готовое видео</a
         >
+        <Button
+          label="Проверить и подтвердить"
+          severity="secondary"
+          @click="
+            emit('review', { jobId: props.cutJobId, renderId: render.id })
+          "
+        />
       </template>
       <div v-else-if="render.job.failure" class="error" role="alert">
         <p>{{ render.job.failure.message }}</p>

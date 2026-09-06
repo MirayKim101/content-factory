@@ -15,6 +15,7 @@ const emit = defineEmits<{
   cloneSegment: [bounds: { startMs: number; endMs: number }];
   editEditorial: [jobId: string];
   editAssembly: [payload: { jobId: string; durationMs: number }];
+  reviewEditorial: [payload: { jobId: string; renderId: string }];
 }>();
 const config = useRuntimeConfig();
 const api = createMediaPipelineApi(config.public.apiBasePath);
@@ -124,6 +125,7 @@ const label = computed(
           v-if="projectId"
           :project-id="projectId"
           :cut-job-id="query.data.value.id"
+          @review="emit('reviewEditorial', $event)"
         />
       </div>
       <div v-else-if="query.data.value.failure" class="error" role="alert">
