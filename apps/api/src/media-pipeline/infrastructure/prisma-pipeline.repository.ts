@@ -20,6 +20,10 @@ import {
   isSourceAuthorizationCleared,
   SourceAuthorizationRequiredError,
 } from "../../projects/domain/source-authorization.js";
+import { HORIZONTAL_RENDER_CONTRACT } from "../../editorial-content/domain/assembly-render.js";
+import { EDITORIAL_APPROVAL_CONTRACT } from "../../editorial-content/domain/editorial-approval.js";
+import { EDITORIAL_EXPORT_CONTRACT } from "../../editorial-content/domain/editorial-export.js";
+import { montageRightsUsable } from "../../editorial-content/domain/montage-asset.js";
 
 interface JobRow {
   id: string;
@@ -51,6 +55,52 @@ const jobViewInclude = {
     select: { outputFilename: true, sizeBytes: true, sha256: true },
   },
 } as const;
+
+const dispatchCandidateSelect = {
+  id: true,
+  projectId: true,
+  sourceId: true,
+  sourceVersion: true,
+  type: true,
+  recipeVersion: true,
+  attemptCount: true,
+  retryBudget: true,
+  editorialExportIntentId: true,
+  source: { include: { authorizations: true } },
+  editorialExportIntent: {
+    include: {
+      approval: {
+        include: {
+          cutPipelineJob: { include: { resultArtifact: true } },
+          editorialPackage: true,
+          editorialPackageRevision: true,
+          processingTemplateRevision: true,
+          thumbnailAsset: true,
+          assemblyRecipe: true,
+          recipeRevisionRecord: {
+            include: { assetReferences: { include: { asset: true } } },
+          },
+          assemblyRenderIntent: {
+            include: {
+              pipelineJob: true,
+              result: { include: { artifact: true } },
+            },
+          },
+        },
+      },
+    },
+  },
+} satisfies Prisma.PipelineJobSelect;
+
+type DispatchCandidateRow = Prisma.PipelineJobGetPayload<{
+  select: typeof dispatchCandidateSelect;
+}>;
+
+const expiredLeaseSelect = {
+  ...dispatchCandidateSelect,
+  montageAssetId: true,
+  leaseToken: true,
+} satisfies Prisma.PipelineJobSelect;
 
 @Injectable()
 export class PrismaPipelineRepository implements PipelineRepository {
@@ -221,27 +271,13 @@ export class PrismaPipelineRepository implements PipelineRepository {
       },
       orderBy: [{ priority: "desc" }, { queuedAt: "asc" }],
       take: Math.max(limit, limit * 4),
-      select: {
-        id: true,
-        attemptCount: true,
-        sourceVersion: true,
-        source: { include: { authorizations: true } },
-      },
+      select: dispatchCandidateSelect,
     });
-    return rows
-      .filter((row) =>
-        this.isCleared(
-          row.source.authorizations.find(
-            (decision) => decision.sourceVersion === row.sourceVersion,
-          ),
-          row.sourceVersion,
-        ),
-      )
-      .slice(0, limit)
-      .map((row) => ({
-        jobId: row.id,
-        attemptNumber: row.attemptCount + 1,
-      }));
+    const current = await this.keepCurrentDispatchCandidates(rows);
+    return current.slice(0, limit).map((row) => ({
+      jobId: row.id,
+      attemptNumber: row.attemptCount + 1,
+    }));
   }
 
   async getRunnableJobsByIds(jobIds: string[]) {
@@ -256,26 +292,13 @@ export class PrismaPipelineRepository implements PipelineRepository {
         ],
         AND: this.dispatchableType(),
       },
-      select: {
-        id: true,
-        attemptCount: true,
-        sourceVersion: true,
-        source: { include: { authorizations: true } },
-      },
+      select: dispatchCandidateSelect,
     });
-    return rows
-      .filter((row) =>
-        this.isCleared(
-          row.source.authorizations.find(
-            (decision) => decision.sourceVersion === row.sourceVersion,
-          ),
-          row.sourceVersion,
-        ),
-      )
-      .map((row) => ({
-        jobId: row.id,
-        attemptNumber: row.attemptCount + 1,
-      }));
+    const current = await this.keepCurrentDispatchCandidates(rows);
+    return current.map((row) => ({
+      jobId: row.id,
+      attemptNumber: row.attemptCount + 1,
+    }));
   }
 
   async isDeliveryRunnable(delivery: {
@@ -294,12 +317,17 @@ export class PrismaPipelineRepository implements PipelineRepository {
         attemptCount: delivery.attemptNumber - 1,
         AND: this.dispatchableType(),
       },
-      include: { source: { include: { authorizations: true } } },
+      select: dispatchCandidateSelect,
     });
-    const authorization = job?.source.authorizations.find(
-      (decision) => decision.sourceVersion === job.sourceVersion,
-    );
-    return Boolean(job && this.isCleared(authorization, job.sourceVersion));
+    if (!job) return false;
+    if (
+      job.type === "EXPORT_EDITORIAL_PACKAGE" &&
+      !this.isDispatchCandidateCurrent(job)
+    ) {
+      await this.failStaleExportCandidate(job.id);
+      return false;
+    }
+    return this.isDispatchCandidateCurrent(job);
   }
 
   async ensureProbeJobs(limit: number) {
@@ -353,37 +381,34 @@ export class PrismaPipelineRepository implements PipelineRepository {
       where: { state: "PROCESSING", leaseExpiresAt: { lt: new Date() } },
       take: limit,
       orderBy: { leaseExpiresAt: "asc" },
-      select: {
-        id: true,
-        type: true,
-        montageAssetId: true,
-        leaseToken: true,
-        sourceVersion: true,
-        source: {
-          select: {
-            sourceVersion: true,
-            status: true,
-            authorizations: true,
-          },
-        },
-      },
+      select: expiredLeaseSelect,
     });
     const recovered: Array<{ jobId: string; attemptNumber: number }> = [];
     for (const job of expired) {
       const authorization = job.source.authorizations.find(
         (decision) => decision.sourceVersion === job.sourceVersion,
       );
-      if (
-        job.source.sourceVersion !== job.sourceVersion ||
-        job.source.status !== "READY" ||
-        !this.isCleared(authorization, job.sourceVersion)
-      ) {
+      const sourceCurrent =
+        job.source.id === job.sourceId &&
+        job.source.projectId === job.projectId &&
+        job.source.sourceVersion === job.sourceVersion &&
+        job.source.status === "READY" &&
+        this.isCleared(authorization, job.sourceVersion);
+      const exportCurrent =
+        job.type !== "EXPORT_EDITORIAL_PACKAGE" || this.isExportCurrent(job);
+      if (!sourceCurrent || !exportCurrent) {
         const failureCode =
-          job.type === "ASSEMBLE_HORIZONTAL"
-            ? "ASSEMBLY_INPUT_INVALID"
-            : job.type === "MONTAGE_ASSET_PROBE"
-              ? "MONTAGE_IDENTITY_CONFLICT"
-              : "SOURCE_AUTHORIZATION_REQUIRED";
+          job.type === "EXPORT_EDITORIAL_PACKAGE"
+            ? "EXPORT_APPROVAL_STALE"
+            : job.type === "ASSEMBLE_HORIZONTAL"
+              ? "ASSEMBLY_INPUT_INVALID"
+              : job.type === "MONTAGE_ASSET_PROBE"
+                ? "MONTAGE_IDENTITY_CONFLICT"
+                : "SOURCE_AUTHORIZATION_REQUIRED";
+        const failureMessage =
+          job.type === "EXPORT_EDITORIAL_PACKAGE"
+            ? "The exact editorial approval is no longer current or authorized."
+            : "Exact source version or authorization changed after admission.";
         await this.prisma.$transaction(async (transaction) => {
           const failed = await transaction.pipelineJob.updateMany({
             where: {
@@ -395,8 +420,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
             data: {
               state: "FAILED_FINAL",
               failureCode,
-              failureMessage:
-                "Exact source version or authorization changed after admission.",
+              failureMessage,
               failureRetryable: false,
               finishedAt: new Date(),
               nextAttemptAt: null,
@@ -422,8 +446,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
               data: {
                 status: "FAILED_FINAL",
                 failureCode,
-                failureMessage:
-                  "Exact source version or authorization changed after admission.",
+                failureMessage,
                 cleanupStatus: "PENDING",
                 revision: { increment: 1 },
               },
@@ -712,6 +735,223 @@ export class PrismaPipelineRepository implements PipelineRepository {
     );
   }
 
+  private async keepCurrentDispatchCandidates(
+    rows: DispatchCandidateRow[],
+  ): Promise<DispatchCandidateRow[]> {
+    const current: DispatchCandidateRow[] = [];
+    for (const row of rows) {
+      if (this.isDispatchCandidateCurrent(row)) {
+        current.push(row);
+        continue;
+      }
+      if (row.type === "EXPORT_EDITORIAL_PACKAGE") {
+        await this.failStaleExportCandidate(row.id);
+      }
+    }
+    return current;
+  }
+
+  private async failStaleExportCandidate(jobId: string): Promise<void> {
+    await this.prisma.$transaction(async (transaction) => {
+      const failed = await transaction.pipelineJob.updateMany({
+        where: {
+          id: jobId,
+          type: "EXPORT_EDITORIAL_PACKAGE",
+          state: { in: ["QUEUED", "RETRY_WAIT"] },
+        },
+        data: {
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+          failureMessage:
+            "The exact editorial approval is no longer current or authorized.",
+          failureRetryable: false,
+          finishedAt: new Date(),
+          nextAttemptAt: null,
+          leaseOwner: null,
+          leaseToken: null,
+          leaseExpiresAt: null,
+          heartbeatAt: null,
+          revision: { increment: 1 },
+        },
+      });
+      if (failed.count !== 1) return;
+      await transaction.jobAttempt.updateMany({
+        where: { jobId, state: "QUEUED" },
+        data: {
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+          finishedAt: new Date(),
+        },
+      });
+    });
+  }
+
+  private isDispatchCandidateCurrent(row: DispatchCandidateRow): boolean {
+    const authorization = row.source.authorizations.find(
+      (decision) => decision.sourceVersion === row.sourceVersion,
+    );
+    if (
+      row.source.id !== row.sourceId ||
+      row.source.projectId !== row.projectId ||
+      row.source.sourceVersion !== row.sourceVersion ||
+      row.source.status !== "READY" ||
+      !this.isCleared(authorization, row.sourceVersion)
+    ) {
+      return false;
+    }
+    return row.type !== "EXPORT_EDITORIAL_PACKAGE" || this.isExportCurrent(row);
+  }
+
+  private isExportCurrent(row: DispatchCandidateRow): boolean {
+    const intent = row.editorialExportIntent;
+    const approval = intent?.approval;
+    const render = approval?.assemblyRenderIntent;
+    const recipeRevision = approval?.recipeRevisionRecord;
+    if (!intent || !approval || !render || !recipeRevision) return false;
+
+    const tags = approval.editorialPackageRevision.tags;
+    const editorialComplete =
+      Boolean(approval.editorialPackageRevision.title?.trim()) &&
+      Boolean(approval.editorialPackageRevision.description?.trim()) &&
+      Array.isArray(tags) &&
+      tags.length > 0;
+    const montageInputsCurrent = recipeRevision.assetReferences.every(
+      (reference) =>
+        reference.asset.id === reference.assetId &&
+        reference.asset.projectId === approval.projectId &&
+        reference.asset.sourceId === approval.sourceId &&
+        reference.asset.sourceVersion === approval.sourceVersion &&
+        reference.asset.status === "READY" &&
+        reference.asset.revision === reference.assetRevision &&
+        reference.asset.sha256 === reference.assetSha256 &&
+        reference.asset.sizeBytes === reference.assetSizeBytes &&
+        reference.asset.kind === reference.assetKind &&
+        reference.asset.durationMs === reference.assetDurationMs &&
+        montageRightsUsable(
+          reference.asset,
+          sourceAuthorizationRuntime().policy,
+        ),
+    );
+
+    return (
+      row.recipeVersion === EDITORIAL_EXPORT_CONTRACT &&
+      row.editorialExportIntentId === intent.id &&
+      intent.projectId === row.projectId &&
+      intent.sourceId === row.sourceId &&
+      intent.sourceVersion === row.sourceVersion &&
+      intent.exportContractVersion === EDITORIAL_EXPORT_CONTRACT &&
+      intent.projectId === approval.projectId &&
+      intent.sourceId === approval.sourceId &&
+      intent.sourceVersion === approval.sourceVersion &&
+      intent.cutPipelineJobId === approval.cutPipelineJobId &&
+      intent.approvalCandidateFingerprint === approval.candidateFingerprint &&
+      intent.editorialPackageRevisionId ===
+        approval.editorialPackageRevisionId &&
+      intent.recipeRevisionId === approval.recipeRevisionId &&
+      intent.assemblyRenderResultId === approval.assemblyRenderResultId &&
+      approval.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT &&
+      approval.renderContractVersion === HORIZONTAL_RENDER_CONTRACT &&
+      approval.editorialPackage.currentRevision ===
+        approval.editorialRevision &&
+      approval.editorialPackage.projectId === approval.projectId &&
+      approval.editorialPackage.pipelineJobId === approval.cutPipelineJobId &&
+      approval.editorialPackage.cutResultArtifactId ===
+        approval.cutPipelineJob.resultArtifact?.id &&
+      approval.editorialPackage.cutResultSha256 ===
+        approval.cutPipelineJob.resultArtifact.sha256 &&
+      approval.editorialPackage.cutResultSizeBytes ===
+        approval.cutPipelineJob.resultArtifact.sizeBytes &&
+      approval.editorialPackage.cutResultRecipeVersion ===
+        approval.cutPipelineJob.recipeVersion &&
+      approval.editorialPackage.lineageSourceId === approval.sourceId &&
+      approval.editorialPackage.lineageSourceVersion ===
+        approval.sourceVersion &&
+      approval.editorialPackageRevision.id ===
+        approval.editorialPackageRevisionId &&
+      approval.editorialPackageRevision.packageId ===
+        approval.editorialPackageId &&
+      approval.editorialPackageRevision.revision ===
+        approval.editorialRevision &&
+      approval.editorialPackageRevision.processingTemplateRevisionId ===
+        approval.processingTemplateRevisionId &&
+      approval.processingTemplateRevision.id ===
+        approval.processingTemplateRevisionId &&
+      approval.processingTemplateRevision.configurationVersion ===
+        "manual-editorial-v1" &&
+      approval.editorialPackageRevision.thumbnailAssetId ===
+        approval.thumbnailAssetId &&
+      editorialComplete &&
+      approval.cutPipelineJob.type === "CUT_SEGMENT" &&
+      approval.cutPipelineJob.state === "READY" &&
+      approval.cutPipelineJob.projectId === approval.projectId &&
+      approval.cutPipelineJob.sourceId === approval.sourceId &&
+      approval.cutPipelineJob.sourceVersion === approval.sourceVersion &&
+      approval.cutPipelineJob.resultArtifact?.role === "CUT_RESULT" &&
+      approval.cutPipelineJob.resultArtifact.status === "READY" &&
+      approval.cutPipelineJob.resultArtifact.projectId === approval.projectId &&
+      approval.cutPipelineJob.resultArtifact.sourceId === approval.sourceId &&
+      approval.cutPipelineJob.resultArtifact.lineageSourceId ===
+        approval.sourceId &&
+      approval.cutPipelineJob.resultArtifact.lineageSourceVersion ===
+        approval.sourceVersion &&
+      approval.cutPipelineJob.resultArtifact.pipelineJobId ===
+        approval.cutPipelineJob.id &&
+      approval.cutPipelineJob.resultArtifact.recipeVersion ===
+        approval.cutPipelineJob.recipeVersion &&
+      approval.thumbnailAsset.projectId === approval.projectId &&
+      approval.thumbnailAsset.type === "THUMBNAIL" &&
+      approval.thumbnailAsset.status === "READY" &&
+      approval.thumbnailAsset.sha256 === approval.thumbnailSha256 &&
+      approval.thumbnailAsset.sizeBytes === approval.thumbnailSizeBytes &&
+      approval.thumbnailAsset.contentType === approval.thumbnailContentType &&
+      ["image/jpeg", "image/png", "image/webp"].includes(
+        approval.thumbnailAsset.contentType,
+      ) &&
+      approval.assemblyRecipe.currentRevision === approval.recipeRevision &&
+      recipeRevision.id === approval.recipeRevisionId &&
+      recipeRevision.recipeId === approval.assemblyRecipeId &&
+      recipeRevision.revision === approval.recipeRevision &&
+      recipeRevision.configurationFingerprint ===
+        approval.configurationFingerprint &&
+      recipeRevision.schemaVersion === "horizontal-assembly-v1" &&
+      recipeRevision.audioProfileVersion === "youtube-stereo-v1" &&
+      recipeRevision.encodingProfileVersion === "youtube-h264-v1" &&
+      montageInputsCurrent &&
+      render.id === approval.assemblyRenderIntentId &&
+      render.projectId === approval.projectId &&
+      render.sourceId === approval.sourceId &&
+      render.sourceVersion === approval.sourceVersion &&
+      render.cutPipelineJobId === approval.cutPipelineJobId &&
+      render.assemblyRecipeId === approval.assemblyRecipeId &&
+      render.recipeRevisionId === approval.recipeRevisionId &&
+      render.recipeRevision === approval.recipeRevision &&
+      render.configurationFingerprint === approval.configurationFingerprint &&
+      render.renderContractVersion === HORIZONTAL_RENDER_CONTRACT &&
+      render.audioProfileVersion === recipeRevision.audioProfileVersion &&
+      render.encodingProfileVersion === recipeRevision.encodingProfileVersion &&
+      render.pipelineJob?.type === "ASSEMBLE_HORIZONTAL" &&
+      render.pipelineJob.state === "READY" &&
+      render.pipelineJob.projectId === approval.projectId &&
+      render.pipelineJob.sourceId === approval.sourceId &&
+      render.pipelineJob.sourceVersion === approval.sourceVersion &&
+      render.pipelineJob.assemblyRenderIntentId === render.id &&
+      render.result?.id === approval.assemblyRenderResultId &&
+      render.result.renderIntentId === render.id &&
+      render.result.artifact.id === approval.renderArtifactId &&
+      render.result.artifact.projectId === approval.projectId &&
+      render.result.artifact.sourceId === approval.sourceId &&
+      render.result.artifact.lineageSourceId === approval.sourceId &&
+      render.result.artifact.lineageSourceVersion === approval.sourceVersion &&
+      render.result.artifact.pipelineJobId === render.pipelineJob.id &&
+      render.result.artifact.role === "HORIZONTAL_ASSEMBLY_RESULT" &&
+      render.result.artifact.status === "READY" &&
+      render.result.artifact.contentType === "video/mp4" &&
+      render.result.artifact.recipeVersion === HORIZONTAL_RENDER_CONTRACT &&
+      render.result.artifact.sha256 === approval.renderArtifactSha256 &&
+      render.result.artifact.sizeBytes === approval.renderArtifactSizeBytes
+    );
+  }
+
   private findRequest(key: string) {
     return this.prisma.cutRequest.findUnique({
       where: { idempotencyKey: key },
@@ -784,12 +1024,22 @@ export class PrismaPipelineRepository implements PipelineRepository {
         { type: { in: ["SOURCE_PROBE", "CUT_SEGMENT"] }, montageAssetId: null },
         {
           type: "ASSEMBLE_HORIZONTAL",
-          recipeVersion: "horizontal-render-v1",
+          recipeVersion: HORIZONTAL_RENDER_CONTRACT,
           montageAssetId: null,
           assemblyRenderIntent: {
             is: {
-              renderContractVersion: "horizontal-render-v1",
+              renderContractVersion: HORIZONTAL_RENDER_CONTRACT,
             },
+          },
+        },
+        {
+          type: "EXPORT_EDITORIAL_PACKAGE",
+          recipeVersion: EDITORIAL_EXPORT_CONTRACT,
+          montageAssetId: null,
+          cutRequestId: null,
+          assemblyRenderIntentId: null,
+          editorialExportIntent: {
+            is: { exportContractVersion: EDITORIAL_EXPORT_CONTRACT },
           },
         },
         ...(sourceAuthorizationRuntime().policy === "local-auto"

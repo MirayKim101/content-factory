@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdtemp, rm, stat, statfs } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, stat, statfs, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import {
@@ -14,6 +14,7 @@ import type {
   MediaJobTelemetry,
   MediaJobRepository,
   MediaProcessor,
+  PackageExporter,
   SourceCache,
   SourceCacheHandle,
   TelemetryOutcome,
@@ -30,6 +31,7 @@ export interface MediaWorkerLimits {
 
 export class ProcessMediaJob {
   private reservedScratchBytes = 0n;
+  private recoveredScratchBytes = 0n;
 
   constructor(
     private readonly repository: MediaJobRepository,
@@ -40,17 +42,28 @@ export class ProcessMediaJob {
     private readonly limits: MediaWorkerLimits,
     private readonly telemetry: MediaJobTelemetry = () => undefined,
     private readonly assemblyRenderer?: AssemblyRenderer,
+    private readonly packageExporter?: PackageExporter,
   ) {}
+
+  setRecoveredScratchBytes(value: bigint): void {
+    this.recoveredScratchBytes = value < 0n ? 0n : value;
+  }
 
   async execute(jobId: string): Promise<void> {
     let scratchReservation = 0n;
+    let scratchPeakBytes = 0n;
     const resourcePlan = await this.repository.getAssemblyResourcePlan(jobId);
     if (resourcePlan) {
       const disk = await statfs(this.limits.scratchDirectory, { bigint: true });
       const available = disk.bavail * disk.bsize;
       const required =
         resourcePlan.requiredScratchBytes + this.limits.scratchSafetyBytes;
-      if (available - this.reservedScratchBytes < required) {
+      // Recovered reservations may belong to another process or to an orphan
+      // that is still inside the safety grace. Double-accounting a current
+      // local marker is conservative; subtracting it without exact ownership
+      // would permit overcommit during the next concurrent admission.
+      const accounted = this.recoveredScratchBytes + this.reservedScratchBytes;
+      if (available - accounted < required) {
         await this.repository.deferAssemblyAdmission(
           jobId,
           "INSUFFICIENT_SCRATCH",
@@ -93,6 +106,7 @@ export class ProcessMediaJob {
     );
     timeout.unref();
     let scratch: string | undefined;
+    let exportScratchDirectoryName: string | undefined;
     let heartbeatTimer: NodeJS.Timeout | undefined;
     let heartbeatRunning = false;
     let heartbeatStopped = false;
@@ -104,6 +118,8 @@ export class ProcessMediaJob {
     let cachedSource: SourceCacheHandle | undefined;
     let assemblyPhase:
       | "DOWNLOAD"
+      | "READ_INPUTS"
+      | "WRITE_ARCHIVE"
       | "AUDIO_ANALYSIS"
       | "ENCODE"
       | "OUTPUT_PROBE"
@@ -201,7 +217,8 @@ export class ProcessMediaJob {
         if (!active) abort.abort(leaseLostError());
         if (
           active &&
-          job.type === "ASSEMBLE_HORIZONTAL" &&
+          (job.type === "ASSEMBLE_HORIZONTAL" ||
+            job.type === "EXPORT_EDITORIAL_PACKAGE") &&
           assemblyPhase &&
           !(await this.repository.updateAssemblyProgress(
             job,
@@ -231,6 +248,7 @@ export class ProcessMediaJob {
           "CUT_SEGMENT",
           "MONTAGE_ASSET_PROBE",
           "ASSEMBLE_HORIZONTAL",
+          "EXPORT_EDITORIAL_PACKAGE",
         ].includes(job.type)
       )
         throw new ControlledMediaError(
@@ -245,6 +263,152 @@ export class ProcessMediaJob {
         Math.max(1_000, Math.floor(this.limits.leaseMs / 3)),
       );
       heartbeatTimer.unref();
+
+      if (job.type === "EXPORT_EDITORIAL_PACKAGE") {
+        if (!this.packageExporter)
+          throw new ControlledMediaError(
+            "EXPORT_CAPABILITY_UNAVAILABLE",
+            "Worker cannot create the configured editorial export package.",
+            false,
+          );
+        const leaseHash = createHash("sha256")
+          .update(job.leaseToken)
+          .digest("hex");
+        exportScratchDirectoryName = `export-${job.id}-${job.attemptNumber}-${leaseHash.slice(0, 16)}`;
+        scratch = join(
+          this.limits.scratchDirectory,
+          exportScratchDirectoryName,
+        );
+        await mkdir(scratch, { mode: 0o700 });
+        await writeFile(
+          join(scratch, "attempt.json"),
+          `${JSON.stringify({
+            markerVersion: "editorial-export-scratch-v1",
+            jobId: job.id,
+            attemptNumber: job.attemptNumber,
+            leaseIdentityHash: leaseHash,
+            createdAt: new Date().toISOString(),
+            reservedBytes: scratchReservation.toString(),
+          })}\n`,
+          { mode: 0o600, flag: "wx" },
+        );
+        await this.repository.prepareExportScratch(job, {
+          directoryName: exportScratchDirectoryName,
+          leaseHash,
+          reservedBytes: scratchReservation,
+        });
+        const outputPath = join(scratch, "editorial-package.zip");
+        assemblyPhase = "READ_INPUTS";
+        assemblyBasisPoints = 0;
+        let exportReadBytes = 0n;
+        let exportWrittenBytes = 0n;
+        await this.updateAssemblyProgress(job, assemblyPhase, 0);
+        const packageResult = await measurePhase(
+          "archive",
+          () =>
+            this.packageExporter!.export({
+              plan: job.editorialExportPlan,
+              outputPath,
+              signal: abort.signal,
+              openInput: (objectKey) =>
+                this.storage.read(objectKey, abort.signal),
+              onProgress: ({ phase, bytes, totalBytes }) => {
+                if (phase === "READ_INPUTS") {
+                  if (bytes > exportReadBytes) exportReadBytes = bytes;
+                } else {
+                  if (bytes > exportWrittenBytes) exportWrittenBytes = bytes;
+                  assemblyPhase = "WRITE_ARCHIVE";
+                }
+                const readFraction = Number(
+                  totalBytes > 0n
+                    ? (exportReadBytes * 10_000n) / totalBytes
+                    : 10_000n,
+                );
+                const writeFraction = Number(
+                  totalBytes > 0n
+                    ? (exportWrittenBytes * 10_000n) / totalBytes
+                    : 10_000n,
+                );
+                assemblyBasisPoints = Math.max(
+                  assemblyBasisPoints,
+                  Math.min(4_000, Math.round(readFraction * 0.4)) +
+                    Math.min(3_500, Math.round(writeFraction * 0.35)),
+                );
+              },
+            }),
+          (result) => ({ bytes: result.archiveBytes.toString() }),
+        );
+        const outputStat = await stat(outputPath);
+        scratchPeakBytes = BigInt(outputStat.size);
+        if (BigInt(outputStat.size) !== packageResult.archiveBytes)
+          throw new ControlledMediaError(
+            "EXPORT_ARCHIVE_SIZE_MISMATCH",
+            "The generated archive size could not be verified.",
+            false,
+          );
+        assemblyPhase = "OUTPUT_HASH";
+        assemblyBasisPoints = 7_500;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        const sha256 = await measurePhase(
+          "output_hash",
+          () => hashFile(outputPath, abort.signal),
+          () => ({ bytes: outputStat.size.toString() }),
+        );
+        assemblyBasisPoints = 8_400;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        await this.assertActiveLease(job);
+        const objectKey = `sources/${job.projectId}/editorial-exports/${job.id}/attempt-${job.attemptNumber}-${leaseHash.slice(0, 16)}.zip`;
+        await this.repository.prepareAttemptOutput(job, objectKey);
+        uploadedObjectKey = objectKey;
+        assemblyPhase = "UPLOAD";
+        await this.updateAssemblyProgress(job, assemblyPhase, 8_400);
+        const receipt = await measurePhase(
+          "upload",
+          () =>
+            this.storage.upload({
+              objectKey,
+              filePath: outputPath,
+              sha256,
+              sizeBytes: BigInt(outputStat.size),
+              contentType: "application/zip",
+              uploadMode: "SINGLE_REQUEST",
+              signal: abort.signal,
+              onProgress: (uploadedBytes) => {
+                const total = BigInt(outputStat.size);
+                assemblyBasisPoints =
+                  8_400 +
+                  Number(
+                    total > 0n ? (uploadedBytes * 1_400n) / total : 1_400n,
+                  );
+              },
+            }),
+          () => ({ bytes: outputStat.size.toString() }),
+        );
+        await this.updateAssemblyProgress(job, assemblyPhase, 9_800);
+        await this.assertActiveLease(job);
+        assemblyPhase = "FINALIZE";
+        await this.updateAssemblyProgress(job, assemblyPhase, 9_900);
+        await this.repository.completeEditorialExport(job, {
+          objectKey,
+          filename: `editorial-package-${job.editorialExportPlan.intentId}.zip`,
+          sizeBytes: BigInt(outputStat.size),
+          sha256,
+          ...(receipt.etag ? { etag: receipt.etag } : {}),
+          ...(receipt.version ? { storageVersion: receipt.version } : {}),
+          manifest: packageResult.manifest,
+        });
+        finalized = true;
+        succeeded = true;
+        return;
+      }
 
       if (job.type === "ASSEMBLE_HORIZONTAL") {
         if (!this.assemblyRenderer || !this.limits.assemblyFontPath) {
@@ -557,13 +721,21 @@ export class ProcessMediaJob {
     } catch (error) {
       let failure = error;
       if (uploadedObjectKey && !finalized) {
-        if (job.type === "ASSEMBLE_HORIZONTAL") {
+        if (
+          job.type === "ASSEMBLE_HORIZONTAL" ||
+          job.type === "EXPORT_EDITORIAL_PACKAGE"
+        ) {
           try {
             if (
-              await this.repository.isAssemblyResultAccepted(
-                job,
-                uploadedObjectKey,
-              )
+              job.type === "ASSEMBLE_HORIZONTAL"
+                ? await this.repository.isAssemblyResultAccepted(
+                    job,
+                    uploadedObjectKey,
+                  )
+                : await this.repository.isEditorialExportResultAccepted(
+                    job,
+                    uploadedObjectKey,
+                  )
             ) {
               finalized = true;
               succeeded = true;
@@ -576,7 +748,9 @@ export class ProcessMediaJob {
             // after PostgreSQL becomes reachable again.
             uploadedObjectKey = undefined;
             failure = new ControlledMediaError(
-              "ASSEMBLY_FINALIZE_OUTCOME_UNKNOWN",
+              job.type === "ASSEMBLE_HORIZONTAL"
+                ? "ASSEMBLY_FINALIZE_OUTCOME_UNKNOWN"
+                : "EXPORT_FINALIZE_OUTCOME_UNKNOWN",
               "Не удалось подтвердить результат сборки после завершения записи.",
               true,
             );
@@ -615,7 +789,14 @@ export class ProcessMediaJob {
           () => cachedSource?.release() ?? Promise.resolve(),
           () =>
             scratch
-              ? rm(scratch, { recursive: true, force: true })
+              ? rm(scratch, { recursive: true, force: true }).then(() =>
+                  exportScratchDirectoryName
+                    ? this.repository.clearExportScratch(
+                        job,
+                        exportScratchDirectoryName,
+                      )
+                    : undefined,
+                )
               : Promise.resolve(),
           () => {
             this.reservedScratchBytes -= scratchReservation;
@@ -631,6 +812,9 @@ export class ProcessMediaJob {
             ...(scratchReservation > 0n
               ? { scratchReservationBytes: scratchReservation.toString() }
               : {}),
+            ...(scratchPeakBytes > 0n
+              ? { scratchPeakBytes: scratchPeakBytes.toString() }
+              : {}),
           },
         );
       }
@@ -645,6 +829,8 @@ export class ProcessMediaJob {
     job: ClaimedMediaJob,
     phase:
       | "DOWNLOAD"
+      | "READ_INPUTS"
+      | "WRITE_ARCHIVE"
       | "AUDIO_ANALYSIS"
       | "ENCODE"
       | "OUTPUT_PROBE"

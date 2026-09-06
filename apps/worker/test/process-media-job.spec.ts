@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Readable } from "node:stream";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -14,11 +15,13 @@ import type {
   MediaJobTelemetry,
   MediaProcessor,
   AssemblyRenderer,
+  PackageExporter,
   SourceCache,
   WorkerObjectStorage,
 } from "../src/application/ports.js";
 import type { ClaimedMediaJob } from "../src/domain/media-job.js";
 import { ControlledMediaError } from "../src/domain/media-job.js";
+import { StreamingZip64PackageExporter } from "../src/infrastructure/streaming-zip64-package-exporter.js";
 
 function claimed<T extends "SOURCE_PROBE" | "CUT_SEGMENT">(
   type: T,
@@ -54,6 +57,11 @@ function dependencies(job: ClaimedMediaJob) {
   const repository: MediaJobRepository = {
     getAssemblyResourcePlan: vi.fn(async () => null),
     deferAssemblyAdmission: vi.fn(async () => undefined),
+    prepareExportScratch: vi.fn(async () => undefined),
+    clearExportScratch: vi.fn(async () => undefined),
+    listActiveExportScratchReservations: vi.fn(async () => []),
+    inspectExportScratchLease: vi.fn(async () => "INACTIVE" as const),
+    clearReconciledExportScratch: vi.fn(async () => undefined),
     claim: vi.fn(async () => job),
     heartbeat: vi.fn(async () => true),
     updateAssemblyProgress: vi.fn(async () => true),
@@ -64,11 +72,14 @@ function dependencies(job: ClaimedMediaJob) {
     completeMontageProbe: vi.fn(async () => undefined),
     completeCut: vi.fn(async () => undefined),
     completeAssembly: vi.fn(async () => undefined),
+    completeEditorialExport: vi.fn(async () => undefined),
     isAssemblyResultAccepted: vi.fn(async () => false),
+    isEditorialExportResultAccepted: vi.fn(async () => false),
     fail: vi.fn(async () => "FAILED_FINAL" as const),
     close: vi.fn(async () => undefined),
   };
   const storage: WorkerObjectStorage = {
+    read: vi.fn(async () => Readable.from([Buffer.from("source")])),
     download: vi.fn(async (_key, destination) =>
       writeFile(destination, "source"),
     ),
@@ -102,6 +113,244 @@ function dependencies(job: ClaimedMediaJob) {
 }
 
 describe("ProcessMediaJob", () => {
+  it("exports one lease-scoped package, persists real progress, and clears scratch", async () => {
+    const job = exportJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1_048_576n,
+    }));
+    const exporter: PackageExporter = {
+      export: vi.fn(async (input) => {
+        input.onProgress({ phase: "READ_INPUTS", bytes: 6n, totalBytes: 9n });
+        input.onProgress({ phase: "WRITE_ARCHIVE", bytes: 9n, totalBytes: 9n });
+        await writeFile(input.outputPath, fakeMp4("ZIP"));
+        return {
+          manifest: { manifestSchemaVersion: "editorial-export-manifest-v1" },
+          archiveBytes: BigInt(fakeMp4("ZIP").length),
+        };
+      }),
+    };
+    await worker(
+      deps,
+      30_000,
+      undefined,
+      undefined,
+      undefined,
+      exporter,
+    ).execute(job.id);
+    expect(deps.repository.prepareExportScratch).toHaveBeenCalledWith(
+      job,
+      expect.objectContaining({
+        directoryName: expect.stringMatching(/^export-/),
+        leaseHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+        reservedBytes: 1_048_576n,
+      }),
+    );
+    expect(deps.repository.prepareAttemptOutput).toHaveBeenCalledWith(
+      job,
+      expect.stringMatching(/\.zip$/),
+    );
+    expect(deps.repository.completeEditorialExport).toHaveBeenCalledWith(
+      job,
+      expect.objectContaining({
+        filename: `editorial-package-${job.editorialExportPlan.intentId}.zip`,
+        manifest: { manifestSchemaVersion: "editorial-export-manifest-v1" },
+      }),
+    );
+    expect(deps.repository.clearExportScratch).toHaveBeenCalledOnce();
+    expect(deps.repository.updateAssemblyProgress).toHaveBeenCalledWith(
+      job,
+      "FINALIZE",
+      9_900,
+    );
+    expect(deps.repository.fail).not.toHaveBeenCalled();
+  });
+
+  it("keeps persisted archive progress monotonic for the real interleaved exporter callbacks", async () => {
+    const job = exportJob();
+    const video = Buffer.from("ab");
+    const thumbnail = Buffer.from("png");
+    job.editorialExportPlan.video.sizeBytes = BigInt(video.length);
+    job.editorialExportPlan.video.sha256 = createHash("sha256")
+      .update(video)
+      .digest("hex");
+    job.editorialExportPlan.thumbnail.sizeBytes = BigInt(thumbnail.length);
+    job.editorialExportPlan.thumbnail.sha256 = createHash("sha256")
+      .update(thumbnail)
+      .digest("hex");
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1_048_576n,
+    }));
+    deps.storage.read = vi.fn(async (objectKey) => {
+      if (objectKey !== job.editorialExportPlan.video.objectKey) {
+        return Readable.from([thumbnail]);
+      }
+      return Readable.from(
+        (async function* slowVideo() {
+          for (const byte of video) {
+            await new Promise((resolve) => setTimeout(resolve, 1_100));
+            yield Buffer.from([byte]);
+          }
+        })(),
+      );
+    });
+
+    await worker(
+      deps,
+      3_000,
+      undefined,
+      undefined,
+      undefined,
+      new StreamingZip64PackageExporter(),
+    ).execute(job.id);
+
+    const archiveProgress = vi
+      .mocked(deps.repository.updateAssemblyProgress)
+      .mock.calls.filter(([, phase]) =>
+        ["READ_INPUTS", "WRITE_ARCHIVE"].includes(phase),
+      );
+    const firstWrite = archiveProgress.findIndex(
+      ([, phase]) => phase === "WRITE_ARCHIVE",
+    );
+    expect(firstWrite).toBeGreaterThan(0);
+    expect(
+      archiveProgress
+        .slice(firstWrite + 1)
+        .some(([, phase]) => phase === "READ_INPUTS"),
+    ).toBe(false);
+    expect(archiveProgress.map(([, , value]) => value)).toEqual(
+      archiveProgress
+        .map(([, , value]) => value)
+        .toSorted((left, right) => left - right),
+    );
+  }, 10_000);
+
+  it("does no export work for a duplicate delivery that cannot claim", async () => {
+    const job = exportJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    deps.repository.claim = vi.fn(async () => null);
+    const exporter = successfulPackageExporter();
+
+    await worker(
+      deps,
+      30_000,
+      undefined,
+      undefined,
+      undefined,
+      exporter,
+    ).execute(job.id);
+
+    expect(exporter.export).not.toHaveBeenCalled();
+    expect(deps.repository.prepareExportScratch).not.toHaveBeenCalled();
+    expect(deps.storage.upload).not.toHaveBeenCalled();
+  });
+
+  it("cleans the reserved attempt object after export storage upload fails", async () => {
+    const job = exportJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    deps.storage.upload = vi.fn(async () => {
+      throw new Error("storage unavailable");
+    });
+    deps.repository.fail = vi.fn(async () => "RETRY_SCHEDULED" as const);
+
+    await expect(
+      worker(
+        deps,
+        30_000,
+        undefined,
+        undefined,
+        undefined,
+        successfulPackageExporter(),
+      ).execute(job.id),
+    ).rejects.toMatchObject({
+      code: "MEDIA_PROCESSING_FAILED",
+      retryable: true,
+    });
+    const outputKey = vi.mocked(deps.repository.prepareAttemptOutput).mock
+      .calls[0]?.[1];
+    expect(outputKey).toBeDefined();
+    expect(deps.storage.delete).toHaveBeenCalledWith(outputKey);
+    expect(deps.repository.completeAttemptCleanup).toHaveBeenCalledWith(
+      job,
+      outputKey,
+    );
+    expect(deps.repository.completeEditorialExport).not.toHaveBeenCalled();
+  });
+
+  it("preserves the authoritative export after an ambiguous finalize response", async () => {
+    const job = exportJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    vi.mocked(deps.repository.completeEditorialExport).mockRejectedValueOnce(
+      new Error("database response lost after commit"),
+    );
+    vi.mocked(
+      deps.repository.isEditorialExportResultAccepted,
+    ).mockResolvedValueOnce(true);
+
+    await worker(
+      deps,
+      30_000,
+      undefined,
+      undefined,
+      undefined,
+      successfulPackageExporter(),
+    ).execute(job.id);
+
+    expect(
+      deps.repository.isEditorialExportResultAccepted,
+    ).toHaveBeenCalledWith(job, expect.stringContaining("/editorial-exports/"));
+    expect(deps.storage.delete).not.toHaveBeenCalled();
+    expect(deps.repository.fail).not.toHaveBeenCalled();
+  });
+
+  it("deletes the attempt object when approval becomes stale after export claim", async () => {
+    const job = exportJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    vi.mocked(deps.repository.completeEditorialExport).mockRejectedValueOnce(
+      new ControlledMediaError(
+        "EXPORT_APPROVAL_STALE",
+        "The exact editorial approval is no longer current or authorized.",
+        false,
+      ),
+    );
+
+    await worker(
+      deps,
+      30_000,
+      undefined,
+      undefined,
+      undefined,
+      successfulPackageExporter(),
+    ).execute(job.id);
+
+    const outputKey = vi.mocked(deps.repository.prepareAttemptOutput).mock
+      .calls[0]?.[1];
+    expect(deps.storage.delete).toHaveBeenCalledWith(outputKey);
+    expect(deps.repository.completeAttemptCleanup).toHaveBeenCalledWith(
+      job,
+      outputKey,
+    );
+    expect(deps.repository.fail).toHaveBeenCalledWith(
+      job,
+      "EXPORT_APPROVAL_STALE",
+      expect.any(String),
+      false,
+    );
+  });
+
   it("releases scratch reservation even when source and scratch cleanup fail", async () => {
     const calls: string[] = [];
     await expect(
@@ -571,6 +820,7 @@ function worker(
   telemetry?: MediaJobTelemetry,
   sourceCache: SourceCache = passthroughSourceCache(),
   renderer?: AssemblyRenderer,
+  packageExporter?: PackageExporter,
 ): ProcessMediaJob {
   return new ProcessMediaJob(
     deps.repository,
@@ -587,7 +837,72 @@ function worker(
     },
     telemetry,
     renderer,
+    packageExporter,
   );
+}
+
+function exportJob(): Extract<
+  ClaimedMediaJob,
+  { type: "EXPORT_EDITORIAL_PACKAGE" }
+> {
+  return {
+    id: "00000000-0000-4000-8000-000000000021",
+    type: "EXPORT_EDITORIAL_PACKAGE",
+    projectId: "00000000-0000-4000-8000-000000000002",
+    sourceId: "00000000-0000-4000-8000-000000000003",
+    sourceVersion: 1,
+    leaseToken: "00000000-0000-4000-8000-000000000004",
+    attemptNumber: 1,
+    queueWaitMs: 125,
+    retryBudget: 2,
+    recipeVersion: "editorial-export-zip-v1",
+    editorialExportPlan: {
+      intentId: "00000000-0000-4000-8000-000000000022",
+      approvalId: "00000000-0000-4000-8000-000000000023",
+      approvalContractVersion: "manual-horizontal-approval-v1",
+      exportContractVersion: "editorial-export-zip-v1",
+      candidateFingerprint: "a".repeat(64),
+      editorialPackageRevisionId: "00000000-0000-4000-8000-000000000024",
+      editorialRevision: 1,
+      processingTemplateRevisionId: "00000000-0000-4000-8000-000000000025",
+      recipeRevisionId: "00000000-0000-4000-8000-000000000026",
+      recipeRevision: 1,
+      configurationFingerprint: "b".repeat(64),
+      assemblyRenderResultId: "00000000-0000-4000-8000-000000000027",
+      renderContractVersion: "horizontal-render-v1",
+      video: {
+        artifactId: "00000000-0000-4000-8000-000000000028",
+        objectKey: "video-key",
+        sizeBytes: 6n,
+        sha256: "c".repeat(64),
+      },
+      thumbnail: {
+        assetId: "00000000-0000-4000-8000-000000000029",
+        objectKey: "thumbnail-key",
+        sizeBytes: 3n,
+        sha256: "d".repeat(64),
+        contentType: "image/png",
+        originalFilename: "thumbnail.png",
+      },
+      metadata: {
+        title: "Title",
+        description: "Description",
+        tags: ["one"],
+      },
+    },
+  };
+}
+
+function successfulPackageExporter(): PackageExporter {
+  return {
+    export: vi.fn(async (input) => {
+      await writeFile(input.outputPath, fakeMp4("ZIP"));
+      return {
+        manifest: { manifestSchemaVersion: "editorial-export-manifest-v1" },
+        archiveBytes: BigInt(fakeMp4("ZIP").length),
+      };
+    }),
+  };
 }
 
 function assemblyJob(): Extract<

@@ -335,6 +335,64 @@ attempt. Retry использует PostgreSQL `nextAttemptAt`; потеря Red
 review, disposable tiny-media smoke, controlled corrupt-input test и отдельный
 30-минутный benchmark; этот runbook не разрешает применять миграцию к live базе.
 
+### Stage 2e: background editorial ZIP64 package
+
+Stage 2e использует тот же `media-worker`, PostgreSQL, Redis и private object
+storage. API только сохраняет intent/job и отправляет короткую queue reference;
+весь большой архив потоково создаёт worker. До independent CLEAN оставь
+`EDITORIAL_EXPORT_ENABLED=0`.
+
+После разрешённого rollout current approval запускает export так:
+
+```sh
+curl -i -X POST \
+  -H 'Idempotency-Key: export-example-001' \
+  http://127.0.0.1:3001/api/v1/editorial-approvals/APPROVAL_UUID/exports
+curl http://127.0.0.1:3001/api/v1/editorial-exports/EXPORT_UUID
+curl 'http://127.0.0.1:3001/api/v1/projects/PROJECT_UUID/editorial-exports?limit=20'
+```
+
+Ожидаемый POST — `202`; повтор exact запроса с тем же key возвращает тот же
+export. Status после reload берётся из PostgreSQL и содержит attempt-scoped
+реальный byte progress. Когда state станет `READY`, проверь Range и скачивание:
+
+```sh
+curl -i -H 'Range: bytes=0-1048575' \
+  http://127.0.0.1:3001/api/v1/editorial-exports/EXPORT_UUID/content
+curl -o editorial-package.zip \
+  http://127.0.0.1:3001/api/v1/editorial-exports/EXPORT_UUID/content
+unzip -Z1 editorial-package.zip
+unzip -t editorial-package.zip
+```
+
+Архив должен содержать ровно `video.mp4`, одну `thumbnail.jpg|png|webp`,
+`metadata.txt`, `metadata.json`, `manifest.json`. Stale approval, отозванные
+права и изменённые exact inputs закрывают claim/finalization/download. Scratch
+attempt сохраняет marker без raw lease token; startup и periodic reconciler
+сохраняют active lease любого worker и удаляют только подтверждённый PostgreSQL
+expired orphan после safety grace. Admission accounting перестраивается из
+local markers и PostgreSQL active reservations; недоступная БД блокирует этот
+startup gate. Export upload использует один atomic streaming `PutObject`, чтобы
+hard kill не оставлял multipart parts без durable upload ID. Максимальный
+archive для этого Stage 2 профиля — `5_000_000_000` bytes; больший архив
+завершается controlled ошибкой `EXPORT_SINGLE_UPLOAD_LIMIT_EXCEEDED`.
+
+Для rollout сначала разверни worker и найди в JSON startup log capability
+`EXPORT_EDITORIAL_PACKAGE`. Только затем разверни API/frontend и включи
+`EDITORIAL_EXPORT_ENABLED=1`. Сначала выполни короткий disposable export и
+tampered-input failure, затем один approved 30-minute package. Rollback:
+выключить flag, drain/controlled-finalize export jobs и использовать только
+сохранённые forward-compatible admission-off API/worker binaries; additive
+таблицы, historical results и private objects не удалять.
+
+Rollback compatibility gate внутри worker isolated suite сначала собирает и
+запускает реальные `apps/api/dist/main.js` и `apps/worker/dist/main.js` с
+`--verify-admission-off-rollback`. Проверка обязана пройти против migrated
+disposable PostgreSQL при `EDITORIAL_EXPORT_ENABLED=0`: terminal export остаётся
+read-only, не dispatch/claim, startup scratch reconciliation проходит, а
+source/cut/editorial/montage/recipe/render rows и runnable job types остаются
+совместимыми.
+
 ### Docker runtime: версии, логи и controlled startup failure
 
 `media-worker` использует официальный multi-architecture Node image

@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Readable } from "node:stream";
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
@@ -382,6 +383,10 @@ class MemoryStorage implements WorkerObjectStorage {
   readonly objects = new Map<string, Buffer>();
   afterFirstAttemptUpload?: () => Promise<void>;
   deleteFailuresRemaining = 0;
+
+  async read(objectKey: string): Promise<NodeJS.ReadableStream> {
+    return Readable.from([this.objects.get(objectKey) ?? fakeMp4("S")]);
+  }
 
   async download(
     _objectKey: string,

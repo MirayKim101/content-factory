@@ -1,6 +1,11 @@
-import { randomUUID } from "node:crypto";
-import { readFile, readdir } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { execFile, spawn } from "node:child_process";
+import { once } from "node:events";
+import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { Readable } from "node:stream";
+import { promisify } from "node:util";
 
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -8,8 +13,16 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { databaseUrl } from "../../api/src/config/environment.js";
 import { PrismaService } from "../../api/src/database/prisma.service.js";
 import { PrismaPipelineRepository } from "../../api/src/media-pipeline/infrastructure/prisma-pipeline.repository.js";
+import { ProcessMediaJob } from "../src/application/process-media-job.js";
+import type {
+  MediaProcessor,
+  SourceCache,
+  WorkerObjectStorage,
+} from "../src/application/ports.js";
 import type { ClaimedMediaJob } from "../src/domain/media-job.js";
+import { ExportScratchReconciler } from "../src/infrastructure/export-scratch-reconciler.js";
 import { PgMediaJobRepository } from "../src/infrastructure/pg-media-job.repository.js";
+import { StreamingZip64PackageExporter } from "../src/infrastructure/streaming-zip64-package-exporter.js";
 
 describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
   "assembly worker repository isolated PostgreSQL",
@@ -170,6 +183,521 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
         await repository.close();
       }
     });
+
+    it("claims one exact editorial export, persists its scratch lease, and finalizes one result", async () => {
+      const seeded = await seedExport();
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.getAssemblyResourcePlan(seeded.exportJobId),
+        ).resolves.toEqual({
+          requiredScratchBytes: 2n * 1024n * 1024n + 1_128n,
+        });
+        const claimed = (await repository.claim(
+          seeded.exportJobId,
+          "worker-export-a",
+          30_000,
+        )) as Extract<ClaimedMediaJob, { type: "EXPORT_EDITORIAL_PACKAGE" }>;
+        expect(claimed).toMatchObject({
+          type: "EXPORT_EDITORIAL_PACKAGE",
+          projectId: seeded.projectId,
+          sourceId: seeded.sourceId,
+          editorialExportPlan: {
+            intentId: seeded.exportIntentId,
+            approvalId: seeded.approvalId,
+            video: { artifactId: seeded.renderArtifactId },
+            thumbnail: { assetId: seeded.thumbnailAssetId },
+            metadata: {
+              title: "Exact export title",
+              description: "Exact export description",
+              tags: ["first", "second"],
+            },
+          },
+        });
+        await expect(
+          repository.claim(seeded.exportJobId, "worker-export-b", 30_000),
+        ).resolves.toBeNull();
+
+        const leaseHash = createHash("sha256")
+          .update(claimed.leaseToken)
+          .digest("hex");
+        const directoryName = `export-${claimed.id}-${claimed.attemptNumber}-${leaseHash.slice(0, 16)}`;
+        await repository.prepareExportScratch(claimed, {
+          directoryName,
+          leaseHash,
+          reservedBytes: 2n * 1024n * 1024n + 1_128n,
+        });
+        const activeLease = await prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: claimed.id },
+          include: { attempts: true },
+        });
+        expect(activeLease).toMatchObject({
+          state: "PROCESSING",
+          leaseToken: claimed.leaseToken,
+          attempts: [
+            {
+              scratchDirectoryName: directoryName,
+              scratchLeaseHash: leaseHash,
+            },
+          ],
+        });
+        expect(activeLease.leaseExpiresAt!.getTime()).toBeGreaterThan(
+          Date.now(),
+        );
+        expect(
+          createHash("sha256").update(activeLease.leaseToken!).digest("hex"),
+        ).toBe(leaseHash);
+        await expect(
+          repository.inspectExportScratchLease({
+            jobId: claimed.id,
+            attemptNumber: claimed.attemptNumber,
+            directoryName,
+            leaseHash,
+          }),
+        ).resolves.toBe("ACTIVE");
+        await expect(
+          repository.updateAssemblyProgress(claimed, "WRITE_ARCHIVE", 1_250),
+        ).resolves.toBe(true);
+        await expect(
+          repository.updateAssemblyProgress(claimed, "WRITE_ARCHIVE", 1_000),
+        ).resolves.toBe(true);
+
+        const objectKey = `private/export-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await repository.completeEditorialExport(claimed, {
+          objectKey,
+          filename: "editorial-package.zip",
+          sizeBytes: 1_256n,
+          sha256: "a".repeat(64),
+          manifest: { manifestSchemaVersion: "editorial-export-manifest-v1" },
+        });
+        await expect(
+          repository.isEditorialExportResultAccepted(claimed, objectKey),
+        ).resolves.toBe(true);
+        await expect(
+          repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "editorial-package.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: { manifestSchemaVersion: "editorial-export-manifest-v1" },
+          }),
+        ).rejects.toThrow("JOB_LEASE_LOST");
+        expect(
+          await prisma.mediaArtifact.count({
+            where: { pipelineJobId: seeded.exportJobId },
+          }),
+        ).toBe(1);
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(1);
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+            include: { attempts: true },
+          }),
+        ).resolves.toMatchObject({
+          state: "READY",
+          progressAttemptNumber: 1,
+          progressPhase: "FINALIZE",
+          progressBasisPoints: 10_000,
+          attempts: [
+            {
+              attemptNumber: 1,
+              state: "READY",
+              cleanupStatus: "NOT_REQUIRED",
+              scratchDirectoryName: directoryName,
+            },
+          ],
+        });
+        await repository.clearExportScratch(claimed, directoryName);
+        await expect(
+          repository.inspectExportScratchLease({
+            jobId: claimed.id,
+            attemptNumber: claimed.attemptNumber,
+            directoryName,
+            leaseHash,
+          }),
+        ).resolves.toBe("INACTIVE");
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects export finalization when approval becomes stale after claim", async () => {
+      const seeded = await seedExport();
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        const claimed = (await repository.claim(
+          seeded.exportJobId,
+          "worker-export-stale",
+          30_000,
+        )) as Extract<ClaimedMediaJob, { type: "EXPORT_EDITORIAL_PACKAGE" }>;
+        const objectKey = `private/stale-export-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await prisma.editorialPackage.update({
+          where: { id: seeded.editorialPackageId },
+          data: { currentRevision: 2 },
+        });
+
+        await expect(
+          repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "must-not-exist.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: { manifestSchemaVersion: "editorial-export-manifest-v1" },
+          }),
+        ).rejects.toMatchObject({ code: "EXPORT_APPROVAL_STALE" });
+        await expect(
+          repository.fail(
+            claimed,
+            "EXPORT_APPROVAL_STALE",
+            "The exact editorial approval is no longer current.",
+            false,
+          ),
+        ).resolves.toBe("FAILED_FINAL");
+        expect(
+          await prisma.mediaArtifact.count({
+            where: { pipelineJobId: seeded.exportJobId },
+          }),
+        ).toBe(0);
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+            include: { attempts: true },
+          }),
+        ).resolves.toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+          attempts: [
+            {
+              state: "FAILED_FINAL",
+              cleanupStatus: "PENDING",
+              outputObjectKey: objectKey,
+            },
+          ],
+        });
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("recovers a SIGKILL before export upload and finalizes exactly one retry result", async () => {
+      const seeded = await seedExport({ realInputBytes: true });
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      const scratchRoot = await mkdtemp(join(tmpdir(), "cf-export-kill-pg-"));
+      let child: ReturnType<typeof spawn> | undefined;
+      try {
+        const fixture = resolve(
+          import.meta.dirname,
+          "fixtures/export-hard-crash-worker.ts",
+        );
+        child = spawn(
+          process.execPath,
+          [
+            "--import",
+            "tsx",
+            fixture,
+            isolatedUrl,
+            seeded.exportJobId,
+            scratchRoot,
+            seeded.videoBytes.toString("base64"),
+            seeded.thumbnailBytes.toString("base64"),
+          ],
+          {
+            cwd: resolve(import.meta.dirname, ".."),
+            stdio: ["ignore", "pipe", "pipe"],
+          },
+        );
+        await waitForOutput(child, "PREUPLOAD", 15_000);
+
+        const firstAttempt = await prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: seeded.exportJobId },
+          include: { attempts: { orderBy: { attemptNumber: "asc" } } },
+        });
+        expect(firstAttempt).toMatchObject({
+          state: "PROCESSING",
+          attemptCount: 1,
+          attempts: [
+            {
+              attemptNumber: 1,
+              state: "PROCESSING",
+              scratchDirectoryName: expect.stringMatching(/^export-/),
+              scratchLeaseHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+              outputObjectKey: expect.stringContaining("/attempt-1-"),
+            },
+          ],
+        });
+        const crashedAttempt = firstAttempt.attempts[0]!;
+        const directoryName = crashedAttempt.scratchDirectoryName!;
+        const reservedBytes = crashedAttempt.scratchReservedBytes!;
+        const archive = await readFile(
+          join(scratchRoot, directoryName, "editorial-package.zip"),
+        );
+        expect(archive.subarray(0, 4)).toEqual(
+          Buffer.from([0x50, 0x4b, 0x03, 0x04]),
+        );
+        expect(archive.includes(Buffer.from([0x50, 0x4b, 0x06, 0x06]))).toBe(
+          true,
+        );
+
+        expect(child.kill("SIGKILL")).toBe(true);
+        const [exitCode, signal] = await once(child, "exit");
+        expect(exitCode).toBeNull();
+        expect(signal).toBe("SIGKILL");
+
+        const reconciler = new ExportScratchReconciler(
+          repository,
+          scratchRoot,
+          0,
+        );
+        await expect(reconciler.reconcile()).resolves.toBe(reservedBytes);
+        expect(
+          (await stat(join(scratchRoot, directoryName))).isDirectory(),
+        ).toBe(true);
+        await expect(
+          prisma.jobAttempt.findFirstOrThrow({
+            where: { jobId: seeded.exportJobId, attemptNumber: 1 },
+            select: { outputObjectKey: true },
+          }),
+        ).resolves.toEqual({ outputObjectKey: crashedAttempt.outputObjectKey });
+
+        const expiredAt = new Date(Date.now() - 60_000);
+        await prisma.pipelineJob.update({
+          where: { id: seeded.exportJobId },
+          data: { leaseExpiresAt: expiredAt, heartbeatAt: expiredAt },
+        });
+        const pipeline = new PrismaPipelineRepository(prisma);
+        await expect(pipeline.recoverExpiredLeases(10)).resolves.toEqual([
+          { jobId: seeded.exportJobId, attemptNumber: 2 },
+        ]);
+        await expect(reconciler.reconcile()).resolves.toBe(0n);
+        await expect(
+          stat(join(scratchRoot, directoryName)),
+        ).rejects.toMatchObject({ code: "ENOENT" });
+        await prisma.pipelineJob.update({
+          where: { id: seeded.exportJobId },
+          data: { nextAttemptAt: new Date(Date.now() - 1_000) },
+        });
+
+        const uploaded = new Map<string, Buffer>();
+        const storage: WorkerObjectStorage = {
+          read: async (objectKey) =>
+            Readable.from([
+              objectKey === seeded.videoObjectKey
+                ? seeded.videoBytes
+                : seeded.thumbnailBytes,
+            ]),
+          download: async () => {
+            throw new Error("UNUSED_DOWNLOAD");
+          },
+          upload: async (input) => {
+            const bytes = await readFile(input.filePath);
+            uploaded.set(input.objectKey, bytes);
+            input.onProgress?.(BigInt(bytes.length));
+            return { etag: "retry-etag" };
+          },
+          delete: async (objectKey) => {
+            uploaded.delete(objectKey);
+          },
+          close: () => undefined,
+        };
+        const sourceCache = {
+          acquire: async () => {
+            throw new Error("UNUSED_SOURCE_CACHE");
+          },
+          close: async () => undefined,
+        } as unknown as SourceCache;
+        await new ProcessMediaJob(
+          repository,
+          storage,
+          {} as MediaProcessor,
+          sourceCache,
+          "worker-retry",
+          {
+            scratchDirectory: scratchRoot,
+            scratchSafetyBytes: 0n,
+            leaseMs: 30_000,
+            jobTimeoutMs: 60_000,
+          },
+          () => undefined,
+          undefined,
+          new StreamingZip64PackageExporter(),
+        ).execute(seeded.exportJobId);
+
+        expect(uploaded.size).toBe(1);
+        const [outputKey, acceptedArchive] = [...uploaded.entries()][0]!;
+        expect(outputKey).toContain("/attempt-2-");
+        expect(outputKey).not.toBe(crashedAttempt.outputObjectKey);
+        expect(acceptedArchive.includes(Buffer.from("manifest.json"))).toBe(
+          true,
+        );
+
+        expect(
+          await prisma.mediaArtifact.count({
+            where: { pipelineJobId: seeded.exportJobId },
+          }),
+        ).toBe(1);
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(1);
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+            include: { attempts: { orderBy: { attemptNumber: "asc" } } },
+          }),
+        ).resolves.toMatchObject({
+          state: "READY",
+          attemptCount: 2,
+          attempts: [
+            {
+              attemptNumber: 1,
+              state: "FAILED_RETRYABLE",
+              scratchDirectoryName: null,
+              scratchReservedBytes: null,
+              outputObjectKey: crashedAttempt.outputObjectKey,
+            },
+            {
+              attemptNumber: 2,
+              state: "READY",
+              outputObjectKey: outputKey,
+            },
+          ],
+        });
+        expect(
+          (await readdir(scratchRoot)).filter((entry) =>
+            entry.startsWith("export-"),
+          ),
+        ).toEqual([]);
+      } finally {
+        if (child && child.exitCode === null && child.signalCode === null) {
+          child.kill("SIGKILL");
+          await once(child, "exit");
+        }
+        await repository.close();
+        await rm(scratchRoot, { recursive: true, force: true });
+      }
+    });
+
+    it("keeps migrated terminal exports readable while admission-off binaries run legacy paths", async () => {
+      const terminalExport = await seedExport();
+      const legacy = await seedLegacyRetryJobs();
+      const assembly = await seedAssembly();
+      const scratchRoot = await mkdtemp(
+        join(tmpdir(), "cf-export-rollback-compat-"),
+      );
+      await prisma.pipelineJob.update({
+        where: { id: terminalExport.exportJobId },
+        data: {
+          state: "FAILED_FINAL",
+          failureCode: "ROLLBACK_TERMINAL_FIXTURE",
+          failureMessage: "Terminal fixture retained during rollback.",
+          failureRetryable: false,
+          finishedAt: new Date(),
+        },
+      });
+      await prisma.jobAttempt.updateMany({
+        where: { jobId: terminalExport.exportJobId },
+        data: {
+          state: "FAILED_FINAL",
+          failureCode: "ROLLBACK_TERMINAL_FIXTURE",
+          finishedAt: new Date(),
+        },
+      });
+      try {
+        const apiRoot = resolve(import.meta.dirname, "../../api");
+        const workerRoot = resolve(import.meta.dirname, "..");
+        const execute = promisify(execFile);
+        await execute(
+          resolve(apiRoot, "node_modules/.bin/tsc"),
+          ["-p", "tsconfig.build.json"],
+          { cwd: apiRoot },
+        );
+        await execute(
+          resolve(workerRoot, "node_modules/.bin/tsc"),
+          ["-p", "tsconfig.build.json"],
+          { cwd: workerRoot },
+        );
+
+        const inheritedEnvironment = {
+          ...process.env,
+          POSTGRES_DB: name,
+          SOURCE_AUTHORIZATION_POLICY: "local-auto",
+          DEPLOYMENT_PROFILE: "local",
+          API_HOST: "127.0.0.1",
+          EDITORIAL_EXPORT_ENABLED: "0",
+          MEDIA_SCRATCH_DIRECTORY: scratchRoot,
+        };
+        const runnableJobIds = [
+          ...legacy.jobs.map((job) => job.id),
+          assembly.assemblyJobId,
+        ];
+        const apiOutput = await runBinary(
+          resolve(apiRoot, "dist/main.js"),
+          ["--verify-admission-off-rollback"],
+          {
+            ...inheritedEnvironment,
+            ROLLBACK_COMPATIBILITY_FIXTURE: JSON.stringify({
+              exportIntentId: terminalExport.exportIntentId,
+              terminalExportJobId: terminalExport.exportJobId,
+              runnableJobIds,
+              projectId: terminalExport.projectId,
+              sourceId: terminalExport.sourceId,
+              cutJobId: terminalExport.cutJobId,
+              editorialPackageId: terminalExport.editorialPackageId,
+              montageAssetId: legacy.montageAssetId,
+              assemblyRecipeId: terminalExport.recipeId,
+              assemblyRenderIntentId: terminalExport.intentId,
+            }),
+          },
+        );
+        expect(apiOutput).toContain("admission_off_api_rollback_compatible");
+        const legacyJobs = [
+          ...legacy.jobs,
+          { id: assembly.assemblyJobId, type: "ASSEMBLE_HORIZONTAL" },
+        ];
+        const workerOutput = await runBinary(
+          resolve(workerRoot, "dist/main.js"),
+          ["--verify-admission-off-rollback"],
+          {
+            ...inheritedEnvironment,
+            ROLLBACK_COMPATIBILITY_FIXTURE: JSON.stringify({
+              terminalExportJobId: terminalExport.exportJobId,
+              legacyJobs,
+            }),
+          },
+        );
+        expect(workerOutput).toContain(
+          "admission_off_worker_rollback_compatible",
+        );
+        expect(workerOutput).toContain("ASSEMBLE_HORIZONTAL");
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: terminalExport.exportJobId },
+          }),
+        ).resolves.toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "ROLLBACK_TERMINAL_FIXTURE",
+        });
+        expect(
+          await prisma.pipelineJob.count({
+            where: { id: { in: runnableJobIds }, state: "PROCESSING" },
+          }),
+        ).toBe(runnableJobIds.length);
+      } finally {
+        await rm(scratchRoot, { recursive: true, force: true });
+      }
+    }, 30_000);
 
     it("fails an expired assembly lease closed when exact source authorization is revoked", async () => {
       const seeded = await seedAssembly();
@@ -577,7 +1105,225 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           },
         },
       });
-      return { sourceId, intentId, assemblyJobId };
+      return {
+        projectId,
+        sourceId,
+        cutJobId,
+        cutArtifactId,
+        recipeId,
+        revisionId,
+        intentId,
+        assemblyJobId,
+      };
+    }
+
+    async function seedExport(input?: { realInputBytes?: boolean }) {
+      const assembly = await seedAssembly();
+      const renderArtifactId = randomUUID();
+      const renderResultId = randomUUID();
+      const templateId = randomUUID();
+      const templateRevisionId = randomUUID();
+      const thumbnailAssetId = randomUUID();
+      const editorialPackageId = randomUUID();
+      const editorialRevisionId = randomUUID();
+      const approvalId = randomUUID();
+      const exportIntentId = randomUUID();
+      const exportJobId = randomUUID();
+      const videoBytes = Buffer.from("real-hard-crash-video-input");
+      const thumbnailBytes = Buffer.from("real-thumbnail-input");
+      const videoSizeBytes = input?.realInputBytes
+        ? BigInt(videoBytes.length)
+        : 1_000n;
+      const videoSha256 = input?.realInputBytes
+        ? createHash("sha256").update(videoBytes).digest("hex")
+        : "d".repeat(64);
+      const thumbnailSizeBytes = input?.realInputBytes
+        ? BigInt(thumbnailBytes.length)
+        : 128n;
+      const thumbnailSha256 = input?.realInputBytes
+        ? createHash("sha256").update(thumbnailBytes).digest("hex")
+        : "f".repeat(64);
+      const videoObjectKey = `private/render-${renderArtifactId}.mp4`;
+      const thumbnailObjectKey = `private/thumbnail-${thumbnailAssetId}.png`;
+
+      await prisma.pipelineJob.update({
+        where: { id: assembly.assemblyJobId },
+        data: { state: "READY", finishedAt: new Date() },
+      });
+      await prisma.mediaArtifact.create({
+        data: {
+          id: renderArtifactId,
+          projectId: assembly.projectId,
+          sourceId: assembly.sourceId,
+          role: "HORIZONTAL_ASSEMBLY_RESULT",
+          status: "READY",
+          objectKey: videoObjectKey,
+          sizeBytes: videoSizeBytes,
+          sha256: videoSha256,
+          contentType: "video/mp4",
+          lineageSourceId: assembly.sourceId,
+          lineageSourceVersion: 1,
+          recipeVersion: "horizontal-render-v1",
+          pipelineJobId: assembly.assemblyJobId,
+          outputFilename: "render.mp4",
+        },
+      });
+      await prisma.assemblyRenderResult.create({
+        data: {
+          id: renderResultId,
+          renderIntentId: assembly.intentId,
+          artifactId: renderArtifactId,
+          durationMs: 2_000,
+          width: 320,
+          height: 180,
+          fpsNumerator: 25,
+          fpsDenominator: 1,
+          videoCodec: "h264",
+          pixelFormat: "yuv420p",
+          audioCodec: "aac",
+          audioSampleRate: 48_000,
+          audioChannels: 2,
+          ffmpegVersion: "ffmpeg-test",
+          ffprobeVersion: "ffprobe-test",
+          normalizationProfileResult: "NORMALIZED",
+          completedAt: new Date(),
+        },
+      });
+      await prisma.processingTemplate.create({
+        data: {
+          id: templateId,
+          idempotencyKey: randomUUID(),
+          requestFingerprint: "worker-export-template",
+          revisions: {
+            create: {
+              id: templateRevisionId,
+              revision: 1,
+              name: "Worker export template",
+              configurationVersion: "manual-editorial-v1",
+            },
+          },
+        },
+      });
+      await prisma.editorialAsset.create({
+        data: {
+          id: thumbnailAssetId,
+          projectId: assembly.projectId,
+          type: "THUMBNAIL",
+          status: "READY",
+          idempotencyKey: randomUUID(),
+          requestFingerprint: "worker-export-thumbnail",
+          objectKey: thumbnailObjectKey,
+          originalFilename: "thumbnail.png",
+          contentType: "image/png",
+          sizeBytes: thumbnailSizeBytes,
+          sha256: thumbnailSha256,
+          width: 320,
+          height: 180,
+        },
+      });
+      await prisma.editorialPackage.create({
+        data: {
+          id: editorialPackageId,
+          projectId: assembly.projectId,
+          pipelineJobId: assembly.cutJobId,
+          cutResultArtifactId: assembly.cutArtifactId,
+          cutResultSha256: "b".repeat(64),
+          cutResultSizeBytes: 100n,
+          cutResultRecipeVersion: "stage1-cut-h264-v2",
+          lineageSourceId: assembly.sourceId,
+          lineageSourceVersion: 1,
+          currentRevision: 1,
+          revisions: {
+            create: {
+              id: editorialRevisionId,
+              revision: 1,
+              processingTemplateRevisionId: templateRevisionId,
+              title: "Exact export title",
+              description: "Exact export description",
+              tags: ["first", "second"],
+              thumbnailAssetId,
+            },
+          },
+        },
+      });
+      await prisma.editorialApproval.create({
+        data: {
+          id: approvalId,
+          projectId: assembly.projectId,
+          sourceId: assembly.sourceId,
+          sourceVersion: 1,
+          cutPipelineJobId: assembly.cutJobId,
+          editorialPackageId,
+          editorialPackageRevisionId: editorialRevisionId,
+          editorialRevision: 1,
+          processingTemplateRevisionId: templateRevisionId,
+          thumbnailAssetId,
+          thumbnailSha256,
+          thumbnailSizeBytes,
+          thumbnailContentType: "image/png",
+          assemblyRecipeId: assembly.recipeId,
+          recipeRevisionId: assembly.revisionId,
+          recipeRevision: 1,
+          configurationFingerprint: "c".repeat(64),
+          assemblyRenderIntentId: assembly.intentId,
+          assemblyRenderResultId: renderResultId,
+          renderArtifactId,
+          renderArtifactSha256: videoSha256,
+          renderArtifactSizeBytes: videoSizeBytes,
+          renderContractVersion: "horizontal-render-v1",
+          approvalContractVersion: "manual-horizontal-approval-v1",
+          candidateFingerprint: "e".repeat(64),
+        },
+      });
+      await prisma.editorialExportIntent.create({
+        data: {
+          id: exportIntentId,
+          projectId: assembly.projectId,
+          sourceId: assembly.sourceId,
+          sourceVersion: 1,
+          cutPipelineJobId: assembly.cutJobId,
+          approvalId,
+          approvalCandidateFingerprint: "e".repeat(64),
+          editorialPackageRevisionId: editorialRevisionId,
+          recipeRevisionId: assembly.revisionId,
+          assemblyRenderResultId: renderResultId,
+          exportContractVersion: "editorial-export-zip-v1",
+        },
+      });
+      await prisma.pipelineJob.create({
+        data: {
+          id: exportJobId,
+          projectId: assembly.projectId,
+          sourceId: assembly.sourceId,
+          sourceVersion: 1,
+          type: "EXPORT_EDITORIAL_PACKAGE",
+          state: "QUEUED",
+          payloadVersion: 1,
+          idempotencyKey: randomUUID(),
+          recipeVersion: "editorial-export-zip-v1",
+          editorialExportIntentId: exportIntentId,
+          attempts: {
+            create: {
+              id: randomUUID(),
+              attemptNumber: 1,
+              state: "QUEUED",
+            },
+          },
+        },
+      });
+      return {
+        ...assembly,
+        renderArtifactId,
+        thumbnailAssetId,
+        editorialPackageId,
+        approvalId,
+        exportIntentId,
+        exportJobId,
+        videoObjectKey,
+        thumbnailObjectKey,
+        videoBytes,
+        thumbnailBytes,
+      };
     }
 
     function result(objectKey: string) {
@@ -609,4 +1355,76 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
 function restore(name: string, value: string | undefined): void {
   if (value === undefined) delete process.env[name];
   else process.env[name] = value;
+}
+
+async function waitForOutput(
+  child: ReturnType<typeof spawn>,
+  expected: string,
+  timeoutMs: number,
+): Promise<void> {
+  await new Promise<void>((resolvePromise, reject) => {
+    let stdout = "";
+    let stderr = "";
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(
+        new Error(
+          `CHILD_OUTPUT_TIMEOUT expected=${expected} stdout=${stdout} stderr=${stderr}`,
+        ),
+      );
+    }, timeoutMs);
+    const onStdout = (chunk: Buffer) => {
+      stdout += chunk.toString("utf8");
+      if (stdout.includes(expected)) {
+        cleanup();
+        resolvePromise();
+      }
+    };
+    const onStderr = (chunk: Buffer) => {
+      stderr += chunk.toString("utf8");
+    };
+    const onExit = (code: number | null, signal: NodeJS.Signals | null) => {
+      cleanup();
+      reject(
+        new Error(
+          `CHILD_EXITED_BEFORE_OUTPUT code=${code} signal=${signal} stdout=${stdout} stderr=${stderr}`,
+        ),
+      );
+    };
+    const cleanup = () => {
+      clearTimeout(timer);
+      child.stdout?.off("data", onStdout);
+      child.stderr?.off("data", onStderr);
+      child.off("exit", onExit);
+    };
+    child.stdout?.on("data", onStdout);
+    child.stderr?.on("data", onStderr);
+    child.once("exit", onExit);
+  });
+}
+
+async function runBinary(
+  entrypoint: string,
+  arguments_: string[],
+  environment: NodeJS.ProcessEnv,
+): Promise<string> {
+  const child = spawn(process.execPath, [entrypoint, ...arguments_], {
+    env: environment,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let stdout = "";
+  let stderr = "";
+  child.stdout?.on("data", (chunk: Buffer) => {
+    stdout += chunk.toString("utf8");
+  });
+  child.stderr?.on("data", (chunk: Buffer) => {
+    stderr += chunk.toString("utf8");
+  });
+  const [code, signal] = await once(child, "exit");
+  if (code !== 0) {
+    throw new Error(
+      `ROLLBACK_BINARY_FAILED code=${code} signal=${signal} stdout=${stdout} stderr=${stderr}`,
+    );
+  }
+  return stdout;
 }

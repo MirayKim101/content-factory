@@ -208,6 +208,7 @@ export type EditorialOperationRequestWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"EditorialOperationRequest"> | Date | string
   resolvedProject?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   approval?: Prisma.XOR<Prisma.EditorialApprovalNullableScalarRelationFilter, Prisma.EditorialApprovalWhereInput> | null
+  exportIntent?: Prisma.XOR<Prisma.EditorialExportIntentNullableScalarRelationFilter, Prisma.EditorialExportIntentWhereInput> | null
 }
 
 export type EditorialOperationRequestOrderByWithRelationInput = {
@@ -221,6 +222,7 @@ export type EditorialOperationRequestOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   resolvedProject?: Prisma.ProjectOrderByWithRelationInput
   approval?: Prisma.EditorialApprovalOrderByWithRelationInput
+  exportIntent?: Prisma.EditorialExportIntentOrderByWithRelationInput
 }
 
 export type EditorialOperationRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -237,6 +239,7 @@ export type EditorialOperationRequestWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"EditorialOperationRequest"> | Date | string
   resolvedProject?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   approval?: Prisma.XOR<Prisma.EditorialApprovalNullableScalarRelationFilter, Prisma.EditorialApprovalWhereInput> | null
+  exportIntent?: Prisma.XOR<Prisma.EditorialExportIntentNullableScalarRelationFilter, Prisma.EditorialExportIntentWhereInput> | null
 }, "id" | "idempotencyKey">
 
 export type EditorialOperationRequestOrderByWithAggregationInput = {
@@ -272,10 +275,10 @@ export type EditorialOperationRequestCreateInput = {
   idempotencyKey: string
   operation: $Enums.EditorialOperationType
   canonicalRequestFingerprint: string
-  exportIntentId?: string | null
   createdAt?: Date | string
   resolvedProject: Prisma.ProjectCreateNestedOneWithoutEditorialOperationRequestsInput
   approval?: Prisma.EditorialApprovalCreateNestedOneWithoutOperationRequestsInput
+  exportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutOperationRequestsInput
 }
 
 export type EditorialOperationRequestUncheckedCreateInput = {
@@ -294,10 +297,10 @@ export type EditorialOperationRequestUpdateInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   operation?: Prisma.EnumEditorialOperationTypeFieldUpdateOperationsInput | $Enums.EditorialOperationType
   canonicalRequestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   resolvedProject?: Prisma.ProjectUpdateOneRequiredWithoutEditorialOperationRequestsNestedInput
   approval?: Prisma.EditorialApprovalUpdateOneWithoutOperationRequestsNestedInput
+  exportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutOperationRequestsNestedInput
 }
 
 export type EditorialOperationRequestUncheckedUpdateInput = {
@@ -327,7 +330,6 @@ export type EditorialOperationRequestUpdateManyMutationInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   operation?: Prisma.EnumEditorialOperationTypeFieldUpdateOperationsInput | $Enums.EditorialOperationType
   canonicalRequestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -473,14 +475,56 @@ export type EnumEditorialOperationTypeFieldUpdateOperationsInput = {
   set?: $Enums.EditorialOperationType
 }
 
+export type EditorialOperationRequestCreateNestedManyWithoutExportIntentInput = {
+  create?: Prisma.XOR<Prisma.EditorialOperationRequestCreateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput> | Prisma.EditorialOperationRequestCreateWithoutExportIntentInput[] | Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput[]
+  connectOrCreate?: Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput | Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput[]
+  createMany?: Prisma.EditorialOperationRequestCreateManyExportIntentInputEnvelope
+  connect?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+}
+
+export type EditorialOperationRequestUncheckedCreateNestedManyWithoutExportIntentInput = {
+  create?: Prisma.XOR<Prisma.EditorialOperationRequestCreateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput> | Prisma.EditorialOperationRequestCreateWithoutExportIntentInput[] | Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput[]
+  connectOrCreate?: Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput | Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput[]
+  createMany?: Prisma.EditorialOperationRequestCreateManyExportIntentInputEnvelope
+  connect?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+}
+
+export type EditorialOperationRequestUpdateManyWithoutExportIntentNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialOperationRequestCreateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput> | Prisma.EditorialOperationRequestCreateWithoutExportIntentInput[] | Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput[]
+  connectOrCreate?: Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput | Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput[]
+  upsert?: Prisma.EditorialOperationRequestUpsertWithWhereUniqueWithoutExportIntentInput | Prisma.EditorialOperationRequestUpsertWithWhereUniqueWithoutExportIntentInput[]
+  createMany?: Prisma.EditorialOperationRequestCreateManyExportIntentInputEnvelope
+  set?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  disconnect?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  delete?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  connect?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  update?: Prisma.EditorialOperationRequestUpdateWithWhereUniqueWithoutExportIntentInput | Prisma.EditorialOperationRequestUpdateWithWhereUniqueWithoutExportIntentInput[]
+  updateMany?: Prisma.EditorialOperationRequestUpdateManyWithWhereWithoutExportIntentInput | Prisma.EditorialOperationRequestUpdateManyWithWhereWithoutExportIntentInput[]
+  deleteMany?: Prisma.EditorialOperationRequestScalarWhereInput | Prisma.EditorialOperationRequestScalarWhereInput[]
+}
+
+export type EditorialOperationRequestUncheckedUpdateManyWithoutExportIntentNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialOperationRequestCreateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput> | Prisma.EditorialOperationRequestCreateWithoutExportIntentInput[] | Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput[]
+  connectOrCreate?: Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput | Prisma.EditorialOperationRequestCreateOrConnectWithoutExportIntentInput[]
+  upsert?: Prisma.EditorialOperationRequestUpsertWithWhereUniqueWithoutExportIntentInput | Prisma.EditorialOperationRequestUpsertWithWhereUniqueWithoutExportIntentInput[]
+  createMany?: Prisma.EditorialOperationRequestCreateManyExportIntentInputEnvelope
+  set?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  disconnect?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  delete?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  connect?: Prisma.EditorialOperationRequestWhereUniqueInput | Prisma.EditorialOperationRequestWhereUniqueInput[]
+  update?: Prisma.EditorialOperationRequestUpdateWithWhereUniqueWithoutExportIntentInput | Prisma.EditorialOperationRequestUpdateWithWhereUniqueWithoutExportIntentInput[]
+  updateMany?: Prisma.EditorialOperationRequestUpdateManyWithWhereWithoutExportIntentInput | Prisma.EditorialOperationRequestUpdateManyWithWhereWithoutExportIntentInput[]
+  deleteMany?: Prisma.EditorialOperationRequestScalarWhereInput | Prisma.EditorialOperationRequestScalarWhereInput[]
+}
+
 export type EditorialOperationRequestCreateWithoutResolvedProjectInput = {
   id: string
   idempotencyKey: string
   operation: $Enums.EditorialOperationType
   canonicalRequestFingerprint: string
-  exportIntentId?: string | null
   createdAt?: Date | string
   approval?: Prisma.EditorialApprovalCreateNestedOneWithoutOperationRequestsInput
+  exportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutOperationRequestsInput
 }
 
 export type EditorialOperationRequestUncheckedCreateWithoutResolvedProjectInput = {
@@ -538,9 +582,9 @@ export type EditorialOperationRequestCreateWithoutApprovalInput = {
   idempotencyKey: string
   operation: $Enums.EditorialOperationType
   canonicalRequestFingerprint: string
-  exportIntentId?: string | null
   createdAt?: Date | string
   resolvedProject: Prisma.ProjectCreateNestedOneWithoutEditorialOperationRequestsInput
+  exportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutOperationRequestsInput
 }
 
 export type EditorialOperationRequestUncheckedCreateWithoutApprovalInput = {
@@ -579,6 +623,52 @@ export type EditorialOperationRequestUpdateManyWithWhereWithoutApprovalInput = {
   data: Prisma.XOR<Prisma.EditorialOperationRequestUpdateManyMutationInput, Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalInput>
 }
 
+export type EditorialOperationRequestCreateWithoutExportIntentInput = {
+  id: string
+  idempotencyKey: string
+  operation: $Enums.EditorialOperationType
+  canonicalRequestFingerprint: string
+  createdAt?: Date | string
+  resolvedProject: Prisma.ProjectCreateNestedOneWithoutEditorialOperationRequestsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutOperationRequestsInput
+}
+
+export type EditorialOperationRequestUncheckedCreateWithoutExportIntentInput = {
+  id: string
+  idempotencyKey: string
+  operation: $Enums.EditorialOperationType
+  canonicalRequestFingerprint: string
+  resolvedProjectId: string
+  approvalId?: string | null
+  createdAt?: Date | string
+}
+
+export type EditorialOperationRequestCreateOrConnectWithoutExportIntentInput = {
+  where: Prisma.EditorialOperationRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.EditorialOperationRequestCreateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput>
+}
+
+export type EditorialOperationRequestCreateManyExportIntentInputEnvelope = {
+  data: Prisma.EditorialOperationRequestCreateManyExportIntentInput | Prisma.EditorialOperationRequestCreateManyExportIntentInput[]
+  skipDuplicates?: boolean
+}
+
+export type EditorialOperationRequestUpsertWithWhereUniqueWithoutExportIntentInput = {
+  where: Prisma.EditorialOperationRequestWhereUniqueInput
+  update: Prisma.XOR<Prisma.EditorialOperationRequestUpdateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedUpdateWithoutExportIntentInput>
+  create: Prisma.XOR<Prisma.EditorialOperationRequestCreateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedCreateWithoutExportIntentInput>
+}
+
+export type EditorialOperationRequestUpdateWithWhereUniqueWithoutExportIntentInput = {
+  where: Prisma.EditorialOperationRequestWhereUniqueInput
+  data: Prisma.XOR<Prisma.EditorialOperationRequestUpdateWithoutExportIntentInput, Prisma.EditorialOperationRequestUncheckedUpdateWithoutExportIntentInput>
+}
+
+export type EditorialOperationRequestUpdateManyWithWhereWithoutExportIntentInput = {
+  where: Prisma.EditorialOperationRequestScalarWhereInput
+  data: Prisma.XOR<Prisma.EditorialOperationRequestUpdateManyMutationInput, Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutExportIntentInput>
+}
+
 export type EditorialOperationRequestCreateManyResolvedProjectInput = {
   id: string
   idempotencyKey: string
@@ -594,9 +684,9 @@ export type EditorialOperationRequestUpdateWithoutResolvedProjectInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   operation?: Prisma.EnumEditorialOperationTypeFieldUpdateOperationsInput | $Enums.EditorialOperationType
   canonicalRequestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   approval?: Prisma.EditorialApprovalUpdateOneWithoutOperationRequestsNestedInput
+  exportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutOperationRequestsNestedInput
 }
 
 export type EditorialOperationRequestUncheckedUpdateWithoutResolvedProjectInput = {
@@ -634,9 +724,9 @@ export type EditorialOperationRequestUpdateWithoutApprovalInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   operation?: Prisma.EnumEditorialOperationTypeFieldUpdateOperationsInput | $Enums.EditorialOperationType
   canonicalRequestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   resolvedProject?: Prisma.ProjectUpdateOneRequiredWithoutEditorialOperationRequestsNestedInput
+  exportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutOperationRequestsNestedInput
 }
 
 export type EditorialOperationRequestUncheckedUpdateWithoutApprovalInput = {
@@ -659,6 +749,46 @@ export type EditorialOperationRequestUncheckedUpdateManyWithoutApprovalInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type EditorialOperationRequestCreateManyExportIntentInput = {
+  id: string
+  idempotencyKey: string
+  operation: $Enums.EditorialOperationType
+  canonicalRequestFingerprint: string
+  resolvedProjectId: string
+  approvalId?: string | null
+  createdAt?: Date | string
+}
+
+export type EditorialOperationRequestUpdateWithoutExportIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  operation?: Prisma.EnumEditorialOperationTypeFieldUpdateOperationsInput | $Enums.EditorialOperationType
+  canonicalRequestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  resolvedProject?: Prisma.ProjectUpdateOneRequiredWithoutEditorialOperationRequestsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutOperationRequestsNestedInput
+}
+
+export type EditorialOperationRequestUncheckedUpdateWithoutExportIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  operation?: Prisma.EnumEditorialOperationTypeFieldUpdateOperationsInput | $Enums.EditorialOperationType
+  canonicalRequestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  resolvedProjectId?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EditorialOperationRequestUncheckedUpdateManyWithoutExportIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  operation?: Prisma.EnumEditorialOperationTypeFieldUpdateOperationsInput | $Enums.EditorialOperationType
+  canonicalRequestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  resolvedProjectId?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 
 
 export type EditorialOperationRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -672,6 +802,7 @@ export type EditorialOperationRequestSelect<ExtArgs extends runtime.Types.Extens
   createdAt?: boolean
   resolvedProject?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.EditorialOperationRequest$approvalArgs<ExtArgs>
+  exportIntent?: boolean | Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs>
 }, ExtArgs["result"]["editorialOperationRequest"]>
 
 export type EditorialOperationRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -685,6 +816,7 @@ export type EditorialOperationRequestSelectCreateManyAndReturn<ExtArgs extends r
   createdAt?: boolean
   resolvedProject?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.EditorialOperationRequest$approvalArgs<ExtArgs>
+  exportIntent?: boolean | Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs>
 }, ExtArgs["result"]["editorialOperationRequest"]>
 
 export type EditorialOperationRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -698,6 +830,7 @@ export type EditorialOperationRequestSelectUpdateManyAndReturn<ExtArgs extends r
   createdAt?: boolean
   resolvedProject?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.EditorialOperationRequest$approvalArgs<ExtArgs>
+  exportIntent?: boolean | Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs>
 }, ExtArgs["result"]["editorialOperationRequest"]>
 
 export type EditorialOperationRequestSelectScalar = {
@@ -715,14 +848,17 @@ export type EditorialOperationRequestOmit<ExtArgs extends runtime.Types.Extensio
 export type EditorialOperationRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   resolvedProject?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.EditorialOperationRequest$approvalArgs<ExtArgs>
+  exportIntent?: boolean | Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs>
 }
 export type EditorialOperationRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   resolvedProject?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.EditorialOperationRequest$approvalArgs<ExtArgs>
+  exportIntent?: boolean | Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs>
 }
 export type EditorialOperationRequestIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   resolvedProject?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.EditorialOperationRequest$approvalArgs<ExtArgs>
+  exportIntent?: boolean | Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs>
 }
 
 export type $EditorialOperationRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -730,6 +866,7 @@ export type $EditorialOperationRequestPayload<ExtArgs extends runtime.Types.Exte
   objects: {
     resolvedProject: Prisma.$ProjectPayload<ExtArgs>
     approval: Prisma.$EditorialApprovalPayload<ExtArgs> | null
+    exportIntent: Prisma.$EditorialExportIntentPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1136,6 +1273,7 @@ export interface Prisma__EditorialOperationRequestClient<T, Null = never, ExtArg
   readonly [Symbol.toStringTag]: "PrismaPromise"
   resolvedProject<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   approval<T extends Prisma.EditorialOperationRequest$approvalArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialOperationRequest$approvalArgs<ExtArgs>>): Prisma.Prisma__EditorialApprovalClient<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  exportIntent<T extends Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialOperationRequest$exportIntentArgs<ExtArgs>>): Prisma.Prisma__EditorialExportIntentClient<runtime.Types.Result.GetResult<Prisma.$EditorialExportIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1590,6 +1728,25 @@ export type EditorialOperationRequest$approvalArgs<ExtArgs extends runtime.Types
    */
   include?: Prisma.EditorialApprovalInclude<ExtArgs> | null
   where?: Prisma.EditorialApprovalWhereInput
+}
+
+/**
+ * EditorialOperationRequest.exportIntent
+ */
+export type EditorialOperationRequest$exportIntentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialExportIntent
+   */
+  select?: Prisma.EditorialExportIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialExportIntent
+   */
+  omit?: Prisma.EditorialExportIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialExportIntentInclude<ExtArgs> | null
+  where?: Prisma.EditorialExportIntentWhereInput
 }
 
 /**

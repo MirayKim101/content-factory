@@ -157,6 +157,16 @@ export type EditorialApprovalMetrics = Prisma.EditorialApprovalMetricsModel
  */
 export type EditorialOperationRequest = Prisma.EditorialOperationRequestModel
 /**
+ * Model EditorialExportIntent
+ *
+ */
+export type EditorialExportIntent = Prisma.EditorialExportIntentModel
+/**
+ * Model EditorialExportResult
+ *
+ */
+export type EditorialExportResult = Prisma.EditorialExportResultModel
+/**
  * Model CutSegment
  *
  */

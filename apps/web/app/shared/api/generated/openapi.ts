@@ -53,6 +53,55 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/editorial-approvals/{approvalId}/exports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create one exact-approval background export package */
+    post: operations["EditorialExportController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/editorial-exports/{exportId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialExportController_one"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/editorial-exports/{exportId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialExportController_content"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/health": {
     parameters: {
       query?: never;
@@ -343,6 +392,22 @@ export interface paths {
       cookie?: never;
     };
     get: operations["EditorialController_thumbnailContent"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-exports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialExportController_project"];
     put?: never;
     post?: never;
     delete?: never;
@@ -881,6 +946,80 @@ export interface components {
       /** Format: int32 */
       width: number;
     };
+    EditorialExportFailureResponseDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    EditorialExportJobResponseDto: {
+      admissionReason: string | null;
+      attempt: number;
+      failure:
+        components["schemas"]["EditorialExportFailureResponseDto"] | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      nextAttemptAt: string | null;
+      progress:
+        components["schemas"]["EditorialExportProgressResponseDto"] | null;
+      retryBudget: number;
+      revision: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    };
+    EditorialExportListResponseDto: {
+      items: components["schemas"]["EditorialExportResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    EditorialExportProgressResponseDto: {
+      attemptNumber: number;
+      basisPoints: number;
+      /** @enum {string} */
+      phase:
+        "READ_INPUTS" | "WRITE_ARCHIVE" | "OUTPUT_HASH" | "UPLOAD" | "FINALIZE";
+      /** @enum {string} */
+      schemaVersion: "editorial-export-progress-v1";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    EditorialExportResponseDto: {
+      approvalCandidateFingerprint: string;
+      approvalCurrent: boolean;
+      /** Format: uuid */
+      approvalId: string;
+      /** Format: uuid */
+      assemblyRenderResultId: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** Format: uuid */
+      editorialPackageRevisionId: string;
+      /** @enum {string} */
+      exportContractVersion: "editorial-export-zip-v1";
+      /** Format: uuid */
+      id: string;
+      job: components["schemas"]["EditorialExportJobResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      /** Format: uuid */
+      recipeRevisionId: string;
+      result: components["schemas"]["EditorialExportResultResponseDto"] | null;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+    };
+    EditorialExportResultResponseDto: {
+      /** Format: date-time */
+      completedAt: string;
+      /** Format: uri-reference */
+      downloadUrl: string;
+      filename: string;
+      manifest: Record<string, never>;
+      sha256: string;
+      sizeBytes: string;
+    };
     EditorialFailureResponseDto: {
       code: string;
       message: string;
@@ -1394,6 +1533,115 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  EditorialExportController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialExportResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  EditorialExportController_one: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialExportResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialExportController_content: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready private editorial ZIP64 package. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/zip": string;
+        };
+      };
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/zip": string;
+        };
+      };
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };
@@ -2420,6 +2668,25 @@ export interface operations {
           "image/jpeg": components["schemas"]["ErrorResponseDto"];
           "image/png": components["schemas"]["ErrorResponseDto"];
           "image/webp": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialExportController_project: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialExportListResponseDto"];
         };
       };
     };

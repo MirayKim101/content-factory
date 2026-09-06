@@ -53,6 +53,7 @@ const API_ENVIRONMENT_KEYS = [
   "MEDIA_QUEUE_DISABLED",
   "ASSEMBLY_RENDER_ENABLED",
   "EDITORIAL_APPROVAL_ENABLED",
+  "EDITORIAL_EXPORT_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -163,6 +164,7 @@ export interface ApiEnvironment {
   mediaQueueDisabled: boolean;
   assemblyRenderEnabled: boolean;
   editorialApprovalEnabled: boolean;
+  editorialExportEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -240,5 +242,12 @@ export function apiEnvironment(): ApiEnvironment {
       process.env.EDITORIAL_APPROVAL_ENABLED === "1" ||
       (process.env.EDITORIAL_APPROVAL_ENABLED === undefined &&
         authorization.deploymentProfile === "local"),
+    editorialExportEnabled: editorialExportAdmissionEnabled(process.env),
   };
+}
+
+export function editorialExportAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.EDITORIAL_EXPORT_ENABLED === "1";
 }

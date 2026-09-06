@@ -29,11 +29,13 @@ export type AggregateJobAttempt = {
 export type JobAttemptAvgAggregateOutputType = {
   attemptNumber: number | null
   cleanupAttemptCount: number | null
+  scratchReservedBytes: number | null
 }
 
 export type JobAttemptSumAggregateOutputType = {
   attemptNumber: number | null
   cleanupAttemptCount: number | null
+  scratchReservedBytes: bigint | null
 }
 
 export type JobAttemptMinAggregateOutputType = {
@@ -53,6 +55,10 @@ export type JobAttemptMinAggregateOutputType = {
   cleanupLastErrorCode: string | null
   cleanupRequestedAt: Date | null
   cleanupCompletedAt: Date | null
+  scratchDirectoryName: string | null
+  scratchLeaseHash: string | null
+  scratchReservedBytes: bigint | null
+  scratchCreatedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -74,6 +80,10 @@ export type JobAttemptMaxAggregateOutputType = {
   cleanupLastErrorCode: string | null
   cleanupRequestedAt: Date | null
   cleanupCompletedAt: Date | null
+  scratchDirectoryName: string | null
+  scratchLeaseHash: string | null
+  scratchReservedBytes: bigint | null
+  scratchCreatedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -95,6 +105,10 @@ export type JobAttemptCountAggregateOutputType = {
   cleanupLastErrorCode: number
   cleanupRequestedAt: number
   cleanupCompletedAt: number
+  scratchDirectoryName: number
+  scratchLeaseHash: number
+  scratchReservedBytes: number
+  scratchCreatedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -104,11 +118,13 @@ export type JobAttemptCountAggregateOutputType = {
 export type JobAttemptAvgAggregateInputType = {
   attemptNumber?: true
   cleanupAttemptCount?: true
+  scratchReservedBytes?: true
 }
 
 export type JobAttemptSumAggregateInputType = {
   attemptNumber?: true
   cleanupAttemptCount?: true
+  scratchReservedBytes?: true
 }
 
 export type JobAttemptMinAggregateInputType = {
@@ -128,6 +144,10 @@ export type JobAttemptMinAggregateInputType = {
   cleanupLastErrorCode?: true
   cleanupRequestedAt?: true
   cleanupCompletedAt?: true
+  scratchDirectoryName?: true
+  scratchLeaseHash?: true
+  scratchReservedBytes?: true
+  scratchCreatedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -149,6 +169,10 @@ export type JobAttemptMaxAggregateInputType = {
   cleanupLastErrorCode?: true
   cleanupRequestedAt?: true
   cleanupCompletedAt?: true
+  scratchDirectoryName?: true
+  scratchLeaseHash?: true
+  scratchReservedBytes?: true
+  scratchCreatedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -170,6 +194,10 @@ export type JobAttemptCountAggregateInputType = {
   cleanupLastErrorCode?: true
   cleanupRequestedAt?: true
   cleanupCompletedAt?: true
+  scratchDirectoryName?: true
+  scratchLeaseHash?: true
+  scratchReservedBytes?: true
+  scratchCreatedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -278,6 +306,10 @@ export type JobAttemptGroupByOutputType = {
   cleanupLastErrorCode: string | null
   cleanupRequestedAt: Date | null
   cleanupCompletedAt: Date | null
+  scratchDirectoryName: string | null
+  scratchLeaseHash: string | null
+  scratchReservedBytes: bigint | null
+  scratchCreatedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: JobAttemptCountAggregateOutputType | null
@@ -322,6 +354,10 @@ export type JobAttemptWhereInput = {
   cleanupLastErrorCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
   cleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  scratchDirectoryName?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchLeaseHash?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   job?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
@@ -344,6 +380,10 @@ export type JobAttemptOrderByWithRelationInput = {
   cleanupLastErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   cleanupRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   job?: Prisma.PipelineJobOrderByWithRelationInput
@@ -352,6 +392,7 @@ export type JobAttemptOrderByWithRelationInput = {
 export type JobAttemptWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   outputObjectKey?: string
+  scratchDirectoryName?: string
   jobId_attemptNumber?: Prisma.JobAttemptJobIdAttemptNumberCompoundUniqueInput
   AND?: Prisma.JobAttemptWhereInput | Prisma.JobAttemptWhereInput[]
   OR?: Prisma.JobAttemptWhereInput[]
@@ -370,10 +411,13 @@ export type JobAttemptWhereUniqueInput = Prisma.AtLeast<{
   cleanupLastErrorCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
   cleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  scratchLeaseHash?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   job?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
-}, "id" | "outputObjectKey" | "jobId_attemptNumber">
+}, "id" | "outputObjectKey" | "scratchDirectoryName" | "jobId_attemptNumber">
 
 export type JobAttemptOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -392,6 +436,10 @@ export type JobAttemptOrderByWithAggregationInput = {
   cleanupLastErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   cleanupRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.JobAttemptCountOrderByAggregateInput
@@ -421,6 +469,10 @@ export type JobAttemptScalarWhereWithAggregatesInput = {
   cleanupLastErrorCode?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
   cleanupRequestedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
   cleanupCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
+  scratchDirectoryName?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
+  scratchLeaseHash?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableWithAggregatesFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"JobAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"JobAttempt"> | Date | string
 }
@@ -441,6 +493,10 @@ export type JobAttemptCreateInput = {
   cleanupLastErrorCode?: string | null
   cleanupRequestedAt?: Date | string | null
   cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   job: Prisma.PipelineJobCreateNestedOneWithoutAttemptsInput
@@ -463,6 +519,10 @@ export type JobAttemptUncheckedCreateInput = {
   cleanupLastErrorCode?: string | null
   cleanupRequestedAt?: Date | string | null
   cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -483,6 +543,10 @@ export type JobAttemptUpdateInput = {
   cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   job?: Prisma.PipelineJobUpdateOneRequiredWithoutAttemptsNestedInput
@@ -505,6 +569,10 @@ export type JobAttemptUncheckedUpdateInput = {
   cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -526,6 +594,10 @@ export type JobAttemptCreateManyInput = {
   cleanupLastErrorCode?: string | null
   cleanupRequestedAt?: Date | string | null
   cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -546,6 +618,10 @@ export type JobAttemptUpdateManyMutationInput = {
   cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -567,6 +643,10 @@ export type JobAttemptUncheckedUpdateManyInput = {
   cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -603,6 +683,10 @@ export type JobAttemptCountOrderByAggregateInput = {
   cleanupLastErrorCode?: Prisma.SortOrder
   cleanupRequestedAt?: Prisma.SortOrder
   cleanupCompletedAt?: Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -610,6 +694,7 @@ export type JobAttemptCountOrderByAggregateInput = {
 export type JobAttemptAvgOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
   cleanupAttemptCount?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
 }
 
 export type JobAttemptMaxOrderByAggregateInput = {
@@ -629,6 +714,10 @@ export type JobAttemptMaxOrderByAggregateInput = {
   cleanupLastErrorCode?: Prisma.SortOrder
   cleanupRequestedAt?: Prisma.SortOrder
   cleanupCompletedAt?: Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -650,6 +739,10 @@ export type JobAttemptMinOrderByAggregateInput = {
   cleanupLastErrorCode?: Prisma.SortOrder
   cleanupRequestedAt?: Prisma.SortOrder
   cleanupCompletedAt?: Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -657,6 +750,7 @@ export type JobAttemptMinOrderByAggregateInput = {
 export type JobAttemptSumOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
   cleanupAttemptCount?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
 }
 
 export type JobAttemptCreateNestedManyWithoutJobInput = {
@@ -721,6 +815,10 @@ export type JobAttemptCreateWithoutJobInput = {
   cleanupLastErrorCode?: string | null
   cleanupRequestedAt?: Date | string | null
   cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -741,6 +839,10 @@ export type JobAttemptUncheckedCreateWithoutJobInput = {
   cleanupLastErrorCode?: string | null
   cleanupRequestedAt?: Date | string | null
   cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -791,6 +893,10 @@ export type JobAttemptScalarWhereInput = {
   cleanupLastErrorCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
   cleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  scratchDirectoryName?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchLeaseHash?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
 }
@@ -811,6 +917,10 @@ export type JobAttemptCreateManyJobInput = {
   cleanupLastErrorCode?: string | null
   cleanupRequestedAt?: Date | string | null
   cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -831,6 +941,10 @@ export type JobAttemptUpdateWithoutJobInput = {
   cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -851,6 +965,10 @@ export type JobAttemptUncheckedUpdateWithoutJobInput = {
   cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -871,6 +989,10 @@ export type JobAttemptUncheckedUpdateManyWithoutJobInput = {
   cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -894,6 +1016,10 @@ export type JobAttemptSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   cleanupLastErrorCode?: boolean
   cleanupRequestedAt?: boolean
   cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
@@ -916,6 +1042,10 @@ export type JobAttemptSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   cleanupLastErrorCode?: boolean
   cleanupRequestedAt?: boolean
   cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
@@ -938,6 +1068,10 @@ export type JobAttemptSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   cleanupLastErrorCode?: boolean
   cleanupRequestedAt?: boolean
   cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
@@ -960,11 +1094,15 @@ export type JobAttemptSelectScalar = {
   cleanupLastErrorCode?: boolean
   cleanupRequestedAt?: boolean
   cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type JobAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobId" | "attemptNumber" | "state" | "workerId" | "leaseToken" | "startedAt" | "heartbeatAt" | "finishedAt" | "failureCode" | "outputObjectKey" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["jobAttempt"]>
+export type JobAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobId" | "attemptNumber" | "state" | "workerId" | "leaseToken" | "startedAt" | "heartbeatAt" | "finishedAt" | "failureCode" | "outputObjectKey" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "scratchDirectoryName" | "scratchLeaseHash" | "scratchReservedBytes" | "scratchCreatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["jobAttempt"]>
 export type JobAttemptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
 }
@@ -997,6 +1135,10 @@ export type $JobAttemptPayload<ExtArgs extends runtime.Types.Extensions.Internal
     cleanupLastErrorCode: string | null
     cleanupRequestedAt: Date | null
     cleanupCompletedAt: Date | null
+    scratchDirectoryName: string | null
+    scratchLeaseHash: string | null
+    scratchReservedBytes: bigint | null
+    scratchCreatedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["jobAttempt"]>
@@ -1439,6 +1581,10 @@ export interface JobAttemptFieldRefs {
   readonly cleanupLastErrorCode: Prisma.FieldRef<"JobAttempt", 'String'>
   readonly cleanupRequestedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
   readonly cleanupCompletedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
+  readonly scratchDirectoryName: Prisma.FieldRef<"JobAttempt", 'String'>
+  readonly scratchLeaseHash: Prisma.FieldRef<"JobAttempt", 'String'>
+  readonly scratchReservedBytes: Prisma.FieldRef<"JobAttempt", 'BigInt'>
+  readonly scratchCreatedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
 }

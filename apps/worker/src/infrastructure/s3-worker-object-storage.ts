@@ -6,11 +6,14 @@ import { ControlledMediaError } from "../domain/media-job.js";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 import type { WorkerObjectStorage } from "../application/ports.js";
+
+export const SINGLE_REQUEST_UPLOAD_MAX_BYTES = 5_000_000_000n;
 
 export class S3WorkerObjectStorage implements WorkerObjectStorage {
   private readonly client: S3Client;
@@ -69,12 +72,36 @@ export class S3WorkerObjectStorage implements WorkerObjectStorage {
     );
   }
 
+  async read(
+    objectKey: string,
+    signal: AbortSignal,
+  ): Promise<NodeJS.ReadableStream> {
+    const result = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: objectKey }),
+      { abortSignal: signal },
+    );
+    if (!result.Body)
+      throw new ControlledMediaError(
+        "EXPORT_INPUT_MISSING",
+        "An approved export input is missing from private storage.",
+        false,
+      );
+    return result.Body as NodeJS.ReadableStream;
+  }
+
   async upload(input: {
     objectKey: string;
     filePath: string;
     sha256: string;
+    sizeBytes?: bigint;
+    contentType?: string;
+    uploadMode?: "MULTIPART" | "SINGLE_REQUEST";
     signal: AbortSignal;
+    onProgress?(uploadedBytes: bigint): void;
   }): Promise<{ etag?: string; version?: string }> {
+    if (input.uploadMode === "SINGLE_REQUEST") {
+      return this.uploadSingleRequest(input);
+    }
     const controller = new AbortController();
     const onAbort = () => controller.abort(input.signal.reason);
     input.signal.addEventListener("abort", onAbort, { once: true });
@@ -85,12 +112,18 @@ export class S3WorkerObjectStorage implements WorkerObjectStorage {
           Bucket: this.bucket,
           Key: input.objectKey,
           Body: createReadStream(input.filePath),
-          ContentType: "video/mp4",
+          ContentType: input.contentType ?? "video/mp4",
           Metadata: { sha256: input.sha256 },
         },
         abortController: controller,
         leavePartsOnError: false,
       });
+      if (input.onProgress) {
+        upload.on("httpUploadProgress", (progress) => {
+          if (progress.loaded !== undefined)
+            input.onProgress?.(BigInt(progress.loaded));
+        });
+      }
       const result = await upload.done();
       return {
         ...(result.ETag ? { etag: result.ETag } : {}),
@@ -99,6 +132,52 @@ export class S3WorkerObjectStorage implements WorkerObjectStorage {
     } finally {
       input.signal.removeEventListener("abort", onAbort);
     }
+  }
+
+  private async uploadSingleRequest(input: {
+    objectKey: string;
+    filePath: string;
+    sha256: string;
+    sizeBytes?: bigint;
+    contentType?: string;
+    signal: AbortSignal;
+    onProgress?(uploadedBytes: bigint): void;
+  }): Promise<{ etag?: string; version?: string }> {
+    if (
+      input.sizeBytes === undefined ||
+      input.sizeBytes < 0n ||
+      input.sizeBytes > SINGLE_REQUEST_UPLOAD_MAX_BYTES
+    ) {
+      throw new ControlledMediaError(
+        "EXPORT_SINGLE_UPLOAD_LIMIT_EXCEEDED",
+        "The export archive exceeds the safe atomic upload limit.",
+        false,
+      );
+    }
+    let uploaded = 0n;
+    const progress = new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        uploaded += BigInt(chunk.length);
+        input.onProgress?.(uploaded);
+        callback(null, chunk);
+      },
+    });
+    const body = createReadStream(input.filePath).pipe(progress);
+    const result = await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: input.objectKey,
+        Body: body,
+        ContentLength: Number(input.sizeBytes),
+        ContentType: input.contentType ?? "application/zip",
+        Metadata: { sha256: input.sha256 },
+      }),
+      { abortSignal: input.signal },
+    );
+    return {
+      ...(result.ETag ? { etag: result.ETag } : {}),
+      ...(result.VersionId ? { version: result.VersionId } : {}),
+    };
   }
 
   async delete(objectKey: string): Promise<void> {

@@ -21,6 +21,7 @@ import {
   sourceAuthorizationRuntime,
 } from "./config/environment.js";
 import { HttpExceptionFilter } from "./http-exception.filter.js";
+import { verifyAdmissionOffRollbackCompatibility } from "./rollback-compatibility.js";
 
 loadEnvironment();
 
@@ -72,5 +73,9 @@ async function bootstrap(): Promise<void> {
 
 const entrypoint = process.argv[1];
 if (entrypoint && import.meta.url === pathToFileURL(entrypoint).href) {
-  await bootstrap();
+  if (process.argv.includes("--verify-admission-off-rollback")) {
+    await verifyAdmissionOffRollbackCompatibility();
+  } else {
+    await bootstrap();
+  }
 }

@@ -40,6 +40,18 @@ import {
 } from "./application/editorial-approval-queries.js";
 import { PrismaEditorialApprovalRepository } from "./infrastructure/prisma-editorial-approval.repository.js";
 import { EditorialApprovalController } from "./presentation/editorial-approval.controller.js";
+import {
+  EDITORIAL_EXPORT_ADMISSION_ENABLED,
+  EDITORIAL_EXPORT_REPOSITORY,
+} from "./application/editorial-export-repository.port.js";
+import { CreateEditorialExport } from "./application/create-editorial-export.js";
+import {
+  GetEditorialExport,
+  GetEditorialExportContent,
+  ListEditorialExports,
+} from "./application/editorial-export-queries.js";
+import { PrismaEditorialExportRepository } from "./infrastructure/prisma-editorial-export.repository.js";
+import { EditorialExportController } from "./presentation/editorial-export.controller.js";
 
 import { ProjectsModule } from "../projects/projects.module.js";
 import { TempUploadLifecycleInterceptor } from "../projects/presentation/temp-upload-lifecycle.interceptor.js";
@@ -69,11 +81,25 @@ import { EditorialController } from "./presentation/editorial.controller.js";
     AssemblyRecipeController,
     AssemblyRenderController,
     EditorialApprovalController,
+    EditorialExportController,
   ],
   providers: [
     PrismaAssemblyRecipeRepository,
     PrismaAssemblyRenderRepository,
     PrismaEditorialApprovalRepository,
+    PrismaEditorialExportRepository,
+    CreateEditorialExport,
+    GetEditorialExport,
+    GetEditorialExportContent,
+    ListEditorialExports,
+    {
+      provide: EDITORIAL_EXPORT_REPOSITORY,
+      useExisting: PrismaEditorialExportRepository,
+    },
+    {
+      provide: EDITORIAL_EXPORT_ADMISSION_ENABLED,
+      useFactory: () => apiEnvironment().editorialExportEnabled,
+    },
     CreateEditorialApproval,
     GetEditorialReview,
     ListEditorialApprovals,

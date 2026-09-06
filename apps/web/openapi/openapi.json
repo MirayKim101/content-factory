@@ -1415,6 +1415,266 @@
         ],
         "type": "object"
       },
+      "EditorialExportFailureResponseDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": ["code", "message", "retryable"],
+        "type": "object"
+      },
+      "EditorialExportJobResponseDto": {
+        "properties": {
+          "admissionReason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "attempt": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialExportFailureResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "nextAttemptAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "progress": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialExportProgressResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "retryBudget": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "state",
+          "attempt",
+          "retryBudget",
+          "nextAttemptAt",
+          "admissionReason",
+          "progress",
+          "failure"
+        ],
+        "type": "object"
+      },
+      "EditorialExportListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EditorialExportResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "EditorialExportProgressResponseDto": {
+        "properties": {
+          "attemptNumber": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "basisPoints": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "phase": {
+            "enum": [
+              "READ_INPUTS",
+              "WRITE_ARCHIVE",
+              "OUTPUT_HASH",
+              "UPLOAD",
+              "FINALIZE"
+            ],
+            "type": "string"
+          },
+          "schemaVersion": {
+            "enum": ["editorial-export-progress-v1"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "attemptNumber",
+          "phase",
+          "basisPoints",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "EditorialExportResponseDto": {
+        "properties": {
+          "approvalCandidateFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "approvalCurrent": {
+            "type": "boolean"
+          },
+          "approvalId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assemblyRenderResultId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "editorialPackageRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "exportContractVersion": {
+            "enum": ["editorial-export-zip-v1"],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "job": {
+            "$ref": "#/components/schemas/EditorialExportJobResponseDto"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipeRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "result": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialExportResultResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "cutPipelineJobId",
+          "approvalId",
+          "approvalCandidateFingerprint",
+          "editorialPackageRevisionId",
+          "recipeRevisionId",
+          "assemblyRenderResultId",
+          "exportContractVersion",
+          "approvalCurrent",
+          "job",
+          "result",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "EditorialExportResultResponseDto": {
+        "properties": {
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "downloadUrl": {
+            "format": "uri-reference",
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "manifest": {
+            "type": "object"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "sizeBytes",
+          "sha256",
+          "manifest",
+          "completedAt",
+          "downloadUrl"
+        ],
+        "type": "object"
+      },
       "EditorialFailureResponseDto": {
         "properties": {
           "code": {
@@ -2796,6 +3056,120 @@
         "tags": ["editorial-content"]
       }
     },
+    "/api/v1/editorial-approvals/{approvalId}/exports": {
+      "post": {
+        "operationId": "EditorialExportController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialExportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "403": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          },
+          "409": {
+            "description": ""
+          },
+          "503": {
+            "description": ""
+          }
+        },
+        "summary": "Create one exact-approval background export package",
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/editorial-exports/{exportId}": {
+      "get": {
+        "operationId": "EditorialExportController_one",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialExportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/editorial-exports/{exportId}/content": {
+      "get": {
+        "operationId": "EditorialExportController_content",
+        "parameters": [
+          {
+            "description": "One RFC 9110 byte range.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Ready private editorial ZIP64 package."
+          },
+          "206": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "AppController_health",
@@ -4166,6 +4540,25 @@
               "image/webp": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/projects/{projectId}/editorial-exports": {
+      "get": {
+        "operationId": "EditorialExportController_project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialExportListResponseDto"
                 }
               }
             },

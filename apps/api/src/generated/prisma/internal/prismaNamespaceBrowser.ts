@@ -74,6 +74,8 @@ export const ModelName = {
   EditorialApproval: 'EditorialApproval',
   EditorialApprovalMetrics: 'EditorialApprovalMetrics',
   EditorialOperationRequest: 'EditorialOperationRequest',
+  EditorialExportIntent: 'EditorialExportIntent',
+  EditorialExportResult: 'EditorialExportResult',
   CutSegment: 'CutSegment',
   JobAttempt: 'JobAttempt'
 } as const
@@ -217,6 +219,7 @@ export const PipelineJobScalarFieldEnum = {
   updatedAt: 'updatedAt',
   montageAssetId: 'montageAssetId',
   assemblyRenderIntentId: 'assemblyRenderIntentId',
+  editorialExportIntentId: 'editorialExportIntentId',
   nextAttemptAt: 'nextAttemptAt',
   admissionReason: 'admissionReason',
   progressAttemptNumber: 'progressAttemptNumber',
@@ -572,6 +575,41 @@ export const EditorialOperationRequestScalarFieldEnum = {
 export type EditorialOperationRequestScalarFieldEnum = (typeof EditorialOperationRequestScalarFieldEnum)[keyof typeof EditorialOperationRequestScalarFieldEnum]
 
 
+export const EditorialExportIntentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  approvalId: 'approvalId',
+  approvalCandidateFingerprint: 'approvalCandidateFingerprint',
+  editorialPackageRevisionId: 'editorialPackageRevisionId',
+  recipeRevisionId: 'recipeRevisionId',
+  assemblyRenderResultId: 'assemblyRenderResultId',
+  exportContractVersion: 'exportContractVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialExportIntentScalarFieldEnum = (typeof EditorialExportIntentScalarFieldEnum)[keyof typeof EditorialExportIntentScalarFieldEnum]
+
+
+export const EditorialExportResultScalarFieldEnum = {
+  id: 'id',
+  exportIntentId: 'exportIntentId',
+  pipelineJobId: 'pipelineJobId',
+  artifactId: 'artifactId',
+  filename: 'filename',
+  archiveSizeBytes: 'archiveSizeBytes',
+  archiveSha256: 'archiveSha256',
+  manifest: 'manifest',
+  exportContractVersion: 'exportContractVersion',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialExportResultScalarFieldEnum = (typeof EditorialExportResultScalarFieldEnum)[keyof typeof EditorialExportResultScalarFieldEnum]
+
+
 export const CutSegmentScalarFieldEnum = {
   id: 'id',
   jobId: 'jobId',
@@ -601,6 +639,10 @@ export const JobAttemptScalarFieldEnum = {
   cleanupLastErrorCode: 'cleanupLastErrorCode',
   cleanupRequestedAt: 'cleanupRequestedAt',
   cleanupCompletedAt: 'cleanupCompletedAt',
+  scratchDirectoryName: 'scratchDirectoryName',
+  scratchLeaseHash: 'scratchLeaseHash',
+  scratchReservedBytes: 'scratchReservedBytes',
+  scratchCreatedAt: 'scratchCreatedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -627,12 +627,16 @@ export class PrismaAssemblyRenderRepository implements AssemblyRenderRepository 
         progress:
           job.progressAttemptNumber !== null &&
           job.progressPhase !== null &&
+          !["READ_INPUTS", "WRITE_ARCHIVE"].includes(job.progressPhase) &&
           job.progressBasisPoints !== null &&
           job.progressUpdatedAt !== null
             ? {
                 schemaVersion: "assembly-progress-v1",
                 attemptNumber: job.progressAttemptNumber,
-                phase: job.progressPhase,
+                phase: job.progressPhase as Exclude<
+                  typeof job.progressPhase,
+                  "READ_INPUTS" | "WRITE_ARCHIVE"
+                >,
                 basisPoints: job.progressBasisPoints,
                 updatedAt: job.progressUpdatedAt,
               }

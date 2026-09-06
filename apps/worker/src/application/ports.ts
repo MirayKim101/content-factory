@@ -1,6 +1,7 @@
 import type {
   AssemblyRenderPlan,
   ClaimedMediaJob,
+  EditorialExportPlan,
 } from "../domain/media-job.js";
 import type { MontageProbeResultV1 } from "@content-factory/contracts";
 
@@ -13,6 +14,39 @@ export interface MediaJobRepository {
     reason: string,
     nextAttemptAt: Date,
   ): Promise<void>;
+  prepareExportScratch(
+    job: ClaimedMediaJob,
+    marker: {
+      directoryName: string;
+      leaseHash: string;
+      reservedBytes: bigint;
+    },
+  ): Promise<void>;
+  clearExportScratch(
+    job: ClaimedMediaJob,
+    directoryName: string,
+  ): Promise<void>;
+  listActiveExportScratchReservations(): Promise<
+    Array<{
+      jobId: string;
+      attemptNumber: number;
+      directoryName: string;
+      leaseHash: string;
+      reservedBytes: bigint;
+    }>
+  >;
+  inspectExportScratchLease(input: {
+    jobId: string;
+    attemptNumber: number;
+    leaseHash: string;
+    directoryName: string;
+  }): Promise<"ACTIVE" | "INACTIVE" | "UNKNOWN">;
+  clearReconciledExportScratch(input: {
+    jobId: string;
+    attemptNumber: number;
+    directoryName: string;
+    leaseHash: string;
+  }): Promise<void>;
   completeMontageProbe(
     job: ClaimedMediaJob,
     result: MontageProbeResultV1,
@@ -32,6 +66,8 @@ export interface MediaJobRepository {
     job: ClaimedMediaJob,
     phase:
       | "DOWNLOAD"
+      | "READ_INPUTS"
+      | "WRITE_ARCHIVE"
       | "AUDIO_ANALYSIS"
       | "ENCODE"
       | "OUTPUT_PROBE"
@@ -89,7 +125,23 @@ export interface MediaJobRepository {
       normalizationProfileResult: string;
     },
   ): Promise<void>;
+  completeEditorialExport(
+    job: ClaimedMediaJob,
+    result: {
+      objectKey: string;
+      filename: string;
+      sizeBytes: bigint;
+      sha256: string;
+      etag?: string;
+      storageVersion?: string;
+      manifest: unknown;
+    },
+  ): Promise<void>;
   isAssemblyResultAccepted(
+    job: ClaimedMediaJob,
+    objectKey: string,
+  ): Promise<boolean>;
+  isEditorialExportResultAccepted(
     job: ClaimedMediaJob,
     objectKey: string,
   ): Promise<boolean>;
@@ -153,6 +205,7 @@ export interface AssemblyRenderedOutput {
 }
 
 export interface WorkerObjectStorage {
+  read(objectKey: string, signal: AbortSignal): Promise<NodeJS.ReadableStream>;
   download(
     objectKey: string,
     destination: string,
@@ -163,10 +216,33 @@ export interface WorkerObjectStorage {
     objectKey: string;
     filePath: string;
     sha256: string;
+    sizeBytes?: bigint;
+    contentType?: string;
+    uploadMode?: "MULTIPART" | "SINGLE_REQUEST";
     signal: AbortSignal;
+    onProgress?(uploadedBytes: bigint): void;
   }): Promise<{ etag?: string; version?: string }>;
   delete(objectKey: string): Promise<void>;
   close(): void;
+}
+
+export interface PackageExporterResult {
+  manifest: unknown;
+  archiveBytes: bigint;
+}
+
+export interface PackageExporter {
+  export(input: {
+    plan: EditorialExportPlan;
+    outputPath: string;
+    signal: AbortSignal;
+    openInput(objectKey: string): Promise<NodeJS.ReadableStream>;
+    onProgress(event: {
+      phase: "READ_INPUTS" | "WRITE_ARCHIVE";
+      bytes: bigint;
+      totalBytes: bigint;
+    }): void;
+  }): Promise<PackageExporterResult>;
 }
 
 export interface SourceCacheIdentity {
@@ -231,6 +307,7 @@ export interface MediaJobPhaseTelemetry {
     | "source_download"
     | "source_integrity_hash"
     | "source_probe"
+    | "archive"
     | "encode"
     | "output_probe"
     | "output_hash"
@@ -245,6 +322,8 @@ export interface MediaJobPhaseTelemetry {
   evictionCount?: number;
   evictedBytes?: string;
   currentCacheBytes?: string;
+  scratchReservationBytes?: string;
+  scratchPeakBytes?: string;
 }
 
 export type MediaJobTelemetry = (event: MediaJobPhaseTelemetry) => void;

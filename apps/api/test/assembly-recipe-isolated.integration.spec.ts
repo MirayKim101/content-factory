@@ -52,8 +52,21 @@ import {
 } from "../src/editorial-content/application/editorial-approval-queries.js";
 import { PrismaEditorialApprovalRepository } from "../src/editorial-content/infrastructure/prisma-editorial-approval.repository.js";
 import { EditorialApprovalController } from "../src/editorial-content/presentation/editorial-approval.controller.js";
+import {
+  EDITORIAL_EXPORT_ADMISSION_ENABLED,
+  EDITORIAL_EXPORT_REPOSITORY,
+} from "../src/editorial-content/application/editorial-export-repository.port.js";
+import { CreateEditorialExport } from "../src/editorial-content/application/create-editorial-export.js";
+import {
+  GetEditorialExport,
+  GetEditorialExportContent,
+  ListEditorialExports,
+} from "../src/editorial-content/application/editorial-export-queries.js";
+import { PrismaEditorialExportRepository } from "../src/editorial-content/infrastructure/prisma-editorial-export.repository.js";
+import { EditorialExportController } from "../src/editorial-content/presentation/editorial-export.controller.js";
 import { HttpExceptionFilter } from "../src/http-exception.filter.js";
 import { JOB_DISPATCH } from "../src/media-pipeline/application/job-dispatch.port.js";
+import { PrismaPipelineRepository } from "../src/media-pipeline/infrastructure/prisma-pipeline.repository.js";
 import { OBJECT_STORAGE } from "../src/projects/application/object-storage.port.js";
 
 describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
@@ -142,16 +155,19 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           AssemblyRecipeController,
           AssemblyRenderController,
           EditorialApprovalController,
+          EditorialExportController,
         ],
         providers: [
           { provide: PrismaService, useValue: prisma },
           { provide: JOB_DISPATCH, useValue: dispatch },
           { provide: ASSEMBLY_RENDER_ADMISSION_ENABLED, useValue: true },
           { provide: EDITORIAL_APPROVAL_ADMISSION_ENABLED, useValue: true },
+          { provide: EDITORIAL_EXPORT_ADMISSION_ENABLED, useValue: true },
           { provide: OBJECT_STORAGE, useValue: storage },
           PrismaAssemblyRecipeRepository,
           PrismaAssemblyRenderRepository,
           PrismaEditorialApprovalRepository,
+          PrismaEditorialExportRepository,
           {
             provide: ASSEMBLY_RECIPE_REPOSITORY,
             useExisting: PrismaAssemblyRecipeRepository,
@@ -164,6 +180,10 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
             provide: EDITORIAL_APPROVAL_REPOSITORY,
             useExisting: PrismaEditorialApprovalRepository,
           },
+          {
+            provide: EDITORIAL_EXPORT_REPOSITORY,
+            useExisting: PrismaEditorialExportRepository,
+          },
           SaveAssemblyRecipe,
           GetAssemblyRecipe,
           GetAssemblyRecipeRevision,
@@ -175,6 +195,10 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           CreateEditorialApproval,
           GetEditorialReview,
           ListEditorialApprovals,
+          CreateEditorialExport,
+          GetEditorialExport,
+          GetEditorialExportContent,
+          ListEditorialExports,
         ],
       })
       class IsolatedModule {}
@@ -1053,25 +1077,8 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           expect(responseBody.error.code).toBe("IDEMPOTENCY_CONFLICT"),
         );
 
-      const operationKey = randomUUID();
-      await prisma.editorialOperationRequest.create({
-        data: {
-          id: randomUUID(),
-          idempotencyKey: operationKey,
-          operation: "CREATE_EDITORIAL_EXPORT",
-          canonicalRequestFingerprint: "e".repeat(64),
-          resolvedProjectId: first.cut.projectId,
-          exportIntentId: randomUUID(),
-        },
-      });
-      await request(app.getHttpServer())
-        .post(`/api/v1/assembly-renders/${first.renderId}/editorial-approvals`)
-        .set("Idempotency-Key", operationKey)
-        .send(body)
-        .expect(409)
-        .expect(({ body: responseBody }) =>
-          expect(responseBody.error.code).toBe("IDEMPOTENCY_CONFLICT"),
-        );
+      // Cross-operation reuse is covered by the Stage 2e export lifecycle
+      // below, now that export rows have a real foreign key target.
     });
 
     it("derives stale metadata, recipe, authorization, and rights states without mutating approval history", async () => {
@@ -1231,6 +1238,378 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         finishedAt: invalidFinishedAt,
       });
     });
+
+    it("creates one durable editorial export, recovers status, serves Range, and closes the stale gate", async () => {
+      const candidate = await readyApprovalCandidate();
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      const approvalKey = randomUUID();
+      const approval = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", approvalKey)
+        .send({
+          editorialRevision: 1,
+          candidateFingerprint: review.body.candidateFingerprint,
+          manualAttentionMs: 1_000,
+          attentionMeasurementVersion: "foreground-preview-v1",
+        })
+        .expect(201);
+      const exportKey = randomUUID();
+      dispatch.dispatch.mockRejectedValueOnce(new Error("redis unavailable"));
+      const first = await request(app.getHttpServer())
+        .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+        .set("Idempotency-Key", exportKey)
+        .expect(202);
+      const replay = await request(app.getHttpServer())
+        .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+        .set("Idempotency-Key", exportKey)
+        .expect(202);
+      expect(replay.body).toEqual(first.body);
+      expect(first.body).toMatchObject({
+        approvalId: approval.body.id,
+        approvalCurrent: true,
+        exportContractVersion: "editorial-export-zip-v1",
+        job: { state: "QUEUED", attempt: 0 },
+        result: null,
+      });
+      expect(await prisma.editorialExportIntent.count()).toBe(1);
+      expect(
+        await prisma.pipelineJob.count({
+          where: { type: "EXPORT_EDITORIAL_PACKAGE" },
+        }),
+      ).toBe(1);
+      expect(dispatch.dispatch).toHaveBeenCalledWith({
+        jobId: first.body.job.id,
+        attemptNumber: 1,
+      });
+      const reconciliation = new PrismaPipelineRepository(prisma);
+      await expect(
+        reconciliation.getRunnableJobsByIds([first.body.job.id as string]),
+      ).resolves.toEqual([
+        { jobId: first.body.job.id as string, attemptNumber: 1 },
+      ]);
+      await expect(
+        reconciliation.isDeliveryRunnable({
+          jobId: first.body.job.id as string,
+          attemptNumber: 1,
+        }),
+      ).resolves.toBe(true);
+
+      const concurrent = await Promise.all([
+        request(app.getHttpServer())
+          .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+          .set("Idempotency-Key", randomUUID()),
+        request(app.getHttpServer())
+          .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+          .set("Idempotency-Key", randomUUID()),
+      ]);
+      expect(concurrent.map((value) => value.status)).toEqual([202, 202]);
+      expect(concurrent.map((value) => value.body.id)).toEqual([
+        first.body.id,
+        first.body.id,
+      ]);
+      expect(await prisma.editorialExportIntent.count()).toBe(1);
+
+      await request(app.getHttpServer())
+        .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+        .set("Idempotency-Key", approvalKey)
+        .expect(409)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("IDEMPOTENCY_CONFLICT"),
+        );
+
+      const expiredLease = new Date(Date.now() - 60_000);
+      const leaseToken = randomUUID();
+      await prisma.pipelineJob.update({
+        where: { id: first.body.job.id as string },
+        data: {
+          state: "PROCESSING",
+          attemptCount: 1,
+          leaseOwner: "lost-worker",
+          leaseToken,
+          leaseExpiresAt: expiredLease,
+          heartbeatAt: expiredLease,
+        },
+      });
+      await prisma.jobAttempt.updateMany({
+        where: { jobId: first.body.job.id as string, attemptNumber: 1 },
+        data: {
+          state: "PROCESSING",
+          workerId: "lost-worker",
+          leaseToken,
+          startedAt: expiredLease,
+          heartbeatAt: expiredLease,
+        },
+      });
+      await expect(reconciliation.recoverExpiredLeases(10)).resolves.toEqual([
+        { jobId: first.body.job.id as string, attemptNumber: 2 },
+      ]);
+      await expect(
+        reconciliation.getRunnableJobsByIds([first.body.job.id as string]),
+      ).resolves.toEqual([]);
+      await prisma.pipelineJob.update({
+        where: { id: first.body.job.id as string },
+        data: { nextAttemptAt: new Date(Date.now() - 1_000) },
+      });
+      await expect(
+        reconciliation.getRunnableJobsByIds([first.body.job.id as string]),
+      ).resolves.toEqual([
+        { jobId: first.body.job.id as string, attemptNumber: 2 },
+      ]);
+
+      const artifactId = randomUUID();
+      await prisma.pipelineJob.update({
+        where: { id: first.body.job.id as string },
+        data: {
+          state: "READY",
+          finishedAt: new Date(),
+          attemptCount: 1,
+          nextAttemptAt: null,
+        },
+      });
+      await prisma.mediaArtifact.create({
+        data: {
+          id: artifactId,
+          projectId: candidate.cut.projectId,
+          sourceId: candidate.cut.sourceId,
+          role: "EDITORIAL_EXPORT_PACKAGE",
+          status: "READY",
+          objectKey: `test/export/${artifactId}.zip`,
+          sizeBytes: BigInt(content.length),
+          sha256: "e".repeat(64),
+          contentType: "application/zip",
+          lineageSourceId: candidate.cut.sourceId,
+          lineageSourceVersion: 1,
+          recipeVersion: "editorial-export-zip-v1",
+          pipelineJobId: first.body.job.id as string,
+          outputFilename: "editorial-package.zip",
+        },
+      });
+      await prisma.editorialExportResult.create({
+        data: {
+          id: randomUUID(),
+          exportIntentId: first.body.id as string,
+          pipelineJobId: first.body.job.id as string,
+          artifactId,
+          filename: "editorial-package.zip",
+          archiveSizeBytes: BigInt(content.length),
+          archiveSha256: "e".repeat(64),
+          manifest: { manifestSchemaVersion: "editorial-export-manifest-v1" },
+          completedAt: new Date(),
+        },
+      });
+      const ready = await request(app.getHttpServer())
+        .get(`/api/v1/editorial-exports/${first.body.id}`)
+        .expect(200);
+      expect(ready.body).toMatchObject({
+        job: { state: "READY" },
+        result: {
+          filename: "editorial-package.zip",
+          sizeBytes: String(content.length),
+          sha256: "e".repeat(64),
+          downloadUrl: `/api/v1/editorial-exports/${first.body.id}/content`,
+        },
+      });
+      const range = await request(app.getHttpServer())
+        .get(`/api/v1/editorial-exports/${first.body.id}/content`)
+        .set("Range", "bytes=1-3")
+        .buffer(true)
+        .parse((response, callback) => {
+          const chunks: Buffer[] = [];
+          response.on("data", (chunk: Buffer) => chunks.push(chunk));
+          response.on("end", () => callback(null, Buffer.concat(chunks)));
+          response.on("error", callback);
+        })
+        .expect(206);
+      expect(range.body).toEqual(content.subarray(1, 4));
+      expect(range.headers["content-type"]).toMatch(/^application\/zip/);
+      expect(range.headers["content-disposition"]).toContain("attachment");
+
+      const listed = await request(app.getHttpServer())
+        .get(`/api/v1/projects/${candidate.cut.projectId}/editorial-exports`)
+        .expect(200);
+      expect(listed.body.items[0].id).toBe(first.body.id);
+      await prisma.editorialPackage.update({
+        where: { id: candidate.editorialPackageId },
+        data: { currentRevision: 2 },
+      });
+      await request(app.getHttpServer())
+        .get(`/api/v1/editorial-exports/${first.body.id}`)
+        .expect(200)
+        .expect(({ body }) => expect(body.approvalCurrent).toBe(false));
+      await request(app.getHttpServer())
+        .get(`/api/v1/editorial-exports/${first.body.id}/content`)
+        .expect(409)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("EDITORIAL_EXPORT_NOT_READY"),
+        );
+      await request(app.getHttpServer())
+        .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+        .set("Idempotency-Key", randomUUID())
+        .expect(409)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("EDITORIAL_APPROVAL_STALE"),
+        );
+    });
+
+    it("terminalizes a queued export whose exact processing template snapshot changed", async () => {
+      const prepared = await readyApprovedExport();
+      const templateRevision =
+        await prisma.processingTemplateRevision.findUniqueOrThrow({
+          where: { id: prepared.approval.body.processingTemplateRevisionId },
+        });
+      const replacement = await prisma.processingTemplateRevision.create({
+        data: {
+          id: randomUUID(),
+          templateId: templateRevision.templateId,
+          revision: templateRevision.revision + 1,
+          name: "Changed processing template",
+        },
+      });
+      await prisma.editorialPackageRevision.update({
+        where: { id: prepared.approval.body.editorialPackageRevisionId },
+        data: { processingTemplateRevisionId: replacement.id },
+      });
+
+      await request(app.getHttpServer())
+        .get(`/api/v1/editorial-exports/${prepared.export.body.id}`)
+        .expect(200)
+        .expect(({ body }) => expect(body.approvalCurrent).toBe(false));
+      const writesBefore = {
+        intents: await prisma.editorialExportIntent.count(),
+        operations: await prisma.editorialOperationRequest.count(),
+        jobs: await prisma.pipelineJob.count({
+          where: { type: "EXPORT_EDITORIAL_PACKAGE" },
+        }),
+      };
+      await request(app.getHttpServer())
+        .post(
+          `/api/v1/editorial-approvals/${prepared.approval.body.id}/exports`,
+        )
+        .set("Idempotency-Key", randomUUID())
+        .expect(409)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("EDITORIAL_APPROVAL_STALE"),
+        );
+      await expect(
+        new PrismaPipelineRepository(prisma).getRunnableJobsByIds([
+          prepared.export.body.job.id as string,
+        ]),
+      ).resolves.toEqual([]);
+      await expect(
+        prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: prepared.export.body.job.id as string },
+          select: { state: true, failureCode: true, failureRetryable: true },
+        }),
+      ).resolves.toEqual({
+        state: "FAILED_FINAL",
+        failureCode: "EXPORT_APPROVAL_STALE",
+        failureRetryable: false,
+      });
+      await expect(
+        prisma.jobAttempt.findFirstOrThrow({
+          where: { jobId: prepared.export.body.job.id as string },
+          select: { state: true, failureCode: true },
+        }),
+      ).resolves.toEqual({
+        state: "FAILED_FINAL",
+        failureCode: "EXPORT_APPROVAL_STALE",
+      });
+      await expect(
+        Promise.all([
+          prisma.editorialExportIntent.count(),
+          prisma.editorialOperationRequest.count(),
+          prisma.pipelineJob.count({
+            where: { type: "EXPORT_EDITORIAL_PACKAGE" },
+          }),
+        ]),
+      ).resolves.toEqual([
+        writesBefore.intents,
+        writesBefore.operations,
+        writesBefore.jobs,
+      ]);
+    });
+
+    it("classifies an expired export lease with a stale approval as terminal", async () => {
+      const prepared = await readyApprovedExport();
+      const expiredAt = new Date(Date.now() - 60_000);
+      const leaseToken = randomUUID();
+      await prisma.pipelineJob.update({
+        where: { id: prepared.export.body.job.id as string },
+        data: {
+          state: "PROCESSING",
+          attemptCount: 1,
+          leaseOwner: "killed-worker",
+          leaseToken,
+          leaseExpiresAt: expiredAt,
+          heartbeatAt: expiredAt,
+        },
+      });
+      await prisma.jobAttempt.updateMany({
+        where: {
+          jobId: prepared.export.body.job.id as string,
+          attemptNumber: 1,
+        },
+        data: {
+          state: "PROCESSING",
+          workerId: "killed-worker",
+          leaseToken,
+          startedAt: expiredAt,
+          heartbeatAt: expiredAt,
+        },
+      });
+      await prisma.editorialPackage.update({
+        where: { id: prepared.candidate.editorialPackageId },
+        data: { currentRevision: 2 },
+      });
+
+      await expect(
+        new PrismaPipelineRepository(prisma).recoverExpiredLeases(10),
+      ).resolves.toEqual([]);
+      await expect(
+        prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: prepared.export.body.job.id as string },
+          select: {
+            state: true,
+            failureCode: true,
+            failureRetryable: true,
+            leaseToken: true,
+          },
+        }),
+      ).resolves.toEqual({
+        state: "FAILED_FINAL",
+        failureCode: "EXPORT_APPROVAL_STALE",
+        failureRetryable: false,
+        leaseToken: null,
+      });
+    });
+
+    async function readyApprovedExport() {
+      const candidate = await readyApprovalCandidate();
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      const approval = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", randomUUID())
+        .send({
+          editorialRevision: 1,
+          candidateFingerprint: review.body.candidateFingerprint,
+          manualAttentionMs: 1_000,
+          attentionMeasurementVersion: "foreground-preview-v1",
+        })
+        .expect(201);
+      const exportResponse = await request(app.getHttpServer())
+        .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+        .set("Idempotency-Key", randomUUID())
+        .expect(202);
+      return { candidate, approval, export: exportResponse };
+    }
 
     async function readyApprovalCandidate(input?: {
       withBanner?: boolean;
