@@ -226,6 +226,7 @@ export type ProcessingTemplateRevisionWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ProcessingTemplateRevision"> | Date | string
   template?: Prisma.XOR<Prisma.ProcessingTemplateScalarRelationFilter, Prisma.ProcessingTemplateWhereInput>
   editorialRevisions?: Prisma.EditorialPackageRevisionListRelationFilter
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
 }
 
 export type ProcessingTemplateRevisionOrderByWithRelationInput = {
@@ -237,6 +238,7 @@ export type ProcessingTemplateRevisionOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   template?: Prisma.ProcessingTemplateOrderByWithRelationInput
   editorialRevisions?: Prisma.EditorialPackageRevisionOrderByRelationAggregateInput
+  editorialApprovals?: Prisma.EditorialApprovalOrderByRelationAggregateInput
 }
 
 export type ProcessingTemplateRevisionWhereUniqueInput = Prisma.AtLeast<{
@@ -252,6 +254,7 @@ export type ProcessingTemplateRevisionWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ProcessingTemplateRevision"> | Date | string
   template?: Prisma.XOR<Prisma.ProcessingTemplateScalarRelationFilter, Prisma.ProcessingTemplateWhereInput>
   editorialRevisions?: Prisma.EditorialPackageRevisionListRelationFilter
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
 }, "id" | "templateId_revision">
 
 export type ProcessingTemplateRevisionOrderByWithAggregationInput = {
@@ -288,6 +291,7 @@ export type ProcessingTemplateRevisionCreateInput = {
   createdAt?: Date | string
   template: Prisma.ProcessingTemplateCreateNestedOneWithoutRevisionsInput
   editorialRevisions?: Prisma.EditorialPackageRevisionCreateNestedManyWithoutProcessingTemplateRevisionInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProcessingTemplateRevisionInput
 }
 
 export type ProcessingTemplateRevisionUncheckedCreateInput = {
@@ -298,6 +302,7 @@ export type ProcessingTemplateRevisionUncheckedCreateInput = {
   configurationVersion?: string
   createdAt?: Date | string
   editorialRevisions?: Prisma.EditorialPackageRevisionUncheckedCreateNestedManyWithoutProcessingTemplateRevisionInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProcessingTemplateRevisionInput
 }
 
 export type ProcessingTemplateRevisionUpdateInput = {
@@ -308,6 +313,7 @@ export type ProcessingTemplateRevisionUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   template?: Prisma.ProcessingTemplateUpdateOneRequiredWithoutRevisionsNestedInput
   editorialRevisions?: Prisma.EditorialPackageRevisionUpdateManyWithoutProcessingTemplateRevisionNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProcessingTemplateRevisionNestedInput
 }
 
 export type ProcessingTemplateRevisionUncheckedUpdateInput = {
@@ -318,6 +324,7 @@ export type ProcessingTemplateRevisionUncheckedUpdateInput = {
   configurationVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   editorialRevisions?: Prisma.EditorialPackageRevisionUncheckedUpdateManyWithoutProcessingTemplateRevisionNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProcessingTemplateRevisionNestedInput
 }
 
 export type ProcessingTemplateRevisionCreateManyInput = {
@@ -457,6 +464,20 @@ export type ProcessingTemplateRevisionUpdateOneRequiredWithoutEditorialRevisions
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProcessingTemplateRevisionUpdateToOneWithWhereWithoutEditorialRevisionsInput, Prisma.ProcessingTemplateRevisionUpdateWithoutEditorialRevisionsInput>, Prisma.ProcessingTemplateRevisionUncheckedUpdateWithoutEditorialRevisionsInput>
 }
 
+export type ProcessingTemplateRevisionCreateNestedOneWithoutEditorialApprovalsInput = {
+  create?: Prisma.XOR<Prisma.ProcessingTemplateRevisionCreateWithoutEditorialApprovalsInput, Prisma.ProcessingTemplateRevisionUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.ProcessingTemplateRevisionCreateOrConnectWithoutEditorialApprovalsInput
+  connect?: Prisma.ProcessingTemplateRevisionWhereUniqueInput
+}
+
+export type ProcessingTemplateRevisionUpdateOneRequiredWithoutEditorialApprovalsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProcessingTemplateRevisionCreateWithoutEditorialApprovalsInput, Prisma.ProcessingTemplateRevisionUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.ProcessingTemplateRevisionCreateOrConnectWithoutEditorialApprovalsInput
+  upsert?: Prisma.ProcessingTemplateRevisionUpsertWithoutEditorialApprovalsInput
+  connect?: Prisma.ProcessingTemplateRevisionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProcessingTemplateRevisionUpdateToOneWithWhereWithoutEditorialApprovalsInput, Prisma.ProcessingTemplateRevisionUpdateWithoutEditorialApprovalsInput>, Prisma.ProcessingTemplateRevisionUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
 export type ProcessingTemplateRevisionCreateWithoutTemplateInput = {
   id: string
   revision: number
@@ -464,6 +485,7 @@ export type ProcessingTemplateRevisionCreateWithoutTemplateInput = {
   configurationVersion?: string
   createdAt?: Date | string
   editorialRevisions?: Prisma.EditorialPackageRevisionCreateNestedManyWithoutProcessingTemplateRevisionInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProcessingTemplateRevisionInput
 }
 
 export type ProcessingTemplateRevisionUncheckedCreateWithoutTemplateInput = {
@@ -473,6 +495,7 @@ export type ProcessingTemplateRevisionUncheckedCreateWithoutTemplateInput = {
   configurationVersion?: string
   createdAt?: Date | string
   editorialRevisions?: Prisma.EditorialPackageRevisionUncheckedCreateNestedManyWithoutProcessingTemplateRevisionInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProcessingTemplateRevisionInput
 }
 
 export type ProcessingTemplateRevisionCreateOrConnectWithoutTemplateInput = {
@@ -520,6 +543,7 @@ export type ProcessingTemplateRevisionCreateWithoutEditorialRevisionsInput = {
   configurationVersion?: string
   createdAt?: Date | string
   template: Prisma.ProcessingTemplateCreateNestedOneWithoutRevisionsInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProcessingTemplateRevisionInput
 }
 
 export type ProcessingTemplateRevisionUncheckedCreateWithoutEditorialRevisionsInput = {
@@ -529,6 +553,7 @@ export type ProcessingTemplateRevisionUncheckedCreateWithoutEditorialRevisionsIn
   name: string
   configurationVersion?: string
   createdAt?: Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProcessingTemplateRevisionInput
 }
 
 export type ProcessingTemplateRevisionCreateOrConnectWithoutEditorialRevisionsInput = {
@@ -554,6 +579,7 @@ export type ProcessingTemplateRevisionUpdateWithoutEditorialRevisionsInput = {
   configurationVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   template?: Prisma.ProcessingTemplateUpdateOneRequiredWithoutRevisionsNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProcessingTemplateRevisionNestedInput
 }
 
 export type ProcessingTemplateRevisionUncheckedUpdateWithoutEditorialRevisionsInput = {
@@ -563,6 +589,63 @@ export type ProcessingTemplateRevisionUncheckedUpdateWithoutEditorialRevisionsIn
   name?: Prisma.StringFieldUpdateOperationsInput | string
   configurationVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProcessingTemplateRevisionNestedInput
+}
+
+export type ProcessingTemplateRevisionCreateWithoutEditorialApprovalsInput = {
+  id: string
+  revision: number
+  name: string
+  configurationVersion?: string
+  createdAt?: Date | string
+  template: Prisma.ProcessingTemplateCreateNestedOneWithoutRevisionsInput
+  editorialRevisions?: Prisma.EditorialPackageRevisionCreateNestedManyWithoutProcessingTemplateRevisionInput
+}
+
+export type ProcessingTemplateRevisionUncheckedCreateWithoutEditorialApprovalsInput = {
+  id: string
+  templateId: string
+  revision: number
+  name: string
+  configurationVersion?: string
+  createdAt?: Date | string
+  editorialRevisions?: Prisma.EditorialPackageRevisionUncheckedCreateNestedManyWithoutProcessingTemplateRevisionInput
+}
+
+export type ProcessingTemplateRevisionCreateOrConnectWithoutEditorialApprovalsInput = {
+  where: Prisma.ProcessingTemplateRevisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProcessingTemplateRevisionCreateWithoutEditorialApprovalsInput, Prisma.ProcessingTemplateRevisionUncheckedCreateWithoutEditorialApprovalsInput>
+}
+
+export type ProcessingTemplateRevisionUpsertWithoutEditorialApprovalsInput = {
+  update: Prisma.XOR<Prisma.ProcessingTemplateRevisionUpdateWithoutEditorialApprovalsInput, Prisma.ProcessingTemplateRevisionUncheckedUpdateWithoutEditorialApprovalsInput>
+  create: Prisma.XOR<Prisma.ProcessingTemplateRevisionCreateWithoutEditorialApprovalsInput, Prisma.ProcessingTemplateRevisionUncheckedCreateWithoutEditorialApprovalsInput>
+  where?: Prisma.ProcessingTemplateRevisionWhereInput
+}
+
+export type ProcessingTemplateRevisionUpdateToOneWithWhereWithoutEditorialApprovalsInput = {
+  where?: Prisma.ProcessingTemplateRevisionWhereInput
+  data: Prisma.XOR<Prisma.ProcessingTemplateRevisionUpdateWithoutEditorialApprovalsInput, Prisma.ProcessingTemplateRevisionUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
+export type ProcessingTemplateRevisionUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  configurationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  template?: Prisma.ProcessingTemplateUpdateOneRequiredWithoutRevisionsNestedInput
+  editorialRevisions?: Prisma.EditorialPackageRevisionUpdateManyWithoutProcessingTemplateRevisionNestedInput
+}
+
+export type ProcessingTemplateRevisionUncheckedUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  templateId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  configurationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialRevisions?: Prisma.EditorialPackageRevisionUncheckedUpdateManyWithoutProcessingTemplateRevisionNestedInput
 }
 
 export type ProcessingTemplateRevisionCreateManyTemplateInput = {
@@ -580,6 +663,7 @@ export type ProcessingTemplateRevisionUpdateWithoutTemplateInput = {
   configurationVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   editorialRevisions?: Prisma.EditorialPackageRevisionUpdateManyWithoutProcessingTemplateRevisionNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProcessingTemplateRevisionNestedInput
 }
 
 export type ProcessingTemplateRevisionUncheckedUpdateWithoutTemplateInput = {
@@ -589,6 +673,7 @@ export type ProcessingTemplateRevisionUncheckedUpdateWithoutTemplateInput = {
   configurationVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   editorialRevisions?: Prisma.EditorialPackageRevisionUncheckedUpdateManyWithoutProcessingTemplateRevisionNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProcessingTemplateRevisionNestedInput
 }
 
 export type ProcessingTemplateRevisionUncheckedUpdateManyWithoutTemplateInput = {
@@ -606,10 +691,12 @@ export type ProcessingTemplateRevisionUncheckedUpdateManyWithoutTemplateInput = 
 
 export type ProcessingTemplateRevisionCountOutputType = {
   editorialRevisions: number
+  editorialApprovals: number
 }
 
 export type ProcessingTemplateRevisionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   editorialRevisions?: boolean | ProcessingTemplateRevisionCountOutputTypeCountEditorialRevisionsArgs
+  editorialApprovals?: boolean | ProcessingTemplateRevisionCountOutputTypeCountEditorialApprovalsArgs
 }
 
 /**
@@ -629,6 +716,13 @@ export type ProcessingTemplateRevisionCountOutputTypeCountEditorialRevisionsArgs
   where?: Prisma.EditorialPackageRevisionWhereInput
 }
 
+/**
+ * ProcessingTemplateRevisionCountOutputType without action
+ */
+export type ProcessingTemplateRevisionCountOutputTypeCountEditorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalWhereInput
+}
+
 
 export type ProcessingTemplateRevisionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -639,6 +733,7 @@ export type ProcessingTemplateRevisionSelect<ExtArgs extends runtime.Types.Exten
   createdAt?: boolean
   template?: boolean | Prisma.ProcessingTemplateDefaultArgs<ExtArgs>
   editorialRevisions?: boolean | Prisma.ProcessingTemplateRevision$editorialRevisionsArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.ProcessingTemplateRevision$editorialApprovalsArgs<ExtArgs>
   _count?: boolean | Prisma.ProcessingTemplateRevisionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["processingTemplateRevision"]>
 
@@ -675,6 +770,7 @@ export type ProcessingTemplateRevisionOmit<ExtArgs extends runtime.Types.Extensi
 export type ProcessingTemplateRevisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   template?: boolean | Prisma.ProcessingTemplateDefaultArgs<ExtArgs>
   editorialRevisions?: boolean | Prisma.ProcessingTemplateRevision$editorialRevisionsArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.ProcessingTemplateRevision$editorialApprovalsArgs<ExtArgs>
   _count?: boolean | Prisma.ProcessingTemplateRevisionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProcessingTemplateRevisionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -689,6 +785,7 @@ export type $ProcessingTemplateRevisionPayload<ExtArgs extends runtime.Types.Ext
   objects: {
     template: Prisma.$ProcessingTemplatePayload<ExtArgs>
     editorialRevisions: Prisma.$EditorialPackageRevisionPayload<ExtArgs>[]
+    editorialApprovals: Prisma.$EditorialApprovalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1093,6 +1190,7 @@ export interface Prisma__ProcessingTemplateRevisionClient<T, Null = never, ExtAr
   readonly [Symbol.toStringTag]: "PrismaPromise"
   template<T extends Prisma.ProcessingTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProcessingTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__ProcessingTemplateClient<runtime.Types.Result.GetResult<Prisma.$ProcessingTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   editorialRevisions<T extends Prisma.ProcessingTemplateRevision$editorialRevisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProcessingTemplateRevision$editorialRevisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialPackageRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  editorialApprovals<T extends Prisma.ProcessingTemplateRevision$editorialApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProcessingTemplateRevision$editorialApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1550,6 +1648,30 @@ export type ProcessingTemplateRevision$editorialRevisionsArgs<ExtArgs extends ru
   take?: number
   skip?: number
   distinct?: Prisma.EditorialPackageRevisionScalarFieldEnum | Prisma.EditorialPackageRevisionScalarFieldEnum[]
+}
+
+/**
+ * ProcessingTemplateRevision.editorialApprovals
+ */
+export type ProcessingTemplateRevision$editorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApproval
+   */
+  select?: Prisma.EditorialApprovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApproval
+   */
+  omit?: Prisma.EditorialApprovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalWhereInput
+  orderBy?: Prisma.EditorialApprovalOrderByWithRelationInput | Prisma.EditorialApprovalOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalScalarFieldEnum | Prisma.EditorialApprovalScalarFieldEnum[]
 }
 
 /**

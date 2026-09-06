@@ -52,6 +52,7 @@ const API_ENVIRONMENT_KEYS = [
   "MEDIA_QUEUE_NAME",
   "MEDIA_QUEUE_DISABLED",
   "ASSEMBLY_RENDER_ENABLED",
+  "EDITORIAL_APPROVAL_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -161,6 +162,7 @@ export interface ApiEnvironment {
   mediaQueueName: string;
   mediaQueueDisabled: boolean;
   assemblyRenderEnabled: boolean;
+  editorialApprovalEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -233,6 +235,10 @@ export function apiEnvironment(): ApiEnvironment {
     assemblyRenderEnabled:
       process.env.ASSEMBLY_RENDER_ENABLED === "1" ||
       (process.env.ASSEMBLY_RENDER_ENABLED === undefined &&
+        authorization.deploymentProfile === "local"),
+    editorialApprovalEnabled:
+      process.env.EDITORIAL_APPROVAL_ENABLED === "1" ||
+      (process.env.EDITORIAL_APPROVAL_ENABLED === undefined &&
         authorization.deploymentProfile === "local"),
   };
 }

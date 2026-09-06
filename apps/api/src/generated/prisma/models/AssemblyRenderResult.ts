@@ -370,6 +370,7 @@ export type AssemblyRenderResultWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"AssemblyRenderResult"> | Date | string
   renderIntent?: Prisma.XOR<Prisma.AssemblyRenderIntentScalarRelationFilter, Prisma.AssemblyRenderIntentWhereInput>
   artifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
 }
 
 export type AssemblyRenderResultOrderByWithRelationInput = {
@@ -395,12 +396,14 @@ export type AssemblyRenderResultOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   renderIntent?: Prisma.AssemblyRenderIntentOrderByWithRelationInput
   artifact?: Prisma.MediaArtifactOrderByWithRelationInput
+  editorialApprovals?: Prisma.EditorialApprovalOrderByRelationAggregateInput
 }
 
 export type AssemblyRenderResultWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   renderIntentId?: string
   artifactId?: string
+  id_renderIntentId_artifactId?: Prisma.AssemblyRenderResultIdRenderIntentIdArtifactIdCompoundUniqueInput
   AND?: Prisma.AssemblyRenderResultWhereInput | Prisma.AssemblyRenderResultWhereInput[]
   OR?: Prisma.AssemblyRenderResultWhereInput[]
   NOT?: Prisma.AssemblyRenderResultWhereInput | Prisma.AssemblyRenderResultWhereInput[]
@@ -423,7 +426,8 @@ export type AssemblyRenderResultWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"AssemblyRenderResult"> | Date | string
   renderIntent?: Prisma.XOR<Prisma.AssemblyRenderIntentScalarRelationFilter, Prisma.AssemblyRenderIntentWhereInput>
   artifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
-}, "id" | "renderIntentId" | "artifactId">
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
+}, "id" | "renderIntentId" | "artifactId" | "id_renderIntentId_artifactId">
 
 export type AssemblyRenderResultOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -500,6 +504,7 @@ export type AssemblyRenderResultCreateInput = {
   createdAt?: Date | string
   renderIntent: Prisma.AssemblyRenderIntentCreateNestedOneWithoutResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutAssemblyRenderResultInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutAssemblyRenderResultInput
 }
 
 export type AssemblyRenderResultUncheckedCreateInput = {
@@ -523,6 +528,7 @@ export type AssemblyRenderResultUncheckedCreateInput = {
   normalizationProfileResult: string
   completedAt: Date | string
   createdAt?: Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutAssemblyRenderResultInput
 }
 
 export type AssemblyRenderResultUpdateInput = {
@@ -546,6 +552,7 @@ export type AssemblyRenderResultUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   renderIntent?: Prisma.AssemblyRenderIntentUpdateOneRequiredWithoutResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutAssemblyRenderResultNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutAssemblyRenderResultNestedInput
 }
 
 export type AssemblyRenderResultUncheckedUpdateInput = {
@@ -569,6 +576,7 @@ export type AssemblyRenderResultUncheckedUpdateInput = {
   normalizationProfileResult?: Prisma.StringFieldUpdateOperationsInput | string
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutAssemblyRenderResultNestedInput
 }
 
 export type AssemblyRenderResultCreateManyInput = {
@@ -641,6 +649,12 @@ export type AssemblyRenderResultUncheckedUpdateManyInput = {
 export type AssemblyRenderResultNullableScalarRelationFilter = {
   is?: Prisma.AssemblyRenderResultWhereInput | null
   isNot?: Prisma.AssemblyRenderResultWhereInput | null
+}
+
+export type AssemblyRenderResultIdRenderIntentIdArtifactIdCompoundUniqueInput = {
+  id: string
+  renderIntentId: string
+  artifactId: string
 }
 
 export type AssemblyRenderResultCountOrderByAggregateInput = {
@@ -736,6 +750,11 @@ export type AssemblyRenderResultSumOrderByAggregateInput = {
   truePeakDbtp?: Prisma.SortOrder
 }
 
+export type AssemblyRenderResultScalarRelationFilter = {
+  is?: Prisma.AssemblyRenderResultWhereInput
+  isNot?: Prisma.AssemblyRenderResultWhereInput
+}
+
 export type AssemblyRenderResultCreateNestedOneWithoutArtifactInput = {
   create?: Prisma.XOR<Prisma.AssemblyRenderResultCreateWithoutArtifactInput, Prisma.AssemblyRenderResultUncheckedCreateWithoutArtifactInput>
   connectOrCreate?: Prisma.AssemblyRenderResultCreateOrConnectWithoutArtifactInput
@@ -808,6 +827,20 @@ export type NullableFloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type AssemblyRenderResultCreateNestedOneWithoutEditorialApprovalsInput = {
+  create?: Prisma.XOR<Prisma.AssemblyRenderResultCreateWithoutEditorialApprovalsInput, Prisma.AssemblyRenderResultUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.AssemblyRenderResultCreateOrConnectWithoutEditorialApprovalsInput
+  connect?: Prisma.AssemblyRenderResultWhereUniqueInput
+}
+
+export type AssemblyRenderResultUpdateOneRequiredWithoutEditorialApprovalsNestedInput = {
+  create?: Prisma.XOR<Prisma.AssemblyRenderResultCreateWithoutEditorialApprovalsInput, Prisma.AssemblyRenderResultUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.AssemblyRenderResultCreateOrConnectWithoutEditorialApprovalsInput
+  upsert?: Prisma.AssemblyRenderResultUpsertWithoutEditorialApprovalsInput
+  connect?: Prisma.AssemblyRenderResultWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AssemblyRenderResultUpdateToOneWithWhereWithoutEditorialApprovalsInput, Prisma.AssemblyRenderResultUpdateWithoutEditorialApprovalsInput>, Prisma.AssemblyRenderResultUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
 export type AssemblyRenderResultCreateWithoutArtifactInput = {
   id: string
   durationMs: number
@@ -828,6 +861,7 @@ export type AssemblyRenderResultCreateWithoutArtifactInput = {
   completedAt: Date | string
   createdAt?: Date | string
   renderIntent: Prisma.AssemblyRenderIntentCreateNestedOneWithoutResultInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutAssemblyRenderResultInput
 }
 
 export type AssemblyRenderResultUncheckedCreateWithoutArtifactInput = {
@@ -850,6 +884,7 @@ export type AssemblyRenderResultUncheckedCreateWithoutArtifactInput = {
   normalizationProfileResult: string
   completedAt: Date | string
   createdAt?: Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutAssemblyRenderResultInput
 }
 
 export type AssemblyRenderResultCreateOrConnectWithoutArtifactInput = {
@@ -888,6 +923,7 @@ export type AssemblyRenderResultUpdateWithoutArtifactInput = {
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   renderIntent?: Prisma.AssemblyRenderIntentUpdateOneRequiredWithoutResultNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutAssemblyRenderResultNestedInput
 }
 
 export type AssemblyRenderResultUncheckedUpdateWithoutArtifactInput = {
@@ -910,6 +946,7 @@ export type AssemblyRenderResultUncheckedUpdateWithoutArtifactInput = {
   normalizationProfileResult?: Prisma.StringFieldUpdateOperationsInput | string
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutAssemblyRenderResultNestedInput
 }
 
 export type AssemblyRenderResultCreateWithoutRenderIntentInput = {
@@ -932,6 +969,7 @@ export type AssemblyRenderResultCreateWithoutRenderIntentInput = {
   completedAt: Date | string
   createdAt?: Date | string
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutAssemblyRenderResultInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutAssemblyRenderResultInput
 }
 
 export type AssemblyRenderResultUncheckedCreateWithoutRenderIntentInput = {
@@ -954,6 +992,7 @@ export type AssemblyRenderResultUncheckedCreateWithoutRenderIntentInput = {
   normalizationProfileResult: string
   completedAt: Date | string
   createdAt?: Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutAssemblyRenderResultInput
 }
 
 export type AssemblyRenderResultCreateOrConnectWithoutRenderIntentInput = {
@@ -992,6 +1031,7 @@ export type AssemblyRenderResultUpdateWithoutRenderIntentInput = {
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutAssemblyRenderResultNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutAssemblyRenderResultNestedInput
 }
 
 export type AssemblyRenderResultUncheckedUpdateWithoutRenderIntentInput = {
@@ -1014,8 +1054,146 @@ export type AssemblyRenderResultUncheckedUpdateWithoutRenderIntentInput = {
   normalizationProfileResult?: Prisma.StringFieldUpdateOperationsInput | string
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutAssemblyRenderResultNestedInput
 }
 
+export type AssemblyRenderResultCreateWithoutEditorialApprovalsInput = {
+  id: string
+  durationMs: number
+  width: number
+  height: number
+  fpsNumerator: number
+  fpsDenominator: number
+  videoCodec: string
+  pixelFormat: string
+  audioCodec: string
+  audioSampleRate: number
+  audioChannels: number
+  ffmpegVersion: string
+  ffprobeVersion: string
+  integratedLoudnessLufs?: number | null
+  truePeakDbtp?: number | null
+  normalizationProfileResult: string
+  completedAt: Date | string
+  createdAt?: Date | string
+  renderIntent: Prisma.AssemblyRenderIntentCreateNestedOneWithoutResultInput
+  artifact: Prisma.MediaArtifactCreateNestedOneWithoutAssemblyRenderResultInput
+}
+
+export type AssemblyRenderResultUncheckedCreateWithoutEditorialApprovalsInput = {
+  id: string
+  renderIntentId: string
+  artifactId: string
+  durationMs: number
+  width: number
+  height: number
+  fpsNumerator: number
+  fpsDenominator: number
+  videoCodec: string
+  pixelFormat: string
+  audioCodec: string
+  audioSampleRate: number
+  audioChannels: number
+  ffmpegVersion: string
+  ffprobeVersion: string
+  integratedLoudnessLufs?: number | null
+  truePeakDbtp?: number | null
+  normalizationProfileResult: string
+  completedAt: Date | string
+  createdAt?: Date | string
+}
+
+export type AssemblyRenderResultCreateOrConnectWithoutEditorialApprovalsInput = {
+  where: Prisma.AssemblyRenderResultWhereUniqueInput
+  create: Prisma.XOR<Prisma.AssemblyRenderResultCreateWithoutEditorialApprovalsInput, Prisma.AssemblyRenderResultUncheckedCreateWithoutEditorialApprovalsInput>
+}
+
+export type AssemblyRenderResultUpsertWithoutEditorialApprovalsInput = {
+  update: Prisma.XOR<Prisma.AssemblyRenderResultUpdateWithoutEditorialApprovalsInput, Prisma.AssemblyRenderResultUncheckedUpdateWithoutEditorialApprovalsInput>
+  create: Prisma.XOR<Prisma.AssemblyRenderResultCreateWithoutEditorialApprovalsInput, Prisma.AssemblyRenderResultUncheckedCreateWithoutEditorialApprovalsInput>
+  where?: Prisma.AssemblyRenderResultWhereInput
+}
+
+export type AssemblyRenderResultUpdateToOneWithWhereWithoutEditorialApprovalsInput = {
+  where?: Prisma.AssemblyRenderResultWhereInput
+  data: Prisma.XOR<Prisma.AssemblyRenderResultUpdateWithoutEditorialApprovalsInput, Prisma.AssemblyRenderResultUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
+export type AssemblyRenderResultUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  fpsNumerator?: Prisma.IntFieldUpdateOperationsInput | number
+  fpsDenominator?: Prisma.IntFieldUpdateOperationsInput | number
+  videoCodec?: Prisma.StringFieldUpdateOperationsInput | string
+  pixelFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  audioCodec?: Prisma.StringFieldUpdateOperationsInput | string
+  audioSampleRate?: Prisma.IntFieldUpdateOperationsInput | number
+  audioChannels?: Prisma.IntFieldUpdateOperationsInput | number
+  ffmpegVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffprobeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  integratedLoudnessLufs?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  truePeakDbtp?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  normalizationProfileResult?: Prisma.StringFieldUpdateOperationsInput | string
+  completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  renderIntent?: Prisma.AssemblyRenderIntentUpdateOneRequiredWithoutResultNestedInput
+  artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutAssemblyRenderResultNestedInput
+}
+
+export type AssemblyRenderResultUncheckedUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  renderIntentId?: Prisma.StringFieldUpdateOperationsInput | string
+  artifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  fpsNumerator?: Prisma.IntFieldUpdateOperationsInput | number
+  fpsDenominator?: Prisma.IntFieldUpdateOperationsInput | number
+  videoCodec?: Prisma.StringFieldUpdateOperationsInput | string
+  pixelFormat?: Prisma.StringFieldUpdateOperationsInput | string
+  audioCodec?: Prisma.StringFieldUpdateOperationsInput | string
+  audioSampleRate?: Prisma.IntFieldUpdateOperationsInput | number
+  audioChannels?: Prisma.IntFieldUpdateOperationsInput | number
+  ffmpegVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffprobeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  integratedLoudnessLufs?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  truePeakDbtp?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  normalizationProfileResult?: Prisma.StringFieldUpdateOperationsInput | string
+  completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type AssemblyRenderResultCountOutputType
+ */
+
+export type AssemblyRenderResultCountOutputType = {
+  editorialApprovals: number
+}
+
+export type AssemblyRenderResultCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  editorialApprovals?: boolean | AssemblyRenderResultCountOutputTypeCountEditorialApprovalsArgs
+}
+
+/**
+ * AssemblyRenderResultCountOutputType without action
+ */
+export type AssemblyRenderResultCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssemblyRenderResultCountOutputType
+   */
+  select?: Prisma.AssemblyRenderResultCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * AssemblyRenderResultCountOutputType without action
+ */
+export type AssemblyRenderResultCountOutputTypeCountEditorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalWhereInput
+}
 
 
 export type AssemblyRenderResultSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1041,6 +1219,8 @@ export type AssemblyRenderResultSelect<ExtArgs extends runtime.Types.Extensions.
   createdAt?: boolean
   renderIntent?: boolean | Prisma.AssemblyRenderIntentDefaultArgs<ExtArgs>
   artifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.AssemblyRenderResult$editorialApprovalsArgs<ExtArgs>
+  _count?: boolean | Prisma.AssemblyRenderResultCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["assemblyRenderResult"]>
 
 export type AssemblyRenderResultSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1120,6 +1300,8 @@ export type AssemblyRenderResultOmit<ExtArgs extends runtime.Types.Extensions.In
 export type AssemblyRenderResultInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   renderIntent?: boolean | Prisma.AssemblyRenderIntentDefaultArgs<ExtArgs>
   artifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.AssemblyRenderResult$editorialApprovalsArgs<ExtArgs>
+  _count?: boolean | Prisma.AssemblyRenderResultCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AssemblyRenderResultIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   renderIntent?: boolean | Prisma.AssemblyRenderIntentDefaultArgs<ExtArgs>
@@ -1135,6 +1317,7 @@ export type $AssemblyRenderResultPayload<ExtArgs extends runtime.Types.Extension
   objects: {
     renderIntent: Prisma.$AssemblyRenderIntentPayload<ExtArgs>
     artifact: Prisma.$MediaArtifactPayload<ExtArgs>
+    editorialApprovals: Prisma.$EditorialApprovalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1553,6 +1736,7 @@ export interface Prisma__AssemblyRenderResultClient<T, Null = never, ExtArgs ext
   readonly [Symbol.toStringTag]: "PrismaPromise"
   renderIntent<T extends Prisma.AssemblyRenderIntentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AssemblyRenderIntentDefaultArgs<ExtArgs>>): Prisma.Prisma__AssemblyRenderIntentClient<runtime.Types.Result.GetResult<Prisma.$AssemblyRenderIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   artifact<T extends Prisma.MediaArtifactDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifactDefaultArgs<ExtArgs>>): Prisma.Prisma__MediaArtifactClient<runtime.Types.Result.GetResult<Prisma.$MediaArtifactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  editorialApprovals<T extends Prisma.AssemblyRenderResult$editorialApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AssemblyRenderResult$editorialApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2000,6 +2184,30 @@ export type AssemblyRenderResultDeleteManyArgs<ExtArgs extends runtime.Types.Ext
    * Limit how many AssemblyRenderResults to delete.
    */
   limit?: number
+}
+
+/**
+ * AssemblyRenderResult.editorialApprovals
+ */
+export type AssemblyRenderResult$editorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApproval
+   */
+  select?: Prisma.EditorialApprovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApproval
+   */
+  omit?: Prisma.EditorialApprovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalWhereInput
+  orderBy?: Prisma.EditorialApprovalOrderByWithRelationInput | Prisma.EditorialApprovalOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalScalarFieldEnum | Prisma.EditorialApprovalScalarFieldEnum[]
 }
 
 /**

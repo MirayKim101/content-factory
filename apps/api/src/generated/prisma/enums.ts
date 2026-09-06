@@ -170,3 +170,11 @@ export const EditorialAssetStatus = {
 } as const
 
 export type EditorialAssetStatus = (typeof EditorialAssetStatus)[keyof typeof EditorialAssetStatus]
+
+
+export const EditorialOperationType = {
+  CREATE_EDITORIAL_APPROVAL: 'CREATE_EDITORIAL_APPROVAL',
+  CREATE_EDITORIAL_EXPORT: 'CREATE_EDITORIAL_EXPORT'
+} as const
+
+export type EditorialOperationType = (typeof EditorialOperationType)[keyof typeof EditorialOperationType]

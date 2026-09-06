@@ -118,6 +118,21 @@ export type EditorialPackageRevision = Prisma.EditorialPackageRevisionModel
  */
 export type EditorialMutationRequest = Prisma.EditorialMutationRequestModel
 /**
+ * Model EditorialApproval
+ *
+ */
+export type EditorialApproval = Prisma.EditorialApprovalModel
+/**
+ * Model EditorialApprovalMetrics
+ *
+ */
+export type EditorialApprovalMetrics = Prisma.EditorialApprovalMetricsModel
+/**
+ * Model EditorialOperationRequest
+ *
+ */
+export type EditorialOperationRequest = Prisma.EditorialOperationRequestModel
+/**
  * Model CutSegment
  *
  */

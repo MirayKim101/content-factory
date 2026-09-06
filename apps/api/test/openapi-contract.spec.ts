@@ -64,6 +64,11 @@ describe("authoritative OpenAPI export", () => {
             requestBody?: unknown;
             responses?: Record<string, unknown>;
           };
+          post?: {
+            parameters?: unknown[];
+            requestBody?: unknown;
+            responses?: Record<string, unknown>;
+          };
         }
       >;
     };
@@ -86,6 +91,9 @@ describe("authoritative OpenAPI export", () => {
           SaveAssemblyRecipeDto: {},
           AssemblyRenderResponseDto: {},
           CreateAssemblyRenderDto: {},
+          EditorialReviewResponseDto: {},
+          EditorialApprovalResponseDto: {},
+          CreateEditorialApprovalDto: {},
         },
       },
     });
@@ -310,6 +318,73 @@ describe("authoritative OpenAPI export", () => {
       document.paths["/api/v1/projects/{projectId}/assembly-renders"]?.get,
     ).toMatchObject({
       responses: { "200": {} },
+    });
+    expect(
+      document.paths["/api/v1/pipeline-jobs/{cutJobId}/editorial-review"]?.get,
+    ).toMatchObject({
+      responses: { "200": {}, "404": {}, "409": {} },
+    });
+    expect(
+      document.paths["/api/v1/assembly-renders/{renderId}/editorial-approvals"]
+        ?.post,
+    ).toMatchObject({
+      parameters: expect.arrayContaining([
+        expect.objectContaining({
+          in: "header",
+          name: "Idempotency-Key",
+          required: true,
+        }),
+        expect.objectContaining({
+          in: "path",
+          name: "renderId",
+          required: true,
+        }),
+      ]),
+      requestBody: {
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/CreateEditorialApprovalDto",
+            },
+          },
+        },
+      },
+      responses: {
+        "201": {},
+        "400": {},
+        "403": {},
+        "404": {},
+        "409": {},
+        "503": {},
+      },
+    });
+    expect(
+      document.paths["/api/v1/projects/{projectId}/editorial-approvals"]?.get,
+    ).toMatchObject({ responses: { "200": {}, "400": {}, "404": {} } });
+    expect(document).toMatchObject({
+      components: {
+        schemas: {
+          CreateEditorialApprovalDto: {
+            required: [
+              "editorialRevision",
+              "candidateFingerprint",
+              "manualAttentionMs",
+              "attentionMeasurementVersion",
+            ],
+            properties: {
+              candidateFingerprint: { pattern: "^[a-f0-9]{64}$" },
+              manualAttentionMs: {
+                type: "integer",
+                minimum: 0,
+                maximum: 28_800_000,
+              },
+              attentionMeasurementVersion: {
+                enum: ["foreground-preview-v1"],
+              },
+            },
+          },
+        },
+      },
     });
     expect(document).toMatchObject({
       components: {

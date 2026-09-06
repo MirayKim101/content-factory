@@ -383,6 +383,7 @@ export type MediaArtifactWhereInput = {
   assemblyRecipe?: Prisma.XOR<Prisma.AssemblyRecipeNullableScalarRelationFilter, Prisma.AssemblyRecipeWhereInput> | null
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentListRelationFilter
   assemblyRenderResult?: Prisma.XOR<Prisma.AssemblyRenderResultNullableScalarRelationFilter, Prisma.AssemblyRenderResultWhereInput> | null
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
 }
 
 export type MediaArtifactOrderByWithRelationInput = {
@@ -417,6 +418,7 @@ export type MediaArtifactOrderByWithRelationInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeOrderByWithRelationInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentOrderByRelationAggregateInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultOrderByWithRelationInput
+  editorialApprovals?: Prisma.EditorialApprovalOrderByRelationAggregateInput
 }
 
 export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
@@ -455,6 +457,7 @@ export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
   assemblyRecipe?: Prisma.XOR<Prisma.AssemblyRecipeNullableScalarRelationFilter, Prisma.AssemblyRecipeWhereInput> | null
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentListRelationFilter
   assemblyRenderResult?: Prisma.XOR<Prisma.AssemblyRenderResultNullableScalarRelationFilter, Prisma.AssemblyRenderResultWhereInput> | null
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
 }, "id" | "objectKey" | "pipelineJobId" | "id_projectId_lineageSourceId_lineageSourceVersion_pipelineJobId">
 
 export type MediaArtifactOrderByWithAggregationInput = {
@@ -548,6 +551,7 @@ export type MediaArtifactCreateInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateInput = {
@@ -579,6 +583,7 @@ export type MediaArtifactUncheckedCreateInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUpdateInput = {
@@ -610,6 +615,7 @@ export type MediaArtifactUpdateInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateInput = {
@@ -641,6 +647,7 @@ export type MediaArtifactUncheckedUpdateInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactCreateManyInput = {
@@ -1026,6 +1033,20 @@ export type MediaArtifactUpdateOneRequiredWithoutEditorialPackageNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutEditorialPackageInput, Prisma.MediaArtifactUpdateWithoutEditorialPackageInput>, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialPackageInput>
 }
 
+export type MediaArtifactCreateNestedOneWithoutEditorialApprovalsInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialApprovalsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutEditorialApprovalsNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialApprovalsInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutEditorialApprovalsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutEditorialApprovalsInput, Prisma.MediaArtifactUpdateWithoutEditorialApprovalsInput>, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
 export type MediaArtifactCreateWithoutProjectInput = {
   id: string
   role: $Enums.MediaArtifactRole
@@ -1054,6 +1075,7 @@ export type MediaArtifactCreateWithoutProjectInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutProjectInput = {
@@ -1084,6 +1106,7 @@ export type MediaArtifactUncheckedCreateWithoutProjectInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutProjectInput = {
@@ -1170,6 +1193,7 @@ export type MediaArtifactCreateWithoutSourceInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutSourceInput = {
@@ -1200,6 +1224,7 @@ export type MediaArtifactUncheckedCreateWithoutSourceInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutSourceInput = {
@@ -1256,6 +1281,7 @@ export type MediaArtifactCreateWithoutPipelineJobInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutPipelineJobInput = {
@@ -1286,6 +1312,7 @@ export type MediaArtifactUncheckedCreateWithoutPipelineJobInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutPipelineJobInput = {
@@ -1332,6 +1359,7 @@ export type MediaArtifactUpdateWithoutPipelineJobInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutPipelineJobInput = {
@@ -1362,6 +1390,7 @@ export type MediaArtifactUncheckedUpdateWithoutPipelineJobInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactCreateWithoutAssemblyRecipeInput = {
@@ -1392,6 +1421,7 @@ export type MediaArtifactCreateWithoutAssemblyRecipeInput = {
   editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput = {
@@ -1422,6 +1452,7 @@ export type MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput = {
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutAssemblyRecipeInput = {
@@ -1468,6 +1499,7 @@ export type MediaArtifactUpdateWithoutAssemblyRecipeInput = {
   editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutAssemblyRecipeInput = {
@@ -1498,6 +1530,7 @@ export type MediaArtifactUncheckedUpdateWithoutAssemblyRecipeInput = {
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactCreateWithoutAssemblyRenderInputsInput = {
@@ -1528,6 +1561,7 @@ export type MediaArtifactCreateWithoutAssemblyRenderInputsInput = {
   editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput = {
@@ -1558,6 +1592,7 @@ export type MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput = {
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutAssemblyRenderInputsInput = {
@@ -1604,6 +1639,7 @@ export type MediaArtifactUpdateWithoutAssemblyRenderInputsInput = {
   editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderInputsInput = {
@@ -1634,6 +1670,7 @@ export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderInputsInput = {
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactCreateWithoutAssemblyRenderResultInput = {
@@ -1664,6 +1701,7 @@ export type MediaArtifactCreateWithoutAssemblyRenderResultInput = {
   editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput = {
@@ -1694,6 +1732,7 @@ export type MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput = {
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutAssemblyRenderResultInput = {
@@ -1740,6 +1779,7 @@ export type MediaArtifactUpdateWithoutAssemblyRenderResultInput = {
   editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderResultInput = {
@@ -1770,6 +1810,7 @@ export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderResultInput = {
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactCreateWithoutEditorialPackageInput = {
@@ -1800,6 +1841,7 @@ export type MediaArtifactCreateWithoutEditorialPackageInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutEditorialPackageInput = {
@@ -1830,6 +1872,7 @@ export type MediaArtifactUncheckedCreateWithoutEditorialPackageInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutEditorialPackageInput = {
@@ -1876,6 +1919,7 @@ export type MediaArtifactUpdateWithoutEditorialPackageInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutEditorialPackageInput = {
@@ -1903,6 +1947,147 @@ export type MediaArtifactUncheckedUpdateWithoutEditorialPackageInput = {
   outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutEditorialApprovalsInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutEditorialApprovalsInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+}
+
+export type MediaArtifactUpsertWithoutEditorialApprovalsInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutEditorialApprovalsInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
+export type MediaArtifactUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
@@ -1962,6 +2147,7 @@ export type MediaArtifactUpdateWithoutProjectInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
@@ -1992,6 +2178,7 @@ export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateManyWithoutProjectInput = {
@@ -2074,6 +2261,7 @@ export type MediaArtifactUpdateWithoutSourceInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
@@ -2104,6 +2292,7 @@ export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateManyWithoutSourceInput = {
@@ -2139,10 +2328,12 @@ export type MediaArtifactUncheckedUpdateManyWithoutSourceInput = {
 
 export type MediaArtifactCountOutputType = {
   assemblyRenderInputs: number
+  editorialApprovals: number
 }
 
 export type MediaArtifactCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   assemblyRenderInputs?: boolean | MediaArtifactCountOutputTypeCountAssemblyRenderInputsArgs
+  editorialApprovals?: boolean | MediaArtifactCountOutputTypeCountEditorialApprovalsArgs
 }
 
 /**
@@ -2160,6 +2351,13 @@ export type MediaArtifactCountOutputTypeDefaultArgs<ExtArgs extends runtime.Type
  */
 export type MediaArtifactCountOutputTypeCountAssemblyRenderInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.AssemblyRenderIntentWhereInput
+}
+
+/**
+ * MediaArtifactCountOutputType without action
+ */
+export type MediaArtifactCountOutputTypeCountEditorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalWhereInput
 }
 
 
@@ -2195,6 +2393,7 @@ export type MediaArtifactSelect<ExtArgs extends runtime.Types.Extensions.Interna
   assemblyRecipe?: boolean | Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs>
   assemblyRenderInputs?: boolean | Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs>
   assemblyRenderResult?: boolean | Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs>
   _count?: boolean | Prisma.MediaArtifactCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
@@ -2294,6 +2493,7 @@ export type MediaArtifactInclude<ExtArgs extends runtime.Types.Extensions.Intern
   assemblyRecipe?: boolean | Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs>
   assemblyRenderInputs?: boolean | Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs>
   assemblyRenderResult?: boolean | Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs>
   _count?: boolean | Prisma.MediaArtifactCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MediaArtifactIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2317,6 +2517,7 @@ export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.Inter
     assemblyRecipe: Prisma.$AssemblyRecipePayload<ExtArgs> | null
     assemblyRenderInputs: Prisma.$AssemblyRenderIntentPayload<ExtArgs>[]
     assemblyRenderResult: Prisma.$AssemblyRenderResultPayload<ExtArgs> | null
+    editorialApprovals: Prisma.$EditorialApprovalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2744,6 +2945,7 @@ export interface Prisma__MediaArtifactClient<T, Null = never, ExtArgs extends ru
   assemblyRecipe<T extends Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs>>): Prisma.Prisma__AssemblyRecipeClient<runtime.Types.Result.GetResult<Prisma.$AssemblyRecipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   assemblyRenderInputs<T extends Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssemblyRenderIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assemblyRenderResult<T extends Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs>>): Prisma.Prisma__AssemblyRenderResultClient<runtime.Types.Result.GetResult<Prisma.$AssemblyRenderResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  editorialApprovals<T extends Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3295,6 +3497,30 @@ export type MediaArtifact$assemblyRenderResultArgs<ExtArgs extends runtime.Types
    */
   include?: Prisma.AssemblyRenderResultInclude<ExtArgs> | null
   where?: Prisma.AssemblyRenderResultWhereInput
+}
+
+/**
+ * MediaArtifact.editorialApprovals
+ */
+export type MediaArtifact$editorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApproval
+   */
+  select?: Prisma.EditorialApprovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApproval
+   */
+  omit?: Prisma.EditorialApprovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalWhereInput
+  orderBy?: Prisma.EditorialApprovalOrderByWithRelationInput | Prisma.EditorialApprovalOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalScalarFieldEnum | Prisma.EditorialApprovalScalarFieldEnum[]
 }
 
 /**

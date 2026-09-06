@@ -417,6 +417,9 @@ export const ModelName = {
   EditorialPackage: 'EditorialPackage',
   EditorialPackageRevision: 'EditorialPackageRevision',
   EditorialMutationRequest: 'EditorialMutationRequest',
+  EditorialApproval: 'EditorialApproval',
+  EditorialApprovalMetrics: 'EditorialApprovalMetrics',
+  EditorialOperationRequest: 'EditorialOperationRequest',
   CutSegment: 'CutSegment',
   JobAttempt: 'JobAttempt'
 } as const
@@ -434,7 +437,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "cutSegment" | "jobAttempt"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "cutSegment" | "jobAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1918,6 +1921,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EditorialApproval: {
+      payload: Prisma.$EditorialApprovalPayload<ExtArgs>
+      fields: Prisma.EditorialApprovalFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EditorialApprovalFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EditorialApprovalFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>
+        }
+        findFirst: {
+          args: Prisma.EditorialApprovalFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EditorialApprovalFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>
+        }
+        findMany: {
+          args: Prisma.EditorialApprovalFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>[]
+        }
+        create: {
+          args: Prisma.EditorialApprovalCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>
+        }
+        createMany: {
+          args: Prisma.EditorialApprovalCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EditorialApprovalCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>[]
+        }
+        delete: {
+          args: Prisma.EditorialApprovalDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>
+        }
+        update: {
+          args: Prisma.EditorialApprovalUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>
+        }
+        deleteMany: {
+          args: Prisma.EditorialApprovalDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EditorialApprovalUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EditorialApprovalUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>[]
+        }
+        upsert: {
+          args: Prisma.EditorialApprovalUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalPayload>
+        }
+        aggregate: {
+          args: Prisma.EditorialApprovalAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEditorialApproval>
+        }
+        groupBy: {
+          args: Prisma.EditorialApprovalGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialApprovalGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EditorialApprovalCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialApprovalCountAggregateOutputType> | number
+        }
+      }
+    }
+    EditorialApprovalMetrics: {
+      payload: Prisma.$EditorialApprovalMetricsPayload<ExtArgs>
+      fields: Prisma.EditorialApprovalMetricsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EditorialApprovalMetricsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EditorialApprovalMetricsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>
+        }
+        findFirst: {
+          args: Prisma.EditorialApprovalMetricsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EditorialApprovalMetricsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>
+        }
+        findMany: {
+          args: Prisma.EditorialApprovalMetricsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>[]
+        }
+        create: {
+          args: Prisma.EditorialApprovalMetricsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>
+        }
+        createMany: {
+          args: Prisma.EditorialApprovalMetricsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EditorialApprovalMetricsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>[]
+        }
+        delete: {
+          args: Prisma.EditorialApprovalMetricsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>
+        }
+        update: {
+          args: Prisma.EditorialApprovalMetricsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>
+        }
+        deleteMany: {
+          args: Prisma.EditorialApprovalMetricsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EditorialApprovalMetricsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EditorialApprovalMetricsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>[]
+        }
+        upsert: {
+          args: Prisma.EditorialApprovalMetricsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialApprovalMetricsPayload>
+        }
+        aggregate: {
+          args: Prisma.EditorialApprovalMetricsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEditorialApprovalMetrics>
+        }
+        groupBy: {
+          args: Prisma.EditorialApprovalMetricsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialApprovalMetricsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EditorialApprovalMetricsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialApprovalMetricsCountAggregateOutputType> | number
+        }
+      }
+    }
+    EditorialOperationRequest: {
+      payload: Prisma.$EditorialOperationRequestPayload<ExtArgs>
+      fields: Prisma.EditorialOperationRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EditorialOperationRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EditorialOperationRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.EditorialOperationRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EditorialOperationRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>
+        }
+        findMany: {
+          args: Prisma.EditorialOperationRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>[]
+        }
+        create: {
+          args: Prisma.EditorialOperationRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>
+        }
+        createMany: {
+          args: Prisma.EditorialOperationRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EditorialOperationRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.EditorialOperationRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>
+        }
+        update: {
+          args: Prisma.EditorialOperationRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.EditorialOperationRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EditorialOperationRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EditorialOperationRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.EditorialOperationRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialOperationRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.EditorialOperationRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEditorialOperationRequest>
+        }
+        groupBy: {
+          args: Prisma.EditorialOperationRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialOperationRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EditorialOperationRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialOperationRequestCountAggregateOutputType> | number
+        }
+      }
+    }
     CutSegment: {
       payload: Prisma.$CutSegmentPayload<ExtArgs>
       fields: Prisma.CutSegmentFieldRefs
@@ -2506,6 +2731,83 @@ export const EditorialMutationRequestScalarFieldEnum = {
 export type EditorialMutationRequestScalarFieldEnum = (typeof EditorialMutationRequestScalarFieldEnum)[keyof typeof EditorialMutationRequestScalarFieldEnum]
 
 
+export const EditorialApprovalScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  editorialPackageId: 'editorialPackageId',
+  editorialPackageRevisionId: 'editorialPackageRevisionId',
+  editorialRevision: 'editorialRevision',
+  processingTemplateRevisionId: 'processingTemplateRevisionId',
+  thumbnailAssetId: 'thumbnailAssetId',
+  thumbnailSha256: 'thumbnailSha256',
+  thumbnailSizeBytes: 'thumbnailSizeBytes',
+  thumbnailContentType: 'thumbnailContentType',
+  assemblyRecipeId: 'assemblyRecipeId',
+  recipeRevisionId: 'recipeRevisionId',
+  recipeRevision: 'recipeRevision',
+  configurationFingerprint: 'configurationFingerprint',
+  assemblyRenderIntentId: 'assemblyRenderIntentId',
+  assemblyRenderResultId: 'assemblyRenderResultId',
+  renderArtifactId: 'renderArtifactId',
+  renderArtifactSha256: 'renderArtifactSha256',
+  renderArtifactSizeBytes: 'renderArtifactSizeBytes',
+  renderContractVersion: 'renderContractVersion',
+  approvalContractVersion: 'approvalContractVersion',
+  candidateFingerprint: 'candidateFingerprint',
+  approvedAt: 'approvedAt'
+} as const
+
+export type EditorialApprovalScalarFieldEnum = (typeof EditorialApprovalScalarFieldEnum)[keyof typeof EditorialApprovalScalarFieldEnum]
+
+
+export const EditorialApprovalMetricsScalarFieldEnum = {
+  approvalId: 'approvalId',
+  metricsSchemaVersion: 'metricsSchemaVersion',
+  timestampBasisVersion: 'timestampBasisVersion',
+  cutInitialQueueWaitMs: 'cutInitialQueueWaitMs',
+  cutRetryWaitMs: 'cutRetryWaitMs',
+  cutFirstStartToFinishMs: 'cutFirstStartToFinishMs',
+  cutActiveAttemptMs: 'cutActiveAttemptMs',
+  cutAttemptCount: 'cutAttemptCount',
+  cutRetryCount: 'cutRetryCount',
+  assemblyInitialQueueWaitMs: 'assemblyInitialQueueWaitMs',
+  assemblyRetryWaitMs: 'assemblyRetryWaitMs',
+  assemblyFirstStartToFinishMs: 'assemblyFirstStartToFinishMs',
+  assemblyActiveAttemptMs: 'assemblyActiveAttemptMs',
+  assemblyAttemptCount: 'assemblyAttemptCount',
+  assemblyRetryCount: 'assemblyRetryCount',
+  cutToAssemblyReadyElapsedMs: 'cutToAssemblyReadyElapsedMs',
+  outputDurationMs: 'outputDurationMs',
+  outputBytes: 'outputBytes',
+  manualAttentionMs: 'manualAttentionMs',
+  attentionMeasurementVersion: 'attentionMeasurementVersion',
+  directProviderCostMinor: 'directProviderCostMinor',
+  costCurrency: 'costCurrency',
+  costBasisVersion: 'costBasisVersion',
+  incompleteReasons: 'incompleteReasons',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialApprovalMetricsScalarFieldEnum = (typeof EditorialApprovalMetricsScalarFieldEnum)[keyof typeof EditorialApprovalMetricsScalarFieldEnum]
+
+
+export const EditorialOperationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  operation: 'operation',
+  canonicalRequestFingerprint: 'canonicalRequestFingerprint',
+  resolvedProjectId: 'resolvedProjectId',
+  approvalId: 'approvalId',
+  exportIntentId: 'exportIntentId',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialOperationRequestScalarFieldEnum = (typeof EditorialOperationRequestScalarFieldEnum)[keyof typeof EditorialOperationRequestScalarFieldEnum]
+
+
 export const CutSegmentScalarFieldEnum = {
   id: 'id',
   jobId: 'jobId',
@@ -2556,6 +2858,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -2905,6 +3214,20 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'EditorialOperationType'
+ */
+export type EnumEditorialOperationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialOperationType'>
+
+
+
+/**
+ * Reference to a field of type 'EditorialOperationType[]'
+ */
+export type ListEnumEditorialOperationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialOperationType[]'>
+
+
+
+/**
  * Reference to a field of type 'JobAttemptState'
  */
 export type EnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState'>
@@ -3088,6 +3411,9 @@ export type GlobalOmitConfig = {
   editorialPackage?: Prisma.EditorialPackageOmit
   editorialPackageRevision?: Prisma.EditorialPackageRevisionOmit
   editorialMutationRequest?: Prisma.EditorialMutationRequestOmit
+  editorialApproval?: Prisma.EditorialApprovalOmit
+  editorialApprovalMetrics?: Prisma.EditorialApprovalMetricsOmit
+  editorialOperationRequest?: Prisma.EditorialOperationRequestOmit
   cutSegment?: Prisma.CutSegmentOmit
   jobAttempt?: Prisma.JobAttemptOmit
 }

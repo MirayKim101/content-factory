@@ -1,6 +1,105 @@
 {
   "components": {
     "schemas": {
+      "ApprovalJobMetricsResponseDto": {
+        "properties": {
+          "activeAttemptMs": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "attemptCount": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "firstStartToFinishMs": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "initialQueueWaitMs": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "retryCount": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "retryWaitMs": {
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "initialQueueWaitMs",
+          "retryWaitMs",
+          "firstStartToFinishMs",
+          "activeAttemptMs",
+          "attemptCount",
+          "retryCount"
+        ],
+        "type": "object"
+      },
+      "ApprovalProcessingMetricsResponseDto": {
+        "properties": {
+          "assembly": {
+            "$ref": "#/components/schemas/ApprovalJobMetricsResponseDto"
+          },
+          "costBasisVersion": {
+            "enum": ["local-direct-provider-cost-v1"],
+            "type": "string"
+          },
+          "costCurrency": {
+            "enum": ["RUB"],
+            "type": "string"
+          },
+          "cut": {
+            "$ref": "#/components/schemas/ApprovalJobMetricsResponseDto"
+          },
+          "cutToAssemblyReadyElapsedMs": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "directProviderCostMinor": {
+            "enum": [0],
+            "type": "integer"
+          },
+          "incompleteReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "metricsSchemaVersion": {
+            "enum": ["approval-metrics-v1"],
+            "type": "string"
+          },
+          "outputBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "outputDurationMs": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "timestampBasisVersion": {
+            "enum": ["persisted-job-attempt-v1"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "metricsSchemaVersion",
+          "timestampBasisVersion",
+          "cut",
+          "assembly",
+          "cutToAssemblyReadyElapsedMs",
+          "outputDurationMs",
+          "outputBytes",
+          "directProviderCostMinor",
+          "costCurrency",
+          "costBasisVersion",
+          "incompleteReasons"
+        ],
+        "type": "object"
+      },
       "ArtifactResponseDto": {
         "properties": {
           "contentType": {
@@ -853,6 +952,34 @@
         "required": ["requestId", "projectId", "jobs"],
         "type": "object"
       },
+      "CreateEditorialApprovalDto": {
+        "properties": {
+          "attentionMeasurementVersion": {
+            "enum": ["foreground-preview-v1"],
+            "type": "string"
+          },
+          "candidateFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "editorialRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "manualAttentionMs": {
+            "maximum": 28800000,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "editorialRevision",
+          "candidateFingerprint",
+          "manualAttentionMs",
+          "attentionMeasurementVersion"
+        ],
+        "type": "object"
+      },
       "CreateProcessingTemplateDto": {
         "properties": {
           "name": {
@@ -957,6 +1084,249 @@
           }
         },
         "required": ["clientSegmentId", "startMs", "endMs"],
+        "type": "object"
+      },
+      "EditorialApprovalListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EditorialApprovalResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "EditorialApprovalMetricsResponseDto": {
+        "properties": {
+          "assembly": {
+            "$ref": "#/components/schemas/ApprovalJobMetricsResponseDto"
+          },
+          "attentionMeasurementVersion": {
+            "enum": ["foreground-preview-v1"],
+            "type": "string"
+          },
+          "costBasisVersion": {
+            "enum": ["local-direct-provider-cost-v1"],
+            "type": "string"
+          },
+          "costCurrency": {
+            "enum": ["RUB"],
+            "type": "string"
+          },
+          "cut": {
+            "$ref": "#/components/schemas/ApprovalJobMetricsResponseDto"
+          },
+          "cutToAssemblyReadyElapsedMs": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "directProviderCostMinor": {
+            "enum": [0],
+            "type": "integer"
+          },
+          "incompleteReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "manualAttentionMs": {
+            "maximum": 28800000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "metricsSchemaVersion": {
+            "enum": ["approval-metrics-v1"],
+            "type": "string"
+          },
+          "outputBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "outputDurationMs": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "timestampBasisVersion": {
+            "enum": ["persisted-job-attempt-v1"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "metricsSchemaVersion",
+          "timestampBasisVersion",
+          "cut",
+          "assembly",
+          "cutToAssemblyReadyElapsedMs",
+          "outputDurationMs",
+          "outputBytes",
+          "directProviderCostMinor",
+          "costCurrency",
+          "costBasisVersion",
+          "incompleteReasons",
+          "manualAttentionMs",
+          "attentionMeasurementVersion"
+        ],
+        "type": "object"
+      },
+      "EditorialApprovalResponseDto": {
+        "properties": {
+          "approvalContractVersion": {
+            "enum": ["manual-horizontal-approval-v1"],
+            "type": "string"
+          },
+          "approvedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "assemblyRecipeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assemblyRenderIntentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "assemblyRenderResultId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "candidateFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "configurationFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "editorialPackageId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "editorialPackageRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "editorialRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/EditorialApprovalMetricsResponseDto"
+          },
+          "processingTemplateRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipeRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "recipeRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "renderArtifactId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "renderArtifactSha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "renderArtifactSizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "renderContractVersion": {
+            "enum": ["horizontal-render-v1"],
+            "type": "string"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "staleReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "state": {
+            "enum": ["CURRENT", "STALE"],
+            "type": "string"
+          },
+          "thumbnailAssetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "thumbnailContentType": {
+            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "type": "string"
+          },
+          "thumbnailSha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "thumbnailSizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "cutPipelineJobId",
+          "editorialPackageId",
+          "editorialPackageRevisionId",
+          "editorialRevision",
+          "processingTemplateRevisionId",
+          "thumbnailAssetId",
+          "thumbnailSha256",
+          "thumbnailSizeBytes",
+          "thumbnailContentType",
+          "assemblyRecipeId",
+          "recipeRevisionId",
+          "recipeRevision",
+          "configurationFingerprint",
+          "assemblyRenderIntentId",
+          "assemblyRenderResultId",
+          "renderArtifactId",
+          "renderArtifactSha256",
+          "renderArtifactSizeBytes",
+          "renderContractVersion",
+          "approvalContractVersion",
+          "candidateFingerprint",
+          "approvedAt",
+          "state",
+          "staleReasons",
+          "metrics"
+        ],
         "type": "object"
       },
       "EditorialAssetListResponseDto": {
@@ -1110,6 +1480,272 @@
           "validation",
           "createdAt",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "EditorialReviewEditorialResponseDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "packageId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "processingTemplateRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "revisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/EditorialReviewThumbnailResponseDto"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "packageId",
+          "revisionId",
+          "revision",
+          "processingTemplateRevisionId",
+          "title",
+          "description",
+          "tags",
+          "thumbnail"
+        ],
+        "type": "object"
+      },
+      "EditorialReviewRecipeResponseDto": {
+        "properties": {
+          "configurationFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "revisionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revisionId",
+          "revision",
+          "configurationFingerprint"
+        ],
+        "type": "object"
+      },
+      "EditorialReviewRenderResponseDto": {
+        "properties": {
+          "artifactId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "artifactSha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "artifactSizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "contentUrl": {
+            "format": "uri-reference",
+            "type": "string"
+          },
+          "durationMs": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "renderContractVersion": {
+            "enum": ["horizontal-render-v1"],
+            "type": "string"
+          },
+          "resultId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "resultId",
+          "artifactId",
+          "artifactSha256",
+          "artifactSizeBytes",
+          "renderContractVersion",
+          "durationMs",
+          "contentUrl"
+        ],
+        "type": "object"
+      },
+      "EditorialReviewResponseDto": {
+        "properties": {
+          "approvable": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "candidateFingerprint": {
+            "nullable": true,
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "currentApproval": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialApprovalResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutResultArtifactId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "editorial": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialReviewEditorialResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "latestApproval": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialApprovalResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "processingMetrics": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalProcessingMetricsResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipe": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialReviewRecipeResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "render": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialReviewRenderResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "cutPipelineJobId",
+          "cutResultArtifactId",
+          "editorial",
+          "recipe",
+          "render",
+          "candidateFingerprint",
+          "approvable",
+          "blockers",
+          "processingMetrics",
+          "currentApproval",
+          "latestApproval"
+        ],
+        "type": "object"
+      },
+      "EditorialReviewThumbnailResponseDto": {
+        "properties": {
+          "contentType": {
+            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "type": "string"
+          },
+          "contentUrl": {
+            "format": "uri-reference",
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "sizeBytes",
+          "contentType",
+          "filename",
+          "contentUrl"
         ],
         "type": "object"
       },
@@ -2106,6 +2742,60 @@
         "tags": ["editorial-content"]
       }
     },
+    "/api/v1/assembly-renders/{renderId}/editorial-approvals": {
+      "post": {
+        "operationId": "EditorialApprovalController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEditorialApprovalDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialApprovalResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "403": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          },
+          "409": {
+            "description": ""
+          },
+          "503": {
+            "description": ""
+          }
+        },
+        "summary": "Approve one exact editorial and render revision",
+        "tags": ["editorial-content"]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "AppController_health",
@@ -2172,6 +2862,32 @@
           }
         },
         "summary": "Create one exact-revision background horizontal render",
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{cutJobId}/editorial-review": {
+      "get": {
+        "operationId": "EditorialApprovalController_review",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialReviewResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          },
+          "409": {
+            "description": ""
+          }
+        },
+        "summary": "Get one authoritative editorial review candidate",
         "tags": ["editorial-content"]
       }
     },
@@ -3196,6 +3912,31 @@
         },
         "summary": "Atomically create one independent background job per cut segment",
         "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/projects/{projectId}/editorial-approvals": {
+      "get": {
+        "operationId": "EditorialApprovalController_project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialApprovalListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
       }
     },
     "/api/v1/projects/{projectId}/editorial-assets/thumbnails": {

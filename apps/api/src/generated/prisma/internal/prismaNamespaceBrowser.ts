@@ -71,6 +71,9 @@ export const ModelName = {
   EditorialPackage: 'EditorialPackage',
   EditorialPackageRevision: 'EditorialPackageRevision',
   EditorialMutationRequest: 'EditorialMutationRequest',
+  EditorialApproval: 'EditorialApproval',
+  EditorialApprovalMetrics: 'EditorialApprovalMetrics',
+  EditorialOperationRequest: 'EditorialOperationRequest',
   CutSegment: 'CutSegment',
   JobAttempt: 'JobAttempt'
 } as const
@@ -492,6 +495,83 @@ export const EditorialMutationRequestScalarFieldEnum = {
 export type EditorialMutationRequestScalarFieldEnum = (typeof EditorialMutationRequestScalarFieldEnum)[keyof typeof EditorialMutationRequestScalarFieldEnum]
 
 
+export const EditorialApprovalScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  editorialPackageId: 'editorialPackageId',
+  editorialPackageRevisionId: 'editorialPackageRevisionId',
+  editorialRevision: 'editorialRevision',
+  processingTemplateRevisionId: 'processingTemplateRevisionId',
+  thumbnailAssetId: 'thumbnailAssetId',
+  thumbnailSha256: 'thumbnailSha256',
+  thumbnailSizeBytes: 'thumbnailSizeBytes',
+  thumbnailContentType: 'thumbnailContentType',
+  assemblyRecipeId: 'assemblyRecipeId',
+  recipeRevisionId: 'recipeRevisionId',
+  recipeRevision: 'recipeRevision',
+  configurationFingerprint: 'configurationFingerprint',
+  assemblyRenderIntentId: 'assemblyRenderIntentId',
+  assemblyRenderResultId: 'assemblyRenderResultId',
+  renderArtifactId: 'renderArtifactId',
+  renderArtifactSha256: 'renderArtifactSha256',
+  renderArtifactSizeBytes: 'renderArtifactSizeBytes',
+  renderContractVersion: 'renderContractVersion',
+  approvalContractVersion: 'approvalContractVersion',
+  candidateFingerprint: 'candidateFingerprint',
+  approvedAt: 'approvedAt'
+} as const
+
+export type EditorialApprovalScalarFieldEnum = (typeof EditorialApprovalScalarFieldEnum)[keyof typeof EditorialApprovalScalarFieldEnum]
+
+
+export const EditorialApprovalMetricsScalarFieldEnum = {
+  approvalId: 'approvalId',
+  metricsSchemaVersion: 'metricsSchemaVersion',
+  timestampBasisVersion: 'timestampBasisVersion',
+  cutInitialQueueWaitMs: 'cutInitialQueueWaitMs',
+  cutRetryWaitMs: 'cutRetryWaitMs',
+  cutFirstStartToFinishMs: 'cutFirstStartToFinishMs',
+  cutActiveAttemptMs: 'cutActiveAttemptMs',
+  cutAttemptCount: 'cutAttemptCount',
+  cutRetryCount: 'cutRetryCount',
+  assemblyInitialQueueWaitMs: 'assemblyInitialQueueWaitMs',
+  assemblyRetryWaitMs: 'assemblyRetryWaitMs',
+  assemblyFirstStartToFinishMs: 'assemblyFirstStartToFinishMs',
+  assemblyActiveAttemptMs: 'assemblyActiveAttemptMs',
+  assemblyAttemptCount: 'assemblyAttemptCount',
+  assemblyRetryCount: 'assemblyRetryCount',
+  cutToAssemblyReadyElapsedMs: 'cutToAssemblyReadyElapsedMs',
+  outputDurationMs: 'outputDurationMs',
+  outputBytes: 'outputBytes',
+  manualAttentionMs: 'manualAttentionMs',
+  attentionMeasurementVersion: 'attentionMeasurementVersion',
+  directProviderCostMinor: 'directProviderCostMinor',
+  costCurrency: 'costCurrency',
+  costBasisVersion: 'costBasisVersion',
+  incompleteReasons: 'incompleteReasons',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialApprovalMetricsScalarFieldEnum = (typeof EditorialApprovalMetricsScalarFieldEnum)[keyof typeof EditorialApprovalMetricsScalarFieldEnum]
+
+
+export const EditorialOperationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  operation: 'operation',
+  canonicalRequestFingerprint: 'canonicalRequestFingerprint',
+  resolvedProjectId: 'resolvedProjectId',
+  approvalId: 'approvalId',
+  exportIntentId: 'exportIntentId',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialOperationRequestScalarFieldEnum = (typeof EditorialOperationRequestScalarFieldEnum)[keyof typeof EditorialOperationRequestScalarFieldEnum]
+
+
 export const CutSegmentScalarFieldEnum = {
   id: 'id',
   jobId: 'jobId',
@@ -542,6 +622,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

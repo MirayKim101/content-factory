@@ -119,49 +119,57 @@ enum EditorialAssetStatus {
   FAILED_FINAL
 }
 
+enum EditorialOperationType {
+  CREATE_EDITORIAL_APPROVAL
+  CREATE_EDITORIAL_EXPORT
+}
+
 model Project {
-  id                       String             @id @db.Uuid
-  idempotencyKey           String             @unique
-  requestFingerprint       String
-  name                     String
-  status                   ProjectStatus      @default(SOURCE_PENDING)
-  rightsConfirmedAt        DateTime?
-  rightsDeclarationVersion String?
-  failureCode              String?
-  failureMessage           String?
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
-  source                   VideoSource?
-  artifacts                MediaArtifact[]
-  cutRequests              CutRequest[]
-  pipelineJobs             PipelineJob[]
-  editorialAssets          EditorialAsset[]
-  editorialPackages        EditorialPackage[]
-  montageAssets            MontageAsset[]
-  assemblyRecipes          AssemblyRecipe[]
-  assemblyRenderIntents    AssemblyRenderIntent[]
+  id                         String                      @id @db.Uuid
+  idempotencyKey             String                      @unique
+  requestFingerprint         String
+  name                       String
+  status                     ProjectStatus               @default(SOURCE_PENDING)
+  rightsConfirmedAt          DateTime?
+  rightsDeclarationVersion   String?
+  failureCode                String?
+  failureMessage             String?
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  source                     VideoSource?
+  artifacts                  MediaArtifact[]
+  cutRequests                CutRequest[]
+  pipelineJobs               PipelineJob[]
+  editorialAssets            EditorialAsset[]
+  editorialPackages          EditorialPackage[]
+  montageAssets              MontageAsset[]
+  assemblyRecipes            AssemblyRecipe[]
+  assemblyRenderIntents      AssemblyRenderIntent[]
+  editorialApprovals         EditorialApproval[]
+  editorialOperationRequests EditorialOperationRequest[]
 }
 
 model VideoSource {
-  id               String                @id @db.Uuid
-  projectId        String                @unique @db.Uuid
-  project          Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  status           VideoSourceStatus     @default(PENDING)
-  sourceVersion    Int                   @default(1)
-  originalFilename String
-  contentType      String
-  sizeBytes        BigInt
-  sha256           String
-  durationMs       Int?
-  probedAt         DateTime?
-  probeVersion     String?
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
-  artifacts        MediaArtifact[]
-  pipelineJobs     PipelineJob[]
-  authorizations   SourceAuthorization[]
-  montageAssets    MontageAsset[]
+  id                    String                 @id @db.Uuid
+  projectId             String                 @unique @db.Uuid
+  project               Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status                VideoSourceStatus      @default(PENDING)
+  sourceVersion         Int                    @default(1)
+  originalFilename      String
+  contentType           String
+  sizeBytes             BigInt
+  sha256                String
+  durationMs            Int?
+  probedAt              DateTime?
+  probeVersion          String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  artifacts             MediaArtifact[]
+  pipelineJobs          PipelineJob[]
+  authorizations        SourceAuthorization[]
+  montageAssets         MontageAsset[]
   assemblyRenderIntents AssemblyRenderIntent[]
+  editorialApprovals    EditorialApproval[]
 }
 
 model SourceAuthorization {
@@ -182,37 +190,38 @@ model SourceAuthorization {
 }
 
 model MediaArtifact {
-  id                   String                @id @db.Uuid
-  projectId            String                @db.Uuid
-  project              Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sourceId             String                @db.Uuid
-  source               VideoSource           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  id                   String                 @id @db.Uuid
+  projectId            String                 @db.Uuid
+  project              Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId             String                 @db.Uuid
+  source               VideoSource            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   role                 MediaArtifactRole
-  status               MediaArtifactStatus   @default(PENDING)
-  objectKey            String                @unique
+  status               MediaArtifactStatus    @default(PENDING)
+  objectKey            String                 @unique
   storageEtag          String?
   storageVersion       String?
-  cleanupStatus        ArtifactCleanupStatus @default(NOT_REQUIRED)
-  cleanupAttemptCount  Int                   @default(0)
+  cleanupStatus        ArtifactCleanupStatus  @default(NOT_REQUIRED)
+  cleanupAttemptCount  Int                    @default(0)
   cleanupLastErrorCode String?
   cleanupRequestedAt   DateTime?
   cleanupCompletedAt   DateTime?
   sizeBytes            BigInt
   sha256               String
   contentType          String
-  lineageSourceId      String                @db.Uuid
+  lineageSourceId      String                 @db.Uuid
   lineageSourceVersion Int
   recipeVersion        String
-  pipelineJobId        String?               @unique @db.Uuid
-  pipelineJob          PipelineJob?          @relation("PipelineJobResult", fields: [pipelineJobId], references: [id], onDelete: SetNull)
+  pipelineJobId        String?                @unique @db.Uuid
+  pipelineJob          PipelineJob?           @relation("PipelineJobResult", fields: [pipelineJobId], references: [id], onDelete: SetNull)
   ffmpegVersion        String?
   outputFilename       String?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
   editorialPackage     EditorialPackage?
   assemblyRecipe       AssemblyRecipe?
   assemblyRenderInputs AssemblyRenderIntent[]
   assemblyRenderResult AssemblyRenderResult?
+  editorialApprovals   EditorialApproval[]
 
   @@unique([id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "MediaArtifact_id_projectId_lineage_pipelineJob_key")
   @@index([status, createdAt])
@@ -232,53 +241,54 @@ model CutRequest {
 }
 
 model PipelineJob {
-  id               String            @id @db.Uuid
-  projectId        String            @db.Uuid
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sourceId         String            @db.Uuid
-  source           VideoSource       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  sourceVersion    Int
-  cutRequestId     String?           @db.Uuid
-  cutRequest       CutRequest?       @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
-  type             PipelineJobType
-  state            PipelineJobState  @default(QUEUED)
-  payloadVersion   Int               @default(1)
-  idempotencyKey   String            @unique
-  revision         Int               @default(1)
-  priority         Int               @default(0)
-  retryBudget      Int               @default(2)
-  attemptCount     Int               @default(0)
-  processedMs      Int?
-  totalMs          Int?
-  leaseOwner       String?
-  leaseToken       String?           @unique
-  leaseExpiresAt   DateTime?
-  heartbeatAt      DateTime?
-  failureCode      String?
-  failureMessage   String?
-  failureRetryable Boolean?
-  recipeVersion    String
-  queuedAt         DateTime          @default(now())
-  startedAt        DateTime?
-  finishedAt       DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  segment          CutSegment?
-  attempts         JobAttempt[]
-  resultArtifact   MediaArtifact?    @relation("PipelineJobResult")
-  editorialPackage EditorialPackage?
-  assemblyRecipe   AssemblyRecipe?
-  montageAssetId   String?           @unique @db.Uuid
-  montageAsset     MontageAsset?     @relation(fields: [montageAssetId], references: [id], onDelete: Restrict)
-  assemblyRenderIntentId String?      @unique @db.Uuid
-  assemblyRenderIntent AssemblyRenderIntent? @relation("AssemblyRenderJob", fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_assembly_intent")
-  assemblyRenderInputs AssemblyRenderIntent[] @relation("AssemblyRenderCutJob")
-  nextAttemptAt        DateTime?
-  admissionReason      String?
-  progressAttemptNumber Int?
-  progressPhase        AssemblyProgressPhase?
-  progressBasisPoints  Int?
-  progressUpdatedAt    DateTime?
+  id                     String                 @id @db.Uuid
+  projectId              String                 @db.Uuid
+  project                Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId               String                 @db.Uuid
+  source                 VideoSource            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceVersion          Int
+  cutRequestId           String?                @db.Uuid
+  cutRequest             CutRequest?            @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
+  type                   PipelineJobType
+  state                  PipelineJobState       @default(QUEUED)
+  payloadVersion         Int                    @default(1)
+  idempotencyKey         String                 @unique
+  revision               Int                    @default(1)
+  priority               Int                    @default(0)
+  retryBudget            Int                    @default(2)
+  attemptCount           Int                    @default(0)
+  processedMs            Int?
+  totalMs                Int?
+  leaseOwner             String?
+  leaseToken             String?                @unique
+  leaseExpiresAt         DateTime?
+  heartbeatAt            DateTime?
+  failureCode            String?
+  failureMessage         String?
+  failureRetryable       Boolean?
+  recipeVersion          String
+  queuedAt               DateTime               @default(now())
+  startedAt              DateTime?
+  finishedAt             DateTime?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  segment                CutSegment?
+  attempts               JobAttempt[]
+  resultArtifact         MediaArtifact?         @relation("PipelineJobResult")
+  editorialPackage       EditorialPackage?
+  assemblyRecipe         AssemblyRecipe?
+  montageAssetId         String?                @unique @db.Uuid
+  montageAsset           MontageAsset?          @relation(fields: [montageAssetId], references: [id], onDelete: Restrict)
+  assemblyRenderIntentId String?                @unique @db.Uuid
+  assemblyRenderIntent   AssemblyRenderIntent?  @relation("AssemblyRenderJob", fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_assembly_intent")
+  assemblyRenderInputs   AssemblyRenderIntent[] @relation("AssemblyRenderCutJob")
+  editorialApprovals     EditorialApproval[]
+  nextAttemptAt          DateTime?
+  admissionReason        String?
+  progressAttemptNumber  Int?
+  progressPhase          AssemblyProgressPhase?
+  progressBasisPoints    Int?
+  progressUpdatedAt      DateTime?
 
   @@unique([id, projectId, sourceId, sourceVersion])
   @@unique([assemblyRenderIntentId, projectId, sourceId, sourceVersion], map: "PipelineJob_assembly_intent_lineage_key")
@@ -353,6 +363,7 @@ model AssemblyRecipe {
   updatedAt              DateTime                 @updatedAt
   revisions              AssemblyRecipeRevision[]
   renderIntents          AssemblyRenderIntent[]
+  editorialApprovals     EditorialApproval[]
 
   @@unique([pipelineJobId, projectId, lineageSourceId, lineageSourceVersion], map: "AssemblyRecipe_pipeline_exact_key")
   @@unique([cutResultArtifactId, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "AssemblyRecipe_artifact_exact_key")
@@ -377,6 +388,7 @@ model AssemblyRecipeRevision {
   assetReferences          AssemblyRecipeAssetReference[]
   mutationRequests         AssemblyRecipeMutationRequest[]
   renderIntents            AssemblyRenderIntent[]
+  editorialApprovals       EditorialApproval[]
 
   @@unique([recipeId, revision], map: "AssemblyRecipeRevision_recipe_revision_key")
   @@unique([id, recipeId, revision], map: "AssemblyRecipeRevision_exact_identity_key")
@@ -416,33 +428,34 @@ model AssemblyRecipeMutationRequest {
 }
 
 model AssemblyRenderIntent {
-  id                       String                   @id @db.Uuid
-  projectId                String                   @db.Uuid
-  project                  Project                  @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  sourceId                 String                   @db.Uuid
-  source                   VideoSource              @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  id                       String                  @id @db.Uuid
+  projectId                String                  @db.Uuid
+  project                  Project                 @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId                 String                  @db.Uuid
+  source                   VideoSource             @relation(fields: [sourceId], references: [id], onDelete: Restrict)
   sourceVersion            Int
-  cutPipelineJobId         String                   @db.Uuid
-  cutPipelineJob           PipelineJob              @relation("AssemblyRenderCutJob", fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "AssemblyRenderIntent_exact_cut_job")
-  cutResultArtifactId      String                   @db.Uuid
-  cutResultArtifact        MediaArtifact            @relation(fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "AssemblyRenderIntent_exact_cut_artifact")
+  cutPipelineJobId         String                  @db.Uuid
+  cutPipelineJob           PipelineJob             @relation("AssemblyRenderCutJob", fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "AssemblyRenderIntent_exact_cut_job")
+  cutResultArtifactId      String                  @db.Uuid
+  cutResultArtifact        MediaArtifact           @relation(fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "AssemblyRenderIntent_exact_cut_artifact")
   cutResultSha256          String
   cutResultSizeBytes       BigInt
   cutResultRecipeVersion   String
-  assemblyRecipeId         String                   @db.Uuid
-  assemblyRecipe           AssemblyRecipe           @relation(fields: [assemblyRecipeId], references: [id], onDelete: Restrict)
-  recipeRevisionId         String                   @db.Uuid
-  recipeRevisionRecord     AssemblyRecipeRevision   @relation(fields: [recipeRevisionId, assemblyRecipeId, recipeRevision], references: [id, recipeId, revision], onDelete: Restrict, map: "AssemblyRenderIntent_exact_recipe_revision")
+  assemblyRecipeId         String                  @db.Uuid
+  assemblyRecipe           AssemblyRecipe          @relation(fields: [assemblyRecipeId], references: [id], onDelete: Restrict)
+  recipeRevisionId         String                  @db.Uuid
+  recipeRevisionRecord     AssemblyRecipeRevision  @relation(fields: [recipeRevisionId, assemblyRecipeId, recipeRevision], references: [id, recipeId, revision], onDelete: Restrict, map: "AssemblyRenderIntent_exact_recipe_revision")
   recipeRevision           Int
   configurationFingerprint String
-  renderContractVersion    String                   @default("horizontal-render-v1")
+  renderContractVersion    String                  @default("horizontal-render-v1")
   audioProfileVersion      String
   encodingProfileVersion   String
   expectedDurationMs       Int
-  createdAt                DateTime                 @default(now())
-  pipelineJob              PipelineJob?             @relation("AssemblyRenderJob")
+  createdAt                DateTime                @default(now())
+  pipelineJob              PipelineJob?            @relation("AssemblyRenderJob")
   requests                 AssemblyRenderRequest[]
   result                   AssemblyRenderResult?
+  editorialApprovals       EditorialApproval[]
 
   @@unique([recipeRevisionId, renderContractVersion], map: "AssemblyRenderIntent_revision_contract_key")
   @@unique([id, projectId, sourceId, sourceVersion], map: "AssemblyRenderIntent_exact_lineage_key")
@@ -481,6 +494,9 @@ model AssemblyRenderResult {
   normalizationProfileResult String
   completedAt                DateTime
   createdAt                  DateTime             @default(now())
+  editorialApprovals         EditorialApproval[]
+
+  @@unique([id, renderIntentId, artifactId], map: "AssemblyRenderResult_exact_identity_key")
 }
 
 model ProcessingTemplate {
@@ -500,6 +516,7 @@ model ProcessingTemplateRevision {
   configurationVersion String                     @default("manual-editorial-v1")
   createdAt            DateTime                   @default(now())
   editorialRevisions   EditorialPackageRevision[]
+  editorialApprovals   EditorialApproval[]
 
   @@unique([templateId, revision])
   @@index([createdAt, id])
@@ -532,7 +549,9 @@ model EditorialAsset {
   createdAt            DateTime                   @default(now())
   updatedAt            DateTime                   @updatedAt
   packageRevisions     EditorialPackageRevision[]
+  editorialApprovals   EditorialApproval[]
 
+  @@unique([id, projectId], map: "EditorialAsset_id_projectId_key")
   @@index([projectId, type, status, createdAt])
   @@index([cleanupStatus, updatedAt])
 }
@@ -554,6 +573,7 @@ model EditorialPackage {
   createdAt              DateTime                   @default(now())
   updatedAt              DateTime                   @updatedAt
   revisions              EditorialPackageRevision[]
+  editorialApprovals     EditorialApproval[]
 
   @@index([projectId, updatedAt, id])
 }
@@ -572,8 +592,10 @@ model EditorialPackageRevision {
   thumbnailAsset               EditorialAsset?            @relation(fields: [thumbnailAssetId], references: [id], onDelete: Restrict)
   createdAt                    DateTime                   @default(now())
   mutationRequests             EditorialMutationRequest[]
+  editorialApprovals           EditorialApproval[]
 
   @@unique([packageId, revision])
+  @@unique([id, packageId, revision], map: "EditorialPackageRevision_exact_identity_key")
   @@index([processingTemplateRevisionId])
   @@index([thumbnailAssetId])
 }
@@ -585,6 +607,100 @@ model EditorialMutationRequest {
   packageRevisionId  String                   @db.Uuid
   packageRevision    EditorialPackageRevision @relation(fields: [packageRevisionId], references: [id], onDelete: Restrict)
   createdAt          DateTime                 @default(now())
+}
+
+model EditorialApproval {
+  id                           String                      @id @db.Uuid
+  projectId                    String                      @db.Uuid
+  project                      Project                     @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId                     String                      @db.Uuid
+  source                       VideoSource                 @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  sourceVersion                Int
+  cutPipelineJobId             String                      @db.Uuid
+  cutPipelineJob               PipelineJob                 @relation(fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "EditorialApproval_exact_cut_job")
+  editorialPackageId           String                      @db.Uuid
+  editorialPackage             EditorialPackage            @relation(fields: [editorialPackageId], references: [id], onDelete: Restrict)
+  editorialPackageRevisionId   String                      @db.Uuid
+  editorialPackageRevision     EditorialPackageRevision    @relation(fields: [editorialPackageRevisionId, editorialPackageId, editorialRevision], references: [id, packageId, revision], onDelete: Restrict, map: "EditorialApproval_exact_editorial_revision")
+  editorialRevision            Int
+  processingTemplateRevisionId String                      @db.Uuid
+  processingTemplateRevision   ProcessingTemplateRevision  @relation(fields: [processingTemplateRevisionId], references: [id], onDelete: Restrict)
+  thumbnailAssetId             String                      @db.Uuid
+  thumbnailAsset               EditorialAsset              @relation(fields: [thumbnailAssetId, projectId], references: [id, projectId], onDelete: Restrict, map: "EditorialApproval_exact_thumbnail_project")
+  thumbnailSha256              String
+  thumbnailSizeBytes           BigInt
+  thumbnailContentType         String
+  assemblyRecipeId             String                      @db.Uuid
+  assemblyRecipe               AssemblyRecipe              @relation(fields: [assemblyRecipeId], references: [id], onDelete: Restrict)
+  recipeRevisionId             String                      @db.Uuid
+  recipeRevisionRecord         AssemblyRecipeRevision      @relation(fields: [recipeRevisionId, assemblyRecipeId, recipeRevision], references: [id, recipeId, revision], onDelete: Restrict, map: "EditorialApproval_exact_recipe_revision")
+  recipeRevision               Int
+  configurationFingerprint     String
+  assemblyRenderIntentId       String                      @db.Uuid
+  assemblyRenderIntent         AssemblyRenderIntent        @relation(fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "EditorialApproval_exact_render_intent")
+  assemblyRenderResultId       String                      @db.Uuid
+  assemblyRenderResult         AssemblyRenderResult        @relation(fields: [assemblyRenderResultId, assemblyRenderIntentId, renderArtifactId], references: [id, renderIntentId, artifactId], onDelete: Restrict, map: "EditorialApproval_exact_render_result")
+  renderArtifactId             String                      @db.Uuid
+  renderArtifact               MediaArtifact               @relation(fields: [renderArtifactId], references: [id], onDelete: Restrict)
+  renderArtifactSha256         String
+  renderArtifactSizeBytes      BigInt
+  renderContractVersion        String
+  approvalContractVersion      String                      @default("manual-horizontal-approval-v1")
+  candidateFingerprint         String
+  approvedAt                   DateTime                    @default(now())
+  metrics                      EditorialApprovalMetrics?
+  operationRequests            EditorialOperationRequest[]
+
+  @@unique([editorialPackageRevisionId, assemblyRenderResultId, approvalContractVersion], map: "EditorialApproval_logical_key")
+  @@unique([id, projectId], map: "EditorialApproval_id_projectId_key")
+  @@index([projectId, approvedAt, id])
+  @@index([cutPipelineJobId, approvedAt, id])
+}
+
+model EditorialApprovalMetrics {
+  approvalId                   String            @id @db.Uuid
+  approval                     EditorialApproval @relation(fields: [approvalId], references: [id], onDelete: Restrict)
+  metricsSchemaVersion         String            @default("approval-metrics-v1")
+  timestampBasisVersion        String            @default("persisted-job-attempt-v1")
+  cutInitialQueueWaitMs        BigInt?
+  cutRetryWaitMs               BigInt?
+  cutFirstStartToFinishMs      BigInt?
+  cutActiveAttemptMs           BigInt?
+  cutAttemptCount              Int
+  cutRetryCount                Int
+  assemblyInitialQueueWaitMs   BigInt?
+  assemblyRetryWaitMs          BigInt?
+  assemblyFirstStartToFinishMs BigInt?
+  assemblyActiveAttemptMs      BigInt?
+  assemblyAttemptCount         Int
+  assemblyRetryCount           Int
+  cutToAssemblyReadyElapsedMs  BigInt?
+  outputDurationMs             Int
+  outputBytes                  BigInt
+  manualAttentionMs            Int
+  attentionMeasurementVersion  String
+  directProviderCostMinor      Int               @default(0)
+  costCurrency                 String            @default("RUB")
+  costBasisVersion             String            @default("local-direct-provider-cost-v1")
+  incompleteReasons            Json
+  createdAt                    DateTime          @default(now())
+}
+
+model EditorialOperationRequest {
+  id                          String                 @id @db.Uuid
+  idempotencyKey              String                 @unique
+  operation                   EditorialOperationType
+  canonicalRequestFingerprint String
+  resolvedProjectId           String                 @db.Uuid
+  resolvedProject             Project                @relation(fields: [resolvedProjectId], references: [id], onDelete: Restrict)
+  approvalId                  String?                @db.Uuid
+  approval                    EditorialApproval?     @relation(fields: [approvalId], references: [id], onDelete: Restrict)
+  exportIntentId              String?                @db.Uuid
+  createdAt                   DateTime               @default(now())
+
+  @@index([resolvedProjectId, createdAt, id])
+  @@index([approvalId])
+  @@index([exportIntentId])
 }
 
 model CutSegment {

@@ -29,6 +29,17 @@ import {
 } from "./application/assembly-render-queries.js";
 import { PrismaAssemblyRenderRepository } from "./infrastructure/prisma-assembly-render.repository.js";
 import { AssemblyRenderController } from "./presentation/assembly-render.controller.js";
+import {
+  EDITORIAL_APPROVAL_ADMISSION_ENABLED,
+  EDITORIAL_APPROVAL_REPOSITORY,
+} from "./application/editorial-approval-repository.port.js";
+import { CreateEditorialApproval } from "./application/create-editorial-approval.js";
+import {
+  GetEditorialReview,
+  ListEditorialApprovals,
+} from "./application/editorial-approval-queries.js";
+import { PrismaEditorialApprovalRepository } from "./infrastructure/prisma-editorial-approval.repository.js";
+import { EditorialApprovalController } from "./presentation/editorial-approval.controller.js";
 
 import { ProjectsModule } from "../projects/projects.module.js";
 import { TempUploadLifecycleInterceptor } from "../projects/presentation/temp-upload-lifecycle.interceptor.js";
@@ -57,10 +68,23 @@ import { EditorialController } from "./presentation/editorial.controller.js";
     MontageController,
     AssemblyRecipeController,
     AssemblyRenderController,
+    EditorialApprovalController,
   ],
   providers: [
     PrismaAssemblyRecipeRepository,
     PrismaAssemblyRenderRepository,
+    PrismaEditorialApprovalRepository,
+    CreateEditorialApproval,
+    GetEditorialReview,
+    ListEditorialApprovals,
+    {
+      provide: EDITORIAL_APPROVAL_REPOSITORY,
+      useExisting: PrismaEditorialApprovalRepository,
+    },
+    {
+      provide: EDITORIAL_APPROVAL_ADMISSION_ENABLED,
+      useFactory: () => apiEnvironment().editorialApprovalEnabled,
+    },
     CreateAssemblyRender,
     GetAssemblyRender,
     GetAssemblyRenderContent,

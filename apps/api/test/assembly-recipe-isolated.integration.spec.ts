@@ -41,6 +41,17 @@ import { PrismaAssemblyRecipeRepository } from "../src/editorial-content/infrast
 import { PrismaAssemblyRenderRepository } from "../src/editorial-content/infrastructure/prisma-assembly-render.repository.js";
 import { AssemblyRecipeController } from "../src/editorial-content/presentation/assembly-recipe.controller.js";
 import { AssemblyRenderController } from "../src/editorial-content/presentation/assembly-render.controller.js";
+import {
+  EDITORIAL_APPROVAL_ADMISSION_ENABLED,
+  EDITORIAL_APPROVAL_REPOSITORY,
+} from "../src/editorial-content/application/editorial-approval-repository.port.js";
+import { CreateEditorialApproval } from "../src/editorial-content/application/create-editorial-approval.js";
+import {
+  GetEditorialReview,
+  ListEditorialApprovals,
+} from "../src/editorial-content/application/editorial-approval-queries.js";
+import { PrismaEditorialApprovalRepository } from "../src/editorial-content/infrastructure/prisma-editorial-approval.repository.js";
+import { EditorialApprovalController } from "../src/editorial-content/presentation/editorial-approval.controller.js";
 import { HttpExceptionFilter } from "../src/http-exception.filter.js";
 import { JOB_DISPATCH } from "../src/media-pipeline/application/job-dispatch.port.js";
 import { OBJECT_STORAGE } from "../src/projects/application/object-storage.port.js";
@@ -127,14 +138,20 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
       prisma = new PrismaService();
       await prisma.$connect();
       @Module({
-        controllers: [AssemblyRecipeController, AssemblyRenderController],
+        controllers: [
+          AssemblyRecipeController,
+          AssemblyRenderController,
+          EditorialApprovalController,
+        ],
         providers: [
           { provide: PrismaService, useValue: prisma },
           { provide: JOB_DISPATCH, useValue: dispatch },
           { provide: ASSEMBLY_RENDER_ADMISSION_ENABLED, useValue: true },
+          { provide: EDITORIAL_APPROVAL_ADMISSION_ENABLED, useValue: true },
           { provide: OBJECT_STORAGE, useValue: storage },
           PrismaAssemblyRecipeRepository,
           PrismaAssemblyRenderRepository,
+          PrismaEditorialApprovalRepository,
           {
             provide: ASSEMBLY_RECIPE_REPOSITORY,
             useExisting: PrismaAssemblyRecipeRepository,
@@ -142,6 +159,10 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           {
             provide: ASSEMBLY_RENDER_REPOSITORY,
             useExisting: PrismaAssemblyRenderRepository,
+          },
+          {
+            provide: EDITORIAL_APPROVAL_REPOSITORY,
+            useExisting: PrismaEditorialApprovalRepository,
           },
           SaveAssemblyRecipe,
           GetAssemblyRecipe,
@@ -151,6 +172,9 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           GetAssemblyRender,
           GetAssemblyRenderContent,
           ListAssemblyRenders,
+          CreateEditorialApproval,
+          GetEditorialReview,
+          ListEditorialApprovals,
         ],
       })
       class IsolatedModule {}
@@ -606,45 +630,816 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
       ).rejects.toThrow();
     });
 
-    async function readyCut(): Promise<{
+    it("previews, approves, reloads, lists, and converges exact approval requests without creating jobs", async () => {
+      const candidate = await readyApprovalCandidate();
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      expect(review.body).toMatchObject({
+        projectId: candidate.cut.projectId,
+        cutPipelineJobId: candidate.cut.jobId,
+        approvable: true,
+        blockers: [],
+        editorial: { revision: 1, title: "Тестовый заголовок" },
+        recipe: { revision: 1 },
+        render: { id: candidate.renderId, resultId: candidate.resultId },
+        processingMetrics: {
+          metricsSchemaVersion: "approval-metrics-v1",
+          timestampBasisVersion: "persisted-job-attempt-v1",
+          cut: {
+            initialQueueWaitMs: 10_000,
+            retryWaitMs: 20_000,
+            activeAttemptMs: 80_000,
+            firstStartToFinishMs: 100_000,
+            attemptCount: 2,
+            retryCount: 1,
+          },
+          directProviderCostMinor: 0,
+          costCurrency: "RUB",
+          costBasisVersion: "local-direct-provider-cost-v1",
+        },
+      });
+      expect(JSON.stringify(review.body)).not.toContain("objectKey");
+      const body = {
+        editorialRevision: 1,
+        candidateFingerprint: review.body.candidateFingerprint as string,
+        manualAttentionMs: 245_000,
+        attentionMeasurementVersion: "foreground-preview-v1",
+      };
+      const jobsBefore = await prisma.pipelineJob.count();
+      const key = randomUUID();
+      const first = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", key)
+        .send(body)
+        .expect(201);
+      const replay = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", key)
+        .send(body)
+        .expect(201);
+      expect(replay.body).toEqual(first.body);
+      expect(first.body).toMatchObject({
+        state: "CURRENT",
+        staleReasons: [],
+        metrics: {
+          manualAttentionMs: 245_000,
+          attentionMeasurementVersion: "foreground-preview-v1",
+          outputBytes: "700",
+        },
+      });
+      const [concurrentOne, concurrentTwo] = await Promise.all([
+        request(app.getHttpServer())
+          .post(
+            `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+          )
+          .set("Idempotency-Key", randomUUID())
+          .send(body),
+        request(app.getHttpServer())
+          .post(
+            `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+          )
+          .set("Idempotency-Key", randomUUID())
+          .send(body),
+      ]);
+      expect([concurrentOne.status, concurrentTwo.status]).toEqual([201, 201]);
+      expect(concurrentOne.body.id).toBe(first.body.id);
+      expect(concurrentTwo.body.id).toBe(first.body.id);
+      expect(await prisma.editorialApproval.count()).toBe(1);
+      expect(await prisma.editorialOperationRequest.count()).toBe(3);
+      expect(await prisma.pipelineJob.count()).toBe(jobsBefore);
+
+      const reloaded = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      expect(reloaded.body.currentApproval).toEqual(first.body);
+      expect(reloaded.body.latestApproval).toEqual(first.body);
+      const listed = await request(app.getHttpServer())
+        .get(
+          `/api/v1/projects/${candidate.cut.projectId}/editorial-approvals?limit=1`,
+        )
+        .expect(200);
+      expect(listed.body).toEqual({ items: [first.body], nextCursor: null });
+    });
+
+    it("recovers an exact approval after an unknown transaction outcome and keeps target mismatches generic", async () => {
+      const candidate = await readyApprovalCandidate();
+      const differentTarget = await readyApprovalCandidate();
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      const differentReview = await request(app.getHttpServer())
+        .get(
+          `/api/v1/pipeline-jobs/${differentTarget.cut.jobId}/editorial-review`,
+        )
+        .expect(200);
+      const key = randomUUID();
+      const body = {
+        editorialRevision: 1,
+        candidateFingerprint: review.body.candidateFingerprint as string,
+        manualAttentionMs: 15_000,
+        attentionMeasurementVersion: "foreground-preview-v1",
+      };
+      const originalTransaction = prisma.$transaction.bind(prisma);
+      const transactionSpy = vi
+        .spyOn(prisma, "$transaction")
+        .mockImplementationOnce((async (...args: unknown[]) => {
+          await Reflect.apply(originalTransaction, prisma, args);
+          throw new Error("SIMULATED_COMMIT_OUTCOME_UNKNOWN");
+        }) as never);
+      const ledgerReadSpy = vi.spyOn(
+        prisma.editorialOperationRequest,
+        "findUnique",
+      );
+      let recovered: request.Response;
+      try {
+        recovered = await request(app.getHttpServer())
+          .post(
+            `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+          )
+          .set("Idempotency-Key", key)
+          .send(body)
+          .expect(201);
+      } finally {
+        transactionSpy.mockRestore();
+      }
+      expect(ledgerReadSpy).toHaveBeenCalledWith({
+        where: { idempotencyKey: key },
+      });
+      ledgerReadSpy.mockRestore();
+      const operation =
+        await prisma.editorialOperationRequest.findUniqueOrThrow({
+          where: { idempotencyKey: key },
+        });
+      expect(operation.approvalId).toBe(recovered.body.id);
+      expect(
+        await prisma.editorialApproval.count({
+          where: { projectId: candidate.cut.projectId },
+        }),
+      ).toBe(1);
+      expect(
+        await prisma.editorialOperationRequest.count({
+          where: { idempotencyKey: key },
+        }),
+      ).toBe(1);
+
+      const exactReplay = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", key)
+        .send(body)
+        .expect(201);
+      expect(exactReplay.body).toEqual(recovered.body);
+
+      const conflict = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${differentTarget.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", key)
+        .send({
+          ...body,
+          candidateFingerprint: differentReview.body.candidateFingerprint,
+        })
+        .expect(409);
+      expect(conflict.body).toEqual({
+        error: {
+          code: "IDEMPOTENCY_CONFLICT",
+          message: "This key belongs to a different editorial operation.",
+        },
+      });
+      expect(JSON.stringify(conflict.body)).not.toContain(candidate.renderId);
+      expect(JSON.stringify(conflict.body)).not.toContain(
+        differentTarget.renderId,
+      );
+      expect(JSON.stringify(conflict.body)).not.toContain(recovered.body.id);
+      expect(
+        await prisma.editorialApproval.count({
+          where: { projectId: candidate.cut.projectId },
+        }),
+      ).toBe(1);
+      expect(
+        await prisma.editorialOperationRequest.count({
+          where: { idempotencyKey: key },
+        }),
+      ).toBe(1);
+    });
+
+    it("returns HTTP 503 with zero writes while editorial approval admission is disabled", async () => {
+      const candidate = await readyApprovalCandidate();
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      const approvalCount = await prisma.editorialApproval.count();
+      const operationCount = await prisma.editorialOperationRequest.count();
+      const useCase = app.get(CreateEditorialApproval) as unknown as {
+        admissionEnabled: boolean;
+      };
+      useCase.admissionEnabled = false;
+      try {
+        await request(app.getHttpServer())
+          .post(
+            `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+          )
+          .set("Idempotency-Key", randomUUID())
+          .send({
+            editorialRevision: 1,
+            candidateFingerprint: review.body.candidateFingerprint,
+            manualAttentionMs: 1_000,
+            attentionMeasurementVersion: "foreground-preview-v1",
+          })
+          .expect(503)
+          .expect(({ body }) =>
+            expect(body.error).toEqual({
+              code: "EDITORIAL_APPROVAL_DISABLED",
+              message: "Editorial approval admission is temporarily disabled.",
+            }),
+          );
+      } finally {
+        useCase.admissionEnabled = true;
+      }
+      expect(await prisma.editorialApproval.count()).toBe(approvalCount);
+      expect(await prisma.editorialOperationRequest.count()).toBe(
+        operationCount,
+      );
+    });
+
+    it("paginates project approvals and controls invalid cursors and missing targets", async () => {
+      const candidates = [await readyApprovalCandidate()];
+      const existingSource = {
+        projectId: candidates[0]!.cut.projectId,
+        sourceId: candidates[0]!.cut.sourceId,
+      };
+      candidates.push(
+        await readyApprovalCandidate({ existingSource }),
+        await readyApprovalCandidate({ existingSource }),
+      );
+      const approvals: request.Response[] = [];
+      for (const candidate of candidates) {
+        const review = await request(app.getHttpServer())
+          .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+          .expect(200);
+        approvals.push(
+          await request(app.getHttpServer())
+            .post(
+              `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+            )
+            .set("Idempotency-Key", randomUUID())
+            .send({
+              editorialRevision: 1,
+              candidateFingerprint: review.body.candidateFingerprint,
+              manualAttentionMs: 1_000,
+              attentionMeasurementVersion: "foreground-preview-v1",
+            })
+            .expect(201),
+        );
+      }
+      for (const [index, approval] of approvals.entries()) {
+        await prisma.editorialApproval.update({
+          where: { id: approval.body.id as string },
+          data: {
+            approvedAt: new Date(`2026-01-01T00:00:0${index + 1}.000Z`),
+          },
+        });
+      }
+
+      const firstPage = await request(app.getHttpServer())
+        .get(
+          `/api/v1/projects/${existingSource.projectId}/editorial-approvals?limit=2`,
+        )
+        .expect(200);
+      expect(
+        firstPage.body.items.map((item: { id: string }) => item.id),
+      ).toEqual([approvals[2]!.body.id, approvals[1]!.body.id]);
+      expect(firstPage.body.nextCursor).toBe(approvals[1]!.body.id);
+      const secondPage = await request(app.getHttpServer())
+        .get(
+          `/api/v1/projects/${existingSource.projectId}/editorial-approvals?limit=2&cursor=${firstPage.body.nextCursor as string}`,
+        )
+        .expect(200);
+      expect(
+        secondPage.body.items.map((item: { id: string }) => item.id),
+      ).toEqual([approvals[0]!.body.id]);
+      expect(secondPage.body.nextCursor).toBeNull();
+
+      await request(app.getHttpServer())
+        .get(
+          `/api/v1/projects/${existingSource.projectId}/editorial-approvals?cursor=not-a-uuid`,
+        )
+        .expect(400);
+      await request(app.getHttpServer())
+        .get(
+          `/api/v1/projects/${existingSource.projectId}/editorial-approvals?cursor=${randomUUID()}`,
+        )
+        .expect(400)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("EDITORIAL_APPROVAL_CURSOR_INVALID"),
+        );
+
+      const missingId = randomUUID();
+      await request(app.getHttpServer())
+        .get(`/api/v1/projects/${missingId}/editorial-approvals`)
+        .expect(404);
+      await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${missingId}/editorial-review`)
+        .expect(404);
+      await request(app.getHttpServer())
+        .post(`/api/v1/assembly-renders/${missingId}/editorial-approvals`)
+        .set("Idempotency-Key", randomUUID())
+        .send({
+          editorialRevision: 1,
+          candidateFingerprint: "f".repeat(64),
+          manualAttentionMs: 1_000,
+          attentionMeasurementVersion: "foreground-preview-v1",
+        })
+        .expect(404);
+    });
+
+    it("rejects global idempotency reuse across path, project, operation, and attention tuple", async () => {
+      const first = await readyApprovalCandidate();
+      const firstReview = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${first.cut.jobId}/editorial-review`)
+        .expect(200);
+      const body = {
+        editorialRevision: 1,
+        candidateFingerprint: firstReview.body.candidateFingerprint as string,
+        manualAttentionMs: 1_000,
+        attentionMeasurementVersion: "foreground-preview-v1",
+      };
+      for (const manualAttentionMs of [-1, 28_800_001, 1.5]) {
+        await request(app.getHttpServer())
+          .post(
+            `/api/v1/assembly-renders/${first.renderId}/editorial-approvals`,
+          )
+          .set("Idempotency-Key", randomUUID())
+          .send({ ...body, manualAttentionMs })
+          .expect(400);
+      }
+      await request(app.getHttpServer())
+        .post(`/api/v1/assembly-renders/${first.renderId}/editorial-approvals`)
+        .set("Idempotency-Key", randomUUID())
+        .send({ ...body, attentionMeasurementVersion: "browser-clock-v0" })
+        .expect(400);
+      expect(
+        await prisma.editorialApproval.count({
+          where: { projectId: first.cut.projectId },
+        }),
+      ).toBe(0);
+      expect(
+        await prisma.editorialOperationRequest.count({
+          where: { resolvedProjectId: first.cut.projectId },
+        }),
+      ).toBe(0);
+      const key = randomUUID();
+      await request(app.getHttpServer())
+        .post(`/api/v1/assembly-renders/${first.renderId}/editorial-approvals`)
+        .set("Idempotency-Key", key)
+        .send(body)
+        .expect(201);
+      await request(app.getHttpServer())
+        .post(`/api/v1/assembly-renders/${first.renderId}/editorial-approvals`)
+        .set("Idempotency-Key", key)
+        .send({ ...body, manualAttentionMs: 1_001 })
+        .expect(409)
+        .expect(({ body: responseBody }) =>
+          expect(responseBody.error.code).toBe("IDEMPOTENCY_CONFLICT"),
+        );
+
+      const revisedRecipe = await request(app.getHttpServer())
+        .put(`/api/v1/pipeline-jobs/${first.cut.jobId}/assembly-recipe`)
+        .set("Idempotency-Key", randomUUID())
+        .send({
+          ...fullRequest({}),
+          expectedRevision: 1,
+          cta: {
+            ...fullRequest({}).cta,
+            text: "Другой exact render",
+          },
+        })
+        .expect(200);
+      const sameProjectRender = await request(app.getHttpServer())
+        .post(`/api/v1/pipeline-jobs/${first.cut.jobId}/assembly-renders`)
+        .set("Idempotency-Key", randomUUID())
+        .send({ recipeRevision: revisedRecipe.body.revision.revision })
+        .expect(202);
+      await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${sameProjectRender.body.id}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", key)
+        .send(body)
+        .expect(409)
+        .expect(({ body: responseBody }) =>
+          expect(responseBody.error.code).toBe("IDEMPOTENCY_CONFLICT"),
+        );
+
+      const second = await readyApprovalCandidate();
+      const secondReview = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${second.cut.jobId}/editorial-review`)
+        .expect(200);
+      await request(app.getHttpServer())
+        .post(`/api/v1/assembly-renders/${second.renderId}/editorial-approvals`)
+        .set("Idempotency-Key", key)
+        .send({
+          ...body,
+          candidateFingerprint: secondReview.body.candidateFingerprint,
+        })
+        .expect(409)
+        .expect(({ body: responseBody }) =>
+          expect(responseBody.error.code).toBe("IDEMPOTENCY_CONFLICT"),
+        );
+
+      const operationKey = randomUUID();
+      await prisma.editorialOperationRequest.create({
+        data: {
+          id: randomUUID(),
+          idempotencyKey: operationKey,
+          operation: "CREATE_EDITORIAL_EXPORT",
+          canonicalRequestFingerprint: "e".repeat(64),
+          resolvedProjectId: first.cut.projectId,
+          exportIntentId: randomUUID(),
+        },
+      });
+      await request(app.getHttpServer())
+        .post(`/api/v1/assembly-renders/${first.renderId}/editorial-approvals`)
+        .set("Idempotency-Key", operationKey)
+        .send(body)
+        .expect(409)
+        .expect(({ body: responseBody }) =>
+          expect(responseBody.error.code).toBe("IDEMPOTENCY_CONFLICT"),
+        );
+    });
+
+    it("derives stale metadata, recipe, authorization, and rights states without mutating approval history", async () => {
+      const candidate = await readyApprovalCandidate({ withBanner: true });
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      const approvalKey = randomUUID();
+      const approvalBody = {
+        editorialRevision: 1,
+        candidateFingerprint: review.body.candidateFingerprint,
+        manualAttentionMs: 9_000,
+        attentionMeasurementVersion: "foreground-preview-v1",
+      };
+      const approved = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", approvalKey)
+        .send(approvalBody)
+        .expect(201);
+      const storedBefore = await prisma.editorialApproval.findUniqueOrThrow({
+        where: { id: approved.body.id as string },
+      });
+
+      const firstEditorialRevision =
+        await prisma.editorialPackageRevision.findFirstOrThrow({
+          where: { packageId: candidate.editorialPackageId, revision: 1 },
+        });
+      await prisma.$transaction([
+        prisma.editorialPackageRevision.create({
+          data: {
+            id: randomUUID(),
+            packageId: candidate.editorialPackageId,
+            revision: 2,
+            processingTemplateRevisionId:
+              firstEditorialRevision.processingTemplateRevisionId,
+            title: "Новая редакция",
+            description: firstEditorialRevision.description,
+            tags: firstEditorialRevision.tags ?? undefined,
+            thumbnailAssetId: firstEditorialRevision.thumbnailAssetId,
+          },
+        }),
+        prisma.editorialPackage.update({
+          where: { id: candidate.editorialPackageId },
+          data: { currentRevision: 2 },
+        }),
+      ]);
+      let listed = await request(app.getHttpServer())
+        .get(`/api/v1/projects/${candidate.cut.projectId}/editorial-approvals`)
+        .expect(200);
+      expect(listed.body.items[0]).toMatchObject({
+        id: approved.body.id,
+        state: "STALE",
+        staleReasons: ["EDITORIAL_REVISION_CHANGED"],
+      });
+
+      await request(app.getHttpServer())
+        .put(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/assembly-recipe`)
+        .set("Idempotency-Key", randomUUID())
+        .send({
+          ...fullRequest({ banners: [candidate.bannerId!] }),
+          expectedRevision: 1,
+          cta: {
+            ...fullRequest({}).cta,
+            text: "Новая версия рецепта",
+          },
+        })
+        .expect(200);
+      await prisma.sourceAuthorization.update({
+        where: {
+          sourceId_sourceVersion: {
+            sourceId: candidate.cut.sourceId,
+            sourceVersion: 1,
+          },
+        },
+        data: {
+          status: "NOT_REVIEWED",
+          basis: null,
+          declarationVersion: null,
+          decidedAt: null,
+        },
+      });
+      process.env.SOURCE_AUTHORIZATION_POLICY = "manual";
+      listed = await request(app.getHttpServer())
+        .get(`/api/v1/projects/${candidate.cut.projectId}/editorial-approvals`)
+        .expect(200);
+      expect(listed.body.items[0].staleReasons).toEqual([
+        "EDITORIAL_REVISION_CHANGED",
+        "ASSEMBLY_RECIPE_REVISION_CHANGED",
+        "AUTHORIZATION_REQUIRED",
+        "ASSET_RIGHTS_REQUIRED",
+      ]);
+      await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", approvalKey)
+        .send(approvalBody)
+        .expect(201)
+        .expect(({ body: replayBody }) =>
+          expect(replayBody).toMatchObject({
+            id: approved.body.id,
+            state: "STALE",
+            staleReasons: listed.body.items[0].staleReasons,
+          }),
+        );
+      process.env.SOURCE_AUTHORIZATION_POLICY = "local-auto";
+      expect(
+        await prisma.editorialApproval.findUniqueOrThrow({
+          where: { id: approved.body.id as string },
+        }),
+      ).toEqual(storedBefore);
+    });
+
+    it("reports recovery-written timestamp defects as field-specific null metrics without rewriting them", async () => {
+      const candidate = await readyApprovalCandidate();
+      const attempt = await prisma.jobAttempt.findFirstOrThrow({
+        where: {
+          jobId: candidate.assemblyJobId,
+          attemptNumber: 2,
+        },
+      });
+      const invalidStartedAt = new Date("2026-01-01T00:00:35.000Z");
+      const invalidFinishedAt = new Date("2026-01-01T00:00:34.000Z");
+      await prisma.jobAttempt.update({
+        where: { id: attempt.id },
+        data: { startedAt: invalidStartedAt, finishedAt: invalidFinishedAt },
+      });
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      expect(review.body).toMatchObject({
+        approvable: false,
+        blockers: ["PROCESSING_METRICS_INCOMPLETE"],
+        processingMetrics: {
+          assembly: {
+            initialQueueWaitMs: 10_000,
+            retryWaitMs: null,
+            activeAttemptMs: null,
+            firstStartToFinishMs: 100_000,
+            attemptCount: 2,
+            retryCount: 1,
+          },
+          incompleteReasons: [
+            "ASSEMBLY_RETRY_WAIT_TIMESTAMP_CLOCK_SKEW_SUSPECTED",
+            "ASSEMBLY_ACTIVE_ATTEMPT_TIMESTAMP_ORDER_INVALID",
+          ],
+        },
+      });
+      expect(
+        await prisma.jobAttempt.findUniqueOrThrow({
+          where: { id: attempt.id },
+        }),
+      ).toMatchObject({
+        startedAt: invalidStartedAt,
+        finishedAt: invalidFinishedAt,
+      });
+    });
+
+    async function readyApprovalCandidate(input?: {
+      withBanner?: boolean;
+      existingSource?: { projectId: string; sourceId: string };
+    }) {
+      const cut = await readyCut(input?.existingSource);
+      const bannerId = input?.withBanner
+        ? await readyAsset(cut, "BANNER")
+        : undefined;
+      const recipeResponse = await request(app.getHttpServer())
+        .put(`/api/v1/pipeline-jobs/${cut.jobId}/assembly-recipe`)
+        .set("Idempotency-Key", randomUUID())
+        .send(fullRequest({ banners: bannerId ? [bannerId] : [] }))
+        .expect(200);
+      const renderResponse = await request(app.getHttpServer())
+        .post(`/api/v1/pipeline-jobs/${cut.jobId}/assembly-renders`)
+        .set("Idempotency-Key", randomUUID())
+        .send({ recipeRevision: 1 })
+        .expect(202);
+      const assemblyJobId = renderResponse.body.job.id as string;
+      const assemblyQueuedAt = new Date("2026-01-01T00:00:00.000Z");
+      await prisma.pipelineJob.update({
+        where: { id: assemblyJobId },
+        data: {
+          state: "READY",
+          attemptCount: 2,
+          queuedAt: assemblyQueuedAt,
+          startedAt: new Date("2026-01-01T00:00:10.000Z"),
+          finishedAt: new Date("2026-01-01T00:01:50.000Z"),
+        },
+      });
+      const firstAttempt = await prisma.jobAttempt.findFirstOrThrow({
+        where: { jobId: assemblyJobId, attemptNumber: 1 },
+      });
+      await prisma.jobAttempt.update({
+        where: { id: firstAttempt.id },
+        data: {
+          state: "FAILED_RETRYABLE",
+          startedAt: new Date("2026-01-01T00:00:10.000Z"),
+          finishedAt: new Date("2026-01-01T00:00:40.000Z"),
+        },
+      });
+      await prisma.jobAttempt.create({
+        data: {
+          id: randomUUID(),
+          jobId: assemblyJobId,
+          attemptNumber: 2,
+          state: "READY",
+          startedAt: new Date("2026-01-01T00:01:00.000Z"),
+          finishedAt: new Date("2026-01-01T00:01:50.000Z"),
+        },
+      });
+      const artifactId = randomUUID();
+      const resultId = randomUUID();
+      await prisma.mediaArtifact.create({
+        data: {
+          id: artifactId,
+          projectId: cut.projectId,
+          sourceId: cut.sourceId,
+          role: "HORIZONTAL_ASSEMBLY_RESULT",
+          status: "READY",
+          objectKey: `test/approval/${artifactId}.mp4`,
+          sizeBytes: 700n,
+          sha256: "f".repeat(64),
+          contentType: "video/mp4",
+          lineageSourceId: cut.sourceId,
+          lineageSourceVersion: 1,
+          recipeVersion: "horizontal-render-v1",
+          pipelineJobId: assemblyJobId,
+          outputFilename: "assembled.mp4",
+        },
+      });
+      await prisma.assemblyRenderResult.create({
+        data: {
+          id: resultId,
+          renderIntentId: renderResponse.body.id as string,
+          artifactId,
+          durationMs: 120_000,
+          width: 1280,
+          height: 720,
+          fpsNumerator: 25,
+          fpsDenominator: 1,
+          videoCodec: "h264",
+          pixelFormat: "yuv420p",
+          audioCodec: "aac",
+          audioSampleRate: 48_000,
+          audioChannels: 2,
+          ffmpegVersion: "ffmpeg-test",
+          ffprobeVersion: "ffprobe-test",
+          integratedLoudnessLufs: -14,
+          truePeakDbtp: -1.5,
+          normalizationProfileResult: "PASS",
+          completedAt: new Date("2026-01-01T00:01:50.000Z"),
+        },
+      });
+      const thumbnailId = randomUUID();
+      await prisma.editorialAsset.create({
+        data: {
+          id: thumbnailId,
+          projectId: cut.projectId,
+          type: "THUMBNAIL",
+          status: "READY",
+          idempotencyKey: randomUUID(),
+          requestFingerprint: "thumbnail-test",
+          objectKey: `test/editorial/${thumbnailId}.png`,
+          originalFilename: "обложка.png",
+          contentType: "image/png",
+          sizeBytes: 300n,
+          sha256: "d".repeat(64),
+          width: 1280,
+          height: 720,
+        },
+      });
+      const template = await prisma.processingTemplate.create({
+        data: {
+          id: randomUUID(),
+          idempotencyKey: randomUUID(),
+          requestFingerprint: "template-test",
+          revisions: {
+            create: {
+              id: randomUUID(),
+              revision: 1,
+              name: "Тестовый шаблон",
+            },
+          },
+        },
+        include: { revisions: true },
+      });
+      const editorialPackageId = randomUUID();
+      await prisma.editorialPackage.create({
+        data: {
+          id: editorialPackageId,
+          projectId: cut.projectId,
+          pipelineJobId: cut.jobId,
+          cutResultArtifactId: cut.artifactId,
+          cutResultSha256: "b".repeat(64),
+          cutResultSizeBytes: 500n,
+          cutResultRecipeVersion: "stage1-cut-h264-v2",
+          lineageSourceId: cut.sourceId,
+          lineageSourceVersion: 1,
+          currentRevision: 1,
+          revisions: {
+            create: {
+              id: randomUUID(),
+              revision: 1,
+              processingTemplateRevisionId: template.revisions[0]!.id,
+              title: "Тестовый заголовок",
+              description: "Тестовое описание",
+              tags: ["первый", "второй"],
+              thumbnailAssetId: thumbnailId,
+            },
+          },
+        },
+      });
+      return {
+        cut,
+        bannerId,
+        recipeId: recipeResponse.body.id as string,
+        editorialPackageId,
+        renderId: renderResponse.body.id as string,
+        resultId,
+        assemblyJobId,
+      };
+    }
+
+    async function readyCut(existingSource?: {
+      projectId: string;
+      sourceId: string;
+    }): Promise<{
       projectId: string;
       sourceId: string;
       jobId: string;
       artifactId: string;
     }> {
-      const projectId = randomUUID();
-      const sourceId = randomUUID();
+      const projectId = existingSource?.projectId ?? randomUUID();
+      const sourceId = existingSource?.sourceId ?? randomUUID();
       const jobId = randomUUID();
       const artifactId = randomUUID();
-      await prisma.project.create({
-        data: {
-          id: projectId,
-          idempotencyKey: randomUUID(),
-          requestFingerprint: "recipe-test",
-          name: "Assembly recipe test",
-          status: "SOURCE_READY",
-          source: {
-            create: {
-              id: sourceId,
-              status: "READY",
-              originalFilename: "source.mp4",
-              contentType: "video/mp4",
-              sizeBytes: 1_000n,
-              sha256: "a".repeat(64),
-              durationMs: 300_000,
-              authorizations: {
-                create: {
-                  sourceVersion: 1,
-                  status: "CLEARED",
-                  basis: "OPERATOR_ATTESTATION",
-                  declarationVersion: "source-authorization-v1",
-                  decidedAt: new Date(),
+      if (!existingSource) {
+        await prisma.project.create({
+          data: {
+            id: projectId,
+            idempotencyKey: randomUUID(),
+            requestFingerprint: "recipe-test",
+            name: "Assembly recipe test",
+            status: "SOURCE_READY",
+            source: {
+              create: {
+                id: sourceId,
+                status: "READY",
+                originalFilename: "source.mp4",
+                contentType: "video/mp4",
+                sizeBytes: 1_000n,
+                sha256: "a".repeat(64),
+                durationMs: 300_000,
+                authorizations: {
+                  create: {
+                    sourceVersion: 1,
+                    status: "CLEARED",
+                    basis: "OPERATOR_ATTESTATION",
+                    declarationVersion: "source-authorization-v1",
+                    decidedAt: new Date(),
+                  },
                 },
               },
             },
           },
-        },
-      });
+        });
+      }
       await prisma.pipelineJob.create({
         data: {
           id: jobId,
@@ -655,6 +1450,28 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           state: "READY",
           idempotencyKey: randomUUID(),
           recipeVersion: "stage1-cut-h264-v2",
+          attemptCount: 2,
+          queuedAt: new Date("2026-01-01T00:00:00.000Z"),
+          startedAt: new Date("2026-01-01T00:00:10.000Z"),
+          finishedAt: new Date("2026-01-01T00:01:50.000Z"),
+          attempts: {
+            create: [
+              {
+                id: randomUUID(),
+                attemptNumber: 1,
+                state: "FAILED_RETRYABLE",
+                startedAt: new Date("2026-01-01T00:00:10.000Z"),
+                finishedAt: new Date("2026-01-01T00:00:40.000Z"),
+              },
+              {
+                id: randomUUID(),
+                attemptNumber: 2,
+                state: "READY",
+                startedAt: new Date("2026-01-01T00:01:00.000Z"),
+                finishedAt: new Date("2026-01-01T00:01:50.000Z"),
+              },
+            ],
+          },
           segment: {
             create: {
               id: randomUUID(),

@@ -331,6 +331,8 @@ async function seedProject(input: {
           sourceVersion: 1,
           type: "SOURCE_PROBE",
           state: input.probeState,
+          nextAttemptAt:
+            input.probeState === "RETRY_WAIT" ? input.createdAt : null,
           idempotencyKey: `library-probe-${input.id}`,
           recipeVersion: "source-probe-v1",
           createdAt: input.createdAt,
@@ -347,6 +349,7 @@ async function seedProject(input: {
           sourceVersion: 1,
           type: "CUT_SEGMENT",
           state,
+          nextAttemptAt: state === "RETRY_WAIT" ? input.createdAt : null,
           idempotencyKey: `library-cut-${input.id}-${index}`,
           recipeVersion: "cut-segment-v1",
           createdAt: input.createdAt,

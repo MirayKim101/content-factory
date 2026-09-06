@@ -406,6 +406,10 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
       jobId,
       attemptNumber: 2,
     });
+    await prisma.pipelineJob.update({
+      where: { id: jobId },
+      data: { nextAttemptAt: new Date(Date.now() - 1) },
+    });
     await dispatch.dispatch({ jobId, attemptNumber: 2 });
     await expect(queue?.getJob(`${jobId}-attempt-2`)).resolves.toBeTruthy();
     expect(`${jobId}-attempt-2`).not.toBe(`${jobId}-attempt-1`);

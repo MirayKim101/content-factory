@@ -382,6 +382,7 @@ export type EditorialAssetWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"EditorialAsset"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   packageRevisions?: Prisma.EditorialPackageRevisionListRelationFilter
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
 }
 
 export type EditorialAssetOrderByWithRelationInput = {
@@ -411,12 +412,14 @@ export type EditorialAssetOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   packageRevisions?: Prisma.EditorialPackageRevisionOrderByRelationAggregateInput
+  editorialApprovals?: Prisma.EditorialApprovalOrderByRelationAggregateInput
 }
 
 export type EditorialAssetWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   idempotencyKey?: string
   objectKey?: string
+  id_projectId?: Prisma.EditorialAssetIdProjectIdCompoundUniqueInput
   AND?: Prisma.EditorialAssetWhereInput | Prisma.EditorialAssetWhereInput[]
   OR?: Prisma.EditorialAssetWhereInput[]
   NOT?: Prisma.EditorialAssetWhereInput | Prisma.EditorialAssetWhereInput[]
@@ -443,7 +446,8 @@ export type EditorialAssetWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"EditorialAsset"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   packageRevisions?: Prisma.EditorialPackageRevisionListRelationFilter
-}, "id" | "idempotencyKey" | "objectKey">
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
+}, "id" | "idempotencyKey" | "objectKey" | "id_projectId">
 
 export type EditorialAssetOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -533,6 +537,7 @@ export type EditorialAssetCreateInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialAssetsInput
   packageRevisions?: Prisma.EditorialPackageRevisionCreateNestedManyWithoutThumbnailAssetInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutThumbnailAssetInput
 }
 
 export type EditorialAssetUncheckedCreateInput = {
@@ -561,6 +566,7 @@ export type EditorialAssetUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   packageRevisions?: Prisma.EditorialPackageRevisionUncheckedCreateNestedManyWithoutThumbnailAssetInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutThumbnailAssetInput
 }
 
 export type EditorialAssetUpdateInput = {
@@ -589,6 +595,7 @@ export type EditorialAssetUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialAssetsNestedInput
   packageRevisions?: Prisma.EditorialPackageRevisionUpdateManyWithoutThumbnailAssetNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutThumbnailAssetNestedInput
 }
 
 export type EditorialAssetUncheckedUpdateInput = {
@@ -617,6 +624,7 @@ export type EditorialAssetUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   packageRevisions?: Prisma.EditorialPackageRevisionUncheckedUpdateManyWithoutThumbnailAssetNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutThumbnailAssetNestedInput
 }
 
 export type EditorialAssetCreateManyInput = {
@@ -707,6 +715,11 @@ export type EditorialAssetListRelationFilter = {
 
 export type EditorialAssetOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type EditorialAssetIdProjectIdCompoundUniqueInput = {
+  id: string
+  projectId: string
 }
 
 export type EditorialAssetCountOrderByAggregateInput = {
@@ -809,6 +822,11 @@ export type EditorialAssetNullableScalarRelationFilter = {
   isNot?: Prisma.EditorialAssetWhereInput | null
 }
 
+export type EditorialAssetScalarRelationFilter = {
+  is?: Prisma.EditorialAssetWhereInput
+  isNot?: Prisma.EditorialAssetWhereInput
+}
+
 export type EditorialAssetCreateNestedManyWithoutProjectInput = {
   create?: Prisma.XOR<Prisma.EditorialAssetCreateWithoutProjectInput, Prisma.EditorialAssetUncheckedCreateWithoutProjectInput> | Prisma.EditorialAssetCreateWithoutProjectInput[] | Prisma.EditorialAssetUncheckedCreateWithoutProjectInput[]
   connectOrCreate?: Prisma.EditorialAssetCreateOrConnectWithoutProjectInput | Prisma.EditorialAssetCreateOrConnectWithoutProjectInput[]
@@ -875,6 +893,20 @@ export type EditorialAssetUpdateOneWithoutPackageRevisionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialAssetUpdateToOneWithWhereWithoutPackageRevisionsInput, Prisma.EditorialAssetUpdateWithoutPackageRevisionsInput>, Prisma.EditorialAssetUncheckedUpdateWithoutPackageRevisionsInput>
 }
 
+export type EditorialAssetCreateNestedOneWithoutEditorialApprovalsInput = {
+  create?: Prisma.XOR<Prisma.EditorialAssetCreateWithoutEditorialApprovalsInput, Prisma.EditorialAssetUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.EditorialAssetCreateOrConnectWithoutEditorialApprovalsInput
+  connect?: Prisma.EditorialAssetWhereUniqueInput
+}
+
+export type EditorialAssetUpdateOneRequiredWithoutEditorialApprovalsNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialAssetCreateWithoutEditorialApprovalsInput, Prisma.EditorialAssetUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.EditorialAssetCreateOrConnectWithoutEditorialApprovalsInput
+  upsert?: Prisma.EditorialAssetUpsertWithoutEditorialApprovalsInput
+  connect?: Prisma.EditorialAssetWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialAssetUpdateToOneWithWhereWithoutEditorialApprovalsInput, Prisma.EditorialAssetUpdateWithoutEditorialApprovalsInput>, Prisma.EditorialAssetUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
 export type EditorialAssetCreateWithoutProjectInput = {
   id: string
   type: $Enums.EditorialAssetType
@@ -900,6 +932,7 @@ export type EditorialAssetCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   packageRevisions?: Prisma.EditorialPackageRevisionCreateNestedManyWithoutThumbnailAssetInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutThumbnailAssetInput
 }
 
 export type EditorialAssetUncheckedCreateWithoutProjectInput = {
@@ -927,6 +960,7 @@ export type EditorialAssetUncheckedCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   packageRevisions?: Prisma.EditorialPackageRevisionUncheckedCreateNestedManyWithoutThumbnailAssetInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutThumbnailAssetInput
 }
 
 export type EditorialAssetCreateOrConnectWithoutProjectInput = {
@@ -1010,6 +1044,7 @@ export type EditorialAssetCreateWithoutPackageRevisionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialAssetsInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutThumbnailAssetInput
 }
 
 export type EditorialAssetUncheckedCreateWithoutPackageRevisionsInput = {
@@ -1037,6 +1072,7 @@ export type EditorialAssetUncheckedCreateWithoutPackageRevisionsInput = {
   height: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutThumbnailAssetInput
 }
 
 export type EditorialAssetCreateOrConnectWithoutPackageRevisionsInput = {
@@ -1080,6 +1116,7 @@ export type EditorialAssetUpdateWithoutPackageRevisionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialAssetsNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutThumbnailAssetNestedInput
 }
 
 export type EditorialAssetUncheckedUpdateWithoutPackageRevisionsInput = {
@@ -1107,6 +1144,135 @@ export type EditorialAssetUncheckedUpdateWithoutPackageRevisionsInput = {
   height?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutThumbnailAssetNestedInput
+}
+
+export type EditorialAssetCreateWithoutEditorialApprovalsInput = {
+  id: string
+  type: $Enums.EditorialAssetType
+  status?: $Enums.EditorialAssetStatus
+  idempotencyKey: string
+  requestFingerprint: string
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  width: number
+  height: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutEditorialAssetsInput
+  packageRevisions?: Prisma.EditorialPackageRevisionCreateNestedManyWithoutThumbnailAssetInput
+}
+
+export type EditorialAssetUncheckedCreateWithoutEditorialApprovalsInput = {
+  id: string
+  projectId: string
+  type: $Enums.EditorialAssetType
+  status?: $Enums.EditorialAssetStatus
+  idempotencyKey: string
+  requestFingerprint: string
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  width: number
+  height: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  packageRevisions?: Prisma.EditorialPackageRevisionUncheckedCreateNestedManyWithoutThumbnailAssetInput
+}
+
+export type EditorialAssetCreateOrConnectWithoutEditorialApprovalsInput = {
+  where: Prisma.EditorialAssetWhereUniqueInput
+  create: Prisma.XOR<Prisma.EditorialAssetCreateWithoutEditorialApprovalsInput, Prisma.EditorialAssetUncheckedCreateWithoutEditorialApprovalsInput>
+}
+
+export type EditorialAssetUpsertWithoutEditorialApprovalsInput = {
+  update: Prisma.XOR<Prisma.EditorialAssetUpdateWithoutEditorialApprovalsInput, Prisma.EditorialAssetUncheckedUpdateWithoutEditorialApprovalsInput>
+  create: Prisma.XOR<Prisma.EditorialAssetCreateWithoutEditorialApprovalsInput, Prisma.EditorialAssetUncheckedCreateWithoutEditorialApprovalsInput>
+  where?: Prisma.EditorialAssetWhereInput
+}
+
+export type EditorialAssetUpdateToOneWithWhereWithoutEditorialApprovalsInput = {
+  where?: Prisma.EditorialAssetWhereInput
+  data: Prisma.XOR<Prisma.EditorialAssetUpdateWithoutEditorialApprovalsInput, Prisma.EditorialAssetUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
+export type EditorialAssetUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumEditorialAssetTypeFieldUpdateOperationsInput | $Enums.EditorialAssetType
+  status?: Prisma.EnumEditorialAssetStatusFieldUpdateOperationsInput | $Enums.EditorialAssetStatus
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialAssetsNestedInput
+  packageRevisions?: Prisma.EditorialPackageRevisionUpdateManyWithoutThumbnailAssetNestedInput
+}
+
+export type EditorialAssetUncheckedUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumEditorialAssetTypeFieldUpdateOperationsInput | $Enums.EditorialAssetType
+  status?: Prisma.EnumEditorialAssetStatusFieldUpdateOperationsInput | $Enums.EditorialAssetStatus
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  packageRevisions?: Prisma.EditorialPackageRevisionUncheckedUpdateManyWithoutThumbnailAssetNestedInput
 }
 
 export type EditorialAssetCreateManyProjectInput = {
@@ -1160,6 +1326,7 @@ export type EditorialAssetUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   packageRevisions?: Prisma.EditorialPackageRevisionUpdateManyWithoutThumbnailAssetNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutThumbnailAssetNestedInput
 }
 
 export type EditorialAssetUncheckedUpdateWithoutProjectInput = {
@@ -1187,6 +1354,7 @@ export type EditorialAssetUncheckedUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   packageRevisions?: Prisma.EditorialPackageRevisionUncheckedUpdateManyWithoutThumbnailAssetNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutThumbnailAssetNestedInput
 }
 
 export type EditorialAssetUncheckedUpdateManyWithoutProjectInput = {
@@ -1222,10 +1390,12 @@ export type EditorialAssetUncheckedUpdateManyWithoutProjectInput = {
 
 export type EditorialAssetCountOutputType = {
   packageRevisions: number
+  editorialApprovals: number
 }
 
 export type EditorialAssetCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   packageRevisions?: boolean | EditorialAssetCountOutputTypeCountPackageRevisionsArgs
+  editorialApprovals?: boolean | EditorialAssetCountOutputTypeCountEditorialApprovalsArgs
 }
 
 /**
@@ -1243,6 +1413,13 @@ export type EditorialAssetCountOutputTypeDefaultArgs<ExtArgs extends runtime.Typ
  */
 export type EditorialAssetCountOutputTypeCountPackageRevisionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.EditorialPackageRevisionWhereInput
+}
+
+/**
+ * EditorialAssetCountOutputType without action
+ */
+export type EditorialAssetCountOutputTypeCountEditorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalWhereInput
 }
 
 
@@ -1273,6 +1450,7 @@ export type EditorialAssetSelect<ExtArgs extends runtime.Types.Extensions.Intern
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   packageRevisions?: boolean | Prisma.EditorialAsset$packageRevisionsArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.EditorialAsset$editorialApprovalsArgs<ExtArgs>
   _count?: boolean | Prisma.EditorialAssetCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["editorialAsset"]>
 
@@ -1363,6 +1541,7 @@ export type EditorialAssetOmit<ExtArgs extends runtime.Types.Extensions.Internal
 export type EditorialAssetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   packageRevisions?: boolean | Prisma.EditorialAsset$packageRevisionsArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.EditorialAsset$editorialApprovalsArgs<ExtArgs>
   _count?: boolean | Prisma.EditorialAssetCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EditorialAssetIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1377,6 +1556,7 @@ export type $EditorialAssetPayload<ExtArgs extends runtime.Types.Extensions.Inte
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
     packageRevisions: Prisma.$EditorialPackageRevisionPayload<ExtArgs>[]
+    editorialApprovals: Prisma.$EditorialApprovalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1799,6 +1979,7 @@ export interface Prisma__EditorialAssetClient<T, Null = never, ExtArgs extends r
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   packageRevisions<T extends Prisma.EditorialAsset$packageRevisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialAsset$packageRevisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialPackageRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  editorialApprovals<T extends Prisma.EditorialAsset$editorialApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialAsset$editorialApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2274,6 +2455,30 @@ export type EditorialAsset$packageRevisionsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.EditorialPackageRevisionScalarFieldEnum | Prisma.EditorialPackageRevisionScalarFieldEnum[]
+}
+
+/**
+ * EditorialAsset.editorialApprovals
+ */
+export type EditorialAsset$editorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApproval
+   */
+  select?: Prisma.EditorialApprovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApproval
+   */
+  omit?: Prisma.EditorialApprovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalWhereInput
+  orderBy?: Prisma.EditorialApprovalOrderByWithRelationInput | Prisma.EditorialApprovalOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalScalarFieldEnum | Prisma.EditorialApprovalScalarFieldEnum[]
 }
 
 /**
