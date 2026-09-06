@@ -3,9 +3,9 @@
 Обновлено: 2026-09-06 (продолжение разработки)
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
-Текущий сохранённый commit: `d33b57c feat: add editorial export workspace`.
-Stage 2 полностью сохранён локальными коммитами без push. Рабочее дерево содержит
-только это обновление handoff до его отдельной фиксации.
+Текущий сохранённый commit: `c7ee27f feat: add creator context foundation`.
+Stage 2 и backend Stage 2B-1 сохранены локальными коммитами без push. Рабочее
+дерево содержит только это обновление handoff до его отдельной фиксации.
 
 ## Решение владельца
 
@@ -252,6 +252,51 @@ Stage 2B: сначала architecture/ADR и acceptance для `CreatorProfile`,
 context, transcript/frame lineage и provider-neutral research/text/image ports;
 затем отдельные вертикальные slice. Capacity concurrency `2`, затем `4` остаётся
 отдельным измеряемым experiment и не блокирует последовательный MVP.
+
+## Текущая точка остановки: Stage 2B-1 backend
+
+ADR-008 и acceptance Stage 2B-1 получили independent architecture `CLEAN` и
+сохранены в `f175a3a`. Backend implementation сохранён в `c7ee27f` после
+independent implementation `CLEAN`.
+
+Готово в backend foundation:
+
+- immutable `CreatorProfile` revisions и постоянная normalized official-URL
+  identity без автоматического merge;
+- redacted list и отдельный private detail `editableRevision`;
+- private JPEG/PNG/WebP reference lifecycle, Range download, recovery и cleanup;
+- точные authorization/revoke revisions и явный CAS set-default;
+- exact source context по `(projectId, sourceId, sourceVersion)` и exact prompt
+  READY cut/result lineage;
+- server-owned `MANUAL` provenance и legacy compatibility;
+- экспортируемый `RESOLVE_AI_EDITORIAL_CONTEXT` с exact chain, deterministic
+  fingerprint и capability-specific blockers для text/realistic likeness;
+- feature admission `AI_CONTEXT_ENABLED`; реальных provider, ai-worker, transcript
+  или paid calls в этом slice нет.
+
+Independent evidence: API unit `123/123`, creator integration `2/2`, full
+integration `40 passed` (`17` opt-in skipped), migrations/schema drift `15/15`;
+lint, typecheck, build, Prisma validate, OpenAPI, Prettier и diff check passed.
+Concurrency same-key reference upload даёт один READY asset/object/ledger row;
+tampered cut artifact replay даёт controlled `409`; revoke блокирует likeness до
+provider dispatch, но не блокирует text-only/manual path.
+
+Операционный инцидент review: Prisma загрузил project environment и раньше
+планового rollout применил additive migration
+`20260906234500_creator_context_foundation` к локальной рабочей `content_factory`.
+Удалений и runtime/flag изменений не было. Файл migration после этого не менялся;
+его SHA-256 совпадает с ledger:
+`56d22c1a36065ea2e40e773ac33de09fb3bc3f136c73a5b07aaa233c5eb20de0`.
+Read-only аудит после CLEAN: migration applied один раз, `CreatorProfile = 0`,
+очередь terminal (`READY = 36`, `FAILED_FINAL = 2`), активных jobs нет.
+
+На следующей сессии не начинать новый backend slice. Первый шаг — frontend
+`Frontend Engineer — Creator Context Workspace` по frozen OpenAPI, затем
+independent frontend review, controlled local flag enablement, real manual UI
+smoke и документация. После завершения Stage 2B-1 остаются Stage 2B-2 sparse
+frames, Stage 2B-3 transcript/ai-worker, Stage 2B-4 cited research + text,
+Stage 2B-5 image suggestions и Stage 2B-6 integrated approval/export/benchmark.
+Twitch, vertical pipeline и publishing остаются Stage 3.
 
 ## Локальные данные
 
