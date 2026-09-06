@@ -203,13 +203,32 @@ exact intro/CTA, затем current/history/project list вернули ту ж�
 draft reload, strict 404, durable idempotency, pagination >50 и source/project
 switch защищены. Сохранён `adc7c6a`.
 
-Следующий slice Stage 2c назначен `Backend Engineer — Horizontal Assembly
-Render` по accepted `docs/decisions/ADR-006-horizontal-assembly-render.md`,
-сохранённой в `66e6903`. Он создаёт durable render intent/job, exact-revision
-FFmpeg assembly, real progress и immutable Range-ready result. Live migration,
-runtime restart, concurrency change и 30-minute benchmark запрещены до review.
-Preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
-остаётся отдельным измеряемым experiment после восстановления безопасного runner.
+Stage 2c завершён. Backend/worker сохранён в `a7a7f0a`, frontend workspace — в
+`28af0b8`; оба slice получили independent `CLEAN`. Additive migration
+`20260906170000_horizontal_assembly_render` применена локально после проверки
+пустой активной очереди. Worker развёрнут первым и healthy с concurrency `1` /
+лимитом `2 CPU`; затем запущен актуальный API и включён local admission.
+
+Live capacity smoke `ef018827-9a01-4dae-b4ea-d11b093c661e` собрал exact recipe
+revision 1 в READY MP4 длительностью `1802000 ms`: H.264/yuv420p, AAC stereo
+48 kHz, `-14.45 LUFS`, `-1.5 dBTP`, `527493763` bytes. Total wall
+`622482.81 ms`, поэтому `RTF ≈ 0.345`; encode `618160.8 ms`, download
+`1918.37 ms`, output probe `112.96 ms`, hash `736.61 ms`, upload `1481.49 ms`.
+Scratch reservation `4263525049` bytes, container memory peak `1881202688`
+bytes; scratch/cache после завершения пусты. Range 0–1048575 вернул `206`, ровно
+1048576 bytes. UI после reload показывает READY external status и ссылку
+«Скачать готовое видео» на source card.
+
+До полного Stage 2 остаются два slice: Stage 2d preview + exact manual approval
++ versioned metrics snapshot и Stage 2e background ZIP64 export + download.
+Они зафиксированы в accepted
+`docs/decisions/ADR-007-exact-editorial-approval-and-background-export.md` после
+independent architecture `CLEAN`. Stage 2d preview + exact approval + metrics
+авторизован следующим; Stage 2e начинается только после independent `CLEAN`
+и приёмки Stage 2d. Live migration/runtime каждого slice остаются запрещены до
+independent implementation review и rollout gate.
+Capacity concurrency `2`, затем `4` остаётся отдельным измеряемым experiment
+после восстановления безопасного runner и не блокирует последовательный MVP.
 
 ## Локальные данные
 
