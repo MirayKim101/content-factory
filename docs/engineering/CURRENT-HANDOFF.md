@@ -1,9 +1,9 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-03 (продолжение разработки)
+Обновлено: 2026-09-06 (продолжение разработки)
 Ветка: `main`
 Часовой пояс владельца: `Asia/Novosibirsk (UTC+7)`
-Текущий сохранённый commit: `3994fa7 test: add guarded parallel cutting benchmark and recovery monitoring`
+Текущий сохранённый commit: `2e31427 feat: add montage asset ingestion and probe`
 Сохранённый backend: `406326a`. Frontend manual editorial workspace прошёл
 проверку и сохранён локально в `1552490` (без push).
 
@@ -160,13 +160,9 @@ AC power → scoped idle-sleep inhibition → чистый
 level 1 → только после успеха level 2. На батарее новые прогоны запрещены.
 Level 4 закрыт: расчетный budget ~8.07GiB выше текущих 7.75GiB Docker VM;
 память VM автоматически не увеличивать. См. benchmark task для exact evidence.
-Docker dependencies healthy, API и
-web запущены локально. GET result через порт 3000 с Range 0–1023 дал 206/1024 B.
-В 21:18:56 UTC+7 API dev watcher остановлен root, запущен существующий compiled
-`node dist/main.js` без watch (exec session 27566, PID 23841), health 200.
-Это изолирует live runtime от новых source/codegen изменений Stage2a. Worker не
-перезапускался этим действием. После новых builds НЕ перезапускать API из dist
-до проверки migration compatibility и согласованного deployment.
+Docker dependencies healthy, API и web запущены локально. После Stage 2a
+worker пересобран и восстановлен с concurrency 1 / 2 CPU; API запущен из
+актуального `dist` на `127.0.0.1:3001`, web — на `127.0.0.1:3000`.
 
 ## Первый следующий шаг
 
@@ -181,8 +177,15 @@ worker 61, contracts 2, isolated PostgreSQL/HTTP 2; lint/typecheck/build,
 Prisma validate, OpenAPI drift, formatting и diff check passed. Real disposable
 FFprobe: H.264 MP4 принят, QuickTime MOV и corrupt input отклонены controlled.
 Malformed UUID дают HTTP 400; `реклама.mp4` сохраняется без mojibake. Миграция
-ещё НЕ применялась к рабочей базе; live smoke и frontend montage не выполнены.
-После freeze OpenAPI — frontend, independent review и browser smoke. Фоновая сборка,
+`20260903150000_montage_assets` применена к локальной рабочей базе 2026-09-06
+после проверки пустой активной очереди. Live smoke CLEAN: H.264/AAC MP4
+`интро-smoke.mp4` перешёл `PROBE_PENDING → READY` (640×360, 2000 ms,
+audio=true), list/get сохранили результат, Range 0–1023 вернул 206/1024 B,
+повтор с тем же idempotency key вернул тот же asset/job. Повреждённый MP4
+завершился `FAILED_FINAL` с `SOURCE_PROBE_FAILED`; старый cut result после
+миграции также вернул 206/1024 B. Frontend montage назначен
+`Frontend Engineer — Montage Assets Workspace`; independent review и browser
+smoke ещё не выполнены. После freeze OpenAPI — frontend, independent review и browser smoke. Фоновая сборка,
 preview/approval/export следуют отдельно. Capacity concurrency `2`, затем `4`
 остаётся отдельным измеряемым experiment после восстановления безопасного runner.
 
