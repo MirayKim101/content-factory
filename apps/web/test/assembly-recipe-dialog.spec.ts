@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   get: vi.fn(),
   save: vi.fn(),
   list: vi.fn(),
+  createRender: vi.fn(),
+  listRenders: vi.fn(),
   ApiError: class ApiError extends Error {
     constructor(
       readonly code: string,
@@ -35,6 +37,17 @@ vi.mock("~/shared/api/montage-assets", async (importOriginal) => {
   const original =
     await importOriginal<typeof import("~/shared/api/montage-assets")>();
   return { ...original, createMontageAssetsApi: () => ({ list: mocks.list }) };
+});
+vi.mock("~/shared/api/assembly-renders", async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import("~/shared/api/assembly-renders")>();
+  return {
+    ...original,
+    createAssemblyRendersApi: () => ({
+      create: mocks.createRender,
+      list: mocks.listRenders,
+    }),
+  };
 });
 
 import AssemblyRecipeDialog from "~/features/edit-assembly-recipe/ui/assembly-recipe-dialog.vue";
@@ -103,6 +116,16 @@ function recipe(revision = 1) {
     updatedAt: "2026-09-06T00:00:00.000Z",
   };
 }
+function persistedRender(
+  state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL",
+) {
+  return {
+    id: "00000000-0000-4000-8000-000000000110",
+    cutPipelineJobId: ids.job,
+    recipeRevision: 1,
+    job: { state },
+  };
+}
 function mountDialog() {
   vi.stubGlobal("useRuntimeConfig", () => ({
     public: { apiBasePath: "/api/v1" },
@@ -154,12 +177,16 @@ describe("AssemblyRecipeDialog", () => {
     mocks.get.mockReset();
     mocks.save.mockReset();
     mocks.list.mockReset();
+    mocks.createRender.mockReset();
+    mocks.listRenders.mockReset();
     mocks.get.mockResolvedValue(recipe());
     mocks.list.mockResolvedValue([
       asset(ids.intro, "INTRO"),
       asset(ids.banner, "BANNER"),
       asset("00000000-0000-4000-8000-000000000109", "BANNER", "PROBE_PENDING"),
     ]);
+    mocks.createRender.mockResolvedValue(persistedRender("QUEUED"));
+    mocks.listRenders.mockResolvedValue([]);
   });
   afterEach(() => vi.unstubAllGlobals());
 
@@ -220,5 +247,120 @@ describe("AssemblyRecipeDialog", () => {
     await wrapper.find("form").trigger("submit");
     await flushPromises();
     expect(mocks.save.mock.calls[0]![2]).toBe(mocks.save.mock.calls[1]![2]);
+  });
+
+  it("starts only the exact saved revision and retains its identity for an unknown-response retry", async () => {
+    mocks.createRender.mockRejectedValueOnce(new Error("Network"));
+    const wrapper = mountDialog();
+    await flushPromises();
+    const assemble = () =>
+      wrapper
+        .findAll("button")
+        .find((button) => button.text().includes("Собрать готовое видео"))!;
+    await assemble().trigger("click");
+    await flushPromises();
+    await assemble().trigger("click");
+    await flushPromises();
+    expect(mocks.createRender.mock.calls[0]![1]).toBe(1);
+    expect(mocks.createRender.mock.calls[0]![2]).toBe(
+      mocks.createRender.mock.calls[1]![2],
+    );
+  });
+
+  it("keeps launch disabled until the render list has confirmed no prior intent", async () => {
+    let resolveList: ((items: unknown[]) => void) | undefined;
+    mocks.listRenders.mockImplementation(
+      () =>
+        new Promise<unknown[]>((resolve) => {
+          resolveList = resolve;
+        }),
+    );
+    const wrapper = mountDialog();
+    await flushPromises();
+    expect(wrapper.text()).toContain("Загружаем сохранённый рецепт");
+    expect(
+      wrapper
+        .findAll("button")
+        .some((button) => button.text().includes("Собрать готовое видео")),
+    ).toBe(false);
+    expect(mocks.createRender).not.toHaveBeenCalled();
+    resolveList?.([]);
+    await flushPromises();
+    const assemble = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Собрать готовое видео"))!;
+    expect(assemble.attributes("disabled")).toBeUndefined();
+  });
+
+  it("fails closed on a render-list error and offers a controlled retry", async () => {
+    mocks.listRenders.mockRejectedValue(new Error("list unavailable"));
+    const wrapper = mountDialog();
+    await flushPromises();
+    expect(wrapper.text()).toContain("Запуск заблокирован");
+    const assemble = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Собрать готовое видео"))!;
+    expect(assemble.attributes("disabled")).toBeDefined();
+    expect(mocks.createRender).not.toHaveBeenCalled();
+  });
+
+  it("blocks launch when a fresh recipe reload fails but stale recipe data remains cached", async () => {
+    mocks.get
+      .mockResolvedValueOnce(recipe())
+      .mockRejectedValueOnce(new Error("recipe unavailable"));
+    const wrapper = mountDialog();
+    await flushPromises();
+    const reload = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Загрузить сохранённую"))!;
+    await reload.trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Не удалось загрузить рецепт");
+    const assemble = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Собрать готовое видео"))!;
+    expect(assemble.attributes("disabled")).toBeDefined();
+    await assemble.trigger("click");
+    expect(mocks.createRender).not.toHaveBeenCalled();
+  });
+
+  it.each(["QUEUED", "PROCESSING", "RETRY_WAIT", "READY"] as const)(
+    "blocks a duplicate submit for an existing %s exact revision",
+    async (state) => {
+      mocks.listRenders.mockResolvedValue([persistedRender(state)]);
+      const wrapper = mountDialog();
+      await flushPromises();
+      const assemble = wrapper
+        .findAll("button")
+        .find((button) => button.text().includes("Собрать готовое видео"))!;
+      expect(assemble.attributes("disabled")).toBeDefined();
+      await assemble.trigger("click");
+      expect(mocks.createRender).not.toHaveBeenCalled();
+    },
+  );
+
+  it("blocks a terminal exact revision and tells the owner to save a new revision", async () => {
+    mocks.listRenders.mockResolvedValue([persistedRender("FAILED_FINAL")]);
+    const wrapper = mountDialog();
+    await flushPromises();
+    expect(wrapper.text()).toContain("сохраните новую revision");
+    const assemble = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Собрать готовое видео"))!;
+    await assemble.trigger("click");
+    expect(mocks.createRender).not.toHaveBeenCalled();
+  });
+
+  it("does not claim a terminal response with a new key was queued", async () => {
+    mocks.createRender.mockResolvedValue(persistedRender("FAILED_FINAL"));
+    const wrapper = mountDialog();
+    await flushPromises();
+    await wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Собрать готовое видео"))!
+      .trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("сохраните новую revision");
+    expect(wrapper.text()).not.toContain("Сборка поставлена в очередь");
   });
 });

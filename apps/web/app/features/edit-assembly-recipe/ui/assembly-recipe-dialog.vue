@@ -24,11 +24,22 @@ import {
   type AssemblyRecipeSaveAttempt,
 } from "~/features/edit-assembly-recipe/model/save-identity";
 import {
+  clearAssemblyRenderAttempt,
+  loadAssemblyRenderAttempt,
+  saveAssemblyRenderAttempt,
+  type AssemblyRenderAttempt,
+} from "~/features/create-assembly-render/model/active-assembly-render-attempt-storage";
+import {
   AssemblyRecipesApiError,
   createAssemblyRecipesApi,
   type AssemblyRecipe,
   type SaveAssemblyRecipe,
 } from "~/shared/api/assembly-recipes";
+import {
+  AssemblyRendersApiError,
+  createAssemblyRendersApi,
+  type AssemblyRender,
+} from "~/shared/api/assembly-renders";
 import { createMontageAssetsApi } from "~/shared/api/montage-assets";
 import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
@@ -39,9 +50,13 @@ const props = defineProps<{
   filename: string;
   cutDurationMs: number;
 }>();
-const emit = defineEmits<{ "update:visible": [value: boolean] }>();
+const emit = defineEmits<{
+  "update:visible": [value: boolean];
+  "assembly-render-created": [render: AssemblyRender];
+}>();
 const config = useRuntimeConfig();
 const recipesApi = createAssemblyRecipesApi(config.public.apiBasePath);
+const rendersApi = createAssemblyRendersApi(config.public.apiBasePath);
 const montageApi = createMontageAssetsApi({
   apiBasePath: config.public.apiBasePath,
 });
@@ -55,13 +70,16 @@ const formError = ref<string>();
 const saveError = ref<string>();
 const success = ref<string>();
 const saveAttempt = ref<AssemblyRecipeSaveAttempt>();
+const renderAttempt = ref<AssemblyRenderAttempt>();
+const renderError = ref<string>();
+const renderSuccess = ref<string>();
 
 const recipe = useQuery({
   queryKey: computed(() => ["assembly-recipe", props.jobId]),
   queryFn: () => recipesApi.get(props.jobId),
   enabled: computed(() => props.visible),
   refetchOnMount: "always",
-  retry: 1,
+  retry: false,
 });
 const assets = useQuery({
   queryKey: computed(() => ["montage-assets", props.projectId]),
@@ -70,14 +88,44 @@ const assets = useQuery({
   refetchOnMount: "always",
   retry: 1,
 });
+const renders = useQuery({
+  queryKey: computed(() => ["assembly-renders", props.projectId]),
+  queryFn: () => rendersApi.list(props.projectId),
+  enabled: computed(() => props.visible),
+  refetchOnMount: "always",
+  retry: false,
+});
 const hydrationReady = computed(
-  () => recipe.isFetchedAfterMount.value && assets.isFetchedAfterMount.value,
+  () =>
+    recipe.isFetchedAfterMount.value &&
+    assets.isFetchedAfterMount.value &&
+    renders.isFetchedAfterMount.value,
 );
 const isLoading = computed(
   () =>
     props.visible &&
     !hydrationReady.value &&
-    (recipe.isFetching.value || assets.isFetching.value),
+    (recipe.isFetching.value ||
+      assets.isFetching.value ||
+      renders.isFetching.value),
+);
+const renderListLoading = computed(
+  () =>
+    props.visible &&
+    !renders.isFetchedAfterMount.value &&
+    renders.isFetching.value,
+);
+const renderLaunchReady = computed(
+  () =>
+    renders.isSuccess.value &&
+    renders.isFetchedAfterMount.value &&
+    !renders.isFetching.value,
+);
+const recipeLaunchReady = computed(
+  () =>
+    recipe.isSuccess.value &&
+    recipe.isFetchedAfterMount.value &&
+    !recipe.isFetching.value,
 );
 const readyAssets = computed(() =>
   (assets.data.value ?? []).filter((asset) => asset.status === "READY"),
@@ -94,6 +142,28 @@ const advertisementAssets = computed(() =>
 const bannerAssets = computed(() =>
   readyAssets.value.filter((asset) => asset.kind === "BANNER"),
 );
+const existingRenderForCurrentRecipe = computed(() => {
+  const revision = recipe.data.value?.revision.revision;
+  if (!revision) return undefined;
+  return (renders.data.value ?? []).find(
+    (item) =>
+      item.cutPipelineJobId === props.jobId && item.recipeRevision === revision,
+  );
+});
+const renderAlreadyRequested = computed(() => {
+  const state = existingRenderForCurrentRecipe.value?.job.state;
+  return (
+    state === "QUEUED" ||
+    state === "PROCESSING" ||
+    state === "RETRY_WAIT" ||
+    state === "READY"
+  );
+});
+const renderTerminalMessage = computed(() => {
+  if (existingRenderForCurrentRecipe.value?.job.state !== "FAILED_FINAL")
+    return undefined;
+  return "Сборка этой версии рецепта завершилась ошибкой. Измените рецепт, сохраните новую revision и только затем запустите новую сборку.";
+});
 
 function currentIdentity(): string {
   return `${props.projectId}:${props.jobId}`;
@@ -146,6 +216,9 @@ watch(
       saveError.value = undefined;
       success.value = undefined;
       saveAttempt.value = undefined;
+      renderAttempt.value = undefined;
+      renderError.value = undefined;
+      renderSuccess.value = undefined;
     }
   },
 );
@@ -239,6 +312,91 @@ const save = useMutation({
         : "Не удалось сохранить монтажный рецепт.";
   },
 });
+
+interface RenderRequest {
+  identity: string;
+  jobId: string;
+  recipeRevision: number;
+  idempotencyKey: string;
+}
+function requestRender(): void {
+  const savedRecipe = recipe.data.value;
+  if (
+    !savedRecipe ||
+    !recipeLaunchReady.value ||
+    !renderLaunchReady.value ||
+    existingRenderForCurrentRecipe.value ||
+    render.isPending.value ||
+    save.isPending.value
+  ) {
+    if (renderTerminalMessage.value)
+      renderError.value = renderTerminalMessage.value;
+    return;
+  }
+  const revision = savedRecipe.revision.revision;
+  const recovered = loadAssemblyRenderAttempt(props.jobId);
+  renderAttempt.value =
+    renderAttempt.value?.recipeRevision === revision
+      ? renderAttempt.value
+      : recovered?.recipeRevision === revision
+        ? recovered
+        : {
+            recipeRevision: revision,
+            key: `horizontal-assembly-${crypto.randomUUID()}`,
+          };
+  saveAssemblyRenderAttempt(props.jobId, renderAttempt.value);
+  renderError.value = undefined;
+  render.mutate({
+    identity: currentIdentity(),
+    jobId: props.jobId,
+    recipeRevision: revision,
+    idempotencyKey: renderAttempt.value.key,
+  });
+}
+const render = useMutation({
+  mutationFn: (request: RenderRequest) =>
+    rendersApi.create(
+      request.jobId,
+      request.recipeRevision,
+      request.idempotencyKey,
+    ),
+  onSuccess: (value, request) => {
+    if (request.identity !== currentIdentity()) return;
+    clearAssemblyRenderAttempt(request.jobId);
+    renderAttempt.value = undefined;
+    renderError.value = undefined;
+    renderSuccess.value =
+      value.job.state === "FAILED_FINAL"
+        ? undefined
+        : value.job.state === "READY"
+          ? "Эта версия уже собрана. Готовое видео доступно на карточке."
+          : "Сборка поставлена в очередь. Прогресс виден на карточке видео.";
+    if (value.job.state === "FAILED_FINAL") {
+      renderError.value =
+        "Сборка этой версии рецепта завершилась ошибкой. Измените рецепт, сохраните новую revision и только затем запустите новую сборку.";
+    }
+    queryClient.setQueryData<AssemblyRender[]>(
+      ["assembly-renders", props.projectId],
+      (current) => {
+        const items = current ?? [];
+        return [value, ...items.filter((item) => item.id !== value.id)];
+      },
+    );
+    void queryClient.invalidateQueries({
+      queryKey: ["assembly-renders", props.projectId],
+    });
+    emit("assembly-render-created", value);
+  },
+  onError: (error, request) => {
+    if (request.identity !== currentIdentity()) return;
+    renderError.value =
+      error instanceof AssemblyRendersApiError && error.code === "NETWORK_ERROR"
+        ? "Неизвестно, получил ли сервер запрос. Нажмите «Собрать готовое видео» ещё раз: будет использован тот же ключ без дубля."
+        : error instanceof Error
+          ? error.message
+          : "Не удалось поставить сборку в очередь.";
+  },
+});
 function reloadSaved(): void {
   if (hasUnsavedChanges.value && !reloadArmed.value) {
     reloadArmed.value = true;
@@ -247,14 +405,16 @@ function reloadSaved(): void {
     return;
   }
   const identity = currentIdentity();
-  void Promise.all([recipe.refetch(), assets.refetch()]).then(
-    ([freshRecipe]) => {
-      if (identity !== currentIdentity()) return;
-      loadRecipe(freshRecipe.data);
-      saveError.value = undefined;
-      success.value = undefined;
-    },
-  );
+  void Promise.all([
+    recipe.refetch(),
+    assets.refetch(),
+    renders.refetch(),
+  ]).then(([freshRecipe]) => {
+    if (identity !== currentIdentity()) return;
+    loadRecipe(freshRecipe.data);
+    saveError.value = undefined;
+    success.value = undefined;
+  });
 }
 </script>
 
@@ -276,7 +436,7 @@ function reloadSaved(): void {
   >
     <section
       class="assembly-dialog"
-      :aria-busy="isLoading || save.isPending.value"
+      :aria-busy="isLoading || save.isPending.value || render.isPending.value"
     >
       <p v-if="isLoading" role="status">
         Загружаем сохранённый рецепт и готовые материалы…
@@ -296,6 +456,21 @@ function reloadSaved(): void {
             severity="secondary"
             @click="reloadSaved"
           />
+        </p>
+        <p v-if="renderListLoading" role="status">
+          Проверяем сохранённые сборки этого рецепта…
+        </p>
+        <p v-else-if="renders.isError.value" class="error" role="alert">
+          Не удалось проверить сохранённые сборки. Запуск заблокирован, пока
+          список не будет загружен.
+          <Button
+            label="Повторить проверку сборок"
+            severity="secondary"
+            @click="renders.refetch()"
+          />
+        </p>
+        <p v-if="renderTerminalMessage" class="error" role="status">
+          {{ renderTerminalMessage }}
         </p>
         <form @submit.prevent="requestSave">
           <fieldset
@@ -484,6 +659,10 @@ function reloadSaved(): void {
           <p v-if="formError" class="error" role="alert">{{ formError }}</p>
           <p v-if="saveError" class="error" role="alert">{{ saveError }}</p>
           <p v-if="success" class="success" role="status">{{ success }}</p>
+          <p v-if="renderError" class="error" role="alert">{{ renderError }}</p>
+          <p v-if="renderSuccess" class="success" role="status">
+            {{ renderSuccess }}
+          </p>
           <div class="actions">
             <Button
               type="button"
@@ -498,6 +677,22 @@ function reloadSaved(): void {
               :disabled="
                 assets.data.value === undefined || save.isPending.value
               "
+            />
+            <Button
+              type="button"
+              label="Собрать готовое видео"
+              :loading="render.isPending.value"
+              :disabled="
+                !recipe.data.value ||
+                !recipeLaunchReady ||
+                hasUnsavedChanges ||
+                renderAlreadyRequested ||
+                Boolean(renderTerminalMessage) ||
+                !renderLaunchReady ||
+                save.isPending.value ||
+                render.isPending.value
+              "
+              @click="requestRender"
             />
           </div>
         </form>

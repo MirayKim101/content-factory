@@ -8,8 +8,9 @@ import {
   type PipelineJob,
 } from "~/shared/api/media-pipeline";
 import { formatDisplayTimecode } from "~/shared/lib/timecode";
+import AssemblyRenderCard from "~/entities/assembly-render/ui/assembly-render-card.vue";
 
-const props = defineProps<{ jobId: string }>();
+const props = defineProps<{ jobId: string; projectId?: string }>();
 const emit = defineEmits<{
   cloneSegment: [bounds: { startMs: number; endMs: number }];
   editEditorial: [jobId: string];
@@ -119,6 +120,11 @@ const label = computed(
           "
           >Настроить монтаж</Button
         >
+        <AssemblyRenderCard
+          v-if="projectId"
+          :project-id="projectId"
+          :cut-job-id="query.data.value.id"
+        />
       </div>
       <div v-else-if="query.data.value.failure" class="error" role="alert">
         <p>{{ query.data.value.failure.message }}</p>

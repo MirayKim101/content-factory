@@ -501,6 +501,7 @@ watch(
                 v-for="jobId in ensureState(row.id).jobs"
                 :key="jobId"
                 :job-id="jobId"
+                :project-id="row.id"
                 @clone-segment="cloneSegment(row.id, $event)"
                 @edit-editorial="
                   openEditorial(
