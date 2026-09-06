@@ -172,6 +172,32 @@ class EditorialRevisionResponseDto {
   @ApiProperty({ type: [String], nullable: true }) tags!: string[] | null;
   @ApiProperty({ type: EditorialAssetResponseDto, nullable: true })
   thumbnail!: EditorialAssetResponseDto | null;
+  @ApiProperty({
+    type: "object",
+    properties: {
+      metadata: {
+        type: "object",
+        properties: {
+          mode: { type: "string", enum: ["MANUAL", "AI_ASSISTED", "MIXED"] },
+          basisVersion: { type: "string" },
+        },
+        required: ["mode", "basisVersion"],
+      },
+      thumbnail: {
+        type: "object",
+        properties: {
+          mode: { type: "string", enum: ["MANUAL", "AI_ASSISTED", "MIXED"] },
+          basisVersion: { type: "string" },
+        },
+        required: ["mode", "basisVersion"],
+      },
+    },
+    required: ["metadata", "thumbnail"],
+  })
+  provenance!: {
+    metadata: { mode: string; basisVersion: string };
+    thumbnail: { mode: string; basisVersion: string };
+  };
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
 }
 

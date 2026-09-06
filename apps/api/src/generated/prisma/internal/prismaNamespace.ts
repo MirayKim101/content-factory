@@ -423,7 +423,18 @@ export const ModelName = {
   EditorialExportIntent: 'EditorialExportIntent',
   EditorialExportResult: 'EditorialExportResult',
   CutSegment: 'CutSegment',
-  JobAttempt: 'JobAttempt'
+  JobAttempt: 'JobAttempt',
+  CreatorProfile: 'CreatorProfile',
+  CreatorProfileOfficialUrlIdentity: 'CreatorProfileOfficialUrlIdentity',
+  CreatorProfileRevision: 'CreatorProfileRevision',
+  CreatorReferenceAsset: 'CreatorReferenceAsset',
+  CreatorReferenceAuthorizationRevision: 'CreatorReferenceAuthorizationRevision',
+  SourceEditorialContext: 'SourceEditorialContext',
+  SourceEditorialContextRevision: 'SourceEditorialContextRevision',
+  CutEditorialPrompt: 'CutEditorialPrompt',
+  CutEditorialPromptRevision: 'CutEditorialPromptRevision',
+  AiContentOperationRequest: 'AiContentOperationRequest',
+  EditorialComponentProvenance: 'EditorialComponentProvenance'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -439,7 +450,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2441,6 +2452,820 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CreatorProfile: {
+      payload: Prisma.$CreatorProfilePayload<ExtArgs>
+      fields: Prisma.CreatorProfileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CreatorProfileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CreatorProfileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>
+        }
+        findFirst: {
+          args: Prisma.CreatorProfileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CreatorProfileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>
+        }
+        findMany: {
+          args: Prisma.CreatorProfileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>[]
+        }
+        create: {
+          args: Prisma.CreatorProfileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>
+        }
+        createMany: {
+          args: Prisma.CreatorProfileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CreatorProfileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>[]
+        }
+        delete: {
+          args: Prisma.CreatorProfileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>
+        }
+        update: {
+          args: Prisma.CreatorProfileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>
+        }
+        deleteMany: {
+          args: Prisma.CreatorProfileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CreatorProfileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CreatorProfileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>[]
+        }
+        upsert: {
+          args: Prisma.CreatorProfileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfilePayload>
+        }
+        aggregate: {
+          args: Prisma.CreatorProfileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCreatorProfile>
+        }
+        groupBy: {
+          args: Prisma.CreatorProfileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorProfileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CreatorProfileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorProfileCountAggregateOutputType> | number
+        }
+      }
+    }
+    CreatorProfileOfficialUrlIdentity: {
+      payload: Prisma.$CreatorProfileOfficialUrlIdentityPayload<ExtArgs>
+      fields: Prisma.CreatorProfileOfficialUrlIdentityFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>
+        }
+        findFirst: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>
+        }
+        findMany: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>[]
+        }
+        create: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>
+        }
+        createMany: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>[]
+        }
+        delete: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>
+        }
+        update: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>
+        }
+        deleteMany: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>[]
+        }
+        upsert: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload>
+        }
+        aggregate: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCreatorProfileOfficialUrlIdentity>
+        }
+        groupBy: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorProfileOfficialUrlIdentityGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CreatorProfileOfficialUrlIdentityCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorProfileOfficialUrlIdentityCountAggregateOutputType> | number
+        }
+      }
+    }
+    CreatorProfileRevision: {
+      payload: Prisma.$CreatorProfileRevisionPayload<ExtArgs>
+      fields: Prisma.CreatorProfileRevisionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CreatorProfileRevisionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CreatorProfileRevisionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>
+        }
+        findFirst: {
+          args: Prisma.CreatorProfileRevisionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CreatorProfileRevisionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>
+        }
+        findMany: {
+          args: Prisma.CreatorProfileRevisionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>[]
+        }
+        create: {
+          args: Prisma.CreatorProfileRevisionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>
+        }
+        createMany: {
+          args: Prisma.CreatorProfileRevisionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CreatorProfileRevisionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>[]
+        }
+        delete: {
+          args: Prisma.CreatorProfileRevisionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>
+        }
+        update: {
+          args: Prisma.CreatorProfileRevisionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>
+        }
+        deleteMany: {
+          args: Prisma.CreatorProfileRevisionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CreatorProfileRevisionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CreatorProfileRevisionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>[]
+        }
+        upsert: {
+          args: Prisma.CreatorProfileRevisionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorProfileRevisionPayload>
+        }
+        aggregate: {
+          args: Prisma.CreatorProfileRevisionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCreatorProfileRevision>
+        }
+        groupBy: {
+          args: Prisma.CreatorProfileRevisionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorProfileRevisionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CreatorProfileRevisionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorProfileRevisionCountAggregateOutputType> | number
+        }
+      }
+    }
+    CreatorReferenceAsset: {
+      payload: Prisma.$CreatorReferenceAssetPayload<ExtArgs>
+      fields: Prisma.CreatorReferenceAssetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CreatorReferenceAssetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CreatorReferenceAssetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>
+        }
+        findFirst: {
+          args: Prisma.CreatorReferenceAssetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CreatorReferenceAssetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>
+        }
+        findMany: {
+          args: Prisma.CreatorReferenceAssetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>[]
+        }
+        create: {
+          args: Prisma.CreatorReferenceAssetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>
+        }
+        createMany: {
+          args: Prisma.CreatorReferenceAssetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CreatorReferenceAssetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>[]
+        }
+        delete: {
+          args: Prisma.CreatorReferenceAssetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>
+        }
+        update: {
+          args: Prisma.CreatorReferenceAssetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>
+        }
+        deleteMany: {
+          args: Prisma.CreatorReferenceAssetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CreatorReferenceAssetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CreatorReferenceAssetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>[]
+        }
+        upsert: {
+          args: Prisma.CreatorReferenceAssetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAssetPayload>
+        }
+        aggregate: {
+          args: Prisma.CreatorReferenceAssetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCreatorReferenceAsset>
+        }
+        groupBy: {
+          args: Prisma.CreatorReferenceAssetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorReferenceAssetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CreatorReferenceAssetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorReferenceAssetCountAggregateOutputType> | number
+        }
+      }
+    }
+    CreatorReferenceAuthorizationRevision: {
+      payload: Prisma.$CreatorReferenceAuthorizationRevisionPayload<ExtArgs>
+      fields: Prisma.CreatorReferenceAuthorizationRevisionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>
+        }
+        findFirst: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>
+        }
+        findMany: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>[]
+        }
+        create: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>
+        }
+        createMany: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>[]
+        }
+        delete: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>
+        }
+        update: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>
+        }
+        deleteMany: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>[]
+        }
+        upsert: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CreatorReferenceAuthorizationRevisionPayload>
+        }
+        aggregate: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCreatorReferenceAuthorizationRevision>
+        }
+        groupBy: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorReferenceAuthorizationRevisionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CreatorReferenceAuthorizationRevisionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CreatorReferenceAuthorizationRevisionCountAggregateOutputType> | number
+        }
+      }
+    }
+    SourceEditorialContext: {
+      payload: Prisma.$SourceEditorialContextPayload<ExtArgs>
+      fields: Prisma.SourceEditorialContextFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourceEditorialContextFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourceEditorialContextFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>
+        }
+        findFirst: {
+          args: Prisma.SourceEditorialContextFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourceEditorialContextFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>
+        }
+        findMany: {
+          args: Prisma.SourceEditorialContextFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>[]
+        }
+        create: {
+          args: Prisma.SourceEditorialContextCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>
+        }
+        createMany: {
+          args: Prisma.SourceEditorialContextCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourceEditorialContextCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>[]
+        }
+        delete: {
+          args: Prisma.SourceEditorialContextDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>
+        }
+        update: {
+          args: Prisma.SourceEditorialContextUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>
+        }
+        deleteMany: {
+          args: Prisma.SourceEditorialContextDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourceEditorialContextUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourceEditorialContextUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>[]
+        }
+        upsert: {
+          args: Prisma.SourceEditorialContextUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextPayload>
+        }
+        aggregate: {
+          args: Prisma.SourceEditorialContextAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourceEditorialContext>
+        }
+        groupBy: {
+          args: Prisma.SourceEditorialContextGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceEditorialContextGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourceEditorialContextCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceEditorialContextCountAggregateOutputType> | number
+        }
+      }
+    }
+    SourceEditorialContextRevision: {
+      payload: Prisma.$SourceEditorialContextRevisionPayload<ExtArgs>
+      fields: Prisma.SourceEditorialContextRevisionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourceEditorialContextRevisionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourceEditorialContextRevisionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>
+        }
+        findFirst: {
+          args: Prisma.SourceEditorialContextRevisionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourceEditorialContextRevisionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>
+        }
+        findMany: {
+          args: Prisma.SourceEditorialContextRevisionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>[]
+        }
+        create: {
+          args: Prisma.SourceEditorialContextRevisionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>
+        }
+        createMany: {
+          args: Prisma.SourceEditorialContextRevisionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourceEditorialContextRevisionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>[]
+        }
+        delete: {
+          args: Prisma.SourceEditorialContextRevisionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>
+        }
+        update: {
+          args: Prisma.SourceEditorialContextRevisionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>
+        }
+        deleteMany: {
+          args: Prisma.SourceEditorialContextRevisionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourceEditorialContextRevisionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourceEditorialContextRevisionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>[]
+        }
+        upsert: {
+          args: Prisma.SourceEditorialContextRevisionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceEditorialContextRevisionPayload>
+        }
+        aggregate: {
+          args: Prisma.SourceEditorialContextRevisionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourceEditorialContextRevision>
+        }
+        groupBy: {
+          args: Prisma.SourceEditorialContextRevisionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceEditorialContextRevisionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourceEditorialContextRevisionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceEditorialContextRevisionCountAggregateOutputType> | number
+        }
+      }
+    }
+    CutEditorialPrompt: {
+      payload: Prisma.$CutEditorialPromptPayload<ExtArgs>
+      fields: Prisma.CutEditorialPromptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CutEditorialPromptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CutEditorialPromptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>
+        }
+        findFirst: {
+          args: Prisma.CutEditorialPromptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CutEditorialPromptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>
+        }
+        findMany: {
+          args: Prisma.CutEditorialPromptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>[]
+        }
+        create: {
+          args: Prisma.CutEditorialPromptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>
+        }
+        createMany: {
+          args: Prisma.CutEditorialPromptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CutEditorialPromptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>[]
+        }
+        delete: {
+          args: Prisma.CutEditorialPromptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>
+        }
+        update: {
+          args: Prisma.CutEditorialPromptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>
+        }
+        deleteMany: {
+          args: Prisma.CutEditorialPromptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CutEditorialPromptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CutEditorialPromptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>[]
+        }
+        upsert: {
+          args: Prisma.CutEditorialPromptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptPayload>
+        }
+        aggregate: {
+          args: Prisma.CutEditorialPromptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCutEditorialPrompt>
+        }
+        groupBy: {
+          args: Prisma.CutEditorialPromptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutEditorialPromptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CutEditorialPromptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutEditorialPromptCountAggregateOutputType> | number
+        }
+      }
+    }
+    CutEditorialPromptRevision: {
+      payload: Prisma.$CutEditorialPromptRevisionPayload<ExtArgs>
+      fields: Prisma.CutEditorialPromptRevisionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CutEditorialPromptRevisionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CutEditorialPromptRevisionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>
+        }
+        findFirst: {
+          args: Prisma.CutEditorialPromptRevisionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CutEditorialPromptRevisionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>
+        }
+        findMany: {
+          args: Prisma.CutEditorialPromptRevisionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>[]
+        }
+        create: {
+          args: Prisma.CutEditorialPromptRevisionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>
+        }
+        createMany: {
+          args: Prisma.CutEditorialPromptRevisionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CutEditorialPromptRevisionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>[]
+        }
+        delete: {
+          args: Prisma.CutEditorialPromptRevisionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>
+        }
+        update: {
+          args: Prisma.CutEditorialPromptRevisionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>
+        }
+        deleteMany: {
+          args: Prisma.CutEditorialPromptRevisionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CutEditorialPromptRevisionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CutEditorialPromptRevisionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>[]
+        }
+        upsert: {
+          args: Prisma.CutEditorialPromptRevisionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CutEditorialPromptRevisionPayload>
+        }
+        aggregate: {
+          args: Prisma.CutEditorialPromptRevisionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCutEditorialPromptRevision>
+        }
+        groupBy: {
+          args: Prisma.CutEditorialPromptRevisionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutEditorialPromptRevisionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CutEditorialPromptRevisionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CutEditorialPromptRevisionCountAggregateOutputType> | number
+        }
+      }
+    }
+    AiContentOperationRequest: {
+      payload: Prisma.$AiContentOperationRequestPayload<ExtArgs>
+      fields: Prisma.AiContentOperationRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiContentOperationRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiContentOperationRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.AiContentOperationRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiContentOperationRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>
+        }
+        findMany: {
+          args: Prisma.AiContentOperationRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>[]
+        }
+        create: {
+          args: Prisma.AiContentOperationRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>
+        }
+        createMany: {
+          args: Prisma.AiContentOperationRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiContentOperationRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.AiContentOperationRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>
+        }
+        update: {
+          args: Prisma.AiContentOperationRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiContentOperationRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiContentOperationRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiContentOperationRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiContentOperationRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiContentOperationRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.AiContentOperationRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiContentOperationRequest>
+        }
+        groupBy: {
+          args: Prisma.AiContentOperationRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiContentOperationRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiContentOperationRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiContentOperationRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    EditorialComponentProvenance: {
+      payload: Prisma.$EditorialComponentProvenancePayload<ExtArgs>
+      fields: Prisma.EditorialComponentProvenanceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EditorialComponentProvenanceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EditorialComponentProvenanceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>
+        }
+        findFirst: {
+          args: Prisma.EditorialComponentProvenanceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EditorialComponentProvenanceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>
+        }
+        findMany: {
+          args: Prisma.EditorialComponentProvenanceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>[]
+        }
+        create: {
+          args: Prisma.EditorialComponentProvenanceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>
+        }
+        createMany: {
+          args: Prisma.EditorialComponentProvenanceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EditorialComponentProvenanceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>[]
+        }
+        delete: {
+          args: Prisma.EditorialComponentProvenanceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>
+        }
+        update: {
+          args: Prisma.EditorialComponentProvenanceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>
+        }
+        deleteMany: {
+          args: Prisma.EditorialComponentProvenanceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EditorialComponentProvenanceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EditorialComponentProvenanceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>[]
+        }
+        upsert: {
+          args: Prisma.EditorialComponentProvenanceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EditorialComponentProvenancePayload>
+        }
+        aggregate: {
+          args: Prisma.EditorialComponentProvenanceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEditorialComponentProvenance>
+        }
+        groupBy: {
+          args: Prisma.EditorialComponentProvenanceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialComponentProvenanceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EditorialComponentProvenanceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EditorialComponentProvenanceCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3034,6 +3859,200 @@ export const JobAttemptScalarFieldEnum = {
 export type JobAttemptScalarFieldEnum = (typeof JobAttemptScalarFieldEnum)[keyof typeof JobAttemptScalarFieldEnum]
 
 
+export const CreatorProfileScalarFieldEnum = {
+  id: 'id',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CreatorProfileScalarFieldEnum = (typeof CreatorProfileScalarFieldEnum)[keyof typeof CreatorProfileScalarFieldEnum]
+
+
+export const CreatorProfileOfficialUrlIdentityScalarFieldEnum = {
+  id: 'id',
+  creatorProfileId: 'creatorProfileId',
+  canonicalizationVersion: 'canonicalizationVersion',
+  canonicalUrl: 'canonicalUrl',
+  createdAt: 'createdAt'
+} as const
+
+export type CreatorProfileOfficialUrlIdentityScalarFieldEnum = (typeof CreatorProfileOfficialUrlIdentityScalarFieldEnum)[keyof typeof CreatorProfileOfficialUrlIdentityScalarFieldEnum]
+
+
+export const CreatorProfileRevisionScalarFieldEnum = {
+  id: 'id',
+  creatorProfileId: 'creatorProfileId',
+  revision: 'revision',
+  canonicalDisplayName: 'canonicalDisplayName',
+  officialUrlIdentityId: 'officialUrlIdentityId',
+  officialUrl: 'officialUrl',
+  primaryLanguage: 'primaryLanguage',
+  topics: 'topics',
+  editorialNotes: 'editorialNotes',
+  restrictions: 'restrictions',
+  likenessPolicy: 'likenessPolicy',
+  defaultReferenceAssetId: 'defaultReferenceAssetId',
+  defaultReferenceAuthorizationRevisionId: 'defaultReferenceAuthorizationRevisionId',
+  defaultReferenceAuthorizationRevision: 'defaultReferenceAuthorizationRevision',
+  createdAt: 'createdAt'
+} as const
+
+export type CreatorProfileRevisionScalarFieldEnum = (typeof CreatorProfileRevisionScalarFieldEnum)[keyof typeof CreatorProfileRevisionScalarFieldEnum]
+
+
+export const CreatorReferenceAssetScalarFieldEnum = {
+  id: 'id',
+  creatorProfileId: 'creatorProfileId',
+  status: 'status',
+  currentAuthorizationRevision: 'currentAuthorizationRevision',
+  objectKey: 'objectKey',
+  originalFilename: 'originalFilename',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  failureCode: 'failureCode',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CreatorReferenceAssetScalarFieldEnum = (typeof CreatorReferenceAssetScalarFieldEnum)[keyof typeof CreatorReferenceAssetScalarFieldEnum]
+
+
+export const CreatorReferenceAuthorizationRevisionScalarFieldEnum = {
+  id: 'id',
+  referenceAssetId: 'referenceAssetId',
+  revision: 'revision',
+  status: 'status',
+  declarationVersion: 'declarationVersion',
+  commercialAiImageUseAttested: 'commercialAiImageUseAttested',
+  basis: 'basis',
+  scope: 'scope',
+  expiresAt: 'expiresAt',
+  externalProviderTransferAllowed: 'externalProviderTransferAllowed',
+  decidedAt: 'decidedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type CreatorReferenceAuthorizationRevisionScalarFieldEnum = (typeof CreatorReferenceAuthorizationRevisionScalarFieldEnum)[keyof typeof CreatorReferenceAuthorizationRevisionScalarFieldEnum]
+
+
+export const SourceEditorialContextScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SourceEditorialContextScalarFieldEnum = (typeof SourceEditorialContextScalarFieldEnum)[keyof typeof SourceEditorialContextScalarFieldEnum]
+
+
+export const SourceEditorialContextRevisionScalarFieldEnum = {
+  id: 'id',
+  contextId: 'contextId',
+  revision: 'revision',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  creatorProfileId: 'creatorProfileId',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  creatorProfileRevisionNo: 'creatorProfileRevisionNo',
+  sourceTitle: 'sourceTitle',
+  gameOrTopic: 'gameOrTopic',
+  audience: 'audience',
+  editorialGoal: 'editorialGoal',
+  language: 'language',
+  defaultCta: 'defaultCta',
+  restrictions: 'restrictions',
+  operatorNotes: 'operatorNotes',
+  createdAt: 'createdAt'
+} as const
+
+export type SourceEditorialContextRevisionScalarFieldEnum = (typeof SourceEditorialContextRevisionScalarFieldEnum)[keyof typeof SourceEditorialContextRevisionScalarFieldEnum]
+
+
+export const CutEditorialPromptScalarFieldEnum = {
+  id: 'id',
+  cutPipelineJobId: 'cutPipelineJobId',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CutEditorialPromptScalarFieldEnum = (typeof CutEditorialPromptScalarFieldEnum)[keyof typeof CutEditorialPromptScalarFieldEnum]
+
+
+export const CutEditorialPromptRevisionScalarFieldEnum = {
+  id: 'id',
+  promptId: 'promptId',
+  revision: 'revision',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  sourceContextId: 'sourceContextId',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  sourceContextRevisionNo: 'sourceContextRevisionNo',
+  whatHappens: 'whatHappens',
+  desiredAngle: 'desiredAngle',
+  tone: 'tone',
+  cta: 'cta',
+  restrictions: 'restrictions',
+  createdAt: 'createdAt'
+} as const
+
+export type CutEditorialPromptRevisionScalarFieldEnum = (typeof CutEditorialPromptRevisionScalarFieldEnum)[keyof typeof CutEditorialPromptRevisionScalarFieldEnum]
+
+
+export const AiContentOperationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  operation: 'operation',
+  canonicalRequestVersion: 'canonicalRequestVersion',
+  canonicalRequestFingerprint: 'canonicalRequestFingerprint',
+  resolvedProjectId: 'resolvedProjectId',
+  resolvedSourceId: 'resolvedSourceId',
+  resolvedSourceVersion: 'resolvedSourceVersion',
+  creatorProfileId: 'creatorProfileId',
+  referenceAssetId: 'referenceAssetId',
+  resultType: 'resultType',
+  resultId: 'resultId',
+  resultRevision: 'resultRevision',
+  createdAt: 'createdAt'
+} as const
+
+export type AiContentOperationRequestScalarFieldEnum = (typeof AiContentOperationRequestScalarFieldEnum)[keyof typeof AiContentOperationRequestScalarFieldEnum]
+
+
+export const EditorialComponentProvenanceScalarFieldEnum = {
+  id: 'id',
+  packageRevisionId: 'packageRevisionId',
+  component: 'component',
+  mode: 'mode',
+  basisVersion: 'basisVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialComponentProvenanceScalarFieldEnum = (typeof EditorialComponentProvenanceScalarFieldEnum)[keyof typeof EditorialComponentProvenanceScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3430,6 +4449,90 @@ export type EnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$
 export type ListEnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState[]'>
 
 
+
+/**
+ * Reference to a field of type 'CreatorLikenessPolicy'
+ */
+export type EnumCreatorLikenessPolicyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CreatorLikenessPolicy'>
+
+
+
+/**
+ * Reference to a field of type 'CreatorLikenessPolicy[]'
+ */
+export type ListEnumCreatorLikenessPolicyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CreatorLikenessPolicy[]'>
+
+
+
+/**
+ * Reference to a field of type 'CreatorReferenceAssetStatus'
+ */
+export type EnumCreatorReferenceAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CreatorReferenceAssetStatus'>
+
+
+
+/**
+ * Reference to a field of type 'CreatorReferenceAssetStatus[]'
+ */
+export type ListEnumCreatorReferenceAssetStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CreatorReferenceAssetStatus[]'>
+
+
+
+/**
+ * Reference to a field of type 'CreatorReferenceAuthorizationStatus'
+ */
+export type EnumCreatorReferenceAuthorizationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CreatorReferenceAuthorizationStatus'>
+
+
+
+/**
+ * Reference to a field of type 'CreatorReferenceAuthorizationStatus[]'
+ */
+export type ListEnumCreatorReferenceAuthorizationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CreatorReferenceAuthorizationStatus[]'>
+
+
+
+/**
+ * Reference to a field of type 'AiContentOperationType'
+ */
+export type EnumAiContentOperationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiContentOperationType'>
+
+
+
+/**
+ * Reference to a field of type 'AiContentOperationType[]'
+ */
+export type ListEnumAiContentOperationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiContentOperationType[]'>
+
+
+
+/**
+ * Reference to a field of type 'EditorialComponentType'
+ */
+export type EnumEditorialComponentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialComponentType'>
+
+
+
+/**
+ * Reference to a field of type 'EditorialComponentType[]'
+ */
+export type ListEnumEditorialComponentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialComponentType[]'>
+
+
+
+/**
+ * Reference to a field of type 'EditorialProvenanceMode'
+ */
+export type EnumEditorialProvenanceModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialProvenanceMode'>
+
+
+
+/**
+ * Reference to a field of type 'EditorialProvenanceMode[]'
+ */
+export type ListEnumEditorialProvenanceModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialProvenanceMode[]'>
+
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -3608,6 +4711,17 @@ export type GlobalOmitConfig = {
   editorialExportResult?: Prisma.EditorialExportResultOmit
   cutSegment?: Prisma.CutSegmentOmit
   jobAttempt?: Prisma.JobAttemptOmit
+  creatorProfile?: Prisma.CreatorProfileOmit
+  creatorProfileOfficialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityOmit
+  creatorProfileRevision?: Prisma.CreatorProfileRevisionOmit
+  creatorReferenceAsset?: Prisma.CreatorReferenceAssetOmit
+  creatorReferenceAuthorizationRevision?: Prisma.CreatorReferenceAuthorizationRevisionOmit
+  sourceEditorialContext?: Prisma.SourceEditorialContextOmit
+  sourceEditorialContextRevision?: Prisma.SourceEditorialContextRevisionOmit
+  cutEditorialPrompt?: Prisma.CutEditorialPromptOmit
+  cutEditorialPromptRevision?: Prisma.CutEditorialPromptRevisionOmit
+  aiContentOperationRequest?: Prisma.AiContentOperationRequestOmit
+  editorialComponentProvenance?: Prisma.EditorialComponentProvenanceOmit
 }
 
 /* Types for Logging */

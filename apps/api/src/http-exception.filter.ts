@@ -15,7 +15,7 @@ import { UploadError } from "./projects/application/upload-errors.js";
 import { safeCause } from "./projects/application/safe-cause.js";
 
 interface ErrorBody {
-  error: { code: string; message: string };
+  error: { code: string; message: string; existingProfileId?: string };
 }
 
 @Catch()
@@ -93,7 +93,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
       const response = exception.getResponse();
       if (typeof response === "object" && response !== null) {
-        const candidate = response as { code?: unknown; message?: unknown };
+        const candidate = response as {
+          code?: unknown;
+          message?: unknown;
+          existingProfileId?: unknown;
+        };
         if (
           typeof candidate.code === "string" &&
           typeof candidate.message === "string"
@@ -101,7 +105,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
           return {
             status,
             body: {
-              error: { code: candidate.code, message: candidate.message },
+              error: {
+                code: candidate.code,
+                message: candidate.message,
+                ...(typeof candidate.existingProfileId === "string" &&
+                /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+                  candidate.existingProfileId,
+                )
+                  ? { existingProfileId: candidate.existingProfileId }
+                  : {}),
+              },
             },
           };
         }

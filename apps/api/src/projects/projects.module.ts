@@ -15,6 +15,8 @@ import { S3ObjectStorage } from "./infrastructure/s3-object-storage.js";
 import { TempUploadSweepStartup } from "./infrastructure/temp-upload-sweep.startup.js";
 import { ProjectsController } from "./presentation/projects.controller.js";
 import { TempUploadLifecycleInterceptor } from "./presentation/temp-upload-lifecycle.interceptor.js";
+import { AI_SOURCE_LINEAGE } from "./application/ai-source-lineage.port.js";
+import { PrismaAiSourceLineage } from "./infrastructure/prisma-ai-source-lineage.js";
 
 @Module({
   controllers: [ProjectsController],
@@ -30,13 +32,15 @@ import { TempUploadLifecycleInterceptor } from "./presentation/temp-upload-lifec
     PendingUploadReconciliationStartup,
     TempUploadSweepStartup,
     TempUploadLifecycleInterceptor,
+    PrismaAiSourceLineage,
     { provide: PROJECT_REPOSITORY, useExisting: PrismaProjectRepository },
     {
       provide: PROJECT_LIBRARY_REPOSITORY,
       useExisting: PrismaProjectRepository,
     },
     { provide: OBJECT_STORAGE, useExisting: S3ObjectStorage },
+    { provide: AI_SOURCE_LINEAGE, useExisting: PrismaAiSourceLineage },
   ],
-  exports: [PrismaService, OBJECT_STORAGE],
+  exports: [PrismaService, OBJECT_STORAGE, AI_SOURCE_LINEAGE],
 })
 export class ProjectsModule {}

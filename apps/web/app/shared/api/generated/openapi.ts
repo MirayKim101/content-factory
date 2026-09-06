@@ -53,6 +53,134 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/creator-profiles": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listProfiles"];
+    put?: never;
+    post: operations["CreatorContextController_createProfile"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getProfile"];
+    put: operations["CreatorContextController_updateProfile"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/default-reference": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["CreatorContextController_setDefaultReference"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/reference-assets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listReferences"];
+    put?: never;
+    post: operations["CreatorContextController_uploadReference"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/authorization": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getAuthorization"];
+    put: operations["CreatorContextController_updateAuthorization"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_referenceContent"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/revisions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listProfileRevisions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getProfileRevision"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/editorial-approvals/{approvalId}/exports": {
     parameters: {
       query?: never;
@@ -129,6 +257,54 @@ export interface paths {
     put?: never;
     /** Create one exact-revision background horizontal render */
     post: operations["AssemblyRenderController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getCutPrompt"];
+    put: operations["CreatorContextController_putCutPrompt"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listCutPromptRevisions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getCutPromptRevision"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -513,6 +689,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getSourceContext"];
+    put: operations["CreatorContextController_putSourceContext"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listSourceContextRevisions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getSourceContextRevision"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -783,6 +1007,15 @@ export interface components {
       expectedRevision: number;
       sourceVersion: number;
     };
+    AuthorizationDetailResponseDto: {
+      /** Format: uuid */
+      assetId: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      current: components["schemas"]["CreatorReferenceAuthorizationResponseDto"];
+      currentRevision: number;
+      history: components["schemas"]["CreatorReferenceAuthorizationResponseDto"][];
+    };
     CreateAssemblyRenderDto: {
       recipeRevision: number;
     };
@@ -817,6 +1050,184 @@ export interface components {
        * @enum {string}
        */
       rightsConfirmed?: "true";
+    };
+    CreatorDefaultReferenceResponseDto: {
+      /** Format: uuid */
+      assetId: string;
+      authorizationRevision: number;
+      /** Format: uuid */
+      authorizationRevisionId: string;
+      /** @enum {string} */
+      authorizationStatus: "NOT_REVIEWED" | "CLEARED" | "REVOKED";
+      /** Format: date-time */
+      expiresAt: string | null;
+      externalProviderTransferAllowed: boolean;
+    };
+    CreatorProfileDetailResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      revision: components["schemas"]["CreatorProfileRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CreatorProfileListResponseDto: {
+      items: components["schemas"]["CreatorProfileSummaryResponseDto"][];
+      nextCursor: string | null;
+    };
+    CreatorProfileRevisionInputDto: {
+      canonicalDisplayName: string;
+      editorialNotes: string;
+      /** Format: uri */
+      officialUrl: string;
+      primaryLanguage: string;
+      restrictions: string[];
+      topics: string[];
+    };
+    CreatorProfileRevisionListResponseDto: {
+      items: components["schemas"]["CreatorProfileRevisionResponseDto"][];
+      nextCursor: string | null;
+    };
+    CreatorProfileRevisionResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      defaultReference:
+        components["schemas"]["CreatorDefaultReferenceResponseDto"] | null;
+      editableRevision: components["schemas"]["CreatorProfileRevisionInputDto"];
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      likenessPolicy: "NO_REALISTIC_LIKENESS" | "CLEARED_REFERENCE_ONLY";
+      likenessUsability: components["schemas"]["LikenessUsabilityResponseDto"];
+      officialUrlIdentity: {
+        /** Format: uri */
+        canonicalUrl?: string;
+        canonicalizationVersion?: string;
+        /** Format: uuid */
+        id?: string;
+      };
+      /** Format: uuid */
+      profileId: string;
+      revision: number;
+      /** @enum {string} */
+      status: "CURRENT" | "STALE";
+    };
+    CreatorProfileSummaryResponseDto: {
+      canonicalDisplayName: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      likenessAllowed: boolean;
+      /** @enum {string} */
+      likenessPolicy: "NO_REALISTIC_LIKENESS" | "CLEARED_REFERENCE_ONLY";
+      /** Format: uri */
+      officialUrl: string;
+      primaryLanguage: string;
+      topics: string[];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CreatorReferenceAssetListResponseDto: {
+      items: components["schemas"]["CreatorReferenceAssetResponseDto"][];
+      nextCursor: string | null;
+    };
+    CreatorReferenceAssetResponseDto: {
+      /** @enum {string} */
+      contentType: "image/jpeg" | "image/png" | "image/webp";
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      currentAuthorization: components["schemas"]["CreatorReferenceAuthorizationResponseDto"];
+      height: number;
+      /** Format: uuid */
+      id: string;
+      originalFilename: string;
+      sha256: string;
+      sizeBytes: string;
+      /** @enum {string} */
+      status: "PENDING" | "READY" | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+      width: number;
+    };
+    CreatorReferenceAuthorizationResponseDto: {
+      basis: string | null;
+      commercialAiImageUseAttested: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      decidedAt: string | null;
+      declarationVersion: string | null;
+      /** Format: date-time */
+      expiresAt: string | null;
+      externalProviderTransferAllowed: boolean;
+      /** Format: uuid */
+      id: string;
+      revision: number;
+      scope: string | null;
+      /** @enum {string} */
+      status: "NOT_REVIEWED" | "CLEARED" | "REVOKED";
+    };
+    CreatorReferenceUploadDto: {
+      /** Format: binary */
+      file: string;
+    };
+    CutEditorialPromptDetailResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      revision: components["schemas"]["CutEditorialPromptRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CutEditorialPromptInputDto: {
+      cta: string;
+      desiredAngle: string;
+      restrictions: string[];
+      /** Format: uuid */
+      sourceContextId: string;
+      sourceContextRevision: number;
+      tone: string;
+      whatHappens: string;
+    };
+    CutEditorialPromptRevisionListResponseDto: {
+      items: components["schemas"]["CutEditorialPromptRevisionResponseDto"][];
+      nextCursor: string | null;
+    };
+    CutEditorialPromptRevisionResponseDto: {
+      blockers: string[];
+      contextPolicyFingerprint: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      cutResultArtifact: {
+        /** Format: uuid */
+        id?: string;
+        sha256?: string;
+        sizeBytes?: string;
+      };
+      editableRevision: components["schemas"]["CutEditorialPromptInputDto"];
+      /** Format: uuid */
+      id: string;
+      likenessUsability: components["schemas"]["LikenessUsabilityResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      /** Format: uuid */
+      promptId: string;
+      revision: number;
+      /** Format: uuid */
+      sourceContextRevisionId: string;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "CURRENT" | "STALE";
     };
     CutJobCountsDto: {
       /** @example 1 */
@@ -1120,6 +1531,18 @@ export interface components {
       /** Format: uuid */
       id: string;
       processingTemplateRevision: components["schemas"]["ProcessingTemplateRevisionResponseDto"];
+      provenance?: {
+        metadata: {
+          basisVersion: string;
+          /** @enum {string} */
+          mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+        };
+        thumbnail: {
+          basisVersion: string;
+          /** @enum {string} */
+          mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+        };
+      };
       /** Format: int32 */
       revision: number;
       tags: string[] | null;
@@ -1166,6 +1589,11 @@ export interface components {
       sha256: string;
       /** @description Decimal bigint string. */
       sizeBytes: string;
+    };
+    LikenessUsabilityResponseDto: {
+      blocker: string | null;
+      externalProviderTransferAllowed: boolean;
+      usable: boolean;
     };
     MontageAssetDto: {
       /** @enum {string} */
@@ -1371,6 +1799,54 @@ export interface components {
       /** @description Policy-aware authorization eligibility for playback and processing. */
       usable: boolean;
     };
+    SourceEditorialContextDetailResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      revision: components["schemas"]["SourceEditorialContextRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    SourceEditorialContextInputDto: {
+      audience: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      creatorProfileRevision: number;
+      defaultCta: string;
+      editorialGoal: string;
+      gameOrTopic: string;
+      language: string;
+      operatorNotes: string;
+      restrictions: string[];
+      sourceTitle: string;
+    };
+    SourceEditorialContextRevisionListResponseDto: {
+      items: components["schemas"]["SourceEditorialContextRevisionResponseDto"][];
+      nextCursor: string | null;
+    };
+    SourceEditorialContextRevisionResponseDto: {
+      blockers: string[];
+      /** Format: uuid */
+      contextId: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      creatorProfileRevisionId: string;
+      editableRevision: components["schemas"]["SourceEditorialContextInputDto"];
+      /** Format: uuid */
+      id: string;
+      likenessUsability: components["schemas"]["LikenessUsabilityResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      revision: number;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "CURRENT" | "STALE";
+    };
     SourceResponseDto: {
       authorization: components["schemas"]["SourceAuthorizationResponseDto"];
       /** @example video/mp4 */
@@ -1533,6 +2009,412 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  CreatorContextController_listProfiles: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: unknown;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_createProfile: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreatorProfileRevisionInputDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: {
+              code: string;
+              /** Format: uuid */
+              existingProfileId?: string;
+              message: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  CreatorContextController_getProfile: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_updateProfile: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: {
+              code: string;
+              /** Format: uuid */
+              existingProfileId?: string;
+              message: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  CreatorContextController_setDefaultReference: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listReferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorReferenceAssetListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_uploadReference: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["CreatorReferenceUploadDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorReferenceAssetResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getAuthorization: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorizationDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_updateAuthorization: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorizationDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_referenceContent: {
+    parameters: {
+      query?: never;
+      header?: {
+        Range?: string;
+      };
+      path: {
+        assetId: string;
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Private reference image bytes. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description One bounded byte range. */
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listProfileRevisions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileRevisionListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getProfileRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };
@@ -1720,6 +2602,116 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  CreatorContextController_getCutPrompt: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_putCutPrompt: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listCutPromptRevisions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptRevisionListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getCutPromptRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };
@@ -3083,6 +4075,116 @@ export interface operations {
           "Accept-Ranges"?: string;
           /** @description Unsatisfied range with the authoritative object size. */
           "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getSourceContext: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_putSourceContext: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listSourceContextRevisions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextRevisionListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getSourceContextRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
           [name: string]: unknown;
         };
         content: {

@@ -21,6 +21,9 @@ export async function verifyAdmissionOffRollbackCompatibility(): Promise<void> {
   if (configuration.editorialExportEnabled) {
     throw new Error("ROLLBACK_EXPORT_ADMISSION_MUST_BE_DISABLED");
   }
+  if (configuration.aiContextEnabled) {
+    throw new Error("ROLLBACK_AI_CONTEXT_ADMISSION_MUST_BE_DISABLED");
+  }
   const fixture = parseFixture();
   const prisma = new PrismaService();
   await prisma.onModuleInit();

@@ -54,6 +54,7 @@ const API_ENVIRONMENT_KEYS = [
   "ASSEMBLY_RENDER_ENABLED",
   "EDITORIAL_APPROVAL_ENABLED",
   "EDITORIAL_EXPORT_ENABLED",
+  "AI_CONTEXT_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -165,6 +166,7 @@ export interface ApiEnvironment {
   assemblyRenderEnabled: boolean;
   editorialApprovalEnabled: boolean;
   editorialExportEnabled: boolean;
+  aiContextEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -243,6 +245,7 @@ export function apiEnvironment(): ApiEnvironment {
       (process.env.EDITORIAL_APPROVAL_ENABLED === undefined &&
         authorization.deploymentProfile === "local"),
     editorialExportEnabled: editorialExportAdmissionEnabled(process.env),
+    aiContextEnabled: aiContextAdmissionEnabled(process.env),
   };
 }
 
@@ -250,4 +253,10 @@ export function editorialExportAdmissionEnabled(
   environment: NodeJS.ProcessEnv,
 ): boolean {
   return environment.EDITORIAL_EXPORT_ENABLED === "1";
+}
+
+export function aiContextAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.AI_CONTEXT_ENABLED === "1";
 }

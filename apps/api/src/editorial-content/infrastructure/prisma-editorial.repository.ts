@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { Injectable } from "@nestjs/common";
 
 import { sourceAuthorizationRuntime } from "../../config/environment.js";
@@ -12,7 +14,10 @@ import type {
   ProcessingTemplateRevisionView,
   ThumbnailContentType,
 } from "../domain/editorial.js";
-import { editorialValidation } from "../domain/editorial.js";
+import {
+  editorialValidation,
+  LEGACY_MANUAL_EDITORIAL_PROVENANCE,
+} from "../domain/editorial.js";
 import {
   EditorialAssetNotFoundError,
   EditorialAssetProjectMismatchError,
@@ -35,6 +40,7 @@ const packageInclude = {
     include: {
       processingTemplateRevision: true,
       thumbnailAsset: true,
+      componentProvenance: true,
     },
     orderBy: { revision: "desc" as const },
   },
@@ -519,6 +525,22 @@ export class PrismaEditorialRepository implements EditorialRepository {
           requestFingerprint: input.requestFingerprint,
         },
       },
+      componentProvenance: {
+        create: [
+          {
+            id: randomUUID(),
+            component: "METADATA" as const,
+            mode: "MANUAL" as const,
+            basisVersion: "manual-editorial-v1",
+          },
+          {
+            id: randomUUID(),
+            component: "THUMBNAIL" as const,
+            mode: "MANUAL" as const,
+            basisVersion: "manual-editorial-v1",
+          },
+        ],
+      },
     };
   }
 
@@ -597,6 +619,7 @@ export class PrismaEditorialRepository implements EditorialRepository {
         description: revision.description,
         tags,
         thumbnail,
+        provenance: this.mapProvenance(revision.componentProvenance),
         createdAt: revision.createdAt,
       },
       validation: editorialValidation({
@@ -669,6 +692,25 @@ export class PrismaEditorialRepository implements EditorialRepository {
       throw new EditorialPersistenceConflictError();
     }
     return value;
+  }
+
+  private mapProvenance(
+    rows: Array<{
+      component: "METADATA" | "THUMBNAIL";
+      mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+      basisVersion: string;
+    }>,
+  ): EditorialPackageView["revision"]["provenance"] {
+    const metadata = rows.find((row) => row.component === "METADATA");
+    const thumbnail = rows.find((row) => row.component === "THUMBNAIL");
+    return {
+      metadata: metadata
+        ? { mode: metadata.mode, basisVersion: metadata.basisVersion }
+        : LEGACY_MANUAL_EDITORIAL_PROVENANCE,
+      thumbnail: thumbnail
+        ? { mode: thumbnail.mode, basisVersion: thumbnail.basisVersion }
+        : LEGACY_MANUAL_EDITORIAL_PROVENANCE,
+    };
   }
 
   private async requireProject(projectId: string): Promise<void> {

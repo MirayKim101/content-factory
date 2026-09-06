@@ -47,6 +47,11 @@ describe("Stage 2 manual editorial draft API (PostgreSQL)", () => {
         packageRevision: { package: { projectId: { in: projectIds } } },
       },
     });
+    await prisma.editorialComponentProvenance.deleteMany({
+      where: {
+        packageRevision: { package: { projectId: { in: projectIds } } },
+      },
+    });
     await prisma.editorialPackageRevision.deleteMany({
       where: { package: { projectId: { in: projectIds } } },
     });
@@ -108,6 +113,16 @@ describe("Stage 2 manual editorial draft API (PostgreSQL)", () => {
       complete: true,
       missingFields: [],
     });
+    expect(firstDraft.body.revision.provenance).toEqual({
+      metadata: {
+        mode: "MANUAL",
+        basisVersion: "manual-editorial-v1",
+      },
+      thumbnail: {
+        mode: "MANUAL",
+        basisVersion: "manual-editorial-v1",
+      },
+    });
     expect(firstDraft.body.revision.tags).toEqual([
       "ordered-first",
       "ordered-second",
@@ -118,6 +133,11 @@ describe("Stage 2 manual editorial draft API (PostgreSQL)", () => {
     expect(secondDraft.body.revision.processingTemplateRevision.id).toBe(
       template.id,
     );
+    expect(
+      await prisma.editorialComponentProvenance.count({
+        where: { packageRevisionId: firstDraft.body.revision.id },
+      }),
+    ).toBe(2);
     expect(firstDraft.body.cutResultArtifact).toMatchObject({
       id: first.artifactId,
       sha256: first.sha256,

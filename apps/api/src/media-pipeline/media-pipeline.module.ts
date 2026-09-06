@@ -15,6 +15,8 @@ import {
 import { MediaReconciliationStartup } from "./infrastructure/media-reconciliation.startup.js";
 import { PrismaPipelineRepository } from "./infrastructure/prisma-pipeline.repository.js";
 import { MediaPipelineController } from "./presentation/media-pipeline.controller.js";
+import { AI_CUT_LINEAGE } from "./application/ai-cut-lineage.port.js";
+import { PrismaAiCutLineage } from "./infrastructure/prisma-ai-cut-lineage.js";
 
 @Module({
   imports: [ProjectsModule],
@@ -27,10 +29,12 @@ import { MediaPipelineController } from "./presentation/media-pipeline.controlle
     ListProjectCutJobs,
     ReconcileMediaJobs,
     MediaReconciliationStartup,
+    PrismaAiCutLineage,
     { provide: PIPELINE_REPOSITORY, useExisting: PrismaPipelineRepository },
     { provide: JOB_DISPATCH, useExisting: BullMqJobDispatch },
     { provide: MEDIA_QUEUE, useFactory: createMediaQueue },
+    { provide: AI_CUT_LINEAGE, useExisting: PrismaAiCutLineage },
   ],
-  exports: [JOB_DISPATCH],
+  exports: [JOB_DISPATCH, AI_CUT_LINEAGE],
 })
 export class MediaPipelineModule {}

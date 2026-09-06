@@ -152,3 +152,58 @@ export type CutSegment = Prisma.CutSegmentModel
  *
  */
 export type JobAttempt = Prisma.JobAttemptModel
+/**
+ * Model CreatorProfile
+ *
+ */
+export type CreatorProfile = Prisma.CreatorProfileModel
+/**
+ * Model CreatorProfileOfficialUrlIdentity
+ *
+ */
+export type CreatorProfileOfficialUrlIdentity = Prisma.CreatorProfileOfficialUrlIdentityModel
+/**
+ * Model CreatorProfileRevision
+ *
+ */
+export type CreatorProfileRevision = Prisma.CreatorProfileRevisionModel
+/**
+ * Model CreatorReferenceAsset
+ *
+ */
+export type CreatorReferenceAsset = Prisma.CreatorReferenceAssetModel
+/**
+ * Model CreatorReferenceAuthorizationRevision
+ *
+ */
+export type CreatorReferenceAuthorizationRevision = Prisma.CreatorReferenceAuthorizationRevisionModel
+/**
+ * Model SourceEditorialContext
+ *
+ */
+export type SourceEditorialContext = Prisma.SourceEditorialContextModel
+/**
+ * Model SourceEditorialContextRevision
+ *
+ */
+export type SourceEditorialContextRevision = Prisma.SourceEditorialContextRevisionModel
+/**
+ * Model CutEditorialPrompt
+ *
+ */
+export type CutEditorialPrompt = Prisma.CutEditorialPromptModel
+/**
+ * Model CutEditorialPromptRevision
+ *
+ */
+export type CutEditorialPromptRevision = Prisma.CutEditorialPromptRevisionModel
+/**
+ * Model AiContentOperationRequest
+ *
+ */
+export type AiContentOperationRequest = Prisma.AiContentOperationRequestModel
+/**
+ * Model EditorialComponentProvenance
+ *
+ */
+export type EditorialComponentProvenance = Prisma.EditorialComponentProvenanceModel

@@ -58,6 +58,10 @@ export interface EditorialPackageView {
     description: string | null;
     tags: string[] | null;
     thumbnail: EditorialAssetView | null;
+    provenance: {
+      metadata: EditorialComponentProvenanceView;
+      thumbnail: EditorialComponentProvenanceView;
+    };
     createdAt: Date;
   };
   validation: {
@@ -67,6 +71,21 @@ export interface EditorialPackageView {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface EditorialComponentProvenanceView {
+  mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+  basisVersion: string;
+}
+
+export const MANUAL_EDITORIAL_PROVENANCE = {
+  mode: "MANUAL",
+  basisVersion: "manual-editorial-v1",
+} as const satisfies EditorialComponentProvenanceView;
+
+export const LEGACY_MANUAL_EDITORIAL_PROVENANCE = {
+  mode: "MANUAL",
+  basisVersion: "legacy-manual-editorial-v1",
+} as const satisfies EditorialComponentProvenanceView;
 
 export function editorialValidation(input: {
   title: string | null;

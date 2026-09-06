@@ -128,6 +128,44 @@ enum EditorialOperationType {
   CREATE_EDITORIAL_EXPORT
 }
 
+enum CreatorLikenessPolicy {
+  NO_REALISTIC_LIKENESS
+  CLEARED_REFERENCE_ONLY
+}
+
+enum CreatorReferenceAssetStatus {
+  PENDING
+  READY
+  FAILED_FINAL
+}
+
+enum CreatorReferenceAuthorizationStatus {
+  NOT_REVIEWED
+  CLEARED
+  REVOKED
+}
+
+enum AiContentOperationType {
+  CREATE_CREATOR_PROFILE
+  UPDATE_CREATOR_PROFILE
+  UPLOAD_CREATOR_REFERENCE
+  UPDATE_CREATOR_REFERENCE_AUTHORIZATION
+  SET_DEFAULT_CREATOR_REFERENCE
+  PUT_SOURCE_EDITORIAL_CONTEXT
+  PUT_CUT_EDITORIAL_PROMPT
+}
+
+enum EditorialComponentType {
+  METADATA
+  THUMBNAIL
+}
+
+enum EditorialProvenanceMode {
+  MANUAL
+  AI_ASSISTED
+  MIXED
+}
+
 model Project {
   id                         String                      @id @db.Uuid
   idempotencyKey             String                      @unique
@@ -152,30 +190,34 @@ model Project {
   editorialApprovals         EditorialApproval[]
   editorialOperationRequests EditorialOperationRequest[]
   editorialExportIntents     EditorialExportIntent[]
+  sourceEditorialContexts    SourceEditorialContext[]
 }
 
 model VideoSource {
-  id                     String                  @id @db.Uuid
-  projectId              String                  @unique @db.Uuid
-  project                Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  status                 VideoSourceStatus       @default(PENDING)
-  sourceVersion          Int                     @default(1)
-  originalFilename       String
-  contentType            String
-  sizeBytes              BigInt
-  sha256                 String
-  durationMs             Int?
-  probedAt               DateTime?
-  probeVersion           String?
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  artifacts              MediaArtifact[]
-  pipelineJobs           PipelineJob[]
-  authorizations         SourceAuthorization[]
-  montageAssets          MontageAsset[]
-  assemblyRenderIntents  AssemblyRenderIntent[]
-  editorialApprovals     EditorialApproval[]
-  editorialExportIntents EditorialExportIntent[]
+  id                      String                   @id @db.Uuid
+  projectId               String                   @unique @db.Uuid
+  project                 Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status                  VideoSourceStatus        @default(PENDING)
+  sourceVersion           Int                      @default(1)
+  originalFilename        String
+  contentType             String
+  sizeBytes               BigInt
+  sha256                  String
+  durationMs              Int?
+  probedAt                DateTime?
+  probeVersion            String?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  artifacts               MediaArtifact[]
+  pipelineJobs            PipelineJob[]
+  authorizations          SourceAuthorization[]
+  montageAssets           MontageAsset[]
+  assemblyRenderIntents   AssemblyRenderIntent[]
+  editorialApprovals      EditorialApproval[]
+  editorialExportIntents  EditorialExportIntent[]
+  sourceEditorialContexts SourceEditorialContext[]
+
+  @@unique([id, projectId, sourceVersion], map: "VideoSource_ai_exact_source_key")
 }
 
 model SourceAuthorization {
@@ -229,6 +271,7 @@ model MediaArtifact {
   assemblyRenderResult  AssemblyRenderResult?
   editorialApprovals    EditorialApproval[]
   editorialExportResult EditorialExportResult?
+  cutEditorialPrompt    CutEditorialPrompt?
 
   @@unique([id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "MediaArtifact_id_projectId_lineage_pipelineJob_key")
   @@index([status, createdAt])
@@ -293,6 +336,7 @@ model PipelineJob {
   editorialExportIntentId String?                @unique @db.Uuid
   editorialExportIntent   EditorialExportIntent? @relation("EditorialExportJob", fields: [editorialExportIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_editorial_export_intent")
   editorialExportResult   EditorialExportResult?
+  cutEditorialPrompt      CutEditorialPrompt?
   nextAttemptAt           DateTime?
   admissionReason         String?
   progressAttemptNumber   Int?
@@ -592,21 +636,22 @@ model EditorialPackage {
 }
 
 model EditorialPackageRevision {
-  id                           String                     @id @db.Uuid
-  packageId                    String                     @db.Uuid
-  package                      EditorialPackage           @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  id                           String                         @id @db.Uuid
+  packageId                    String                         @db.Uuid
+  package                      EditorialPackage               @relation(fields: [packageId], references: [id], onDelete: Restrict)
   revision                     Int
-  processingTemplateRevisionId String                     @db.Uuid
-  processingTemplateRevision   ProcessingTemplateRevision @relation(fields: [processingTemplateRevisionId], references: [id], onDelete: Restrict)
+  processingTemplateRevisionId String                         @db.Uuid
+  processingTemplateRevision   ProcessingTemplateRevision     @relation(fields: [processingTemplateRevisionId], references: [id], onDelete: Restrict)
   title                        String?
   description                  String?
   tags                         Json?
-  thumbnailAssetId             String?                    @db.Uuid
-  thumbnailAsset               EditorialAsset?            @relation(fields: [thumbnailAssetId], references: [id], onDelete: Restrict)
-  createdAt                    DateTime                   @default(now())
+  thumbnailAssetId             String?                        @db.Uuid
+  thumbnailAsset               EditorialAsset?                @relation(fields: [thumbnailAssetId], references: [id], onDelete: Restrict)
+  createdAt                    DateTime                       @default(now())
   mutationRequests             EditorialMutationRequest[]
   editorialApprovals           EditorialApproval[]
   editorialExportIntents       EditorialExportIntent[]
+  componentProvenance          EditorialComponentProvenance[]
 
   @@unique([packageId, revision])
   @@unique([id, packageId, revision], map: "EditorialPackageRevision_exact_identity_key")
@@ -807,4 +852,238 @@ model JobAttempt {
   @@unique([jobId, attemptNumber])
   @@index([state, updatedAt])
   @@index([cleanupStatus, updatedAt])
+}
+
+model CreatorProfile {
+  id                    String                              @id @db.Uuid
+  currentRevision       Int                                 @default(1)
+  createdAt             DateTime                            @default(now())
+  updatedAt             DateTime                            @updatedAt
+  revisions             CreatorProfileRevision[]
+  officialUrlIdentities CreatorProfileOfficialUrlIdentity[]
+  referenceAssets       CreatorReferenceAsset[]
+  sourceContexts        SourceEditorialContextRevision[]
+
+  @@index([updatedAt, id])
+}
+
+model CreatorProfileOfficialUrlIdentity {
+  id                      String                   @id @db.Uuid
+  creatorProfileId        String                   @db.Uuid
+  creatorProfile          CreatorProfile           @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
+  canonicalizationVersion String                   @default("creator-official-url-v1")
+  canonicalUrl            String
+  createdAt               DateTime                 @default(now())
+  revisions               CreatorProfileRevision[]
+
+  @@unique([canonicalizationVersion, canonicalUrl], map: "CreatorProfileOfficialUrlIdentity_semantic_url_key")
+  @@unique([id, creatorProfileId], map: "CreatorProfileOfficialUrlIdentity_owner_key")
+  @@index([creatorProfileId, createdAt, id], map: "CreatorProfileOfficialUrlIdentity_owner_page_idx")
+}
+
+model CreatorProfileRevision {
+  id                                      String                                 @id @db.Uuid
+  creatorProfileId                        String                                 @db.Uuid
+  creatorProfile                          CreatorProfile                         @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
+  revision                                Int
+  canonicalDisplayName                    String
+  officialUrlIdentityId                   String                                 @db.Uuid
+  officialUrlIdentity                     CreatorProfileOfficialUrlIdentity      @relation(fields: [officialUrlIdentityId, creatorProfileId], references: [id, creatorProfileId], onDelete: Restrict, map: "CreatorProfileRevision_exact_url_owner")
+  officialUrl                             String
+  primaryLanguage                         String
+  topics                                  Json
+  editorialNotes                          String
+  restrictions                            Json
+  likenessPolicy                          CreatorLikenessPolicy                  @default(NO_REALISTIC_LIKENESS)
+  defaultReferenceAssetId                 String?                                @db.Uuid
+  defaultReferenceAsset                   CreatorReferenceAsset?                 @relation("CreatorProfileDefaultReferenceAsset", fields: [defaultReferenceAssetId, creatorProfileId], references: [id, creatorProfileId], onDelete: Restrict, map: "CreatorProfileRevision_exact_default_asset")
+  defaultReferenceAuthorizationRevisionId String?                                @db.Uuid
+  defaultReferenceAuthorizationRevision   Int?
+  defaultReferenceAuthorization           CreatorReferenceAuthorizationRevision? @relation("CreatorProfileDefaultReferenceAuthorization", fields: [defaultReferenceAuthorizationRevisionId, defaultReferenceAssetId, defaultReferenceAuthorizationRevision], references: [id, referenceAssetId, revision], onDelete: Restrict, map: "CreatorProfileRevision_exact_default_authorization")
+  createdAt                               DateTime                               @default(now())
+  sourceContexts                          SourceEditorialContextRevision[]
+
+  @@unique([creatorProfileId, revision], map: "CreatorProfileRevision_profile_revision_key")
+  @@unique([id, creatorProfileId, revision], map: "CreatorProfileRevision_exact_identity_key")
+  @@index([officialUrlIdentityId])
+  @@index([defaultReferenceAssetId])
+}
+
+model CreatorReferenceAsset {
+  id                           String                                  @id @db.Uuid
+  creatorProfileId             String                                  @db.Uuid
+  creatorProfile               CreatorProfile                          @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
+  status                       CreatorReferenceAssetStatus             @default(PENDING)
+  currentAuthorizationRevision Int                                     @default(1)
+  objectKey                    String                                  @unique
+  originalFilename             String
+  contentType                  String
+  sizeBytes                    BigInt
+  sha256                       String
+  width                        Int
+  height                       Int
+  storageEtag                  String?
+  storageVersion               String?
+  failureCode                  String?
+  cleanupStatus                ArtifactCleanupStatus                   @default(NOT_REQUIRED)
+  cleanupAttemptCount          Int                                     @default(0)
+  cleanupLastErrorCode         String?
+  cleanupRequestedAt           DateTime?
+  cleanupCompletedAt           DateTime?
+  createdAt                    DateTime                                @default(now())
+  updatedAt                    DateTime                                @updatedAt
+  authorizations               CreatorReferenceAuthorizationRevision[]
+  selectedByProfiles           CreatorProfileRevision[]                @relation("CreatorProfileDefaultReferenceAsset")
+
+  @@unique([id, creatorProfileId], map: "CreatorReferenceAsset_owner_key")
+  @@index([creatorProfileId, createdAt, id])
+  @@index([cleanupStatus, updatedAt])
+}
+
+model CreatorReferenceAuthorizationRevision {
+  id                              String                              @id @db.Uuid
+  referenceAssetId                String                              @db.Uuid
+  referenceAsset                  CreatorReferenceAsset               @relation(fields: [referenceAssetId], references: [id], onDelete: Restrict)
+  revision                        Int
+  status                          CreatorReferenceAuthorizationStatus @default(NOT_REVIEWED)
+  declarationVersion              String?
+  commercialAiImageUseAttested    Boolean                             @default(false)
+  basis                           String?
+  scope                           String?
+  expiresAt                       DateTime?
+  externalProviderTransferAllowed Boolean                             @default(false)
+  decidedAt                       DateTime?
+  createdAt                       DateTime                            @default(now())
+  selectedByProfiles              CreatorProfileRevision[]            @relation("CreatorProfileDefaultReferenceAuthorization")
+
+  @@unique([referenceAssetId, revision], map: "CreatorReferenceAuthorizationRevision_asset_revision_key")
+  @@unique([id, referenceAssetId, revision], map: "CreatorReferenceAuthorizationRevision_exact_identity_key")
+  @@index([referenceAssetId, createdAt, id], map: "CreatorReferenceAuthorization_asset_page_idx")
+}
+
+model SourceEditorialContext {
+  id              String                           @id @db.Uuid
+  projectId       String                           @db.Uuid
+  project         Project                          @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId        String                           @db.Uuid
+  source          VideoSource                      @relation(fields: [sourceId, projectId, sourceVersion], references: [id, projectId, sourceVersion], onDelete: Restrict, map: "SourceEditorialContext_exact_source")
+  sourceVersion   Int
+  currentRevision Int                              @default(1)
+  createdAt       DateTime                         @default(now())
+  updatedAt       DateTime                         @updatedAt
+  revisions       SourceEditorialContextRevision[]
+
+  @@unique([projectId, sourceId, sourceVersion], map: "SourceEditorialContext_exact_source_version_key")
+  @@unique([id, projectId, sourceId, sourceVersion], map: "SourceEditorialContext_exact_identity_key")
+  @@index([projectId, updatedAt, id])
+}
+
+model SourceEditorialContextRevision {
+  id                       String                       @id @db.Uuid
+  contextId                String                       @db.Uuid
+  context                  SourceEditorialContext       @relation(fields: [contextId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "SourceEditorialContextRevision_exact_context")
+  revision                 Int
+  projectId                String                       @db.Uuid
+  sourceId                 String                       @db.Uuid
+  sourceVersion            Int
+  creatorProfileId         String                       @db.Uuid
+  creatorProfile           CreatorProfile               @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
+  creatorProfileRevisionId String                       @db.Uuid
+  creatorProfileRevisionNo Int
+  creatorProfileRevision   CreatorProfileRevision       @relation(fields: [creatorProfileRevisionId, creatorProfileId, creatorProfileRevisionNo], references: [id, creatorProfileId, revision], onDelete: Restrict, map: "SourceEditorialContextRevision_exact_profile_revision")
+  sourceTitle              String
+  gameOrTopic              String
+  audience                 String
+  editorialGoal            String
+  language                 String
+  defaultCta               String
+  restrictions             Json
+  operatorNotes            String
+  createdAt                DateTime                     @default(now())
+  cutPrompts               CutEditorialPromptRevision[]
+
+  @@unique([contextId, revision], map: "SourceEditorialContextRevision_context_revision_key")
+  @@unique([id, contextId, revision], map: "SourceEditorialContextRevision_exact_identity_key")
+  @@unique([id, contextId, revision, projectId, sourceId, sourceVersion], map: "SourceEditorialContextRevision_lineage_key")
+  @@index([creatorProfileRevisionId])
+}
+
+model CutEditorialPrompt {
+  id                  String                       @id @db.Uuid
+  cutPipelineJobId    String                       @unique @db.Uuid
+  cutPipelineJob      PipelineJob                  @relation(fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPrompt_exact_cut_job")
+  projectId           String                       @db.Uuid
+  sourceId            String                       @db.Uuid
+  sourceVersion       Int
+  cutResultArtifactId String                       @unique @db.Uuid
+  cutResultArtifact   MediaArtifact                @relation(fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "CutEditorialPrompt_exact_result_artifact")
+  cutResultSha256     String
+  cutResultSizeBytes  BigInt
+  currentRevision     Int                          @default(1)
+  createdAt           DateTime                     @default(now())
+  updatedAt           DateTime                     @updatedAt
+  revisions           CutEditorialPromptRevision[]
+
+  @@unique([cutPipelineJobId, projectId, sourceId, sourceVersion], map: "CutEditorialPrompt_cut_job_lineage_key")
+  @@unique([cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], map: "CutEditorialPrompt_result_lineage_key")
+  @@unique([id, projectId, sourceId, sourceVersion], map: "CutEditorialPrompt_exact_lineage_key")
+  @@index([projectId, updatedAt, id])
+}
+
+model CutEditorialPromptRevision {
+  id                      String                         @id @db.Uuid
+  promptId                String                         @db.Uuid
+  prompt                  CutEditorialPrompt             @relation(fields: [promptId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPromptRevision_exact_prompt")
+  revision                Int
+  projectId               String                         @db.Uuid
+  sourceId                String                         @db.Uuid
+  sourceVersion           Int
+  sourceContextId         String                         @db.Uuid
+  sourceContextRevisionId String                         @db.Uuid
+  sourceContextRevisionNo Int
+  sourceContextRevision   SourceEditorialContextRevision @relation(fields: [sourceContextRevisionId, sourceContextId, sourceContextRevisionNo, projectId, sourceId, sourceVersion], references: [id, contextId, revision, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPromptRevision_exact_source_context")
+  whatHappens             String
+  desiredAngle            String
+  tone                    String
+  cta                     String
+  restrictions            Json
+  createdAt               DateTime                       @default(now())
+
+  @@unique([promptId, revision], map: "CutEditorialPromptRevision_prompt_revision_key")
+  @@unique([id, promptId, revision], map: "CutEditorialPromptRevision_exact_identity_key")
+  @@index([sourceContextRevisionId])
+}
+
+model AiContentOperationRequest {
+  id                          String                 @id @db.Uuid
+  idempotencyKey              String                 @unique
+  operation                   AiContentOperationType
+  canonicalRequestVersion     String                 @default("ai-content-operation-v1")
+  canonicalRequestFingerprint String
+  resolvedProjectId           String?                @db.Uuid
+  resolvedSourceId            String?                @db.Uuid
+  resolvedSourceVersion       Int?
+  creatorProfileId            String?                @db.Uuid
+  referenceAssetId            String?                @db.Uuid
+  resultType                  String
+  resultId                    String                 @db.Uuid
+  resultRevision              Int?
+  createdAt                   DateTime               @default(now())
+
+  @@index([resolvedProjectId, createdAt, id])
+  @@index([creatorProfileId, createdAt, id])
+  @@index([referenceAssetId, createdAt, id])
+}
+
+model EditorialComponentProvenance {
+  id                String                   @id @db.Uuid
+  packageRevisionId String                   @db.Uuid
+  packageRevision   EditorialPackageRevision @relation(fields: [packageRevisionId], references: [id], onDelete: Restrict)
+  component         EditorialComponentType
+  mode              EditorialProvenanceMode  @default(MANUAL)
+  basisVersion      String                   @default("manual-editorial-v1")
+  createdAt         DateTime                 @default(now())
+
+  @@unique([packageRevisionId, component], map: "EditorialComponentProvenance_revision_component_key")
+  @@index([packageRevisionId])
 }

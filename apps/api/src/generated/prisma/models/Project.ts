@@ -242,6 +242,7 @@ export type ProjectWhereInput = {
   editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
   editorialOperationRequests?: Prisma.EditorialOperationRequestListRelationFilter
   editorialExportIntents?: Prisma.EditorialExportIntentListRelationFilter
+  sourceEditorialContexts?: Prisma.SourceEditorialContextListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -268,6 +269,7 @@ export type ProjectOrderByWithRelationInput = {
   editorialApprovals?: Prisma.EditorialApprovalOrderByRelationAggregateInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestOrderByRelationAggregateInput
   editorialExportIntents?: Prisma.EditorialExportIntentOrderByRelationAggregateInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -297,6 +299,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
   editorialOperationRequests?: Prisma.EditorialOperationRequestListRelationFilter
   editorialExportIntents?: Prisma.EditorialExportIntentListRelationFilter
+  sourceEditorialContexts?: Prisma.SourceEditorialContextListRelationFilter
 }, "id" | "idempotencyKey">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -357,6 +360,7 @@ export type ProjectCreateInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -383,6 +387,7 @@ export type ProjectUncheckedCreateInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -409,6 +414,7 @@ export type ProjectUpdateInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -435,6 +441,7 @@ export type ProjectUncheckedUpdateInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -714,6 +721,20 @@ export type ProjectUpdateOneRequiredWithoutEditorialExportIntentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutEditorialExportIntentsInput, Prisma.ProjectUpdateWithoutEditorialExportIntentsInput>, Prisma.ProjectUncheckedUpdateWithoutEditorialExportIntentsInput>
 }
 
+export type ProjectCreateNestedOneWithoutSourceEditorialContextsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSourceEditorialContextsInput, Prisma.ProjectUncheckedCreateWithoutSourceEditorialContextsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSourceEditorialContextsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutSourceEditorialContextsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSourceEditorialContextsInput, Prisma.ProjectUncheckedCreateWithoutSourceEditorialContextsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSourceEditorialContextsInput
+  upsert?: Prisma.ProjectUpsertWithoutSourceEditorialContextsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutSourceEditorialContextsInput, Prisma.ProjectUpdateWithoutSourceEditorialContextsInput>, Prisma.ProjectUncheckedUpdateWithoutSourceEditorialContextsInput>
+}
+
 export type ProjectCreateWithoutSourceInput = {
   id: string
   idempotencyKey: string
@@ -737,6 +758,7 @@ export type ProjectCreateWithoutSourceInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutSourceInput = {
@@ -762,6 +784,7 @@ export type ProjectUncheckedCreateWithoutSourceInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutSourceInput = {
@@ -803,6 +826,7 @@ export type ProjectUpdateWithoutSourceInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutSourceInput = {
@@ -828,6 +852,7 @@ export type ProjectUncheckedUpdateWithoutSourceInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutArtifactsInput = {
@@ -853,6 +878,7 @@ export type ProjectCreateWithoutArtifactsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutArtifactsInput = {
@@ -878,6 +904,7 @@ export type ProjectUncheckedCreateWithoutArtifactsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutArtifactsInput = {
@@ -919,6 +946,7 @@ export type ProjectUpdateWithoutArtifactsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutArtifactsInput = {
@@ -944,6 +972,7 @@ export type ProjectUncheckedUpdateWithoutArtifactsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutCutRequestsInput = {
@@ -969,6 +998,7 @@ export type ProjectCreateWithoutCutRequestsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutCutRequestsInput = {
@@ -994,6 +1024,7 @@ export type ProjectUncheckedCreateWithoutCutRequestsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutCutRequestsInput = {
@@ -1035,6 +1066,7 @@ export type ProjectUpdateWithoutCutRequestsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutCutRequestsInput = {
@@ -1060,6 +1092,7 @@ export type ProjectUncheckedUpdateWithoutCutRequestsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutPipelineJobsInput = {
@@ -1085,6 +1118,7 @@ export type ProjectCreateWithoutPipelineJobsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutPipelineJobsInput = {
@@ -1110,6 +1144,7 @@ export type ProjectUncheckedCreateWithoutPipelineJobsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutPipelineJobsInput = {
@@ -1151,6 +1186,7 @@ export type ProjectUpdateWithoutPipelineJobsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutPipelineJobsInput = {
@@ -1176,6 +1212,7 @@ export type ProjectUncheckedUpdateWithoutPipelineJobsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutMontageAssetsInput = {
@@ -1201,6 +1238,7 @@ export type ProjectCreateWithoutMontageAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutMontageAssetsInput = {
@@ -1226,6 +1264,7 @@ export type ProjectUncheckedCreateWithoutMontageAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutMontageAssetsInput = {
@@ -1267,6 +1306,7 @@ export type ProjectUpdateWithoutMontageAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutMontageAssetsInput = {
@@ -1292,6 +1332,7 @@ export type ProjectUncheckedUpdateWithoutMontageAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutAssemblyRecipesInput = {
@@ -1317,6 +1358,7 @@ export type ProjectCreateWithoutAssemblyRecipesInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutAssemblyRecipesInput = {
@@ -1342,6 +1384,7 @@ export type ProjectUncheckedCreateWithoutAssemblyRecipesInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutAssemblyRecipesInput = {
@@ -1383,6 +1426,7 @@ export type ProjectUpdateWithoutAssemblyRecipesInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutAssemblyRecipesInput = {
@@ -1408,6 +1452,7 @@ export type ProjectUncheckedUpdateWithoutAssemblyRecipesInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutAssemblyRenderIntentsInput = {
@@ -1433,6 +1478,7 @@ export type ProjectCreateWithoutAssemblyRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutAssemblyRenderIntentsInput = {
@@ -1458,6 +1504,7 @@ export type ProjectUncheckedCreateWithoutAssemblyRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutAssemblyRenderIntentsInput = {
@@ -1499,6 +1546,7 @@ export type ProjectUpdateWithoutAssemblyRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutAssemblyRenderIntentsInput = {
@@ -1524,6 +1572,7 @@ export type ProjectUncheckedUpdateWithoutAssemblyRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialAssetsInput = {
@@ -1549,6 +1598,7 @@ export type ProjectCreateWithoutEditorialAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialAssetsInput = {
@@ -1574,6 +1624,7 @@ export type ProjectUncheckedCreateWithoutEditorialAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialAssetsInput = {
@@ -1615,6 +1666,7 @@ export type ProjectUpdateWithoutEditorialAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialAssetsInput = {
@@ -1640,6 +1692,7 @@ export type ProjectUncheckedUpdateWithoutEditorialAssetsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialPackagesInput = {
@@ -1665,6 +1718,7 @@ export type ProjectCreateWithoutEditorialPackagesInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialPackagesInput = {
@@ -1690,6 +1744,7 @@ export type ProjectUncheckedCreateWithoutEditorialPackagesInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialPackagesInput = {
@@ -1731,6 +1786,7 @@ export type ProjectUpdateWithoutEditorialPackagesInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialPackagesInput = {
@@ -1756,6 +1812,7 @@ export type ProjectUncheckedUpdateWithoutEditorialPackagesInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialApprovalsInput = {
@@ -1781,6 +1838,7 @@ export type ProjectCreateWithoutEditorialApprovalsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialApprovalsInput = {
@@ -1806,6 +1864,7 @@ export type ProjectUncheckedCreateWithoutEditorialApprovalsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialApprovalsInput = {
@@ -1847,6 +1906,7 @@ export type ProjectUpdateWithoutEditorialApprovalsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialApprovalsInput = {
@@ -1872,6 +1932,7 @@ export type ProjectUncheckedUpdateWithoutEditorialApprovalsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialOperationRequestsInput = {
@@ -1897,6 +1958,7 @@ export type ProjectCreateWithoutEditorialOperationRequestsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutProjectInput
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialOperationRequestsInput = {
@@ -1922,6 +1984,7 @@ export type ProjectUncheckedCreateWithoutEditorialOperationRequestsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutProjectInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialOperationRequestsInput = {
@@ -1963,6 +2026,7 @@ export type ProjectUpdateWithoutEditorialOperationRequestsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutProjectNestedInput
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialOperationRequestsInput = {
@@ -1988,6 +2052,7 @@ export type ProjectUncheckedUpdateWithoutEditorialOperationRequestsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialExportIntentsInput = {
@@ -2013,6 +2078,7 @@ export type ProjectCreateWithoutEditorialExportIntentsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutProjectInput
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialExportIntentsInput = {
@@ -2038,6 +2104,7 @@ export type ProjectUncheckedCreateWithoutEditorialExportIntentsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutProjectInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialExportIntentsInput = {
@@ -2079,6 +2146,7 @@ export type ProjectUpdateWithoutEditorialExportIntentsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutProjectNestedInput
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialExportIntentsInput = {
@@ -2104,6 +2172,127 @@ export type ProjectUncheckedUpdateWithoutEditorialExportIntentsInput = {
   assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
   editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutSourceEditorialContextsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
+  montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutProjectInput
+  assemblyRecipes?: Prisma.AssemblyRecipeCreateNestedManyWithoutProjectInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutProjectInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
+  editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutSourceEditorialContextsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
+  montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutProjectInput
+  assemblyRecipes?: Prisma.AssemblyRecipeUncheckedCreateNestedManyWithoutProjectInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutProjectInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutSourceEditorialContextsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSourceEditorialContextsInput, Prisma.ProjectUncheckedCreateWithoutSourceEditorialContextsInput>
+}
+
+export type ProjectUpsertWithoutSourceEditorialContextsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutSourceEditorialContextsInput, Prisma.ProjectUncheckedUpdateWithoutSourceEditorialContextsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSourceEditorialContextsInput, Prisma.ProjectUncheckedCreateWithoutSourceEditorialContextsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutSourceEditorialContextsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutSourceEditorialContextsInput, Prisma.ProjectUncheckedUpdateWithoutSourceEditorialContextsInput>
+}
+
+export type ProjectUpdateWithoutSourceEditorialContextsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
+  montageAssets?: Prisma.MontageAssetUpdateManyWithoutProjectNestedInput
+  assemblyRecipes?: Prisma.AssemblyRecipeUpdateManyWithoutProjectNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutProjectNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutSourceEditorialContextsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
+  montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutProjectNestedInput
+  assemblyRecipes?: Prisma.AssemblyRecipeUncheckedUpdateManyWithoutProjectNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 
@@ -2123,6 +2312,7 @@ export type ProjectCountOutputType = {
   editorialApprovals: number
   editorialOperationRequests: number
   editorialExportIntents: number
+  sourceEditorialContexts: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2137,6 +2327,7 @@ export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   editorialApprovals?: boolean | ProjectCountOutputTypeCountEditorialApprovalsArgs
   editorialOperationRequests?: boolean | ProjectCountOutputTypeCountEditorialOperationRequestsArgs
   editorialExportIntents?: boolean | ProjectCountOutputTypeCountEditorialExportIntentsArgs
+  sourceEditorialContexts?: boolean | ProjectCountOutputTypeCountSourceEditorialContextsArgs
 }
 
 /**
@@ -2226,6 +2417,13 @@ export type ProjectCountOutputTypeCountEditorialExportIntentsArgs<ExtArgs extend
   where?: Prisma.EditorialExportIntentWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountSourceEditorialContextsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SourceEditorialContextWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2251,6 +2449,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   editorialApprovals?: boolean | Prisma.Project$editorialApprovalsArgs<ExtArgs>
   editorialOperationRequests?: boolean | Prisma.Project$editorialOperationRequestsArgs<ExtArgs>
   editorialExportIntents?: boolean | Prisma.Project$editorialExportIntentsArgs<ExtArgs>
+  sourceEditorialContexts?: boolean | Prisma.Project$sourceEditorialContextsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -2310,6 +2509,7 @@ export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   editorialApprovals?: boolean | Prisma.Project$editorialApprovalsArgs<ExtArgs>
   editorialOperationRequests?: boolean | Prisma.Project$editorialOperationRequestsArgs<ExtArgs>
   editorialExportIntents?: boolean | Prisma.Project$editorialExportIntentsArgs<ExtArgs>
+  sourceEditorialContexts?: boolean | Prisma.Project$sourceEditorialContextsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -2330,6 +2530,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     editorialApprovals: Prisma.$EditorialApprovalPayload<ExtArgs>[]
     editorialOperationRequests: Prisma.$EditorialOperationRequestPayload<ExtArgs>[]
     editorialExportIntents: Prisma.$EditorialExportIntentPayload<ExtArgs>[]
+    sourceEditorialContexts: Prisma.$SourceEditorialContextPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2749,6 +2950,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   editorialApprovals<T extends Prisma.Project$editorialApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$editorialApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   editorialOperationRequests<T extends Prisma.Project$editorialOperationRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$editorialOperationRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialOperationRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   editorialExportIntents<T extends Prisma.Project$editorialExportIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$editorialExportIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialExportIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  sourceEditorialContexts<T extends Prisma.Project$sourceEditorialContextsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$sourceEditorialContextsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourceEditorialContextPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3462,6 +3664,30 @@ export type Project$editorialExportIntentsArgs<ExtArgs extends runtime.Types.Ext
   take?: number
   skip?: number
   distinct?: Prisma.EditorialExportIntentScalarFieldEnum | Prisma.EditorialExportIntentScalarFieldEnum[]
+}
+
+/**
+ * Project.sourceEditorialContexts
+ */
+export type Project$sourceEditorialContextsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourceEditorialContext
+   */
+  select?: Prisma.SourceEditorialContextSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SourceEditorialContext
+   */
+  omit?: Prisma.SourceEditorialContextOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SourceEditorialContextInclude<ExtArgs> | null
+  where?: Prisma.SourceEditorialContextWhereInput
+  orderBy?: Prisma.SourceEditorialContextOrderByWithRelationInput | Prisma.SourceEditorialContextOrderByWithRelationInput[]
+  cursor?: Prisma.SourceEditorialContextWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SourceEditorialContextScalarFieldEnum | Prisma.SourceEditorialContextScalarFieldEnum[]
 }
 
 /**

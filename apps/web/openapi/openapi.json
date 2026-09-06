@@ -908,6 +908,38 @@
         ],
         "type": "object"
       },
+      "AuthorizationDetailResponseDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "creatorProfileId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "current": {
+            "$ref": "#/components/schemas/CreatorReferenceAuthorizationResponseDto"
+          },
+          "currentRevision": {
+            "type": "integer"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/CreatorReferenceAuthorizationResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "creatorProfileId",
+          "currentRevision",
+          "current",
+          "history"
+        ],
+        "type": "object"
+      },
       "CreateAssemblyRenderDto": {
         "properties": {
           "recipeRevision": {
@@ -1011,6 +1043,603 @@
           }
         },
         "required": ["name", "file"],
+        "type": "object"
+      },
+      "CreatorDefaultReferenceResponseDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "authorizationRevision": {
+            "type": "integer"
+          },
+          "authorizationRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "authorizationStatus": {
+            "enum": ["NOT_REVIEWED", "CLEARED", "REVOKED"],
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "externalProviderTransferAllowed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assetId",
+          "authorizationRevisionId",
+          "authorizationRevision",
+          "authorizationStatus",
+          "expiresAt",
+          "externalProviderTransferAllowed"
+        ],
+        "type": "object"
+      },
+      "CreatorProfileDetailResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentRevision": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/CreatorProfileRevisionResponseDto"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "currentRevision",
+          "revision",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "CreatorProfileListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CreatorProfileSummaryResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "CreatorProfileRevisionInputDto": {
+        "properties": {
+          "canonicalDisplayName": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "editorialNotes": {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "officialUrl": {
+            "format": "uri",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "primaryLanguage": {
+            "maxLength": 35,
+            "minLength": 1,
+            "type": "string"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          }
+        },
+        "required": [
+          "canonicalDisplayName",
+          "officialUrl",
+          "primaryLanguage",
+          "topics",
+          "editorialNotes",
+          "restrictions"
+        ],
+        "type": "object"
+      },
+      "CreatorProfileRevisionListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CreatorProfileRevisionResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "CreatorProfileRevisionResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "defaultReference": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreatorDefaultReferenceResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "editableRevision": {
+            "$ref": "#/components/schemas/CreatorProfileRevisionInputDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "likenessPolicy": {
+            "enum": ["NO_REALISTIC_LIKENESS", "CLEARED_REFERENCE_ONLY"],
+            "type": "string"
+          },
+          "likenessUsability": {
+            "$ref": "#/components/schemas/LikenessUsabilityResponseDto"
+          },
+          "officialUrlIdentity": {
+            "properties": {
+              "canonicalUrl": {
+                "format": "uri",
+                "type": "string"
+              },
+              "canonicalizationVersion": {
+                "type": "string"
+              },
+              "id": {
+                "format": "uuid",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "profileId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "status": {
+            "enum": ["CURRENT", "STALE"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "profileId",
+          "revision",
+          "editableRevision",
+          "officialUrlIdentity",
+          "likenessPolicy",
+          "defaultReference",
+          "status",
+          "likenessUsability",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "CreatorProfileSummaryResponseDto": {
+        "properties": {
+          "canonicalDisplayName": {
+            "type": "string"
+          },
+          "currentRevision": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "likenessAllowed": {
+            "type": "boolean"
+          },
+          "likenessPolicy": {
+            "enum": ["NO_REALISTIC_LIKENESS", "CLEARED_REFERENCE_ONLY"],
+            "type": "string"
+          },
+          "officialUrl": {
+            "format": "uri",
+            "type": "string"
+          },
+          "primaryLanguage": {
+            "type": "string"
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "currentRevision",
+          "canonicalDisplayName",
+          "officialUrl",
+          "primaryLanguage",
+          "topics",
+          "likenessPolicy",
+          "likenessAllowed",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "CreatorReferenceAssetListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CreatorReferenceAssetResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "CreatorReferenceAssetResponseDto": {
+        "properties": {
+          "contentType": {
+            "enum": ["image/jpeg", "image/png", "image/webp"],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "creatorProfileId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "currentAuthorization": {
+            "$ref": "#/components/schemas/CreatorReferenceAuthorizationResponseDto"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "originalFilename": {
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^[0-9]+$",
+            "type": "string"
+          },
+          "status": {
+            "enum": ["PENDING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "creatorProfileId",
+          "status",
+          "originalFilename",
+          "contentType",
+          "sizeBytes",
+          "sha256",
+          "width",
+          "height",
+          "currentAuthorization",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "CreatorReferenceAuthorizationResponseDto": {
+        "properties": {
+          "basis": {
+            "nullable": true,
+            "type": "string"
+          },
+          "commercialAiImageUseAttested": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "decidedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "declarationVersion": {
+            "nullable": true,
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "externalProviderTransferAllowed": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "scope": {
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": ["NOT_REVIEWED", "CLEARED", "REVOKED"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "status",
+          "declarationVersion",
+          "commercialAiImageUseAttested",
+          "basis",
+          "scope",
+          "expiresAt",
+          "externalProviderTransferAllowed",
+          "decidedAt",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "CreatorReferenceUploadDto": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": ["file"],
+        "type": "object"
+      },
+      "CutEditorialPromptDetailResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentRevision": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/CutEditorialPromptRevisionResponseDto"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "currentRevision",
+          "revision",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "CutEditorialPromptInputDto": {
+        "properties": {
+          "cta": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "desiredAngle": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          },
+          "sourceContextId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceContextRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tone": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "whatHappens": {
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceContextId",
+          "sourceContextRevision",
+          "whatHappens",
+          "desiredAngle",
+          "tone",
+          "cta",
+          "restrictions"
+        ],
+        "type": "object"
+      },
+      "CutEditorialPromptRevisionListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CutEditorialPromptRevisionResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "CutEditorialPromptRevisionResponseDto": {
+        "properties": {
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "contextPolicyFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutResultArtifact": {
+            "properties": {
+              "id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              },
+              "sizeBytes": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "editableRevision": {
+            "$ref": "#/components/schemas/CutEditorialPromptInputDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "likenessUsability": {
+            "$ref": "#/components/schemas/LikenessUsabilityResponseDto"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "promptId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "sourceContextRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "type": "integer"
+          },
+          "status": {
+            "enum": ["CURRENT", "STALE"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "promptId",
+          "revision",
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "cutPipelineJobId",
+          "cutResultArtifact",
+          "editableRevision",
+          "sourceContextRevisionId",
+          "status",
+          "blockers",
+          "likenessUsability",
+          "contextPolicyFingerprint",
+          "createdAt"
+        ],
         "type": "object"
       },
       "CutJobCountsDto": {
@@ -2026,6 +2655,38 @@
           "processingTemplateRevision": {
             "$ref": "#/components/schemas/ProcessingTemplateRevisionResponseDto"
           },
+          "provenance": {
+            "properties": {
+              "metadata": {
+                "properties": {
+                  "basisVersion": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "enum": ["MANUAL", "AI_ASSISTED", "MIXED"],
+                    "type": "string"
+                  }
+                },
+                "required": ["mode", "basisVersion"],
+                "type": "object"
+              },
+              "thumbnail": {
+                "properties": {
+                  "basisVersion": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "enum": ["MANUAL", "AI_ASSISTED", "MIXED"],
+                    "type": "string"
+                  }
+                },
+                "required": ["mode", "basisVersion"],
+                "type": "object"
+              }
+            },
+            "required": ["metadata", "thumbnail"],
+            "type": "object"
+          },
           "revision": {
             "format": "int32",
             "minimum": 1,
@@ -2161,6 +2822,22 @@
           }
         },
         "required": ["filename", "sizeBytes", "sha256", "downloadUrl"],
+        "type": "object"
+      },
+      "LikenessUsabilityResponseDto": {
+        "properties": {
+          "blocker": {
+            "nullable": true,
+            "type": "string"
+          },
+          "externalProviderTransferAllowed": {
+            "type": "boolean"
+          },
+          "usable": {
+            "type": "boolean"
+          }
+        },
+        "required": ["usable", "blocker", "externalProviderTransferAllowed"],
         "type": "object"
       },
       "MontageAssetDto": {
@@ -2807,6 +3484,177 @@
         "required": ["sourceVersion", "status", "usable", "revision"],
         "type": "object"
       },
+      "SourceEditorialContextDetailResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentRevision": {
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/SourceEditorialContextRevisionResponseDto"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "currentRevision",
+          "revision",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SourceEditorialContextInputDto": {
+        "properties": {
+          "audience": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "creatorProfileId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "creatorProfileRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "defaultCta": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "editorialGoal": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "gameOrTopic": {
+            "maxLength": 300,
+            "type": "string"
+          },
+          "language": {
+            "maxLength": 35,
+            "type": "string"
+          },
+          "operatorNotes": {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          },
+          "sourceTitle": {
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "required": [
+          "creatorProfileId",
+          "creatorProfileRevision",
+          "sourceTitle",
+          "gameOrTopic",
+          "audience",
+          "editorialGoal",
+          "language",
+          "defaultCta",
+          "restrictions",
+          "operatorNotes"
+        ],
+        "type": "object"
+      },
+      "SourceEditorialContextRevisionListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SourceEditorialContextRevisionResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "SourceEditorialContextRevisionResponseDto": {
+        "properties": {
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "contextId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "creatorProfileRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "editableRevision": {
+            "$ref": "#/components/schemas/SourceEditorialContextInputDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "likenessUsability": {
+            "$ref": "#/components/schemas/LikenessUsabilityResponseDto"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "type": "integer"
+          },
+          "status": {
+            "enum": ["CURRENT", "STALE"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "contextId",
+          "revision",
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "editableRevision",
+          "creatorProfileRevisionId",
+          "status",
+          "blockers",
+          "likenessUsability",
+          "createdAt"
+        ],
+        "type": "object"
+      },
       "SourceResponseDto": {
         "properties": {
           "authorization": {
@@ -3056,6 +3904,577 @@
         "tags": ["editorial-content"]
       }
     },
+    "/api/v1/creator-profiles": {
+      "get": {
+        "operationId": "CreatorContextController_listProfiles",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorProfileListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      },
+      "post": {
+        "operationId": "CreatorContextController_createProfile",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatorProfileRevisionInputDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorProfileDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "existingProfileId": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["code", "message"],
+                      "type": "object"
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/creator-profiles/{profileId}": {
+      "get": {
+        "operationId": "CreatorContextController_getProfile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorProfileDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      },
+      "put": {
+        "operationId": "CreatorContextController_updateProfile",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorProfileDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "existingProfileId": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["code", "message"],
+                      "type": "object"
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/creator-profiles/{profileId}/default-reference": {
+      "put": {
+        "operationId": "CreatorContextController_setDefaultReference",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorProfileDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/creator-profiles/{profileId}/reference-assets": {
+      "get": {
+        "operationId": "CreatorContextController_listReferences",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorReferenceAssetListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      },
+      "post": {
+        "operationId": "CreatorContextController_uploadReference",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatorReferenceUploadDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorReferenceAssetResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/authorization": {
+      "get": {
+        "operationId": "CreatorContextController_getAuthorization",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      },
+      "put": {
+        "operationId": "CreatorContextController_updateAuthorization",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizationDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/content": {
+      "get": {
+        "operationId": "CreatorContextController_referenceContent",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private reference image bytes."
+          },
+          "206": {
+            "description": "One bounded byte range."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/creator-profiles/{profileId}/revisions": {
+      "get": {
+        "operationId": "CreatorContextController_listProfileRevisions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorProfileRevisionListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/creator-profiles/{profileId}/revisions/{revision}": {
+      "get": {
+        "operationId": "CreatorContextController_getProfileRevision",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatorProfileRevisionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
     "/api/v1/editorial-approvals/{approvalId}/exports": {
       "post": {
         "operationId": "EditorialExportController_create",
@@ -3237,6 +4656,129 @@
         },
         "summary": "Create one exact-revision background horizontal render",
         "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt": {
+      "get": {
+        "operationId": "CreatorContextController_getCutPrompt",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CutEditorialPromptDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      },
+      "put": {
+        "operationId": "CreatorContextController_putCutPrompt",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CutEditorialPromptDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions": {
+      "get": {
+        "operationId": "CreatorContextController_listCutPromptRevisions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CutEditorialPromptRevisionListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions/{revision}": {
+      "get": {
+        "operationId": "CreatorContextController_getCutPromptRevision",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CutEditorialPromptRevisionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
       }
     },
     "/api/v1/pipeline-jobs/{cutJobId}/editorial-review": {
@@ -5172,6 +6714,129 @@
           }
         },
         "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context": {
+      "get": {
+        "operationId": "CreatorContextController_getSourceContext",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceEditorialContextDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      },
+      "put": {
+        "operationId": "CreatorContextController_putSourceContext",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceEditorialContextDetailResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions": {
+      "get": {
+        "operationId": "CreatorContextController_listSourceContextRevisions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceEditorialContextRevisionListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions/{revision}": {
+      "get": {
+        "operationId": "CreatorContextController_getSourceContextRevision",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceEditorialContextRevisionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["ai-content-context"]
       }
     }
   },

@@ -182,3 +182,59 @@ export const EditorialOperationType = {
 } as const
 
 export type EditorialOperationType = (typeof EditorialOperationType)[keyof typeof EditorialOperationType]
+
+
+export const CreatorLikenessPolicy = {
+  NO_REALISTIC_LIKENESS: 'NO_REALISTIC_LIKENESS',
+  CLEARED_REFERENCE_ONLY: 'CLEARED_REFERENCE_ONLY'
+} as const
+
+export type CreatorLikenessPolicy = (typeof CreatorLikenessPolicy)[keyof typeof CreatorLikenessPolicy]
+
+
+export const CreatorReferenceAssetStatus = {
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type CreatorReferenceAssetStatus = (typeof CreatorReferenceAssetStatus)[keyof typeof CreatorReferenceAssetStatus]
+
+
+export const CreatorReferenceAuthorizationStatus = {
+  NOT_REVIEWED: 'NOT_REVIEWED',
+  CLEARED: 'CLEARED',
+  REVOKED: 'REVOKED'
+} as const
+
+export type CreatorReferenceAuthorizationStatus = (typeof CreatorReferenceAuthorizationStatus)[keyof typeof CreatorReferenceAuthorizationStatus]
+
+
+export const AiContentOperationType = {
+  CREATE_CREATOR_PROFILE: 'CREATE_CREATOR_PROFILE',
+  UPDATE_CREATOR_PROFILE: 'UPDATE_CREATOR_PROFILE',
+  UPLOAD_CREATOR_REFERENCE: 'UPLOAD_CREATOR_REFERENCE',
+  UPDATE_CREATOR_REFERENCE_AUTHORIZATION: 'UPDATE_CREATOR_REFERENCE_AUTHORIZATION',
+  SET_DEFAULT_CREATOR_REFERENCE: 'SET_DEFAULT_CREATOR_REFERENCE',
+  PUT_SOURCE_EDITORIAL_CONTEXT: 'PUT_SOURCE_EDITORIAL_CONTEXT',
+  PUT_CUT_EDITORIAL_PROMPT: 'PUT_CUT_EDITORIAL_PROMPT'
+} as const
+
+export type AiContentOperationType = (typeof AiContentOperationType)[keyof typeof AiContentOperationType]
+
+
+export const EditorialComponentType = {
+  METADATA: 'METADATA',
+  THUMBNAIL: 'THUMBNAIL'
+} as const
+
+export type EditorialComponentType = (typeof EditorialComponentType)[keyof typeof EditorialComponentType]
+
+
+export const EditorialProvenanceMode = {
+  MANUAL: 'MANUAL',
+  AI_ASSISTED: 'AI_ASSISTED',
+  MIXED: 'MIXED'
+} as const
+
+export type EditorialProvenanceMode = (typeof EditorialProvenanceMode)[keyof typeof EditorialProvenanceMode]
