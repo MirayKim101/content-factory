@@ -2,6 +2,7 @@ import { QueryClient, VueQueryPlugin } from "@tanstack/vue-query";
 import { flushPromises, mount } from "@vue/test-utils";
 import PrimeVue from "primevue/config";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { reactive } from "vue";
 
 const mocks = vi.hoisted(() => ({
   createCuts: vi.fn(),
@@ -41,6 +42,7 @@ const projectA = "00000000-0000-4000-8000-000000000101";
 const projectB = "00000000-0000-4000-8000-000000000102";
 const projectC = "00000000-0000-4000-8000-000000000103";
 const projectD = "00000000-0000-4000-8000-000000000104";
+let latestRoute: { query: { projectIds: string }; fullPath: string };
 
 function project(id: string) {
   return {
@@ -75,10 +77,11 @@ function mountWorkspace(
     defaultOptions: { queries: { retry: false } },
   }),
 ) {
-  vi.stubGlobal("useRoute", () => ({
+  latestRoute = reactive({
     query: { projectIds: projectIds.join(",") },
     fullPath: `/horizontal?projectIds=${projectIds.join(",")}`,
-  }));
+  });
+  vi.stubGlobal("useRoute", () => latestRoute);
   vi.stubGlobal("navigateTo", vi.fn());
   vi.stubGlobal("useRuntimeConfig", () => ({
     public: { apiBasePath: "/api/v1" },
@@ -98,7 +101,19 @@ function mountWorkspace(
         NuxtLink: { template: "<a><slot /></a>" },
         PipelineJobCard: {
           props: ["jobId"],
-          template: '<article class="pipeline-job-card">{{ jobId }}</article>',
+          template: `<article class="pipeline-job-card">
+            {{ jobId }}
+            <button class="open-editorial" @click="$emit('editEditorial', jobId)">Редактор</button>
+            <button class="open-assembly" @click="$emit('editAssembly', { jobId, durationMs: 1000 })">Монтаж</button>
+          </article>`,
+        },
+        EditorialPackageDialog: {
+          props: ["visible"],
+          template: '<section v-if="visible" class="editorial-target" />',
+        },
+        AssemblyRecipeDialog: {
+          props: ["visible"],
+          template: '<section v-if="visible" class="assembly-target" />',
         },
         Card: {
           template:
@@ -198,6 +213,55 @@ describe("HorizontalWorkspace cut confirmation", () => {
 
     expect(wrapper.get(".source-card video").element).not.toBe(firstVideo);
     expect(wrapper.find(".test-dialog").exists()).toBe(false);
+  });
+
+  it("closes editorial and assembly dialogs when their source identity changes", async () => {
+    mocks.listProjectJobs.mockResolvedValue({
+      items: [{ id: "00000000-0000-4000-8000-000000000201" }],
+    });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const wrapper = mountWorkspace([projectC], queryClient);
+    await flushPromises();
+    await wrapper.find(".open-editorial").trigger("click");
+    expect(wrapper.find(".editorial-target").exists()).toBe(true);
+    const nextProject = project(projectC);
+    nextProject.source.sourceVersion = 2;
+    nextProject.source.authorization.sourceVersion = 2;
+    queryClient.setQueryData(["project", projectC], nextProject);
+    await flushPromises();
+    expect(wrapper.find(".editorial-target").exists()).toBe(false);
+
+    await wrapper.find(".open-assembly").trigger("click");
+    expect(wrapper.find(".assembly-target").exists()).toBe(true);
+    const thirdProject = project(projectC);
+    thirdProject.source.sourceVersion = 3;
+    thirdProject.source.authorization.sourceVersion = 3;
+    queryClient.setQueryData(["project", projectC], thirdProject);
+    await flushPromises();
+    expect(wrapper.find(".assembly-target").exists()).toBe(false);
+  });
+
+  it("closes editorial and assembly dialogs when their project leaves the route", async () => {
+    mocks.listProjectJobs.mockResolvedValue({
+      items: [{ id: "00000000-0000-4000-8000-000000000202" }],
+    });
+    const wrapper = mountWorkspace([projectA, projectB]);
+    await flushPromises();
+    await wrapper.find(".open-editorial").trigger("click");
+    expect(wrapper.find(".editorial-target").exists()).toBe(true);
+    latestRoute.query.projectIds = projectB;
+    await flushPromises();
+    expect(wrapper.find(".editorial-target").exists()).toBe(false);
+
+    latestRoute.query.projectIds = `${projectA},${projectB}`;
+    await flushPromises();
+    await wrapper.find(".open-assembly").trigger("click");
+    expect(wrapper.find(".assembly-target").exists()).toBe(true);
+    latestRoute.query.projectIds = projectB;
+    await flushPromises();
+    expect(wrapper.find(".assembly-target").exists()).toBe(false);
   });
 
   it("renders five independent player cards in the desktop grid", async () => {

@@ -13,6 +13,7 @@ const props = defineProps<{ jobId: string }>();
 const emit = defineEmits<{
   cloneSegment: [bounds: { startMs: number; endMs: number }];
   editEditorial: [jobId: string];
+  editAssembly: [payload: { jobId: string; durationMs: number }];
 }>();
 const config = useRuntimeConfig();
 const api = createMediaPipelineApi(config.public.apiBasePath);
@@ -106,6 +107,17 @@ const label = computed(
           severity="secondary"
           @click="emit('editEditorial', query.data.value.id)"
           >Заголовок и обложка</Button
+        >
+        <Button
+          type="button"
+          severity="secondary"
+          @click="
+            emit('editAssembly', {
+              jobId: query.data.value.id,
+              durationMs: query.data.value.endMs - query.data.value.startMs,
+            })
+          "
+          >Настроить монтаж</Button
         >
       </div>
       <div v-else-if="query.data.value.failure" class="error" role="alert">

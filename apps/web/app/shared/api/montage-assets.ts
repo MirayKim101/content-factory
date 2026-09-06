@@ -47,6 +47,10 @@ const montageAssetSchema: z.ZodType<MontageAsset> = z.object({
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
+const montageAssetListSchema = z.object({
+  items: z.array(montageAssetSchema),
+  nextCursor: z.string().nullable(),
+});
 const errorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string() }),
 });
@@ -109,18 +113,42 @@ export function createMontageAssetsApi({
       projectId: string,
       kind?: MontageAssetKind,
     ): Promise<MontageAsset[]> {
-      const params = new URLSearchParams({ limit: "50" });
-      if (kind) params.set("kind", kind);
-      const payload = await request(
-        fetchImplementation,
-        `${basePath}/projects/${encodeURIComponent(projectId)}/montage-assets?${params}`,
+      const items: MontageAsset[] = [];
+      const cursors = new Set<string>();
+      let cursor: string | null = null;
+      for (let page = 0; page < 10; page += 1) {
+        const params = new URLSearchParams({ limit: "50" });
+        if (kind) params.set("kind", kind);
+        if (cursor) params.set("cursor", cursor);
+        const payload = await request(
+          fetchImplementation,
+          `${basePath}/projects/${encodeURIComponent(projectId)}/montage-assets?${params}`,
+        );
+        const parsed = montageAssetListSchema.parse(payload);
+        items.push(...parsed.items);
+        if (!parsed.nextCursor) return uniqueAssets(items);
+        if (cursors.has(parsed.nextCursor))
+          throw new MontageAssetsApiError(
+            "PAGINATION_CURSOR_LOOP",
+            "Список материалов вернул повторяющийся курсор. Обновите страницу.",
+            0,
+          );
+        cursors.add(parsed.nextCursor);
+        cursor = parsed.nextCursor;
+      }
+      throw new MontageAssetsApiError(
+        "PAGINATION_LIMIT_REACHED",
+        "Материалов слишком много для одной безопасной загрузки. Уточните тип материала.",
+        0,
       );
-      return z
-        .object({
-          items: z.array(montageAssetSchema),
-          nextCursor: z.string().nullable(),
-        })
-        .parse(payload).items;
+    },
+    async get(projectId: string, assetId: string): Promise<MontageAsset> {
+      return montageAssetSchema.parse(
+        await request(
+          fetchImplementation,
+          `${basePath}/projects/${encodeURIComponent(projectId)}/montage-assets/${encodeURIComponent(assetId)}`,
+        ),
+      );
     },
     upload(request: UploadMontageAssetRequest): Promise<MontageAsset> {
       const body = new FormData();
@@ -142,6 +170,15 @@ export function createMontageAssetsApi({
       return `${basePath}/projects/${encodeURIComponent(projectId)}/montage-assets/${encodeURIComponent(assetId)}/content`;
     },
   };
+}
+
+function uniqueAssets(items: MontageAsset[]): MontageAsset[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
 }
 
 async function request(

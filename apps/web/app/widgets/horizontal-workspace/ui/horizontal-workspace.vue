@@ -7,6 +7,7 @@ import InputText from "primevue/inputtext";
 import { computed, nextTick, ref, watch } from "vue";
 
 import PipelineJobCard from "~/entities/pipeline-job/ui/pipeline-job-card.vue";
+import AssemblyRecipeDialog from "~/features/edit-assembly-recipe/ui/assembly-recipe-dialog.vue";
 import EditorialPackageDialog from "~/features/edit-editorial-package/ui/editorial-package-dialog.vue";
 import {
   emptySegment,
@@ -51,6 +52,12 @@ const editorialTarget = ref<{
   projectId: string;
   jobId: string;
   filename: string;
+}>();
+const assemblyTarget = ref<{
+  projectId: string;
+  jobId: string;
+  filename: string;
+  durationMs: number;
 }>();
 const projectQueries = useQueries({
   queries: computed(() =>
@@ -279,12 +286,25 @@ function openEditorial(
   editorialTarget.value = { projectId, jobId, filename };
   announcement.value = "Открыт редактор metadata готовой нарезки.";
 }
+function openAssembly(
+  projectId: string,
+  jobId: string,
+  filename: string,
+  durationMs: number,
+): void {
+  assemblyTarget.value = { projectId, jobId, filename, durationMs };
+  announcement.value = "Открыт редактор монтажного рецепта готовой нарезки.";
+}
 watch(
   ids,
   (next) => {
     for (const id of next) ensureState(id);
     if (!next.includes(editorProjectId.value ?? ""))
       editorProjectId.value = undefined;
+    if (!next.includes(editorialTarget.value?.projectId ?? ""))
+      editorialTarget.value = undefined;
+    if (!next.includes(assemblyTarget.value?.projectId ?? ""))
+      assemblyTarget.value = undefined;
   },
   { immediate: true },
 );
@@ -312,6 +332,10 @@ watch(
           editorPlayer.value?.pause();
           editorProjectId.value = undefined;
         }
+        if (editorialTarget.value?.projectId === source.id)
+          editorialTarget.value = undefined;
+        if (assemblyTarget.value?.projectId === source.id)
+          assemblyTarget.value = undefined;
       }
     }
   },
@@ -483,6 +507,14 @@ watch(
                     row.id,
                     $event,
                     row.query.data!.source.originalFilename,
+                  )
+                "
+                @edit-assembly="
+                  openAssembly(
+                    row.id,
+                    $event.jobId,
+                    row.query.data!.source.originalFilename,
+                    $event.durationMs,
                   )
                 "
               />
@@ -708,6 +740,20 @@ watch(
       @update:visible="
         (visible) => {
           if (!visible) editorialTarget = undefined;
+        }
+      "
+    />
+    <AssemblyRecipeDialog
+      v-if="assemblyTarget"
+      :key="`${assemblyTarget.projectId}:${assemblyTarget.jobId}`"
+      :visible="true"
+      :project-id="assemblyTarget.projectId"
+      :job-id="assemblyTarget.jobId"
+      :filename="assemblyTarget.filename"
+      :cut-duration-ms="assemblyTarget.durationMs"
+      @update:visible="
+        (visible) => {
+          if (!visible) assemblyTarget = undefined;
         }
       "
     />
