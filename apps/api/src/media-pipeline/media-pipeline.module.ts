@@ -31,5 +31,6 @@ import { MediaPipelineController } from "./presentation/media-pipeline.controlle
     { provide: JOB_DISPATCH, useExisting: BullMqJobDispatch },
     { provide: MEDIA_QUEUE, useFactory: createMediaQueue },
   ],
+  exports: [JOB_DISPATCH],
 })
 export class MediaPipelineModule {}

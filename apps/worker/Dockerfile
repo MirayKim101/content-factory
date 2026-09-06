@@ -24,20 +24,23 @@ RUN pnpm --filter @content-factory/worker build
 FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d AS runtime
 
 ARG FFMPEG_VERSION=7:5.1.9-0+deb12u1
+ARG DEJAVU_FONT_VERSION=2.37-6
 
 # Debian Bookworm's security-updated FFmpeg package is version-pinned. Package
 # metadata is removed in the same layer so credentials and build state cannot
 # leak into the runtime image.
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends "ffmpeg=${FFMPEG_VERSION}" \
+    && apt-get install --yes --no-install-recommends "ffmpeg=${FFMPEG_VERSION}" "fonts-dejavu-core=${DEJAVU_FONT_VERSION}" \
     && ffmpeg -version \
     && ffprobe -version \
+    && sha256sum /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf > /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf.sha256 \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
     MEDIA_SCRATCH_DIRECTORY=/tmp/media-worker \
     FFMPEG_PATH=/usr/bin/ffmpeg \
-    FFPROBE_PATH=/usr/bin/ffprobe
+    FFPROBE_PATH=/usr/bin/ffprobe \
+    ASSEMBLY_FONT_PATH=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
 
 WORKDIR /workspace/apps/worker
 

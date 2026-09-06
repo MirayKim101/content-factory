@@ -97,6 +97,21 @@ export type AssemblyRecipeAssetReference = Prisma.AssemblyRecipeAssetReferenceMo
  */
 export type AssemblyRecipeMutationRequest = Prisma.AssemblyRecipeMutationRequestModel
 /**
+ * Model AssemblyRenderIntent
+ *
+ */
+export type AssemblyRenderIntent = Prisma.AssemblyRenderIntentModel
+/**
+ * Model AssemblyRenderRequest
+ *
+ */
+export type AssemblyRenderRequest = Prisma.AssemblyRenderRequestModel
+/**
+ * Model AssemblyRenderResult
+ *
+ */
+export type AssemblyRenderResult = Prisma.AssemblyRenderResultModel
+/**
  * Model ProcessingTemplate
  *
  */

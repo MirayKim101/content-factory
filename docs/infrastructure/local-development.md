@@ -280,6 +280,61 @@ BullMQ закреплён как `6.2.2`. Версия проверена 2026-0
 несёт только versioned `{schemaVersion, jobId}` reference; бизнес-состояние
 остаётся в PostgreSQL.
 
+### Stage 2c: фоновая сборка горизонтального MP4
+
+Stage 2c использует тот же `media-worker` и ту же очередь. Сначала сохрани
+exact revision рецепта монтажа, затем создай render intent. Долгая FFmpeg-сборка
+не выполняется внутри HTTP-запроса:
+
+```sh
+curl -i -X POST \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: render-example-001' \
+  --data '{"recipeRevision":1}' \
+  http://127.0.0.1:3001/api/v1/pipeline-jobs/CUT_JOB_UUID/assembly-renders
+```
+
+Ожидаемый ответ — HTTP `202`: один immutable render ID, exact recipe revision и
+fingerprint, снимки входов и PostgreSQL-состояние job. Повтор того же запроса с
+тем же ключом возвращает тот же intent; другой body с тем же ключом возвращает
+`409`. После создания более новой recipe revision уже принятая сборка остаётся
+на исходной exact revision.
+
+Состояние после перезапуска API, worker или браузера читается из PostgreSQL:
+
+```sh
+curl http://127.0.0.1:3001/api/v1/assembly-renders/RENDER_UUID
+curl 'http://127.0.0.1:3001/api/v1/projects/PROJECT_UUID/assembly-renders?limit=20'
+```
+
+Во время обработки ответ содержит attempt-scoped `progress`: phase и реальные
+`basisPoints` (0..10000), полученные из скачанных байт и FFmpeg media time. В
+`READY` появляется `result.downloadUrl`. Проверка bounded Range и скачивание:
+
+```sh
+curl -i -H 'Range: bytes=0-1048575' \
+  http://127.0.0.1:3001/api/v1/assembly-renders/RENDER_UUID/content
+curl -o horizontal.mp4 \
+  http://127.0.0.1:3001/api/v1/assembly-renders/RENDER_UUID/content
+ffprobe -v error -show_streams -show_format horizontal.mp4
+```
+
+Успех: Range возвращает `206` и `Content-Range`; полный файл содержит один
+H.264/yuv420p video stream и один AAC stereo 48 kHz audio stream. Порядок
+сборки — intro, cut до рекламной точки, advertisement, остаток cut, outro.
+Static banners и CTA видны только на cut-local интервалах.
+
+Для воспроизводимого локального профиля оставь
+`MEDIA_WORKER_CONCURRENCY=1`, `FFMPEG_THREADS=2` и pinned
+`ASSEMBLY_FONT_PATH=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf`.
+Недостаток scratch оставляет job в `QUEUED` с `admissionReason` и не расходует
+attempt. Retry использует PostgreSQL `nextAttemptAt`; потеря Redis или restart
+восстанавливаются reconciler-ом. Не включай API admission со старым worker:
+сначала должна быть развёрнута версия worker, понимающая
+`ASSEMBLE_HORIZONTAL`. Перед production rollout обязательны independent CLEAN
+review, disposable tiny-media smoke, controlled corrupt-input test и отдельный
+30-минутный benchmark; этот runbook не разрешает применять миграцию к live базе.
+
 ### Docker runtime: версии, логи и controlled startup failure
 
 `media-worker` использует официальный multi-architecture Node image

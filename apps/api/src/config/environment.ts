@@ -51,6 +51,7 @@ const API_ENVIRONMENT_KEYS = [
   "MEDIA_RECONCILE_LIMIT",
   "MEDIA_QUEUE_NAME",
   "MEDIA_QUEUE_DISABLED",
+  "ASSEMBLY_RENDER_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -159,6 +160,7 @@ export interface ApiEnvironment {
   mediaReconcileLimit: number;
   mediaQueueName: string;
   mediaQueueDisabled: boolean;
+  assemblyRenderEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -228,5 +230,9 @@ export function apiEnvironment(): ApiEnvironment {
     mediaReconcileLimit: boundedInteger("MEDIA_RECONCILE_LIMIT", 100, 1, 1_000),
     mediaQueueName: process.env.MEDIA_QUEUE_NAME?.trim() || MEDIA_QUEUE_NAME,
     mediaQueueDisabled: process.env.MEDIA_QUEUE_DISABLED === "1",
+    assemblyRenderEnabled:
+      process.env.ASSEMBLY_RENDER_ENABLED === "1" ||
+      (process.env.ASSEMBLY_RENDER_ENABLED === undefined &&
+        authorization.deploymentProfile === "local"),
   };
 }

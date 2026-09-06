@@ -84,6 +84,8 @@ describe("authoritative OpenAPI export", () => {
           EditorialPackageResponseDto: {},
           AssemblyRecipeResponseDto: {},
           SaveAssemblyRecipeDto: {},
+          AssemblyRenderResponseDto: {},
+          CreateAssemblyRenderDto: {},
         },
       },
     });
@@ -265,6 +267,50 @@ describe("authoritative OpenAPI export", () => {
         },
       },
     });
+    expect(
+      document.paths["/api/v1/pipeline-jobs/{cutJobId}/assembly-renders"],
+    ).toMatchObject({
+      post: {
+        parameters: expect.arrayContaining([
+          expect.objectContaining({
+            in: "header",
+            name: "Idempotency-Key",
+            required: true,
+          }),
+          expect.objectContaining({
+            in: "path",
+            name: "cutJobId",
+            required: true,
+          }),
+        ]),
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/CreateAssemblyRenderDto" },
+            },
+          },
+        },
+        responses: {
+          "202": {},
+          "400": {},
+          "403": {},
+          "404": {},
+          "409": {},
+          "422": {},
+          "503": {},
+        },
+      },
+    });
+    expect(
+      document.paths["/api/v1/assembly-renders/{renderId}"]?.get,
+    ).toMatchObject({
+      responses: { "200": {} },
+    });
+    expect(
+      document.paths["/api/v1/projects/{projectId}/assembly-renders"]?.get,
+    ).toMatchObject({
+      responses: { "200": {} },
+    });
     expect(document).toMatchObject({
       components: {
         schemas: {
@@ -320,6 +366,7 @@ describe("authoritative OpenAPI export", () => {
     for (const path of [
       "/api/v1/projects/{projectId}/source",
       "/api/v1/pipeline-jobs/{id}/result",
+      "/api/v1/assembly-renders/{renderId}/content",
     ]) {
       const operation = document.paths[path]?.get;
       expect(operation?.parameters).toContainEqual(

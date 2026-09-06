@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { Readable } from "node:stream";
 
 import {
   BadRequestException,
@@ -15,11 +16,21 @@ import {
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { Pool } from "pg";
 import request from "supertest";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { databaseUrl } from "../src/config/environment.js";
 import { PrismaService } from "../src/database/prisma.service.js";
 import { ASSEMBLY_RECIPE_REPOSITORY } from "../src/editorial-content/application/assembly-recipe-repository.port.js";
+import {
+  ASSEMBLY_RENDER_ADMISSION_ENABLED,
+  ASSEMBLY_RENDER_REPOSITORY,
+} from "../src/editorial-content/application/assembly-render-repository.port.js";
+import {
+  GetAssemblyRender,
+  GetAssemblyRenderContent,
+  ListAssemblyRenders,
+} from "../src/editorial-content/application/assembly-render-queries.js";
+import { CreateAssemblyRender } from "../src/editorial-content/application/create-assembly-render.js";
 import {
   GetAssemblyRecipe,
   GetAssemblyRecipeRevision,
@@ -27,8 +38,12 @@ import {
 } from "../src/editorial-content/application/assembly-recipe-queries.js";
 import { SaveAssemblyRecipe } from "../src/editorial-content/application/save-assembly-recipe.js";
 import { PrismaAssemblyRecipeRepository } from "../src/editorial-content/infrastructure/prisma-assembly-recipe.repository.js";
+import { PrismaAssemblyRenderRepository } from "../src/editorial-content/infrastructure/prisma-assembly-render.repository.js";
 import { AssemblyRecipeController } from "../src/editorial-content/presentation/assembly-recipe.controller.js";
+import { AssemblyRenderController } from "../src/editorial-content/presentation/assembly-render.controller.js";
 import { HttpExceptionFilter } from "../src/http-exception.filter.js";
+import { JOB_DISPATCH } from "../src/media-pipeline/application/job-dispatch.port.js";
+import { OBJECT_STORAGE } from "../src/projects/application/object-storage.port.js";
 
 describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
   "assembly recipe isolated HTTP/PostgreSQL",
@@ -46,6 +61,26 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
     let prisma: PrismaService;
     let app: INestApplication;
     let created = false;
+    const dispatch = { dispatch: vi.fn(async () => undefined) };
+    const content = Buffer.from("assembly-result");
+    const storage = {
+      readObject: vi.fn(async (_objectKey: string, range?: string) => {
+        if (range === "bytes=1-3") {
+          return {
+            body: Readable.from(content.subarray(1, 4)),
+            contentLength: 3,
+            contentType: "video/mp4",
+            contentRange: `bytes 1-3/${content.length}`,
+            etag: '"assembly-etag"',
+          };
+        }
+        return {
+          body: Readable.from(content),
+          contentLength: content.length,
+          contentType: "video/mp4",
+        };
+      }),
+    };
 
     beforeAll(async () => {
       const base = new URL(databaseUrl());
@@ -92,18 +127,30 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
       prisma = new PrismaService();
       await prisma.$connect();
       @Module({
-        controllers: [AssemblyRecipeController],
+        controllers: [AssemblyRecipeController, AssemblyRenderController],
         providers: [
           { provide: PrismaService, useValue: prisma },
+          { provide: JOB_DISPATCH, useValue: dispatch },
+          { provide: ASSEMBLY_RENDER_ADMISSION_ENABLED, useValue: true },
+          { provide: OBJECT_STORAGE, useValue: storage },
           PrismaAssemblyRecipeRepository,
+          PrismaAssemblyRenderRepository,
           {
             provide: ASSEMBLY_RECIPE_REPOSITORY,
             useExisting: PrismaAssemblyRecipeRepository,
+          },
+          {
+            provide: ASSEMBLY_RENDER_REPOSITORY,
+            useExisting: PrismaAssemblyRenderRepository,
           },
           SaveAssemblyRecipe,
           GetAssemblyRecipe,
           GetAssemblyRecipeRevision,
           ListAssemblyRecipes,
+          CreateAssemblyRender,
+          GetAssemblyRender,
+          GetAssemblyRenderContent,
+          ListAssemblyRenders,
         ],
       })
       class IsolatedModule {}
@@ -255,6 +302,162 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         .expect(({ body: responseBody }) =>
           expect(responseBody.error.code).toBe("ASSEMBLY_REVISION_CONFLICT"),
         );
+    });
+
+    it("admits one exact render, converges requests, reloads, and serves bounded Range content", async () => {
+      const cut = await readyCut();
+      const intro = await readyAsset(cut, "INTRO");
+      const saved = await request(app.getHttpServer())
+        .put(`/api/v1/pipeline-jobs/${cut.jobId}/assembly-recipe`)
+        .set("Idempotency-Key", randomUUID())
+        .send(fullRequest({ intro }))
+        .expect(200);
+      const [left, right] = await Promise.all([
+        request(app.getHttpServer())
+          .post(`/api/v1/pipeline-jobs/${cut.jobId}/assembly-renders`)
+          .set("Idempotency-Key", randomUUID())
+          .send({ recipeRevision: 1 }),
+        request(app.getHttpServer())
+          .post(`/api/v1/pipeline-jobs/${cut.jobId}/assembly-renders`)
+          .set("Idempotency-Key", randomUUID())
+          .send({ recipeRevision: 1 }),
+      ]);
+      expect(
+        [left.status, right.status],
+        JSON.stringify([left.body, right.body]),
+      ).toEqual([202, 202]);
+      expect(left.body.id).toBe(right.body.id);
+      expect(left.body).toMatchObject({
+        projectId: cut.projectId,
+        cutPipelineJobId: cut.jobId,
+        recipeRevisionId: saved.body.revision.id,
+        recipeRevision: 1,
+        expectedDurationMs: 125_000,
+        renderContractVersion: "horizontal-render-v1",
+        job: { state: "QUEUED", attempt: 0, retryBudget: 2 },
+        result: null,
+      });
+      expect(JSON.stringify(left.body)).not.toContain("objectKey");
+      expect(await prisma.assemblyRenderIntent.count()).toBe(1);
+      expect(await prisma.assemblyRenderRequest.count()).toBe(2);
+      expect(
+        await prisma.pipelineJob.count({
+          where: {
+            type: "ASSEMBLE_HORIZONTAL",
+            assemblyRenderIntentId: left.body.id,
+          },
+        }),
+      ).toBe(1);
+      expect(
+        await prisma.jobAttempt.count({
+          where: { job: { assemblyRenderIntentId: left.body.id } },
+        }),
+      ).toBe(1);
+      expect(dispatch.dispatch).toHaveBeenCalledWith({
+        jobId: left.body.job.id,
+        attemptNumber: 1,
+      });
+      const reloaded = await request(app.getHttpServer())
+        .get(`/api/v1/assembly-renders/${left.body.id}`)
+        .expect(200);
+      expect(reloaded.body).toEqual(left.body);
+      const listed = await request(app.getHttpServer())
+        .get(`/api/v1/projects/${cut.projectId}/assembly-renders?limit=1`)
+        .expect(200);
+      expect(listed.body).toEqual({ items: [left.body], nextCursor: null });
+      await request(app.getHttpServer())
+        .get(`/api/v1/assembly-renders/${left.body.id}/content`)
+        .expect(409)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("ASSEMBLY_RESULT_NOT_READY"),
+        );
+      await request(app.getHttpServer())
+        .get(`/api/v1/assembly-renders/${randomUUID()}/content`)
+        .expect(404)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("ASSEMBLY_RENDER_NOT_FOUND"),
+        );
+
+      const artifactId = randomUUID();
+      await prisma.$transaction([
+        prisma.mediaArtifact.create({
+          data: {
+            id: artifactId,
+            projectId: cut.projectId,
+            sourceId: cut.sourceId,
+            role: "HORIZONTAL_ASSEMBLY_RESULT",
+            status: "READY",
+            objectKey: `test/assembly/${artifactId}.mp4`,
+            sizeBytes: BigInt(content.length),
+            sha256: "f".repeat(64),
+            contentType: "video/mp4",
+            lineageSourceId: cut.sourceId,
+            lineageSourceVersion: 1,
+            recipeVersion: "horizontal-render-v1",
+            pipelineJobId: left.body.job.id,
+            ffmpegVersion: "ffmpeg-test",
+            outputFilename: "готовое-видео.mp4",
+          },
+        }),
+        prisma.assemblyRenderResult.create({
+          data: {
+            id: randomUUID(),
+            renderIntentId: left.body.id,
+            artifactId,
+            durationMs: 125_000,
+            width: 1280,
+            height: 720,
+            fpsNumerator: 25,
+            fpsDenominator: 1,
+            videoCodec: "h264",
+            pixelFormat: "yuv420p",
+            audioCodec: "aac",
+            audioSampleRate: 48_000,
+            audioChannels: 2,
+            ffmpegVersion: "ffmpeg-test",
+            ffprobeVersion: "ffprobe-test",
+            integratedLoudnessLufs: -14,
+            truePeakDbtp: -1.5,
+            normalizationProfileResult: "NORMALIZED",
+            completedAt: new Date(),
+          },
+        }),
+        prisma.pipelineJob.update({
+          where: { id: left.body.job.id },
+          data: { state: "READY", finishedAt: new Date() },
+        }),
+      ]);
+      const ranged = await request(app.getHttpServer())
+        .get(`/api/v1/assembly-renders/${left.body.id}/content`)
+        .set("Range", "bytes=1-3")
+        .expect(206);
+      expect(ranged.headers["content-range"]).toBe(
+        `bytes 1-3/${content.length}`,
+      );
+      expect(ranged.headers["accept-ranges"]).toBe("bytes");
+      expect(ranged.body).toEqual(content.subarray(1, 4));
+      await request(app.getHttpServer())
+        .get(`/api/v1/assembly-renders/${left.body.id}/content`)
+        .set("Range", `bytes=${content.length}-`)
+        .expect(416)
+        .expect("Content-Range", `bytes */${content.length}`);
+
+      storage.readObject.mockClear();
+      process.env.SOURCE_AUTHORIZATION_POLICY = "manual";
+      try {
+        await request(app.getHttpServer())
+          .get(`/api/v1/assembly-renders/${left.body.id}`)
+          .expect(403);
+        await request(app.getHttpServer())
+          .get(`/api/v1/projects/${cut.projectId}/assembly-renders`)
+          .expect(403);
+        await request(app.getHttpServer())
+          .get(`/api/v1/assembly-renders/${left.body.id}/content`)
+          .expect(403);
+        expect(storage.readObject).not.toHaveBeenCalled();
+      } finally {
+        process.env.SOURCE_AUTHORIZATION_POLICY = "local-auto";
+      }
     });
 
     it("fails closed for invalid timing, kind, state, project, and cut lineage with zero partial writes", async () => {

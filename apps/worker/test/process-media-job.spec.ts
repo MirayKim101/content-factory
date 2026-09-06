@@ -1,21 +1,28 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ProcessMediaJob } from "../src/application/process-media-job.js";
+import {
+  ProcessMediaJob,
+  releaseAttemptResources,
+} from "../src/application/process-media-job.js";
 import type {
   MediaJobRepository,
   MediaJobTelemetry,
   MediaProcessor,
+  AssemblyRenderer,
   SourceCache,
   WorkerObjectStorage,
 } from "../src/application/ports.js";
 import type { ClaimedMediaJob } from "../src/domain/media-job.js";
 import { ControlledMediaError } from "../src/domain/media-job.js";
 
-function claimed(type: "SOURCE_PROBE" | "CUT_SEGMENT"): ClaimedMediaJob {
+function claimed<T extends "SOURCE_PROBE" | "CUT_SEGMENT">(
+  type: T,
+): Extract<ClaimedMediaJob, { type: T }> {
   return {
     id: "00000000-0000-4000-8000-000000000001",
     type,
@@ -40,19 +47,24 @@ function claimed(type: "SOURCE_PROBE" | "CUT_SEGMENT"): ClaimedMediaJob {
           },
         }
       : {}),
-  };
+  } as Extract<ClaimedMediaJob, { type: T }>;
 }
 
 function dependencies(job: ClaimedMediaJob) {
   const repository: MediaJobRepository = {
+    getAssemblyResourcePlan: vi.fn(async () => null),
+    deferAssemblyAdmission: vi.fn(async () => undefined),
     claim: vi.fn(async () => job),
     heartbeat: vi.fn(async () => true),
+    updateAssemblyProgress: vi.fn(async () => true),
     isLeaseActive: vi.fn(async () => true),
     prepareAttemptOutput: vi.fn(async () => undefined),
     completeAttemptCleanup: vi.fn(async () => undefined),
     completeProbe: vi.fn(async () => undefined),
     completeMontageProbe: vi.fn(async () => undefined),
     completeCut: vi.fn(async () => undefined),
+    completeAssembly: vi.fn(async () => undefined),
+    isAssemblyResultAccepted: vi.fn(async () => false),
     fail: vi.fn(async () => "FAILED_FINAL" as const),
     close: vi.fn(async () => undefined),
   };
@@ -90,6 +102,195 @@ function dependencies(job: ClaimedMediaJob) {
 }
 
 describe("ProcessMediaJob", () => {
+  it("releases scratch reservation even when source and scratch cleanup fail", async () => {
+    const calls: string[] = [];
+    await expect(
+      releaseAttemptResources(
+        async () => {
+          calls.push("source");
+          throw new Error("source release failed");
+        },
+        async () => {
+          calls.push("scratch");
+          throw new Error("scratch removal failed");
+        },
+        () => calls.push("reservation"),
+      ),
+    ).rejects.toThrow("source release failed");
+    expect(calls).toEqual(["source", "scratch", "reservation"]);
+  });
+
+  it("defers assembly before claim when scratch admission is exhausted", async () => {
+    const job = assemblyJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 9_000_000_000_000_000n,
+    }));
+    await worker(
+      deps,
+      30_000,
+      undefined,
+      undefined,
+      assemblyRenderer(),
+    ).execute(job.id);
+    expect(deps.repository.deferAssemblyAdmission).toHaveBeenCalledWith(
+      job.id,
+      "INSUFFICIENT_SCRATCH",
+      expect.any(Date),
+    );
+    expect(deps.repository.claim).not.toHaveBeenCalled();
+  });
+
+  it("downloads exact frozen assembly inputs and finalizes one attempt result", async () => {
+    const job = assemblyJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    const renderer = assemblyRenderer();
+    const events: Parameters<MediaJobTelemetry>[0][] = [];
+    await worker(
+      deps,
+      30_000,
+      (event) => events.push(event),
+      undefined,
+      renderer,
+    ).execute(job.id);
+    expect(renderer.render).toHaveBeenCalledOnce();
+    expect(renderer.inspectOutput).toHaveBeenCalledOnce();
+    expect(deps.repository.updateAssemblyProgress).toHaveBeenCalledWith(
+      job,
+      "OUTPUT_PROBE",
+      8_700,
+    );
+    expect(
+      vi.mocked(deps.repository.updateAssemblyProgress).mock
+        .invocationCallOrder[
+        vi
+          .mocked(deps.repository.updateAssemblyProgress)
+          .mock.calls.findIndex(([, phase]) => phase === "OUTPUT_PROBE")
+      ],
+    ).toBeLessThan(
+      vi.mocked(renderer.inspectOutput).mock.invocationCallOrder[0]!,
+    );
+    expect(events.filter((event) => event.phase === "encode")).toHaveLength(1);
+    expect(
+      events.filter((event) => event.phase === "output_probe"),
+    ).toHaveLength(1);
+    expect(deps.repository.updateAssemblyProgress).toHaveBeenCalledWith(
+      job,
+      "FINALIZE",
+      9_900,
+    );
+    expect(deps.repository.completeAssembly).toHaveBeenCalledWith(
+      job,
+      expect.objectContaining({
+        filename: `horizontal-${job.assemblyRenderPlan.intentId}.mp4`,
+        durationMs: 1_000,
+      }),
+    );
+  });
+
+  it("fails assembly terminally when a downloaded identity differs", async () => {
+    const job = assemblyJob();
+    job.assemblyRenderPlan.inputs[0]!.sha256 = "f".repeat(64);
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    const renderer = assemblyRenderer();
+    await worker(deps, 30_000, undefined, undefined, renderer).execute(job.id);
+    expect(renderer.render).not.toHaveBeenCalled();
+    expect(deps.repository.fail).toHaveBeenCalledWith(
+      job,
+      "ASSEMBLY_INPUT_IDENTITY_MISMATCH",
+      expect.any(String),
+      false,
+    );
+  });
+
+  it("fences assembly finalization and cleans the attempt object after lease loss", async () => {
+    const job = assemblyJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    vi.mocked(deps.repository.isLeaseActive)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false);
+    await worker(
+      deps,
+      30_000,
+      undefined,
+      undefined,
+      assemblyRenderer(),
+    ).execute(job.id);
+    expect(deps.repository.prepareAttemptOutput).toHaveBeenCalledOnce();
+    expect(deps.storage.upload).toHaveBeenCalledOnce();
+    expect(deps.storage.delete).toHaveBeenCalledOnce();
+    expect(deps.repository.completeAttemptCleanup).toHaveBeenCalledOnce();
+    expect(deps.repository.completeAssembly).not.toHaveBeenCalled();
+    expect(deps.repository.fail).toHaveBeenCalledWith(
+      job,
+      "JOB_LEASE_LOST",
+      expect.any(String),
+      true,
+    );
+  });
+
+  it("preserves an authoritative assembly object after an ambiguous finalize outcome", async () => {
+    const job = assemblyJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    vi.mocked(deps.repository.completeAssembly).mockRejectedValueOnce(
+      new Error("database response lost after commit"),
+    );
+    vi.mocked(deps.repository.isAssemblyResultAccepted).mockResolvedValueOnce(
+      true,
+    );
+    await worker(
+      deps,
+      30_000,
+      undefined,
+      undefined,
+      assemblyRenderer(),
+    ).execute(job.id);
+    expect(deps.repository.isAssemblyResultAccepted).toHaveBeenCalledWith(
+      job,
+      expect.stringContaining(`/assembly/${job.id}/attempt-1-`),
+    );
+    expect(deps.storage.delete).not.toHaveBeenCalled();
+    expect(deps.repository.fail).not.toHaveBeenCalled();
+  });
+
+  it("defers cleanup when an ambiguous assembly finalize cannot be reread", async () => {
+    const job = assemblyJob();
+    const deps = dependencies(job);
+    deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+      requiredScratchBytes: 1n,
+    }));
+    vi.mocked(deps.repository.completeAssembly).mockRejectedValueOnce(
+      new Error("database response lost after commit"),
+    );
+    vi.mocked(deps.repository.isAssemblyResultAccepted).mockRejectedValueOnce(
+      new Error("database unavailable"),
+    );
+    await expect(
+      worker(deps, 30_000, undefined, undefined, assemblyRenderer()).execute(
+        job.id,
+      ),
+    ).resolves.toBeUndefined();
+    expect(deps.storage.delete).not.toHaveBeenCalled();
+    expect(deps.repository.fail).toHaveBeenCalledWith(
+      job,
+      "ASSEMBLY_FINALIZE_OUTCOME_UNKNOWN",
+      expect.any(String),
+      true,
+    );
+  });
+
   it("probes montage bytes using the asset identity, never the VOD probe or cutter", async () => {
     const job: ClaimedMediaJob = {
       ...claimed("SOURCE_PROBE"),
@@ -369,6 +570,7 @@ function worker(
   leaseMs = 30_000,
   telemetry?: MediaJobTelemetry,
   sourceCache: SourceCache = passthroughSourceCache(),
+  renderer?: AssemblyRenderer,
 ): ProcessMediaJob {
   return new ProcessMediaJob(
     deps.repository,
@@ -381,9 +583,97 @@ function worker(
       scratchSafetyBytes: 0n,
       leaseMs,
       jobTimeoutMs: 60_000,
+      assemblyFontPath: "/tmp/test-font.ttf",
     },
     telemetry,
+    renderer,
   );
+}
+
+function assemblyJob(): Extract<
+  ClaimedMediaJob,
+  { type: "ASSEMBLE_HORIZONTAL" }
+> {
+  const id = "00000000-0000-4000-8000-000000000011";
+  return {
+    id,
+    type: "ASSEMBLE_HORIZONTAL",
+    projectId: "00000000-0000-4000-8000-000000000002",
+    sourceId: "00000000-0000-4000-8000-000000000003",
+    sourceVersion: 1,
+    leaseToken: "00000000-0000-4000-8000-000000000004",
+    attemptNumber: 1,
+    queueWaitMs: 125,
+    retryBudget: 2,
+    recipeVersion: "horizontal-render-v1",
+    assemblyRenderPlan: {
+      intentId: "00000000-0000-4000-8000-000000000012",
+      recipeRevisionId: "00000000-0000-4000-8000-000000000013",
+      recipeRevision: 1,
+      configurationFingerprint: "a".repeat(64),
+      renderContractVersion: "horizontal-render-v1",
+      audioProfileVersion: "youtube-stereo-v1",
+      encodingProfileVersion: "youtube-h264-v1",
+      expectedDurationMs: 1_000,
+      advertisementInsertAtMs: null,
+      cta: null,
+      inputs: [
+        {
+          id: "00000000-0000-4000-8000-000000000014",
+          role: "CUT",
+          ordinal: 0,
+          objectKey: "private/cut.mp4",
+          sizeBytes: 6n,
+          sha256: createHash("sha256").update("source").digest("hex"),
+          durationMs: 1_000,
+          hasAudio: true,
+          startMs: null,
+          endMs: null,
+          position: null,
+        },
+      ],
+    },
+  };
+}
+
+function assemblyRenderer(): AssemblyRenderer {
+  return {
+    verifyCapabilities: vi.fn(async () => undefined),
+    render: vi.fn(async (input) => {
+      input.onProgress("AUDIO_ANALYSIS", 500);
+      input.onProgress("ENCODE", 1_000);
+      await writeFile(input.outputPath, fakeMp4("R"));
+      return {
+        canvas: {
+          width: 1280,
+          height: 720,
+          fpsNumerator: 30,
+          fpsDenominator: 1,
+        },
+        outputLoudness: {
+          integratedLoudnessLufs: -14,
+          truePeakDbtp: -1.5,
+        },
+      };
+    }),
+    inspectOutput: vi.fn(async () => ({
+      durationMs: 1_000,
+      width: 1280,
+      height: 720,
+      fpsNumerator: 30,
+      fpsDenominator: 1,
+      videoCodec: "h264",
+      pixelFormat: "yuv420p",
+      audioCodec: "aac",
+      audioSampleRate: 48_000,
+      audioChannels: 2,
+      ffmpegVersion: "ffmpeg test",
+      ffprobeVersion: "ffprobe test",
+      integratedLoudnessLufs: -14,
+      truePeakDbtp: -1.5,
+      normalizationProfileResult: "NORMALIZED",
+    })),
+  };
 }
 
 function passthroughSourceCache(): SourceCache {

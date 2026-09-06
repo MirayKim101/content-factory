@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdtemp, rm, stat } from "node:fs/promises";
+import { mkdtemp, rm, stat, statfs } from "node:fs/promises";
 import { join } from "node:path";
 
 import {
@@ -10,6 +10,7 @@ import {
 } from "../domain/media-job.js";
 import type {
   MediaJobPhaseTelemetry,
+  AssemblyRenderer,
   MediaJobTelemetry,
   MediaJobRepository,
   MediaProcessor,
@@ -24,9 +25,12 @@ export interface MediaWorkerLimits {
   scratchSafetyBytes: bigint;
   leaseMs: number;
   jobTimeoutMs: number;
+  assemblyFontPath?: string;
 }
 
 export class ProcessMediaJob {
+  private reservedScratchBytes = 0n;
+
   constructor(
     private readonly repository: MediaJobRepository,
     private readonly storage: WorkerObjectStorage,
@@ -35,15 +39,43 @@ export class ProcessMediaJob {
     private readonly workerId: string,
     private readonly limits: MediaWorkerLimits,
     private readonly telemetry: MediaJobTelemetry = () => undefined,
+    private readonly assemblyRenderer?: AssemblyRenderer,
   ) {}
 
   async execute(jobId: string): Promise<void> {
-    const job = await this.repository.claim(
-      jobId,
-      this.workerId,
-      this.limits.leaseMs,
-    );
-    if (!job) return;
+    let scratchReservation = 0n;
+    const resourcePlan = await this.repository.getAssemblyResourcePlan(jobId);
+    if (resourcePlan) {
+      const disk = await statfs(this.limits.scratchDirectory, { bigint: true });
+      const available = disk.bavail * disk.bsize;
+      const required =
+        resourcePlan.requiredScratchBytes + this.limits.scratchSafetyBytes;
+      if (available - this.reservedScratchBytes < required) {
+        await this.repository.deferAssemblyAdmission(
+          jobId,
+          "INSUFFICIENT_SCRATCH",
+          new Date(Date.now() + 30_000),
+        );
+        return;
+      }
+      this.reservedScratchBytes += resourcePlan.requiredScratchBytes;
+      scratchReservation = resourcePlan.requiredScratchBytes;
+    }
+    let job: ClaimedMediaJob | null;
+    try {
+      job = await this.repository.claim(
+        jobId,
+        this.workerId,
+        this.limits.leaseMs,
+      );
+    } catch (error) {
+      this.reservedScratchBytes -= scratchReservation;
+      throw error;
+    }
+    if (!job) {
+      this.reservedScratchBytes -= scratchReservation;
+      return;
+    }
     const totalStartedAt = performance.now();
     const abort = new AbortController();
     const timeout = setTimeout(
@@ -70,6 +102,16 @@ export class ProcessMediaJob {
     let succeeded = false;
     let failureCode: string | undefined;
     let cachedSource: SourceCacheHandle | undefined;
+    let assemblyPhase:
+      | "DOWNLOAD"
+      | "AUDIO_ANALYSIS"
+      | "ENCODE"
+      | "OUTPUT_PROBE"
+      | "OUTPUT_HASH"
+      | "UPLOAD"
+      | "FINALIZE"
+      | undefined;
+    let assemblyBasisPoints = 0;
 
     const recordPhase = (
       phase: MediaJobPhaseTelemetry["phase"],
@@ -157,6 +199,18 @@ export class ProcessMediaJob {
           lastProgress < 0 ? undefined : lastProgress,
         );
         if (!active) abort.abort(leaseLostError());
+        if (
+          active &&
+          job.type === "ASSEMBLE_HORIZONTAL" &&
+          assemblyPhase &&
+          !(await this.repository.updateAssemblyProgress(
+            job,
+            assemblyPhase,
+            assemblyBasisPoints,
+          ))
+        ) {
+          abort.abort(leaseLostError());
+        }
       } catch {
         abort.abort(
           new ControlledMediaError(
@@ -172,9 +226,12 @@ export class ProcessMediaJob {
 
     try {
       if (
-        !["SOURCE_PROBE", "CUT_SEGMENT", "MONTAGE_ASSET_PROBE"].includes(
-          job.type,
-        )
+        ![
+          "SOURCE_PROBE",
+          "CUT_SEGMENT",
+          "MONTAGE_ASSET_PROBE",
+          "ASSEMBLE_HORIZONTAL",
+        ].includes(job.type)
       )
         throw new ControlledMediaError(
           "MEDIA_JOB_TYPE_UNSUPPORTED",
@@ -188,6 +245,178 @@ export class ProcessMediaJob {
         Math.max(1_000, Math.floor(this.limits.leaseMs / 3)),
       );
       heartbeatTimer.unref();
+
+      if (job.type === "ASSEMBLE_HORIZONTAL") {
+        if (!this.assemblyRenderer || !this.limits.assemblyFontPath) {
+          throw new ControlledMediaError(
+            "ASSEMBLY_CAPABILITY_UNAVAILABLE",
+            "Worker cannot render the configured horizontal assembly profile.",
+            false,
+          );
+        }
+        scratch = await mkdtemp(
+          join(this.limits.scratchDirectory, "content-factory-assembly-"),
+        );
+        const files = new Map<string, string>();
+        const totalInputBytes = job.assemblyRenderPlan.inputs.reduce(
+          (sum, value) => sum + value.sizeBytes,
+          0n,
+        );
+        let downloadedBytes = 0n;
+        assemblyPhase = "DOWNLOAD";
+        await this.updateAssemblyProgress(job, assemblyPhase, 0);
+        await measurePhase(
+          "source_download",
+          async () => {
+            for (const [
+              index,
+              input,
+            ] of job.assemblyRenderPlan.inputs.entries()) {
+              const path = join(scratch!, `input-${index}`);
+              await this.storage.download(
+                input.objectKey,
+                path,
+                abort.signal,
+                input.sizeBytes,
+              );
+              const [identity, file] = await Promise.all([
+                hashFile(path, abort.signal),
+                stat(path),
+              ]);
+              if (
+                identity !== input.sha256 ||
+                BigInt(file.size) !== input.sizeBytes
+              ) {
+                throw new ControlledMediaError(
+                  "ASSEMBLY_INPUT_IDENTITY_MISMATCH",
+                  "Один из входов сборки не совпадает с сохранённым снимком.",
+                  false,
+                );
+              }
+              files.set(input.id, path);
+              downloadedBytes += input.sizeBytes;
+              assemblyBasisPoints = Number(
+                totalInputBytes === 0n
+                  ? 1_500n
+                  : (downloadedBytes * 1_500n) / totalInputBytes,
+              );
+              await this.updateAssemblyProgress(
+                job,
+                "DOWNLOAD",
+                assemblyBasisPoints,
+              );
+            }
+          },
+          () => ({ bytes: downloadedBytes.toString() }),
+        );
+        const outputPath = join(scratch, "assembled.mp4");
+        const encoded = await measurePhase("encode", () =>
+          this.assemblyRenderer!.render({
+            plan: job.assemblyRenderPlan,
+            files,
+            scratchDirectory: scratch!,
+            outputPath,
+            fontPath: this.limits.assemblyFontPath!,
+            signal: abort.signal,
+            onProgress: (phase, processedMs) => {
+              assemblyPhase = phase;
+              const fraction = Math.max(
+                0,
+                Math.min(
+                  1,
+                  processedMs / job.assemblyRenderPlan.expectedDurationMs,
+                ),
+              );
+              assemblyBasisPoints =
+                phase === "AUDIO_ANALYSIS"
+                  ? 1_500 + Math.round(fraction * 1_500)
+                  : 3_000 + Math.round(fraction * 5_500);
+            },
+          }),
+        );
+        assemblyPhase = "OUTPUT_PROBE";
+        assemblyBasisPoints = 8_700;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        const rendered = await measurePhase("output_probe", () =>
+          this.assemblyRenderer!.inspectOutput({
+            outputPath,
+            expectedDurationMs: job.assemblyRenderPlan.expectedDurationMs,
+            encoded,
+            signal: abort.signal,
+          }),
+        );
+        assemblyPhase = "OUTPUT_HASH";
+        assemblyBasisPoints = 8_800;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        const outputStat = await stat(outputPath);
+        const sha256 = await measurePhase(
+          "output_hash",
+          () => hashFile(outputPath, abort.signal),
+          () => ({ bytes: outputStat.size.toString() }),
+        );
+        assemblyBasisPoints = 9_100;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        await this.assertActiveLease(job);
+        const objectKey = `sources/${job.projectId}/assembly/${job.id}/attempt-${job.attemptNumber}-${safeIdentity(job.leaseToken)}.mp4`;
+        await this.repository.prepareAttemptOutput(job, objectKey);
+        uploadedObjectKey = objectKey;
+        assemblyPhase = "UPLOAD";
+        assemblyBasisPoints = 9_100;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        const receipt = await measurePhase(
+          "upload",
+          () =>
+            this.storage.upload({
+              objectKey,
+              filePath: outputPath,
+              sha256,
+              signal: abort.signal,
+            }),
+          () => ({ bytes: outputStat.size.toString() }),
+        );
+        assemblyBasisPoints = 9_800;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        await this.assertActiveLease(job);
+        assemblyPhase = "FINALIZE";
+        assemblyBasisPoints = 9_900;
+        await this.updateAssemblyProgress(
+          job,
+          assemblyPhase,
+          assemblyBasisPoints,
+        );
+        await this.repository.completeAssembly(job, {
+          objectKey,
+          filename: `horizontal-${job.assemblyRenderPlan.intentId}.mp4`,
+          sizeBytes: BigInt(outputStat.size),
+          sha256,
+          ...(receipt.etag ? { etag: receipt.etag } : {}),
+          ...(receipt.version ? { storageVersion: receipt.version } : {}),
+          ...rendered,
+        });
+        finalized = true;
+        succeeded = true;
+        return;
+      }
 
       cachedSource = await this.sourceCache.acquire({
         identity: {
@@ -328,15 +557,43 @@ export class ProcessMediaJob {
     } catch (error) {
       let failure = error;
       if (uploadedObjectKey && !finalized) {
+        if (job.type === "ASSEMBLE_HORIZONTAL") {
+          try {
+            if (
+              await this.repository.isAssemblyResultAccepted(
+                job,
+                uploadedObjectKey,
+              )
+            ) {
+              finalized = true;
+              succeeded = true;
+              uploadedObjectKey = undefined;
+              return;
+            }
+          } catch {
+            // The accepted result must be reread before deletion. A durable
+            // cleanup intent already exists, so reconciliation can decide
+            // after PostgreSQL becomes reachable again.
+            uploadedObjectKey = undefined;
+            failure = new ControlledMediaError(
+              "ASSEMBLY_FINALIZE_OUTCOME_UNKNOWN",
+              "Не удалось подтвердить результат сборки после завершения записи.",
+              true,
+            );
+          }
+        }
         try {
+          if (!uploadedObjectKey) throw failure;
           await this.storage.delete(uploadedObjectKey);
           await this.repository.completeAttemptCleanup(job, uploadedObjectKey);
         } catch {
-          failure = new ControlledMediaError(
-            "ORPHAN_CLEANUP_FAILED",
-            "Не удалось удалить непринятый результат обработки.",
-            true,
-          );
+          if (uploadedObjectKey) {
+            failure = new ControlledMediaError(
+              "ORPHAN_CLEANUP_FAILED",
+              "Не удалось удалить непринятый результат обработки.",
+              true,
+            );
+          }
         }
         uploadedObjectKey = undefined;
       }
@@ -353,20 +610,76 @@ export class ProcessMediaJob {
       heartbeatStopped = true;
       if (heartbeatTimer) clearInterval(heartbeatTimer);
       clearTimeout(timeout);
-      if (cachedSource) await cachedSource.release();
-      if (scratch) await rm(scratch, { recursive: true, force: true });
-      recordPhase(
-        "total",
-        elapsed(totalStartedAt),
-        succeeded ? "success" : abort.signal.aborted ? "aborted" : "failure",
-        failureCode ? { failureCode } : {},
-      );
+      try {
+        await releaseAttemptResources(
+          () => cachedSource?.release() ?? Promise.resolve(),
+          () =>
+            scratch
+              ? rm(scratch, { recursive: true, force: true })
+              : Promise.resolve(),
+          () => {
+            this.reservedScratchBytes -= scratchReservation;
+          },
+        );
+      } finally {
+        recordPhase(
+          "total",
+          elapsed(totalStartedAt),
+          succeeded ? "success" : abort.signal.aborted ? "aborted" : "failure",
+          {
+            ...(failureCode ? { failureCode } : {}),
+            ...(scratchReservation > 0n
+              ? { scratchReservationBytes: scratchReservation.toString() }
+              : {}),
+          },
+        );
+      }
     }
   }
 
   private async assertActiveLease(job: ClaimedMediaJob): Promise<void> {
     if (!(await this.repository.isLeaseActive(job))) throw leaseLostError();
   }
+
+  private async updateAssemblyProgress(
+    job: ClaimedMediaJob,
+    phase:
+      | "DOWNLOAD"
+      | "AUDIO_ANALYSIS"
+      | "ENCODE"
+      | "OUTPUT_PROBE"
+      | "OUTPUT_HASH"
+      | "UPLOAD"
+      | "FINALIZE",
+    basisPoints: number,
+  ): Promise<void> {
+    if (
+      !(await this.repository.updateAssemblyProgress(job, phase, basisPoints))
+    ) {
+      throw leaseLostError();
+    }
+  }
+}
+
+export async function releaseAttemptResources(
+  releaseCachedSource: () => Promise<void>,
+  removeScratch: () => Promise<void>,
+  releaseScratchReservation: () => void,
+): Promise<void> {
+  let cleanupFailure: unknown;
+  try {
+    await releaseCachedSource();
+  } catch (error) {
+    cleanupFailure = error;
+  }
+  try {
+    await removeScratch();
+  } catch (error) {
+    cleanupFailure ??= error;
+  } finally {
+    releaseScratchReservation();
+  }
+  if (cleanupFailure) throw cleanupFailure;
 }
 
 async function hashFile(path: string, signal: AbortSignal): Promise<string> {

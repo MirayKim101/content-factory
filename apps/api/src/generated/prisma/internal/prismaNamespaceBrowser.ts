@@ -62,6 +62,9 @@ export const ModelName = {
   AssemblyRecipeRevision: 'AssemblyRecipeRevision',
   AssemblyRecipeAssetReference: 'AssemblyRecipeAssetReference',
   AssemblyRecipeMutationRequest: 'AssemblyRecipeMutationRequest',
+  AssemblyRenderIntent: 'AssemblyRenderIntent',
+  AssemblyRenderRequest: 'AssemblyRenderRequest',
+  AssemblyRenderResult: 'AssemblyRenderResult',
   ProcessingTemplate: 'ProcessingTemplate',
   ProcessingTemplateRevision: 'ProcessingTemplateRevision',
   EditorialAsset: 'EditorialAsset',
@@ -209,7 +212,14 @@ export const PipelineJobScalarFieldEnum = {
   finishedAt: 'finishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  montageAssetId: 'montageAssetId'
+  montageAssetId: 'montageAssetId',
+  assemblyRenderIntentId: 'assemblyRenderIntentId',
+  nextAttemptAt: 'nextAttemptAt',
+  admissionReason: 'admissionReason',
+  progressAttemptNumber: 'progressAttemptNumber',
+  progressPhase: 'progressPhase',
+  progressBasisPoints: 'progressBasisPoints',
+  progressUpdatedAt: 'progressUpdatedAt'
 } as const
 
 export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
@@ -323,6 +333,67 @@ export const AssemblyRecipeMutationRequestScalarFieldEnum = {
 } as const
 
 export type AssemblyRecipeMutationRequestScalarFieldEnum = (typeof AssemblyRecipeMutationRequestScalarFieldEnum)[keyof typeof AssemblyRecipeMutationRequestScalarFieldEnum]
+
+
+export const AssemblyRenderIntentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutResultRecipeVersion: 'cutResultRecipeVersion',
+  assemblyRecipeId: 'assemblyRecipeId',
+  recipeRevisionId: 'recipeRevisionId',
+  recipeRevision: 'recipeRevision',
+  configurationFingerprint: 'configurationFingerprint',
+  renderContractVersion: 'renderContractVersion',
+  audioProfileVersion: 'audioProfileVersion',
+  encodingProfileVersion: 'encodingProfileVersion',
+  expectedDurationMs: 'expectedDurationMs',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderIntentScalarFieldEnum = (typeof AssemblyRenderIntentScalarFieldEnum)[keyof typeof AssemblyRenderIntentScalarFieldEnum]
+
+
+export const AssemblyRenderRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  renderIntentId: 'renderIntentId',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderRequestScalarFieldEnum = (typeof AssemblyRenderRequestScalarFieldEnum)[keyof typeof AssemblyRenderRequestScalarFieldEnum]
+
+
+export const AssemblyRenderResultScalarFieldEnum = {
+  id: 'id',
+  renderIntentId: 'renderIntentId',
+  artifactId: 'artifactId',
+  durationMs: 'durationMs',
+  width: 'width',
+  height: 'height',
+  fpsNumerator: 'fpsNumerator',
+  fpsDenominator: 'fpsDenominator',
+  videoCodec: 'videoCodec',
+  pixelFormat: 'pixelFormat',
+  audioCodec: 'audioCodec',
+  audioSampleRate: 'audioSampleRate',
+  audioChannels: 'audioChannels',
+  ffmpegVersion: 'ffmpegVersion',
+  ffprobeVersion: 'ffprobeVersion',
+  integratedLoudnessLufs: 'integratedLoudnessLufs',
+  truePeakDbtp: 'truePeakDbtp',
+  normalizationProfileResult: 'normalizationProfileResult',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderResultScalarFieldEnum = (typeof AssemblyRenderResultScalarFieldEnum)[keyof typeof AssemblyRenderResultScalarFieldEnum]
 
 
 export const ProcessingTemplateScalarFieldEnum = {

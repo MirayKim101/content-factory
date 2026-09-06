@@ -38,7 +38,8 @@ export type MediaArtifactStatus = (typeof MediaArtifactStatus)[keyof typeof Medi
 
 export const MediaArtifactRole = {
   SOURCE: 'SOURCE',
-  CUT_RESULT: 'CUT_RESULT'
+  CUT_RESULT: 'CUT_RESULT',
+  HORIZONTAL_ASSEMBLY_RESULT: 'HORIZONTAL_ASSEMBLY_RESULT'
 } as const
 
 export type MediaArtifactRole = (typeof MediaArtifactRole)[keyof typeof MediaArtifactRole]
@@ -47,10 +48,24 @@ export type MediaArtifactRole = (typeof MediaArtifactRole)[keyof typeof MediaArt
 export const PipelineJobType = {
   SOURCE_PROBE: 'SOURCE_PROBE',
   CUT_SEGMENT: 'CUT_SEGMENT',
-  MONTAGE_ASSET_PROBE: 'MONTAGE_ASSET_PROBE'
+  MONTAGE_ASSET_PROBE: 'MONTAGE_ASSET_PROBE',
+  ASSEMBLE_HORIZONTAL: 'ASSEMBLE_HORIZONTAL'
 } as const
 
 export type PipelineJobType = (typeof PipelineJobType)[keyof typeof PipelineJobType]
+
+
+export const AssemblyProgressPhase = {
+  DOWNLOAD: 'DOWNLOAD',
+  AUDIO_ANALYSIS: 'AUDIO_ANALYSIS',
+  ENCODE: 'ENCODE',
+  OUTPUT_PROBE: 'OUTPUT_PROBE',
+  OUTPUT_HASH: 'OUTPUT_HASH',
+  UPLOAD: 'UPLOAD',
+  FINALIZE: 'FINALIZE'
+} as const
+
+export type AssemblyProgressPhase = (typeof AssemblyProgressPhase)[keyof typeof AssemblyProgressPhase]
 
 
 export const MontageAssetKind = {

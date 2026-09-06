@@ -15,6 +15,20 @@ import {
 import { SaveAssemblyRecipe } from "./application/save-assembly-recipe.js";
 import { PrismaAssemblyRecipeRepository } from "./infrastructure/prisma-assembly-recipe.repository.js";
 import { AssemblyRecipeController } from "./presentation/assembly-recipe.controller.js";
+import { MediaPipelineModule } from "../media-pipeline/media-pipeline.module.js";
+import { apiEnvironment } from "../config/environment.js";
+import {
+  ASSEMBLY_RENDER_ADMISSION_ENABLED,
+  ASSEMBLY_RENDER_REPOSITORY,
+} from "./application/assembly-render-repository.port.js";
+import { CreateAssemblyRender } from "./application/create-assembly-render.js";
+import {
+  GetAssemblyRender,
+  GetAssemblyRenderContent,
+  ListAssemblyRenders,
+} from "./application/assembly-render-queries.js";
+import { PrismaAssemblyRenderRepository } from "./infrastructure/prisma-assembly-render.repository.js";
+import { AssemblyRenderController } from "./presentation/assembly-render.controller.js";
 
 import { ProjectsModule } from "../projects/projects.module.js";
 import { TempUploadLifecycleInterceptor } from "../projects/presentation/temp-upload-lifecycle.interceptor.js";
@@ -37,14 +51,28 @@ import { ProjectObjectEditorialStorage } from "./infrastructure/project-object-e
 import { EditorialController } from "./presentation/editorial.controller.js";
 
 @Module({
-  imports: [ProjectsModule],
+  imports: [ProjectsModule, MediaPipelineModule],
   controllers: [
     EditorialController,
     MontageController,
     AssemblyRecipeController,
+    AssemblyRenderController,
   ],
   providers: [
     PrismaAssemblyRecipeRepository,
+    PrismaAssemblyRenderRepository,
+    CreateAssemblyRender,
+    GetAssemblyRender,
+    GetAssemblyRenderContent,
+    ListAssemblyRenders,
+    {
+      provide: ASSEMBLY_RENDER_REPOSITORY,
+      useExisting: PrismaAssemblyRenderRepository,
+    },
+    {
+      provide: ASSEMBLY_RENDER_ADMISSION_ENABLED,
+      useFactory: () => apiEnvironment().assemblyRenderEnabled,
+    },
     SaveAssemblyRecipe,
     GetAssemblyRecipe,
     GetAssemblyRecipeRevision,

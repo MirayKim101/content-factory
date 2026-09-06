@@ -293,6 +293,7 @@ export type VideoSourceWhereInput = {
   pipelineJobs?: Prisma.PipelineJobListRelationFilter
   authorizations?: Prisma.SourceAuthorizationListRelationFilter
   montageAssets?: Prisma.MontageAssetListRelationFilter
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentListRelationFilter
 }
 
 export type VideoSourceOrderByWithRelationInput = {
@@ -314,6 +315,7 @@ export type VideoSourceOrderByWithRelationInput = {
   pipelineJobs?: Prisma.PipelineJobOrderByRelationAggregateInput
   authorizations?: Prisma.SourceAuthorizationOrderByRelationAggregateInput
   montageAssets?: Prisma.MontageAssetOrderByRelationAggregateInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentOrderByRelationAggregateInput
 }
 
 export type VideoSourceWhereUniqueInput = Prisma.AtLeast<{
@@ -338,6 +340,7 @@ export type VideoSourceWhereUniqueInput = Prisma.AtLeast<{
   pipelineJobs?: Prisma.PipelineJobListRelationFilter
   authorizations?: Prisma.SourceAuthorizationListRelationFilter
   montageAssets?: Prisma.MontageAssetListRelationFilter
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentListRelationFilter
 }, "id" | "projectId">
 
 export type VideoSourceOrderByWithAggregationInput = {
@@ -398,6 +401,7 @@ export type VideoSourceCreateInput = {
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateInput = {
@@ -418,6 +422,7 @@ export type VideoSourceUncheckedCreateInput = {
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUpdateInput = {
@@ -438,6 +443,7 @@ export type VideoSourceUpdateInput = {
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateInput = {
@@ -458,6 +464,7 @@ export type VideoSourceUncheckedUpdateInput = {
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateManyInput = {
@@ -693,6 +700,20 @@ export type VideoSourceUpdateOneRequiredWithoutMontageAssetsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.VideoSourceUpdateToOneWithWhereWithoutMontageAssetsInput, Prisma.VideoSourceUpdateWithoutMontageAssetsInput>, Prisma.VideoSourceUncheckedUpdateWithoutMontageAssetsInput>
 }
 
+export type VideoSourceCreateNestedOneWithoutAssemblyRenderIntentsInput = {
+  create?: Prisma.XOR<Prisma.VideoSourceCreateWithoutAssemblyRenderIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutAssemblyRenderIntentsInput>
+  connectOrCreate?: Prisma.VideoSourceCreateOrConnectWithoutAssemblyRenderIntentsInput
+  connect?: Prisma.VideoSourceWhereUniqueInput
+}
+
+export type VideoSourceUpdateOneRequiredWithoutAssemblyRenderIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.VideoSourceCreateWithoutAssemblyRenderIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutAssemblyRenderIntentsInput>
+  connectOrCreate?: Prisma.VideoSourceCreateOrConnectWithoutAssemblyRenderIntentsInput
+  upsert?: Prisma.VideoSourceUpsertWithoutAssemblyRenderIntentsInput
+  connect?: Prisma.VideoSourceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VideoSourceUpdateToOneWithWhereWithoutAssemblyRenderIntentsInput, Prisma.VideoSourceUpdateWithoutAssemblyRenderIntentsInput>, Prisma.VideoSourceUncheckedUpdateWithoutAssemblyRenderIntentsInput>
+}
+
 export type VideoSourceCreateWithoutProjectInput = {
   id: string
   status?: $Enums.VideoSourceStatus
@@ -710,6 +731,7 @@ export type VideoSourceCreateWithoutProjectInput = {
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutProjectInput = {
@@ -729,6 +751,7 @@ export type VideoSourceUncheckedCreateWithoutProjectInput = {
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutProjectInput = {
@@ -764,6 +787,7 @@ export type VideoSourceUpdateWithoutProjectInput = {
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutProjectInput = {
@@ -783,6 +807,7 @@ export type VideoSourceUncheckedUpdateWithoutProjectInput = {
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutAuthorizationsInput = {
@@ -802,6 +827,7 @@ export type VideoSourceCreateWithoutAuthorizationsInput = {
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutAuthorizationsInput = {
@@ -821,6 +847,7 @@ export type VideoSourceUncheckedCreateWithoutAuthorizationsInput = {
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutAuthorizationsInput = {
@@ -856,6 +883,7 @@ export type VideoSourceUpdateWithoutAuthorizationsInput = {
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutAuthorizationsInput = {
@@ -875,6 +903,7 @@ export type VideoSourceUncheckedUpdateWithoutAuthorizationsInput = {
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceNestedInput
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutArtifactsInput = {
@@ -894,6 +923,7 @@ export type VideoSourceCreateWithoutArtifactsInput = {
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutArtifactsInput = {
@@ -913,6 +943,7 @@ export type VideoSourceUncheckedCreateWithoutArtifactsInput = {
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutArtifactsInput = {
@@ -948,6 +979,7 @@ export type VideoSourceUpdateWithoutArtifactsInput = {
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutArtifactsInput = {
@@ -967,6 +999,7 @@ export type VideoSourceUncheckedUpdateWithoutArtifactsInput = {
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutPipelineJobsInput = {
@@ -986,6 +1019,7 @@ export type VideoSourceCreateWithoutPipelineJobsInput = {
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutPipelineJobsInput = {
@@ -1005,6 +1039,7 @@ export type VideoSourceUncheckedCreateWithoutPipelineJobsInput = {
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
   montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutPipelineJobsInput = {
@@ -1040,6 +1075,7 @@ export type VideoSourceUpdateWithoutPipelineJobsInput = {
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutPipelineJobsInput = {
@@ -1059,6 +1095,7 @@ export type VideoSourceUncheckedUpdateWithoutPipelineJobsInput = {
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
   montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutMontageAssetsInput = {
@@ -1078,6 +1115,7 @@ export type VideoSourceCreateWithoutMontageAssetsInput = {
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
   pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutMontageAssetsInput = {
@@ -1097,6 +1135,7 @@ export type VideoSourceUncheckedCreateWithoutMontageAssetsInput = {
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
   pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutSourceInput
   authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutMontageAssetsInput = {
@@ -1132,6 +1171,7 @@ export type VideoSourceUpdateWithoutMontageAssetsInput = {
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
   pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutMontageAssetsInput = {
@@ -1151,6 +1191,103 @@ export type VideoSourceUncheckedUpdateWithoutMontageAssetsInput = {
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceNestedInput
   pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutSourceNestedInput
   authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+}
+
+export type VideoSourceCreateWithoutAssemblyRenderIntentsInput = {
+  id: string
+  status?: $Enums.VideoSourceStatus
+  sourceVersion?: number
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  durationMs?: number | null
+  probedAt?: Date | string | null
+  probeVersion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutSourceInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
+  montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutSourceInput
+}
+
+export type VideoSourceUncheckedCreateWithoutAssemblyRenderIntentsInput = {
+  id: string
+  projectId: string
+  status?: $Enums.VideoSourceStatus
+  sourceVersion?: number
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  durationMs?: number | null
+  probedAt?: Date | string | null
+  probeVersion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
+  montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutSourceInput
+}
+
+export type VideoSourceCreateOrConnectWithoutAssemblyRenderIntentsInput = {
+  where: Prisma.VideoSourceWhereUniqueInput
+  create: Prisma.XOR<Prisma.VideoSourceCreateWithoutAssemblyRenderIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutAssemblyRenderIntentsInput>
+}
+
+export type VideoSourceUpsertWithoutAssemblyRenderIntentsInput = {
+  update: Prisma.XOR<Prisma.VideoSourceUpdateWithoutAssemblyRenderIntentsInput, Prisma.VideoSourceUncheckedUpdateWithoutAssemblyRenderIntentsInput>
+  create: Prisma.XOR<Prisma.VideoSourceCreateWithoutAssemblyRenderIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutAssemblyRenderIntentsInput>
+  where?: Prisma.VideoSourceWhereInput
+}
+
+export type VideoSourceUpdateToOneWithWhereWithoutAssemblyRenderIntentsInput = {
+  where?: Prisma.VideoSourceWhereInput
+  data: Prisma.XOR<Prisma.VideoSourceUpdateWithoutAssemblyRenderIntentsInput, Prisma.VideoSourceUncheckedUpdateWithoutAssemblyRenderIntentsInput>
+}
+
+export type VideoSourceUpdateWithoutAssemblyRenderIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumVideoSourceStatusFieldUpdateOperationsInput | $Enums.VideoSourceStatus
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  probedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probeVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutSourceNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
+  montageAssets?: Prisma.MontageAssetUpdateManyWithoutSourceNestedInput
+}
+
+export type VideoSourceUncheckedUpdateWithoutAssemblyRenderIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumVideoSourceStatusFieldUpdateOperationsInput | $Enums.VideoSourceStatus
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  probedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probeVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
+  montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 
@@ -1163,6 +1300,7 @@ export type VideoSourceCountOutputType = {
   pipelineJobs: number
   authorizations: number
   montageAssets: number
+  assemblyRenderIntents: number
 }
 
 export type VideoSourceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1170,6 +1308,7 @@ export type VideoSourceCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   pipelineJobs?: boolean | VideoSourceCountOutputTypeCountPipelineJobsArgs
   authorizations?: boolean | VideoSourceCountOutputTypeCountAuthorizationsArgs
   montageAssets?: boolean | VideoSourceCountOutputTypeCountMontageAssetsArgs
+  assemblyRenderIntents?: boolean | VideoSourceCountOutputTypeCountAssemblyRenderIntentsArgs
 }
 
 /**
@@ -1210,6 +1349,13 @@ export type VideoSourceCountOutputTypeCountMontageAssetsArgs<ExtArgs extends run
   where?: Prisma.MontageAssetWhereInput
 }
 
+/**
+ * VideoSourceCountOutputType without action
+ */
+export type VideoSourceCountOutputTypeCountAssemblyRenderIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AssemblyRenderIntentWhereInput
+}
+
 
 export type VideoSourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1230,6 +1376,7 @@ export type VideoSourceSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   pipelineJobs?: boolean | Prisma.VideoSource$pipelineJobsArgs<ExtArgs>
   authorizations?: boolean | Prisma.VideoSource$authorizationsArgs<ExtArgs>
   montageAssets?: boolean | Prisma.VideoSource$montageAssetsArgs<ExtArgs>
+  assemblyRenderIntents?: boolean | Prisma.VideoSource$assemblyRenderIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.VideoSourceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["videoSource"]>
 
@@ -1290,6 +1437,7 @@ export type VideoSourceInclude<ExtArgs extends runtime.Types.Extensions.Internal
   pipelineJobs?: boolean | Prisma.VideoSource$pipelineJobsArgs<ExtArgs>
   authorizations?: boolean | Prisma.VideoSource$authorizationsArgs<ExtArgs>
   montageAssets?: boolean | Prisma.VideoSource$montageAssetsArgs<ExtArgs>
+  assemblyRenderIntents?: boolean | Prisma.VideoSource$assemblyRenderIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.VideoSourceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VideoSourceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1307,6 +1455,7 @@ export type $VideoSourcePayload<ExtArgs extends runtime.Types.Extensions.Interna
     pipelineJobs: Prisma.$PipelineJobPayload<ExtArgs>[]
     authorizations: Prisma.$SourceAuthorizationPayload<ExtArgs>[]
     montageAssets: Prisma.$MontageAssetPayload<ExtArgs>[]
+    assemblyRenderIntents: Prisma.$AssemblyRenderIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1721,6 +1870,7 @@ export interface Prisma__VideoSourceClient<T, Null = never, ExtArgs extends runt
   pipelineJobs<T extends Prisma.VideoSource$pipelineJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$pipelineJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   authorizations<T extends Prisma.VideoSource$authorizationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$authorizationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourceAuthorizationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   montageAssets<T extends Prisma.VideoSource$montageAssetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$montageAssetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MontageAssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  assemblyRenderIntents<T extends Prisma.VideoSource$assemblyRenderIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$assemblyRenderIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssemblyRenderIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2257,6 +2407,30 @@ export type VideoSource$montageAssetsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.MontageAssetScalarFieldEnum | Prisma.MontageAssetScalarFieldEnum[]
+}
+
+/**
+ * VideoSource.assemblyRenderIntents
+ */
+export type VideoSource$assemblyRenderIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssemblyRenderIntent
+   */
+  select?: Prisma.AssemblyRenderIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AssemblyRenderIntent
+   */
+  omit?: Prisma.AssemblyRenderIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssemblyRenderIntentInclude<ExtArgs> | null
+  where?: Prisma.AssemblyRenderIntentWhereInput
+  orderBy?: Prisma.AssemblyRenderIntentOrderByWithRelationInput | Prisma.AssemblyRenderIntentOrderByWithRelationInput[]
+  cursor?: Prisma.AssemblyRenderIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AssemblyRenderIntentScalarFieldEnum | Prisma.AssemblyRenderIntentScalarFieldEnum[]
 }
 
 /**

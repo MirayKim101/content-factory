@@ -408,6 +408,9 @@ export const ModelName = {
   AssemblyRecipeRevision: 'AssemblyRecipeRevision',
   AssemblyRecipeAssetReference: 'AssemblyRecipeAssetReference',
   AssemblyRecipeMutationRequest: 'AssemblyRecipeMutationRequest',
+  AssemblyRenderIntent: 'AssemblyRenderIntent',
+  AssemblyRenderRequest: 'AssemblyRenderRequest',
+  AssemblyRenderResult: 'AssemblyRenderResult',
   ProcessingTemplate: 'ProcessingTemplate',
   ProcessingTemplateRevision: 'ProcessingTemplateRevision',
   EditorialAsset: 'EditorialAsset',
@@ -431,7 +434,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "cutSegment" | "jobAttempt"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "cutSegment" | "jobAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1249,6 +1252,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AssemblyRenderIntent: {
+      payload: Prisma.$AssemblyRenderIntentPayload<ExtArgs>
+      fields: Prisma.AssemblyRenderIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AssemblyRenderIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AssemblyRenderIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.AssemblyRenderIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AssemblyRenderIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>
+        }
+        findMany: {
+          args: Prisma.AssemblyRenderIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>[]
+        }
+        create: {
+          args: Prisma.AssemblyRenderIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>
+        }
+        createMany: {
+          args: Prisma.AssemblyRenderIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AssemblyRenderIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.AssemblyRenderIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>
+        }
+        update: {
+          args: Prisma.AssemblyRenderIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.AssemblyRenderIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AssemblyRenderIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AssemblyRenderIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.AssemblyRenderIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.AssemblyRenderIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAssemblyRenderIntent>
+        }
+        groupBy: {
+          args: Prisma.AssemblyRenderIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssemblyRenderIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AssemblyRenderIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssemblyRenderIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    AssemblyRenderRequest: {
+      payload: Prisma.$AssemblyRenderRequestPayload<ExtArgs>
+      fields: Prisma.AssemblyRenderRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AssemblyRenderRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AssemblyRenderRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.AssemblyRenderRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AssemblyRenderRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>
+        }
+        findMany: {
+          args: Prisma.AssemblyRenderRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>[]
+        }
+        create: {
+          args: Prisma.AssemblyRenderRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>
+        }
+        createMany: {
+          args: Prisma.AssemblyRenderRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AssemblyRenderRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.AssemblyRenderRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>
+        }
+        update: {
+          args: Prisma.AssemblyRenderRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.AssemblyRenderRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AssemblyRenderRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AssemblyRenderRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.AssemblyRenderRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.AssemblyRenderRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAssemblyRenderRequest>
+        }
+        groupBy: {
+          args: Prisma.AssemblyRenderRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssemblyRenderRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AssemblyRenderRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssemblyRenderRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    AssemblyRenderResult: {
+      payload: Prisma.$AssemblyRenderResultPayload<ExtArgs>
+      fields: Prisma.AssemblyRenderResultFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AssemblyRenderResultFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AssemblyRenderResultFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>
+        }
+        findFirst: {
+          args: Prisma.AssemblyRenderResultFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AssemblyRenderResultFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>
+        }
+        findMany: {
+          args: Prisma.AssemblyRenderResultFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>[]
+        }
+        create: {
+          args: Prisma.AssemblyRenderResultCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>
+        }
+        createMany: {
+          args: Prisma.AssemblyRenderResultCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AssemblyRenderResultCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>[]
+        }
+        delete: {
+          args: Prisma.AssemblyRenderResultDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>
+        }
+        update: {
+          args: Prisma.AssemblyRenderResultUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>
+        }
+        deleteMany: {
+          args: Prisma.AssemblyRenderResultDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AssemblyRenderResultUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AssemblyRenderResultUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>[]
+        }
+        upsert: {
+          args: Prisma.AssemblyRenderResultUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssemblyRenderResultPayload>
+        }
+        aggregate: {
+          args: Prisma.AssemblyRenderResultAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAssemblyRenderResult>
+        }
+        groupBy: {
+          args: Prisma.AssemblyRenderResultGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssemblyRenderResultGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AssemblyRenderResultCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssemblyRenderResultCountAggregateOutputType> | number
+        }
+      }
+    }
     ProcessingTemplate: {
       payload: Prisma.$ProcessingTemplatePayload<ExtArgs>
       fields: Prisma.ProcessingTemplateFieldRefs
@@ -2001,7 +2226,14 @@ export const PipelineJobScalarFieldEnum = {
   finishedAt: 'finishedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  montageAssetId: 'montageAssetId'
+  montageAssetId: 'montageAssetId',
+  assemblyRenderIntentId: 'assemblyRenderIntentId',
+  nextAttemptAt: 'nextAttemptAt',
+  admissionReason: 'admissionReason',
+  progressAttemptNumber: 'progressAttemptNumber',
+  progressPhase: 'progressPhase',
+  progressBasisPoints: 'progressBasisPoints',
+  progressUpdatedAt: 'progressUpdatedAt'
 } as const
 
 export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
@@ -2115,6 +2347,67 @@ export const AssemblyRecipeMutationRequestScalarFieldEnum = {
 } as const
 
 export type AssemblyRecipeMutationRequestScalarFieldEnum = (typeof AssemblyRecipeMutationRequestScalarFieldEnum)[keyof typeof AssemblyRecipeMutationRequestScalarFieldEnum]
+
+
+export const AssemblyRenderIntentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutResultRecipeVersion: 'cutResultRecipeVersion',
+  assemblyRecipeId: 'assemblyRecipeId',
+  recipeRevisionId: 'recipeRevisionId',
+  recipeRevision: 'recipeRevision',
+  configurationFingerprint: 'configurationFingerprint',
+  renderContractVersion: 'renderContractVersion',
+  audioProfileVersion: 'audioProfileVersion',
+  encodingProfileVersion: 'encodingProfileVersion',
+  expectedDurationMs: 'expectedDurationMs',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderIntentScalarFieldEnum = (typeof AssemblyRenderIntentScalarFieldEnum)[keyof typeof AssemblyRenderIntentScalarFieldEnum]
+
+
+export const AssemblyRenderRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  renderIntentId: 'renderIntentId',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderRequestScalarFieldEnum = (typeof AssemblyRenderRequestScalarFieldEnum)[keyof typeof AssemblyRenderRequestScalarFieldEnum]
+
+
+export const AssemblyRenderResultScalarFieldEnum = {
+  id: 'id',
+  renderIntentId: 'renderIntentId',
+  artifactId: 'artifactId',
+  durationMs: 'durationMs',
+  width: 'width',
+  height: 'height',
+  fpsNumerator: 'fpsNumerator',
+  fpsDenominator: 'fpsDenominator',
+  videoCodec: 'videoCodec',
+  pixelFormat: 'pixelFormat',
+  audioCodec: 'audioCodec',
+  audioSampleRate: 'audioSampleRate',
+  audioChannels: 'audioChannels',
+  ffmpegVersion: 'ffmpegVersion',
+  ffprobeVersion: 'ffprobeVersion',
+  integratedLoudnessLufs: 'integratedLoudnessLufs',
+  truePeakDbtp: 'truePeakDbtp',
+  normalizationProfileResult: 'normalizationProfileResult',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderResultScalarFieldEnum = (typeof AssemblyRenderResultScalarFieldEnum)[keyof typeof AssemblyRenderResultScalarFieldEnum]
 
 
 export const ProcessingTemplateScalarFieldEnum = {
@@ -2486,6 +2779,20 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'AssemblyProgressPhase'
+ */
+export type EnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AssemblyProgressPhase'>
+
+
+
+/**
+ * Reference to a field of type 'AssemblyProgressPhase[]'
+ */
+export type ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AssemblyProgressPhase[]'>
+
+
+
+/**
  * Reference to a field of type 'MontageAssetKind'
  */
 export type EnumMontageAssetKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MontageAssetKind'>
@@ -2542,6 +2849,20 @@ export type ListEnumAssemblyAssetRoleFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+
+
+
+/**
  * Reference to a field of type 'EditorialAssetType'
  */
 export type EnumEditorialAssetTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialAssetType'>
@@ -2594,20 +2915,6 @@ export type EnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'JobAttemptState[]'
  */
 export type ListEnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState[]'>
-
-
-
-/**
- * Reference to a field of type 'Float'
- */
-export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-
-
-
-/**
- * Reference to a field of type 'Float[]'
- */
-export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
 
 
 /**
@@ -2772,6 +3079,9 @@ export type GlobalOmitConfig = {
   assemblyRecipeRevision?: Prisma.AssemblyRecipeRevisionOmit
   assemblyRecipeAssetReference?: Prisma.AssemblyRecipeAssetReferenceOmit
   assemblyRecipeMutationRequest?: Prisma.AssemblyRecipeMutationRequestOmit
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentOmit
+  assemblyRenderRequest?: Prisma.AssemblyRenderRequestOmit
+  assemblyRenderResult?: Prisma.AssemblyRenderResultOmit
   processingTemplate?: Prisma.ProcessingTemplateOmit
   processingTemplateRevision?: Prisma.ProcessingTemplateRevisionOmit
   editorialAsset?: Prisma.EditorialAssetOmit

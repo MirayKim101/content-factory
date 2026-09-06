@@ -28,12 +28,24 @@ enum MediaArtifactStatus {
 enum MediaArtifactRole {
   SOURCE
   CUT_RESULT
+  HORIZONTAL_ASSEMBLY_RESULT
 }
 
 enum PipelineJobType {
   SOURCE_PROBE
   CUT_SEGMENT
   MONTAGE_ASSET_PROBE
+  ASSEMBLE_HORIZONTAL
+}
+
+enum AssemblyProgressPhase {
+  DOWNLOAD
+  AUDIO_ANALYSIS
+  ENCODE
+  OUTPUT_PROBE
+  OUTPUT_HASH
+  UPLOAD
+  FINALIZE
 }
 
 enum MontageAssetKind {
@@ -127,6 +139,7 @@ model Project {
   editorialPackages        EditorialPackage[]
   montageAssets            MontageAsset[]
   assemblyRecipes          AssemblyRecipe[]
+  assemblyRenderIntents    AssemblyRenderIntent[]
 }
 
 model VideoSource {
@@ -148,6 +161,7 @@ model VideoSource {
   pipelineJobs     PipelineJob[]
   authorizations   SourceAuthorization[]
   montageAssets    MontageAsset[]
+  assemblyRenderIntents AssemblyRenderIntent[]
 }
 
 model SourceAuthorization {
@@ -197,6 +211,8 @@ model MediaArtifact {
   updatedAt            DateTime              @updatedAt
   editorialPackage     EditorialPackage?
   assemblyRecipe       AssemblyRecipe?
+  assemblyRenderInputs AssemblyRenderIntent[]
+  assemblyRenderResult AssemblyRenderResult?
 
   @@unique([id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "MediaArtifact_id_projectId_lineage_pipelineJob_key")
   @@index([status, createdAt])
@@ -254,8 +270,18 @@ model PipelineJob {
   assemblyRecipe   AssemblyRecipe?
   montageAssetId   String?           @unique @db.Uuid
   montageAsset     MontageAsset?     @relation(fields: [montageAssetId], references: [id], onDelete: Restrict)
+  assemblyRenderIntentId String?      @unique @db.Uuid
+  assemblyRenderIntent AssemblyRenderIntent? @relation("AssemblyRenderJob", fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_assembly_intent")
+  assemblyRenderInputs AssemblyRenderIntent[] @relation("AssemblyRenderCutJob")
+  nextAttemptAt        DateTime?
+  admissionReason      String?
+  progressAttemptNumber Int?
+  progressPhase        AssemblyProgressPhase?
+  progressBasisPoints  Int?
+  progressUpdatedAt    DateTime?
 
   @@unique([id, projectId, sourceId, sourceVersion])
+  @@unique([assemblyRenderIntentId, projectId, sourceId, sourceVersion], map: "PipelineJob_assembly_intent_lineage_key")
   @@index([state, type, priority, queuedAt])
   @@index([leaseExpiresAt])
   @@index([projectId, createdAt])
@@ -326,6 +352,7 @@ model AssemblyRecipe {
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
   revisions              AssemblyRecipeRevision[]
+  renderIntents          AssemblyRenderIntent[]
 
   @@unique([pipelineJobId, projectId, lineageSourceId, lineageSourceVersion], map: "AssemblyRecipe_pipeline_exact_key")
   @@unique([cutResultArtifactId, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "AssemblyRecipe_artifact_exact_key")
@@ -349,8 +376,10 @@ model AssemblyRecipeRevision {
   createdAt                DateTime                        @default(now())
   assetReferences          AssemblyRecipeAssetReference[]
   mutationRequests         AssemblyRecipeMutationRequest[]
+  renderIntents            AssemblyRenderIntent[]
 
   @@unique([recipeId, revision], map: "AssemblyRecipeRevision_recipe_revision_key")
+  @@unique([id, recipeId, revision], map: "AssemblyRecipeRevision_exact_identity_key")
   @@index([createdAt, id])
 }
 
@@ -384,6 +413,74 @@ model AssemblyRecipeMutationRequest {
   recipeRevisionId   String                 @db.Uuid
   recipeRevision     AssemblyRecipeRevision @relation(fields: [recipeRevisionId], references: [id], onDelete: Restrict)
   createdAt          DateTime               @default(now())
+}
+
+model AssemblyRenderIntent {
+  id                       String                   @id @db.Uuid
+  projectId                String                   @db.Uuid
+  project                  Project                  @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId                 String                   @db.Uuid
+  source                   VideoSource              @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  sourceVersion            Int
+  cutPipelineJobId         String                   @db.Uuid
+  cutPipelineJob           PipelineJob              @relation("AssemblyRenderCutJob", fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "AssemblyRenderIntent_exact_cut_job")
+  cutResultArtifactId      String                   @db.Uuid
+  cutResultArtifact        MediaArtifact            @relation(fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "AssemblyRenderIntent_exact_cut_artifact")
+  cutResultSha256          String
+  cutResultSizeBytes       BigInt
+  cutResultRecipeVersion   String
+  assemblyRecipeId         String                   @db.Uuid
+  assemblyRecipe           AssemblyRecipe           @relation(fields: [assemblyRecipeId], references: [id], onDelete: Restrict)
+  recipeRevisionId         String                   @db.Uuid
+  recipeRevisionRecord     AssemblyRecipeRevision   @relation(fields: [recipeRevisionId, assemblyRecipeId, recipeRevision], references: [id, recipeId, revision], onDelete: Restrict, map: "AssemblyRenderIntent_exact_recipe_revision")
+  recipeRevision           Int
+  configurationFingerprint String
+  renderContractVersion    String                   @default("horizontal-render-v1")
+  audioProfileVersion      String
+  encodingProfileVersion   String
+  expectedDurationMs       Int
+  createdAt                DateTime                 @default(now())
+  pipelineJob              PipelineJob?             @relation("AssemblyRenderJob")
+  requests                 AssemblyRenderRequest[]
+  result                   AssemblyRenderResult?
+
+  @@unique([recipeRevisionId, renderContractVersion], map: "AssemblyRenderIntent_revision_contract_key")
+  @@unique([id, projectId, sourceId, sourceVersion], map: "AssemblyRenderIntent_exact_lineage_key")
+  @@index([projectId, createdAt, id])
+}
+
+model AssemblyRenderRequest {
+  id                 String               @id @db.Uuid
+  idempotencyKey     String               @unique
+  requestFingerprint String
+  renderIntentId     String               @db.Uuid
+  renderIntent       AssemblyRenderIntent @relation(fields: [renderIntentId], references: [id], onDelete: Restrict)
+  createdAt          DateTime             @default(now())
+}
+
+model AssemblyRenderResult {
+  id                         String               @id @db.Uuid
+  renderIntentId             String               @unique @db.Uuid
+  renderIntent               AssemblyRenderIntent @relation(fields: [renderIntentId], references: [id], onDelete: Restrict)
+  artifactId                 String               @unique @db.Uuid
+  artifact                   MediaArtifact        @relation(fields: [artifactId], references: [id], onDelete: Restrict)
+  durationMs                 Int
+  width                      Int
+  height                     Int
+  fpsNumerator               Int
+  fpsDenominator             Int
+  videoCodec                 String
+  pixelFormat                String
+  audioCodec                 String
+  audioSampleRate            Int
+  audioChannels              Int
+  ffmpegVersion              String
+  ffprobeVersion             String
+  integratedLoudnessLufs     Float?
+  truePeakDbtp               Float?
+  normalizationProfileResult String
+  completedAt                DateTime
+  createdAt                  DateTime             @default(now())
 }
 
 model ProcessingTemplate {

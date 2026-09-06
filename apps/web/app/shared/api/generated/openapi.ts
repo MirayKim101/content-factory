@@ -4,6 +4,38 @@
  */
 
 export interface paths {
+  "/api/v1/assembly-renders/{renderId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRenderController_one"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/assembly-renders/{renderId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRenderController_content"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/health": {
     parameters: {
       query?: never;
@@ -14,6 +46,23 @@ export interface paths {
     get: operations["AppController_health"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/assembly-renders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create one exact-revision background horizontal render */
+    post: operations["AssemblyRenderController_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -178,6 +227,22 @@ export interface paths {
       cookie?: never;
     };
     get: operations["AssemblyRecipeController_project"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/assembly-renders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRenderController_project"];
     put?: never;
     post?: never;
     delete?: never;
@@ -462,6 +527,113 @@ export interface components {
       /** @enum {boolean} */
       valid: true;
     };
+    AssemblyRenderFailureResponseDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    AssemblyRenderInputResponseDto: {
+      durationMs: number | null;
+      /** Format: uuid */
+      id: string;
+      revision: number | null;
+      /** @enum {string} */
+      role: "CUT" | "INTRO" | "OUTRO" | "ADVERTISEMENT" | "BANNER";
+      sha256: string;
+      sizeBytes: string;
+    };
+    AssemblyRenderJobResponseDto: {
+      admissionReason: string | null;
+      attempt: number;
+      failure: components["schemas"]["AssemblyRenderFailureResponseDto"] | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      nextAttemptAt: string | null;
+      progress:
+        components["schemas"]["AssemblyRenderProgressResponseDto"] | null;
+      retryBudget: number;
+      revision: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    };
+    AssemblyRenderListResponseDto: {
+      items: components["schemas"]["AssemblyRenderResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    AssemblyRenderProgressResponseDto: {
+      attemptNumber: number;
+      basisPoints: number;
+      /** @enum {string} */
+      phase:
+        | "DOWNLOAD"
+        | "AUDIO_ANALYSIS"
+        | "ENCODE"
+        | "OUTPUT_PROBE"
+        | "OUTPUT_HASH"
+        | "UPLOAD"
+        | "FINALIZE";
+      /** @enum {string} */
+      schemaVersion: "assembly-progress-v1";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    AssemblyRenderResponseDto: {
+      /** Format: uuid */
+      assemblyRecipeId: string;
+      /** @enum {string} */
+      audioProfileVersion: "youtube-stereo-v1";
+      configurationFingerprint: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** Format: uuid */
+      cutResultArtifactId: string;
+      /** @enum {string} */
+      encodingProfileVersion: "youtube-h264-v1";
+      expectedDurationMs: number;
+      /** Format: uuid */
+      id: string;
+      inputs: components["schemas"]["AssemblyRenderInputResponseDto"][];
+      job: components["schemas"]["AssemblyRenderJobResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      recipeRevision: number;
+      /** Format: uuid */
+      recipeRevisionId: string;
+      /** @enum {string} */
+      renderContractVersion: "horizontal-render-v1";
+      result: components["schemas"]["AssemblyRenderResultResponseDto"] | null;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+    };
+    AssemblyRenderResultResponseDto: {
+      audioChannels: number;
+      audioCodec: string;
+      audioSampleRate: number;
+      /** Format: date-time */
+      completedAt: string;
+      /** Format: uri-reference */
+      downloadUrl: string;
+      durationMs: number;
+      ffmpegVersion: string;
+      ffprobeVersion: string;
+      filename: string;
+      fpsDenominator: number;
+      fpsNumerator: number;
+      height: number;
+      integratedLoudnessLufs: number | null;
+      normalizationProfileResult: string;
+      pixelFormat: string;
+      sha256: string;
+      sizeBytes: string;
+      truePeakDbtp: number | null;
+      videoCodec: string;
+      width: number;
+    };
     AttestSourceAuthorizationDto: {
       /** @enum {boolean} */
       attested: true;
@@ -469,6 +641,9 @@ export interface components {
       declarationVersion: "source-authorization-v1";
       expectedRevision: number;
       sourceVersion: number;
+    };
+    CreateAssemblyRenderDto: {
+      recipeRevision: number;
     };
     CreateCutsDto: {
       segments: components["schemas"]["CutSegmentDto"][];
@@ -868,6 +1043,76 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  AssemblyRenderController_one: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRenderResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRenderController_content: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready private horizontal MP4. */
+      200: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Requested MP4 byte range. */
+      206: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Returned byte range. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Unsatisfied byte range. */
+      416: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Unsatisfied range with authoritative object size. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   AppController_health: {
     parameters: {
       query?: never;
@@ -878,6 +1123,67 @@ export interface operations {
     requestBody?: never;
     responses: {
       200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AssemblyRenderController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateAssemblyRenderDto"];
+      };
+    };
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRenderResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      503: {
         headers: {
           [name: string]: unknown;
         };
@@ -1562,6 +1868,25 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRenderController_project: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRenderListResponseDto"];
         };
       };
     };

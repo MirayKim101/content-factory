@@ -1,7 +1,18 @@
-import type { ClaimedMediaJob } from "../domain/media-job.js";
+import type {
+  AssemblyRenderPlan,
+  ClaimedMediaJob,
+} from "../domain/media-job.js";
 import type { MontageProbeResultV1 } from "@content-factory/contracts";
 
 export interface MediaJobRepository {
+  getAssemblyResourcePlan(jobId: string): Promise<{
+    requiredScratchBytes: bigint;
+  } | null>;
+  deferAssemblyAdmission(
+    jobId: string,
+    reason: string,
+    nextAttemptAt: Date,
+  ): Promise<void>;
   completeMontageProbe(
     job: ClaimedMediaJob,
     result: MontageProbeResultV1,
@@ -16,6 +27,18 @@ export interface MediaJobRepository {
     leaseToken: string,
     leaseMs: number,
     processedMs?: number,
+  ): Promise<boolean>;
+  updateAssemblyProgress(
+    job: ClaimedMediaJob,
+    phase:
+      | "DOWNLOAD"
+      | "AUDIO_ANALYSIS"
+      | "ENCODE"
+      | "OUTPUT_PROBE"
+      | "OUTPUT_HASH"
+      | "UPLOAD"
+      | "FINALIZE",
+    basisPoints: number,
   ): Promise<boolean>;
   isLeaseActive(job: ClaimedMediaJob): Promise<boolean>;
   prepareAttemptOutput(job: ClaimedMediaJob, objectKey: string): Promise<void>;
@@ -40,6 +63,36 @@ export interface MediaJobRepository {
       ffmpegVersion: string;
     },
   ): Promise<void>;
+  completeAssembly(
+    job: ClaimedMediaJob,
+    result: {
+      objectKey: string;
+      filename: string;
+      sizeBytes: bigint;
+      sha256: string;
+      etag?: string;
+      storageVersion?: string;
+      durationMs: number;
+      width: number;
+      height: number;
+      fpsNumerator: number;
+      fpsDenominator: number;
+      videoCodec: string;
+      pixelFormat: string;
+      audioCodec: string;
+      audioSampleRate: number;
+      audioChannels: number;
+      ffmpegVersion: string;
+      ffprobeVersion: string;
+      integratedLoudnessLufs: number | null;
+      truePeakDbtp: number | null;
+      normalizationProfileResult: string;
+    },
+  ): Promise<void>;
+  isAssemblyResultAccepted(
+    job: ClaimedMediaJob,
+    objectKey: string,
+  ): Promise<boolean>;
   fail(
     job: ClaimedMediaJob,
     code: string,
@@ -47,6 +100,56 @@ export interface MediaJobRepository {
     retryable: boolean,
   ): Promise<"RETRY_SCHEDULED" | "FAILED_FINAL" | "LEASE_LOST">;
   close(): Promise<void>;
+}
+
+export interface AssemblyRenderer {
+  render(input: {
+    plan: AssemblyRenderPlan;
+    files: Map<string, string>;
+    scratchDirectory: string;
+    outputPath: string;
+    fontPath: string;
+    signal: AbortSignal;
+    onProgress(phase: "AUDIO_ANALYSIS" | "ENCODE", processedMs: number): void;
+  }): Promise<AssemblyEncodedOutput>;
+  inspectOutput(input: {
+    outputPath: string;
+    expectedDurationMs: number;
+    encoded: AssemblyEncodedOutput;
+    signal: AbortSignal;
+  }): Promise<AssemblyRenderedOutput>;
+  verifyCapabilities(fontPath: string): Promise<void>;
+}
+
+export interface AssemblyEncodedOutput {
+  canvas: {
+    width: number;
+    height: number;
+    fpsNumerator: number;
+    fpsDenominator: number;
+  };
+  outputLoudness: {
+    integratedLoudnessLufs: number;
+    truePeakDbtp: number;
+  } | null;
+}
+
+export interface AssemblyRenderedOutput {
+  durationMs: number;
+  width: number;
+  height: number;
+  fpsNumerator: number;
+  fpsDenominator: number;
+  videoCodec: string;
+  pixelFormat: string;
+  audioCodec: string;
+  audioSampleRate: number;
+  audioChannels: number;
+  ffmpegVersion: string;
+  ffprobeVersion: string;
+  integratedLoudnessLufs: number | null;
+  truePeakDbtp: number | null;
+  normalizationProfileResult: string;
 }
 
 export interface WorkerObjectStorage {
@@ -112,6 +215,7 @@ export interface SourceCacheTelemetry {
   evictionCount?: number;
   evictedBytes?: string;
   currentCacheBytes?: string;
+  scratchReservationBytes?: string;
 }
 
 export interface MediaJobPhaseTelemetry {

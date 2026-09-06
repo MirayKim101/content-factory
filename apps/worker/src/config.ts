@@ -57,6 +57,8 @@ export interface WorkerConfig {
   sourceCacheTtlMs: number;
   ffmpegPath: string;
   ffprobePath: string;
+  ffmpegThreads: number;
+  assemblyFontPath: string;
   sourceAuthorizationPolicy: "manual" | "local-auto";
 }
 
@@ -131,6 +133,10 @@ export function workerConfig(): WorkerConfig {
     ),
     ffmpegPath: process.env.FFMPEG_PATH?.trim() || "ffmpeg",
     ffprobePath: process.env.FFPROBE_PATH?.trim() || "ffprobe",
+    ffmpegThreads: integer("FFMPEG_THREADS", 2, 1, 32),
+    assemblyFontPath:
+      process.env.ASSEMBLY_FONT_PATH?.trim() ||
+      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     sourceAuthorizationPolicy: resolveWorkerSourceAuthorizationPolicy(
       process.env,
     ),

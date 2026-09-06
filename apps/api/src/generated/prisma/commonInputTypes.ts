@@ -408,6 +408,13 @@ export type BoolNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedBoolNullableFilter<$PrismaModel> | boolean | null
 }
 
+export type EnumAssemblyProgressPhaseNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyProgressPhase | Prisma.EnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyProgressPhaseNullableFilter<$PrismaModel> | $Enums.AssemblyProgressPhase | null
+}
+
 export type EnumPipelineJobTypeWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PipelineJobType | Prisma.EnumPipelineJobTypeFieldRefInput<$PrismaModel>
   in?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
@@ -434,6 +441,16 @@ export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedBoolNullableFilter<$PrismaModel>
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>
+}
+
+export type EnumAssemblyProgressPhaseNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyProgressPhase | Prisma.EnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyProgressPhaseNullableWithAggregatesFilter<$PrismaModel> | $Enums.AssemblyProgressPhase | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssemblyProgressPhaseNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssemblyProgressPhaseNullableFilter<$PrismaModel>
 }
 
 export type EnumMontageAssetKindFilter<$PrismaModel = never> = {
@@ -502,6 +519,33 @@ export type EnumAssemblyAssetRoleWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
+}
+
+export type FloatNullableFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
+}
+
+export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
 }
 
 export type EnumEditorialAssetTypeFilter<$PrismaModel = never> = {
@@ -1009,6 +1053,13 @@ export type NestedBoolNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedBoolNullableFilter<$PrismaModel> | boolean | null
 }
 
+export type NestedEnumAssemblyProgressPhaseNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyProgressPhase | Prisma.EnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyProgressPhaseNullableFilter<$PrismaModel> | $Enums.AssemblyProgressPhase | null
+}
+
 export type NestedEnumPipelineJobTypeWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.PipelineJobType | Prisma.EnumPipelineJobTypeFieldRefInput<$PrismaModel>
   in?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
@@ -1035,6 +1086,16 @@ export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedBoolNullableFilter<$PrismaModel>
   _max?: Prisma.NestedBoolNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumAssemblyProgressPhaseNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AssemblyProgressPhase | Prisma.EnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  in?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.AssemblyProgressPhase[] | Prisma.ListEnumAssemblyProgressPhaseFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumAssemblyProgressPhaseNullableWithAggregatesFilter<$PrismaModel> | $Enums.AssemblyProgressPhase | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAssemblyProgressPhaseNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAssemblyProgressPhaseNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumMontageAssetKindFilter<$PrismaModel = never> = {
@@ -1103,6 +1164,22 @@ export type NestedEnumAssemblyAssetRoleWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
   _max?: Prisma.NestedEnumAssemblyAssetRoleFilter<$PrismaModel>
+}
+
+export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumEditorialAssetTypeFilter<$PrismaModel = never> = {

@@ -7,6 +7,7 @@ import { Worker } from "bullmq";
 import { ProcessMediaJob } from "./application/process-media-job.js";
 import { workerConfig } from "./config.js";
 import { FfmpegMediaProcessor } from "./infrastructure/ffmpeg-media-processor.js";
+import { FfmpegAssemblyRenderer } from "./infrastructure/ffmpeg-assembly-renderer.js";
 import { LocalSourceCache } from "./infrastructure/local-source-cache.js";
 import { PgMediaJobRepository } from "./infrastructure/pg-media-job.repository.js";
 import { S3WorkerObjectStorage } from "./infrastructure/s3-worker-object-storage.js";
@@ -29,6 +30,12 @@ const processor = new FfmpegMediaProcessor(
   config.ffmpegPath,
   config.ffprobePath,
 );
+const assemblyRenderer = new FfmpegAssemblyRenderer(
+  config.ffmpegPath,
+  config.ffprobePath,
+  config.ffmpegThreads,
+);
+await assemblyRenderer.verifyCapabilities(config.assemblyFontPath);
 const sourceCache = new LocalSourceCache({
   directory: config.sourceCacheDirectory,
   maxBytes: config.sourceCacheMaxBytes,
@@ -45,8 +52,10 @@ const processJob = new ProcessMediaJob(
     scratchSafetyBytes: config.scratchSafetyBytes,
     leaseMs: config.leaseMs,
     jobTimeoutMs: config.jobTimeoutMs,
+    assemblyFontPath: config.assemblyFontPath,
   },
   (event) => console.log(JSON.stringify(event)),
+  assemblyRenderer,
 );
 
 const worker = new Worker(

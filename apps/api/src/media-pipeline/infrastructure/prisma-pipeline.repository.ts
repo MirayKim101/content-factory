@@ -212,7 +212,11 @@ export class PrismaPipelineRepository implements PipelineRepository {
   async getRunnableJobs(limit: number) {
     const rows = await this.prisma.pipelineJob.findMany({
       where: {
-        state: { in: ["QUEUED", "RETRY_WAIT"] },
+        OR: [
+          { state: "QUEUED", nextAttemptAt: null },
+          { state: "QUEUED", nextAttemptAt: { lte: new Date() } },
+          { state: "RETRY_WAIT", nextAttemptAt: { lte: new Date() } },
+        ],
         AND: this.dispatchableType(),
       },
       orderBy: [{ priority: "desc" }, { queuedAt: "asc" }],
@@ -245,7 +249,11 @@ export class PrismaPipelineRepository implements PipelineRepository {
     const rows = await this.prisma.pipelineJob.findMany({
       where: {
         id: { in: jobIds },
-        state: { in: ["QUEUED", "RETRY_WAIT"] },
+        OR: [
+          { state: "QUEUED", nextAttemptAt: null },
+          { state: "QUEUED", nextAttemptAt: { lte: new Date() } },
+          { state: "RETRY_WAIT", nextAttemptAt: { lte: new Date() } },
+        ],
         AND: this.dispatchableType(),
       },
       select: {
@@ -278,7 +286,11 @@ export class PrismaPipelineRepository implements PipelineRepository {
     const job = await this.prisma.pipelineJob.findFirst({
       where: {
         id: delivery.jobId,
-        state: { in: ["QUEUED", "RETRY_WAIT"] },
+        OR: [
+          { state: "QUEUED", nextAttemptAt: null },
+          { state: "QUEUED", nextAttemptAt: { lte: new Date() } },
+          { state: "RETRY_WAIT", nextAttemptAt: { lte: new Date() } },
+        ],
         attemptCount: delivery.attemptNumber - 1,
         AND: this.dispatchableType(),
       },
@@ -343,9 +355,17 @@ export class PrismaPipelineRepository implements PipelineRepository {
       orderBy: { leaseExpiresAt: "asc" },
       select: {
         id: true,
+        type: true,
+        montageAssetId: true,
         leaseToken: true,
         sourceVersion: true,
-        source: { include: { authorizations: true } },
+        source: {
+          select: {
+            sourceVersion: true,
+            status: true,
+            authorizations: true,
+          },
+        },
       },
     });
     const recovered: Array<{ jobId: string; attemptNumber: number }> = [];
@@ -353,7 +373,65 @@ export class PrismaPipelineRepository implements PipelineRepository {
       const authorization = job.source.authorizations.find(
         (decision) => decision.sourceVersion === job.sourceVersion,
       );
-      if (!this.isCleared(authorization, job.sourceVersion)) continue;
+      if (
+        job.source.sourceVersion !== job.sourceVersion ||
+        job.source.status !== "READY" ||
+        !this.isCleared(authorization, job.sourceVersion)
+      ) {
+        const failureCode =
+          job.type === "ASSEMBLE_HORIZONTAL"
+            ? "ASSEMBLY_INPUT_INVALID"
+            : job.type === "MONTAGE_ASSET_PROBE"
+              ? "MONTAGE_IDENTITY_CONFLICT"
+              : "SOURCE_AUTHORIZATION_REQUIRED";
+        await this.prisma.$transaction(async (transaction) => {
+          const failed = await transaction.pipelineJob.updateMany({
+            where: {
+              id: job.id,
+              state: "PROCESSING",
+              leaseToken: job.leaseToken,
+              leaseExpiresAt: { lt: new Date() },
+            },
+            data: {
+              state: "FAILED_FINAL",
+              failureCode,
+              failureMessage:
+                "Exact source version or authorization changed after admission.",
+              failureRetryable: false,
+              finishedAt: new Date(),
+              nextAttemptAt: null,
+              leaseOwner: null,
+              leaseToken: null,
+              leaseExpiresAt: null,
+              heartbeatAt: null,
+              revision: { increment: 1 },
+            },
+          });
+          if (failed.count !== 1) return;
+          await transaction.jobAttempt.updateMany({
+            where: { jobId: job.id, state: "PROCESSING" },
+            data: {
+              state: "FAILED_FINAL",
+              failureCode,
+              finishedAt: new Date(),
+            },
+          });
+          if (job.type === "MONTAGE_ASSET_PROBE" && job.montageAssetId) {
+            await transaction.montageAsset.updateMany({
+              where: { id: job.montageAssetId, status: "PROBE_PENDING" },
+              data: {
+                status: "FAILED_FINAL",
+                failureCode,
+                failureMessage:
+                  "Exact source version or authorization changed after admission.",
+                cleanupStatus: "PENDING",
+                revision: { increment: 1 },
+              },
+            });
+          }
+        });
+        continue;
+      }
       const updated = await this.prisma.pipelineJob.updateMany({
         where: {
           id: job.id,
@@ -363,6 +441,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
         },
         data: {
           state: "RETRY_WAIT",
+          nextAttemptAt: new Date(Date.now() + 5_000),
           leaseOwner: null,
           leaseToken: null,
           leaseExpiresAt: null,
@@ -703,6 +782,16 @@ export class PrismaPipelineRepository implements PipelineRepository {
       payloadVersion: 1,
       OR: [
         { type: { in: ["SOURCE_PROBE", "CUT_SEGMENT"] }, montageAssetId: null },
+        {
+          type: "ASSEMBLE_HORIZONTAL",
+          recipeVersion: "horizontal-render-v1",
+          montageAssetId: null,
+          assemblyRenderIntent: {
+            is: {
+              renderContractVersion: "horizontal-render-v1",
+            },
+          },
+        },
         ...(sourceAuthorizationRuntime().policy === "local-auto"
           ? [
               {

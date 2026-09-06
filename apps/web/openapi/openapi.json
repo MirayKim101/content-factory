@@ -407,6 +407,381 @@
         "required": ["valid"],
         "type": "object"
       },
+      "AssemblyRenderFailureResponseDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": ["code", "message", "retryable"],
+        "type": "object"
+      },
+      "AssemblyRenderInputResponseDto": {
+        "properties": {
+          "durationMs": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "role": {
+            "enum": ["CUT", "INTRO", "OUTRO", "ADVERTISEMENT", "BANNER"],
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "revision",
+          "sha256",
+          "sizeBytes",
+          "durationMs"
+        ],
+        "type": "object"
+      },
+      "AssemblyRenderJobResponseDto": {
+        "properties": {
+          "admissionReason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "attempt": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyRenderFailureResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "nextAttemptAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "progress": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyRenderProgressResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "retryBudget": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "state",
+          "attempt",
+          "retryBudget",
+          "nextAttemptAt",
+          "admissionReason",
+          "progress",
+          "failure"
+        ],
+        "type": "object"
+      },
+      "AssemblyRenderListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssemblyRenderResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "AssemblyRenderProgressResponseDto": {
+        "properties": {
+          "attemptNumber": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "basisPoints": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "phase": {
+            "enum": [
+              "DOWNLOAD",
+              "AUDIO_ANALYSIS",
+              "ENCODE",
+              "OUTPUT_PROBE",
+              "OUTPUT_HASH",
+              "UPLOAD",
+              "FINALIZE"
+            ],
+            "type": "string"
+          },
+          "schemaVersion": {
+            "enum": ["assembly-progress-v1"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "attemptNumber",
+          "phase",
+          "basisPoints",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AssemblyRenderResponseDto": {
+        "properties": {
+          "assemblyRecipeId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "audioProfileVersion": {
+            "enum": ["youtube-stereo-v1"],
+            "type": "string"
+          },
+          "configurationFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutResultArtifactId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "encodingProfileVersion": {
+            "enum": ["youtube-h264-v1"],
+            "type": "string"
+          },
+          "expectedDurationMs": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/AssemblyRenderInputResponseDto"
+            },
+            "type": "array"
+          },
+          "job": {
+            "$ref": "#/components/schemas/AssemblyRenderJobResponseDto"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipeRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "recipeRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "renderContractVersion": {
+            "enum": ["horizontal-render-v1"],
+            "type": "string"
+          },
+          "result": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssemblyRenderResultResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "cutPipelineJobId",
+          "cutResultArtifactId",
+          "assemblyRecipeId",
+          "recipeRevisionId",
+          "recipeRevision",
+          "configurationFingerprint",
+          "renderContractVersion",
+          "audioProfileVersion",
+          "encodingProfileVersion",
+          "expectedDurationMs",
+          "inputs",
+          "job",
+          "result",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "AssemblyRenderResultResponseDto": {
+        "properties": {
+          "audioChannels": {
+            "type": "integer"
+          },
+          "audioCodec": {
+            "type": "string"
+          },
+          "audioSampleRate": {
+            "type": "integer"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "downloadUrl": {
+            "format": "uri-reference",
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "integer"
+          },
+          "ffmpegVersion": {
+            "type": "string"
+          },
+          "ffprobeVersion": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "fpsDenominator": {
+            "type": "integer"
+          },
+          "fpsNumerator": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "integratedLoudnessLufs": {
+            "nullable": true,
+            "type": "number"
+          },
+          "normalizationProfileResult": {
+            "type": "string"
+          },
+          "pixelFormat": {
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "truePeakDbtp": {
+            "nullable": true,
+            "type": "number"
+          },
+          "videoCodec": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "filename",
+          "sizeBytes",
+          "sha256",
+          "durationMs",
+          "width",
+          "height",
+          "fpsNumerator",
+          "fpsDenominator",
+          "videoCodec",
+          "pixelFormat",
+          "audioCodec",
+          "audioSampleRate",
+          "audioChannels",
+          "integratedLoudnessLufs",
+          "truePeakDbtp",
+          "normalizationProfileResult",
+          "ffmpegVersion",
+          "ffprobeVersion",
+          "completedAt",
+          "downloadUrl"
+        ],
+        "type": "object"
+      },
       "AttestSourceAuthorizationDto": {
         "properties": {
           "attested": {
@@ -432,6 +807,16 @@
           "declarationVersion",
           "attested"
         ],
+        "type": "object"
+      },
+      "CreateAssemblyRenderDto": {
+        "properties": {
+          "recipeRevision": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": ["recipeRevision"],
         "type": "object"
       },
       "CreateCutsDto": {
@@ -1610,6 +1995,117 @@
   },
   "openapi": "3.0.0",
   "paths": {
+    "/api/v1/assembly-renders/{renderId}": {
+      "get": {
+        "operationId": "AssemblyRenderController_one",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyRenderResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/assembly-renders/{renderId}/content": {
+      "get": {
+        "operationId": "AssemblyRenderController_content",
+        "parameters": [
+          {
+            "description": "One RFC 9110 byte range.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Ready private horizontal MP4.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "206": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Requested MP4 byte range.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "description": "Returned byte range.",
+                "schema": {
+                  "example": "bytes 0-1023/4096",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unsatisfied byte range.",
+            "headers": {
+              "Accept-Ranges": {
+                "description": "Supported range unit.",
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "description": "Unsatisfied range with authoritative object size.",
+                "schema": {
+                  "example": "bytes */4096",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "AppController_health",
@@ -1620,6 +2116,63 @@
           }
         },
         "tags": ["App"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{cutJobId}/assembly-renders": {
+      "post": {
+        "operationId": "AssemblyRenderController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssemblyRenderDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyRenderResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "description": ""
+          },
+          "403": {
+            "description": ""
+          },
+          "404": {
+            "description": ""
+          },
+          "409": {
+            "description": ""
+          },
+          "422": {
+            "description": ""
+          },
+          "503": {
+            "description": ""
+          }
+        },
+        "summary": "Create one exact-revision background horizontal render",
+        "tags": ["editorial-content"]
       }
     },
     "/api/v1/pipeline-jobs/{id}": {
@@ -2575,6 +3128,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/projects/{projectId}/assembly-renders": {
+      "get": {
+        "operationId": "AssemblyRenderController_project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssemblyRenderListResponseDto"
                 }
               }
             },
