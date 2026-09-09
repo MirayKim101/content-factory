@@ -110,8 +110,9 @@ docker compose --env-file .env -f infrastructure/compose.yaml ps --all
   not replace `.env` while those volumes exist: MinIO provisioning credentials
   would no longer match the persistent storage state. Use the documented
   teardown procedure only when intentionally discarding local data.
-- `ffmpeg` and `ffprobe` are not installed on this WSL host. They are the
-  remaining local prerequisite for the Stage 1 background cutting worker; this
-  runtime setup does not install an unpinned system package manager dependency.
+- `ffmpeg` and `ffprobe` are not installed on this WSL host. A separate pinned
+  Docker media runtime now supplies both tools; see
+  [media-runtime.md](media-runtime.md). Its synthetic encode/probe smoke passed;
+  application worker integration is still pending.
 - This setup does not modify `package.json`, `pnpm-lock.yaml`, application
   code, schemas, or Docker configuration.

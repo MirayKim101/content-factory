@@ -55,6 +55,10 @@
   `pg_restore --list` успешен; 3 существующих источника). До запуска нового
   совместимого API старый upload не включать. Migration и backfill counts
   проверяются при остановленном API.
+- Media runtime image `content-factory-media-runtime:node24.15.0-ffmpeg5.1.9`
+  собран из pinned Node/Debian и FFmpeg package. Orchestrator независимо
+  повторил unprivileged, no-network encode/probe smoke: H.264 128×72,
+  duration 1.000000. Worker и фоновые jobs пока не реализованы.
 - Исходные untracked файлы владельца: `.idea/` и `package-lock.json`; сохранять.
 - Владелец разрешил автономную работу и субагентов, с остановкой на 50% квоты.
   Чтение через `codex app-server --stdio`, JSON-RPC `initialize`, затем
