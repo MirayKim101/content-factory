@@ -30,7 +30,9 @@
   PostgreSQL, Redis и MinIO — healthy, minio-init завершился с кодом 0.
   Обе существующие миграции успешно применены. Данные с Mac не переносились.
 - Текущая рабочая ветка: `recovery/linux-mvp-20260909`.
-- API запущен на `127.0.0.1:3001`, web — `127.0.0.1:3000`.
+- API был проверен на `127.0.0.1:3001`, затем намеренно остановлен перед
+  миграцией authorization; проверка health вернула connection refused.
+  Web остаётся на `127.0.0.1:3000`, но загрузка недоступна до запуска нового API.
   При восстановлении сессии сначала проверить доступность; не предполагать,
   что процессы сохранились.
 - API verification на WSL: 22 unit и 12 integration tests passed, lint и
@@ -43,8 +45,16 @@
   Маленькие тестовые исходники оставлены в новой локальной базе/MinIO.
 - Reviewer независимо повторил browser smoke, включая отдельную server
   finalization и corrupted MP4 failure; JavaScript errors отсутствуют.
-  Следующий срез — ADR-003 exact-version source authorization; проектирование
-  завершено, реализация пока не начата.
+  Следующий срез — ADR-003 exact-version source authorization: design review
+  завершён после исправления 3 замечаний (migration quiescence, отсутствие
+  скрытой legacy-аттестации, replay после rotation декларации).
+  Один backend implementer выполняет вертикальный срез; review реализации
+  пока не проведён. Прогресс загрузки сохранён в commit `0b814b9`.
+- Снимок PostgreSQL повторно создан после остановки API:
+  `tmp/recovery/before-source-authorization.dump` (0600, custom format,
+  `pg_restore --list` успешен; 3 существующих источника). До запуска нового
+  совместимого API старый upload не включать. Migration и backfill counts
+  проверяются при остановленном API.
 - Исходные untracked файлы владельца: `.idea/` и `package-lock.json`; сохранять.
 - Владелец разрешил автономную работу и субагентов, с остановкой на 50% квоты.
   Чтение через `codex app-server --stdio`, JSON-RPC `initialize`, затем
@@ -55,7 +65,8 @@
   Не расходовать reset credits автоматически. Способ через `app-server proxy`
   в этой среде не сработал; standalone stdio завершать после ответа.
   Локальная команда: `node tmp/recovery/read-quota.cjs`; последняя проверка
-  перед browser smoke: 16% использовано. Скрипт в `tmp/` не хранится в Git.
+  перед authorization implementation: 19% использовано. Скрипт в `tmp/`
+  не хранится в Git.
 
 ## Предыдущий handoff с Mac (исторические результаты)
 

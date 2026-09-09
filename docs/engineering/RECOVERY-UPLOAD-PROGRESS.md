@@ -90,5 +90,5 @@ Implementation, 2026-09-09:
   `pnpm --filter @content-factory/web test -- projects-api source-upload`
   (23 tests), `pnpm --filter @content-factory/web lint`, and
   `pnpm --filter @content-factory/web typecheck`.
-- `git diff --check` passed. Browser smoke and independent review remain
-  required before acceptance.
+- `git diff --check` passed. Browser smoke and independent review were then
+  completed as recorded above.
