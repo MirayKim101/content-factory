@@ -101,7 +101,23 @@
   CLI отказал в восстановлении
   прежнего архитектора/новом thread (`agent thread limit reached`), поэтому
   переиспользован действующий участник. `worker_runtime` готовит CI/runtime,
-  но ожидает подтверждения окончательных путей; рабочая миграция cut не применена.
+  подтвердил `apps/worker/dist/main.js`. Worker image собран; независимый
+  offline smoke подтвердил UID 1000, Prisma/shared imports и FFmpeg 5.1.9.
+  Worker ещё не запускался. Нарезка находится в реализации и review.
+- Локальная cut migration применена 2026-09-09 13:00 UTC после проверенного
+  snapshot `tmp/recovery/before-manual-cut-20260909T130003Z.dump`.
+  Существующие 6 projects/sources/authorizations/artifacts сохранены, jobs=0.
+  Новый API прошёл read-only HEAD/Range smoke (200/206/416); полноценный cut
+  smoke и crash/restart verification ещё не выполнены.
+- Исправление локальной cut migration завершено: точные original bytes
+  восстановлены и независимо сверены, добавлены только BEGIN/COMMIT.
+  Guarded checksum-only transaction сохранила все остальные metadata,
+  схему и бизнес-данные; migrate status и deploy no-op успешны.
+  Промежуточное расхождение было лишним LF в проверочном восстановлении.
+  Подробные hashes, backup, guards и rollback evidence:
+  `RECOVERY-MANUAL-CUT-MIGRATION-REPAIR.md`.
+  API был остановлен на время операции; пауза retained writers снята после
+  postchecks. Перед browser smoke проверить новый API и worker отдельно.
 - Исходные untracked файлы владельца: `.idea/` и `package-lock.json`; сохранять.
 - Владелец разрешил автономную работу и субагентов, с остановкой на 50% квоты.
   Чтение через `codex app-server --stdio`, JSON-RPC `initialize`, затем
@@ -112,7 +128,7 @@
   Не расходовать reset credits автоматически. Способ через `app-server proxy`
   в этой среде не сработал; standalone stdio завершать после ответа.
   Локальная команда: `node tmp/recovery/read-quota.cjs`; последняя проверка
-  2026-09-09 12:53 UTC: 30% использовано. Скрипт в `tmp/`
+  2026-09-09 13:18 UTC: 37% использовано. Скрипт в `tmp/`
   не хранится в Git.
 
 ## Предыдущий handoff с Mac (исторические результаты)
