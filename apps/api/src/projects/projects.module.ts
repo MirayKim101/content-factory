@@ -32,5 +32,6 @@ import { TempUploadLifecycleInterceptor } from "./presentation/temp-upload-lifec
     { provide: PROJECT_REPOSITORY, useExisting: PrismaProjectRepository },
     { provide: OBJECT_STORAGE, useExisting: S3ObjectStorage },
   ],
+  exports: [PrismaService, OBJECT_STORAGE],
 })
 export class ProjectsModule {}

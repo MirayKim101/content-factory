@@ -400,7 +400,9 @@ export const ModelName = {
   Project: 'Project',
   VideoSource: 'VideoSource',
   SourceAuthorization: 'SourceAuthorization',
-  MediaArtifact: 'MediaArtifact'
+  MediaArtifact: 'MediaArtifact',
+  PipelineJob: 'PipelineJob',
+  JobAttempt: 'JobAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "pipelineJob" | "jobAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -716,6 +718,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PipelineJob: {
+      payload: Prisma.$PipelineJobPayload<ExtArgs>
+      fields: Prisma.PipelineJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PipelineJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PipelineJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        findFirst: {
+          args: Prisma.PipelineJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PipelineJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        findMany: {
+          args: Prisma.PipelineJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>[]
+        }
+        create: {
+          args: Prisma.PipelineJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        createMany: {
+          args: Prisma.PipelineJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PipelineJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>[]
+        }
+        delete: {
+          args: Prisma.PipelineJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        update: {
+          args: Prisma.PipelineJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.PipelineJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PipelineJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PipelineJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.PipelineJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PipelineJobPayload>
+        }
+        aggregate: {
+          args: Prisma.PipelineJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePipelineJob>
+        }
+        groupBy: {
+          args: Prisma.PipelineJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PipelineJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PipelineJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PipelineJobCountAggregateOutputType> | number
+        }
+      }
+    }
+    JobAttempt: {
+      payload: Prisma.$JobAttemptPayload<ExtArgs>
+      fields: Prisma.JobAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.JobAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.JobAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.JobAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.JobAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.JobAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.JobAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        update: {
+          args: Prisma.JobAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.JobAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.JobAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.JobAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.JobAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobAttempt>
+        }
+        groupBy: {
+          args: Prisma.JobAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -828,6 +978,65 @@ export const MediaArtifactScalarFieldEnum = {
 } as const
 
 export type MediaArtifactScalarFieldEnum = (typeof MediaArtifactScalarFieldEnum)[keyof typeof MediaArtifactScalarFieldEnum]
+
+
+export const PipelineJobScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  type: 'type',
+  state: 'state',
+  sourceVersion: 'sourceVersion',
+  sourceSha256: 'sourceSha256',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  recipeVersion: 'recipeVersion',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  revision: 'revision',
+  maxAttempts: 'maxAttempts',
+  attemptCount: 'attemptCount',
+  currentAttemptId: 'currentAttemptId',
+  nextAttemptAt: 'nextAttemptAt',
+  admissionDeadlineAt: 'admissionDeadlineAt',
+  stage: 'stage',
+  progressCurrent: 'progressCurrent',
+  progressTotal: 'progressTotal',
+  progressUnit: 'progressUnit',
+  queueReason: 'queueReason',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  winningArtifactId: 'winningArtifactId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+
+
+export const JobAttemptScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  claimRevision: 'claimRevision',
+  leaseToken: 'leaseToken',
+  startedAt: 'startedAt',
+  heartbeatAt: 'heartbeatAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  finishedAt: 'finishedAt',
+  reservedScratchBytes: 'reservedScratchBytes',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  outputObjectKey: 'outputObjectKey',
+  outputCleanupStatus: 'outputCleanupStatus',
+  outputCleanupAttempts: 'outputCleanupAttempts',
+  outputCleanupLastError: 'outputCleanupLastError',
+  outputCleanupRequestedAt: 'outputCleanupRequestedAt',
+  outputCleanupCompletedAt: 'outputCleanupCompletedAt'
+} as const
+
+export type JobAttemptScalarFieldEnum = (typeof JobAttemptScalarFieldEnum)[keyof typeof JobAttemptScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1015,6 +1224,48 @@ export type ListEnumArtifactCleanupStatusFieldRefInput<$PrismaModel> = FieldRefI
 
 
 /**
+ * Reference to a field of type 'PipelineJobType'
+ */
+export type EnumPipelineJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobType'>
+    
+
+
+/**
+ * Reference to a field of type 'PipelineJobType[]'
+ */
+export type ListEnumPipelineJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PipelineJobState'
+ */
+export type EnumPipelineJobStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobState'>
+    
+
+
+/**
+ * Reference to a field of type 'PipelineJobState[]'
+ */
+export type ListEnumPipelineJobStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PipelineJobState[]'>
+    
+
+
+/**
+ * Reference to a field of type 'JobAttemptState'
+ */
+export type EnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState'>
+    
+
+
+/**
+ * Reference to a field of type 'JobAttemptState[]'
+ */
+export type ListEnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1182,6 +1433,8 @@ export type GlobalOmitConfig = {
   videoSource?: Prisma.VideoSourceOmit
   sourceAuthorization?: Prisma.SourceAuthorizationOmit
   mediaArtifact?: Prisma.MediaArtifactOmit
+  pipelineJob?: Prisma.PipelineJobOmit
+  jobAttempt?: Prisma.JobAttemptOmit
 }
 
 /* Types for Logging */

@@ -10,6 +10,31 @@
 субагентов. Полный доступ и автономный режим не отменяют запрет. Точная
 формулировка закреплена в `AGENTS.md`.
 
+## Контрольная точка перед лимитом — 2026-09-09 14:01 UTC
+
+- Последний замер: 47% недельной квоты. Новые работы и делегирование
+  остановлены; оставшийся запас используется только для сохранения Git/Notion.
+- Upload и exact-source authorization приняты ранее. Manual cut работает
+  через API и браузер, реальные SIGKILL/Redis-down сценарии прошли.
+- **Manual cut: NOT ACCEPTED / WIP.** Независимый reviewer не нашёл открытых
+  HIGH/MEDIUM дефектов после исправлений, но остаются 8 обязательных сценариев.
+  Полный список и доказательства: `RECOVERY-MANUAL-CUT-REVIEW.md`.
+  Не начинать Stage 2 и не объявлять MVP готовым до закрытия этой матрицы.
+- Последний независимый прогон: manual-cut 9/9, media stream 10/10,
+  worker adapters/lifecycle 5/5, PostgreSQL 7/7 на отдельной временной базе;
+  база удалена после проверки. Format/lint/typecheck/build/OpenAPI прошли.
+  Full API integration 22/22 прошёл до добавления последнего isolated barrier.
+- Текущие API PID 770966/session 98837 и web session 60440, ports 3001/3000.
+  Worker image `613426ce265362aa076f69df71114de8f266d1358d0c5548c426f8abb1b36369`
+  healthy, default lease/heartbeat 120000/30000. Последний browser job
+  `dc6abaa6-e3b2-45f2-ad41-1bd67cdb2dd6` прошёл. Сервисы оставлены для локальной
+  проверки; при новой сессии проверить фактическое состояние процессов.
+- Все агенты завершили работу. Код сохраняется в recovery-ветку как WIP;
+  main не меняется. Не трогать пользовательские `.idea/` и root `package-lock.json`.
+- Следующий шаг: продолжить **только оставшиеся acceptance tests**, начиная с
+  deterministic authorization/claim и concurrent POST, затем оставшиеся строки
+  reviewer report. Существующие доказательства повторять только при изменениях.
+
 ## Восстановление на Linux — 2026-09-09, в работе
 
 - Рабочая папка: `/home/miray/Projects/ContentFactory`.
@@ -118,6 +143,25 @@
   `RECOVERY-MANUAL-CUT-MIGRATION-REPAIR.md`.
   API был остановлен на время операции; пауза retained writers снята после
   postchecks. Перед browser smoke проверить новый API и worker отдельно.
+- Нормальный API/browser cut smoke прошёл на worker image
+  `2c7e2df8656bd63da3ed195891df1820d1b15ebef4a34876b1c4f5247a1c5c09`:
+  два разных результата 1500/2500 ms, SHA/size совпадают с artifact,
+  replay без дубликата, conflict 409, out-of-bounds — controlled final failure.
+  Browser player/seek/create/reload/download без JS errors; скачанный MP4
+  1500 ms, H.264/AAC. Отчёт `RECOVERY-MANUAL-CUT-SMOKE.md`.
+  Первый run выявил MinIO policy только sources/_; DevOps добавил узкий
+  projects/_/cuts/*, проверил allow/deny и reprovision только minio-init.
+  Reconciler завершил шесть старых output cleanup; failed jobs сохранены.
+- API новый process PID 770966/session 98837; web после dependency install
+  перезапущен в session 60440. Worker активен, только Content Factory profile.
+  Независимый reviewer завершил crash/Redis-loss окно: SIGKILL после claim
+  восстановлен attempt2 с одним artifact; Redis-down POST сохранил QUEUED
+  без attempt, после восстановления выполнен один раз. SHA/duration/scratch
+  проверены. Все jobs terminal, worker defaults 120000/30000 восстановлены.
+  Финальный image `613426ce265362aa076f69df71114de8f266d1358d0c5548c426f8abb1b36369`
+  healthy, normal browser smoke повторён успешно. Full integration 22/22 PASS.
+  Review пока CONDITIONAL/NOT ACCEPTED: исполнитель добавляет недостающие
+  точные acceptance-barrier tests, обязательные пробелы не отменены.
 - Исходные untracked файлы владельца: `.idea/` и `package-lock.json`; сохранять.
 - Владелец разрешил автономную работу и субагентов, с остановкой на 50% квоты.
   Чтение через `codex app-server --stdio`, JSON-RPC `initialize`, затем
@@ -128,7 +172,7 @@
   Не расходовать reset credits автоматически. Способ через `app-server proxy`
   в этой среде не сработал; standalone stdio завершать после ответа.
   Локальная команда: `node tmp/recovery/read-quota.cjs`; последняя проверка
-  2026-09-09 13:18 UTC: 37% использовано. Скрипт в `tmp/`
+  2026-09-09 14:01 UTC: 47% использовано. Скрипт в `tmp/`
   не хранится в Git.
 
 ## Предыдущий handoff с Mac (исторические результаты)

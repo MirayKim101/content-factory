@@ -354,6 +354,7 @@ export type MediaArtifactWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
+  winningForJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
 }
 
 export type MediaArtifactOrderByWithRelationInput = {
@@ -380,6 +381,7 @@ export type MediaArtifactOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   source?: Prisma.VideoSourceOrderByWithRelationInput
+  winningForJob?: Prisma.PipelineJobOrderByWithRelationInput
 }
 
 export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
@@ -409,6 +411,7 @@ export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
+  winningForJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
 }, "id" | "objectKey">
 
 export type MediaArtifactOrderByWithAggregationInput = {
@@ -489,6 +492,7 @@ export type MediaArtifactCreateInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  winningForJob?: Prisma.PipelineJobCreateNestedOneWithoutWinningArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateInput = {
@@ -513,6 +517,7 @@ export type MediaArtifactUncheckedCreateInput = {
   recipeVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  winningForJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutWinningArtifactInput
 }
 
 export type MediaArtifactUpdateInput = {
@@ -537,6 +542,7 @@ export type MediaArtifactUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  winningForJob?: Prisma.PipelineJobUpdateOneWithoutWinningArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateInput = {
@@ -561,6 +567,7 @@ export type MediaArtifactUncheckedUpdateInput = {
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  winningForJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutWinningArtifactNestedInput
 }
 
 export type MediaArtifactCreateManyInput = {
@@ -727,6 +734,11 @@ export type MediaArtifactSumOrderByAggregateInput = {
   lineageSourceVersion?: Prisma.SortOrder
 }
 
+export type MediaArtifactNullableScalarRelationFilter = {
+  is?: Prisma.MediaArtifactWhereInput | null
+  isNot?: Prisma.MediaArtifactWhereInput | null
+}
+
 export type MediaArtifactCreateNestedManyWithoutProjectInput = {
   create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutProjectInput, Prisma.MediaArtifactUncheckedCreateWithoutProjectInput> | Prisma.MediaArtifactCreateWithoutProjectInput[] | Prisma.MediaArtifactUncheckedCreateWithoutProjectInput[]
   connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutProjectInput | Prisma.MediaArtifactCreateOrConnectWithoutProjectInput[]
@@ -823,6 +835,22 @@ export type EnumArtifactCleanupStatusFieldUpdateOperationsInput = {
   set?: $Enums.ArtifactCleanupStatus
 }
 
+export type MediaArtifactCreateNestedOneWithoutWinningForJobInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutWinningForJobInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneWithoutWinningForJobNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutWinningForJobInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutWinningForJobInput
+  disconnect?: Prisma.MediaArtifactWhereInput | boolean
+  delete?: Prisma.MediaArtifactWhereInput | boolean
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutWinningForJobInput, Prisma.MediaArtifactUpdateWithoutWinningForJobInput>, Prisma.MediaArtifactUncheckedUpdateWithoutWinningForJobInput>
+}
+
 export type MediaArtifactCreateWithoutProjectInput = {
   id: string
   role: $Enums.MediaArtifactRole
@@ -844,6 +872,7 @@ export type MediaArtifactCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  winningForJob?: Prisma.PipelineJobCreateNestedOneWithoutWinningArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutProjectInput = {
@@ -867,6 +896,7 @@ export type MediaArtifactUncheckedCreateWithoutProjectInput = {
   recipeVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  winningForJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutWinningArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutProjectInput = {
@@ -943,6 +973,7 @@ export type MediaArtifactCreateWithoutSourceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  winningForJob?: Prisma.PipelineJobCreateNestedOneWithoutWinningArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutSourceInput = {
@@ -966,6 +997,7 @@ export type MediaArtifactUncheckedCreateWithoutSourceInput = {
   recipeVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  winningForJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutWinningArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutSourceInput = {
@@ -992,6 +1024,118 @@ export type MediaArtifactUpdateWithWhereUniqueWithoutSourceInput = {
 export type MediaArtifactUpdateManyWithWhereWithoutSourceInput = {
   where: Prisma.MediaArtifactScalarWhereInput
   data: Prisma.XOR<Prisma.MediaArtifactUpdateManyMutationInput, Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceInput>
+}
+
+export type MediaArtifactCreateWithoutWinningForJobInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutWinningForJobInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type MediaArtifactCreateOrConnectWithoutWinningForJobInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
+}
+
+export type MediaArtifactUpsertWithoutWinningForJobInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutWinningForJobInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutWinningForJobInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutWinningForJobInput>
+}
+
+export type MediaArtifactUpdateWithoutWinningForJobInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutWinningForJobInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type MediaArtifactCreateManyProjectInput = {
@@ -1038,6 +1182,7 @@ export type MediaArtifactUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  winningForJob?: Prisma.PipelineJobUpdateOneWithoutWinningArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
@@ -1061,6 +1206,7 @@ export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  winningForJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutWinningArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateManyWithoutProjectInput = {
@@ -1130,6 +1276,7 @@ export type MediaArtifactUpdateWithoutSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  winningForJob?: Prisma.PipelineJobUpdateOneWithoutWinningArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
@@ -1153,6 +1300,7 @@ export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  winningForJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutWinningArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateManyWithoutSourceInput = {
@@ -1204,6 +1352,7 @@ export type MediaArtifactSelect<ExtArgs extends runtime.Types.Extensions.Interna
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  winningForJob?: boolean | Prisma.MediaArtifact$winningForJobArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
 export type MediaArtifactSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1286,6 +1435,7 @@ export type MediaArtifactOmit<ExtArgs extends runtime.Types.Extensions.InternalA
 export type MediaArtifactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  winningForJob?: boolean | Prisma.MediaArtifact$winningForJobArgs<ExtArgs>
 }
 export type MediaArtifactIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -1301,6 +1451,7 @@ export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.Inter
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
     source: Prisma.$VideoSourcePayload<ExtArgs>
+    winningForJob: Prisma.$PipelineJobPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1720,6 +1871,7 @@ export interface Prisma__MediaArtifactClient<T, Null = never, ExtArgs extends ru
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   source<T extends Prisma.VideoSourceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSourceDefaultArgs<ExtArgs>>): Prisma.Prisma__VideoSourceClient<runtime.Types.Result.GetResult<Prisma.$VideoSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  winningForJob<T extends Prisma.MediaArtifact$winningForJobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$winningForJobArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2168,6 +2320,25 @@ export type MediaArtifactDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many MediaArtifacts to delete.
    */
   limit?: number
+}
+
+/**
+ * MediaArtifact.winningForJob
+ */
+export type MediaArtifact$winningForJobArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PipelineJob
+   */
+  select?: Prisma.PipelineJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PipelineJob
+   */
+  omit?: Prisma.PipelineJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PipelineJobInclude<ExtArgs> | null
+  where?: Prisma.PipelineJobWhereInput
 }
 
 /**

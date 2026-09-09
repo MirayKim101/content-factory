@@ -1,6 +1,6 @@
 # Recovery task: Stage 1 manual horizontal cut
 
-- Status: approved contract; implementation pending
+- Status: implemented locally; independent recovery review in progress
 - Dependency: ADR-003 implemented and independently reviewed
 - Ownership: one vertical-slice implementer; independent reviewer required
 

@@ -239,7 +239,8 @@ export class PrismaProjectRepository implements ProjectRepository {
     });
     const source = project?.source;
     const artifact = project?.artifacts[0];
-    if (!project || !source || !artifact) return null;
+    if (!project || !source || !artifact || artifact.role !== "SOURCE")
+      return null;
     const authorization = await this.prisma.sourceAuthorization.findUnique({
       where: {
         sourceId_sourceVersion: {

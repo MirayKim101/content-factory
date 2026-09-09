@@ -71,6 +71,71 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/cut-jobs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CutsController_list"];
+    put?: never;
+    /** Persist and enqueue an accurate manual horizontal cut */
+    post: operations["CutsController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/cut-jobs/{jobId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CutsController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/cut-jobs/{jobId}/download": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CutsController_download"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head: operations["CutsController_headDownload"];
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/source/media": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CutsController_source"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head: operations["CutsController_headSource"];
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -129,6 +194,63 @@ export interface components {
        * @enum {string}
        */
       rightsConfirmed?: "true";
+    };
+    CutArtifactDto: {
+      /** @example video/mp4 */
+      contentType: string;
+      downloadUrl: string;
+      /** Format: uuid */
+      id: string;
+      sha256: string;
+      sizeBytes: string;
+    };
+    CutFailureDto: {
+      code: string;
+      message: string;
+    };
+    CutJobDto: {
+      /** Format: date-time */
+      admissionDeadlineAt: string;
+      artifact: components["schemas"]["CutArtifactDto"] | null;
+      attempts: number;
+      /** Format: date-time */
+      createdAt: string;
+      endMs: number;
+      failure: components["schemas"]["CutFailureDto"] | null;
+      /** Format: uuid */
+      id: string;
+      progress: components["schemas"]["CutProgressDto"] | null;
+      queueReason: string | null;
+      /** @example horizontal-cut-v1 */
+      recipeVersion: string;
+      revision: number;
+      /** Format: uuid */
+      sourceId: string;
+      sourceSha256: string;
+      sourceVersion: number;
+      stage: string;
+      startMs: number;
+      /** @enum {string} */
+      state:
+        | "QUEUED"
+        | "RUNNING"
+        | "FAILED_RETRYABLE"
+        | "SUCCEEDED"
+        | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CutJobPageDto: {
+      items: components["schemas"]["CutJobDto"][];
+      nextCursor: string | null;
+    };
+    CutProgressDto: {
+      /** @example 1000 */
+      current: string;
+      /** @example 4000 */
+      total: string;
+      /** @enum {string} */
+      unit: "BYTES" | "MILLISECONDS";
     };
     ErrorDetailDto: {
       /** @enum {string} */
@@ -401,6 +523,345 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
+      };
+    };
+  };
+  CutsController_list: {
+    parameters: {
+      query?: {
+        cursor?: string;
+        limit?: number;
+      };
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutJobPageDto"];
+        };
+      };
+    };
+  };
+  CutsController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutJobDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CutsController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        jobId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutJobDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CutsController_download: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description A single RFC 7233 bytes range. */
+        Range?: string;
+      };
+      path: {
+        jobId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Full ready cut stream. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Ready cut byte range. */
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Malformed, multiple, or unsatisfiable range. */
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CutsController_headDownload: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description A single RFC 7233 bytes range. */
+        Range?: string;
+      };
+      path: {
+        jobId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready cut metadata. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Ready cut range metadata. */
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Malformed, multiple, or unsatisfiable range. */
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CutsController_source: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description A single RFC 7233 bytes range. */
+        Range?: string;
+      };
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Full authorized source stream. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Authorized source byte range. */
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Malformed, multiple, or unsatisfiable range. */
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CutsController_headSource: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description A single RFC 7233 bytes range. */
+        Range?: string;
+      };
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Authorized source metadata. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Authorized source range metadata. */
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Malformed, multiple, or unsatisfiable range. */
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

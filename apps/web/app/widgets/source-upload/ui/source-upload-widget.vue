@@ -11,6 +11,7 @@ import {
 import { useSourceUpload } from "~/features/upload-source/model/use-source-upload";
 import { loadLastSourceGate } from "~/features/upload-source/model/last-source-gate-storage";
 import { createProjectsApi } from "~/shared/api/projects";
+import ManualCutWidget from "~/widgets/manual-cut/ui/manual-cut-widget.vue";
 const config = useRuntimeConfig();
 const projectsApi = createProjectsApi({
   apiBasePath: config.public.apiBasePath,
@@ -325,6 +326,11 @@ function formatDuration(seconds: number): string {
             </p>
           </template>
         </div>
+        <ManualCutWidget
+          v-if="result.authorization.status === 'CLEARED'"
+          :key="`${result.id}:${result.authorization.sourceVersion}:${result.authorization.sourceSha256}`"
+          :project-id="result.id"
+        />
       </div>
     </div>
   </section>

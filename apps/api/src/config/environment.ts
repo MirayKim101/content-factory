@@ -44,6 +44,12 @@ const API_ENVIRONMENT_KEYS = [
   "SOURCE_PENDING_STALE_AFTER_MS",
   "SOURCE_PENDING_RECONCILE_LIMIT",
   "SOURCE_PENDING_STARTUP_TIMEOUT_MS",
+  "REDIS_HOST",
+  "REDIS_PORT",
+  "REDIS_PASSWORD",
+  "CUT_QUEUE_PUBLISH_TIMEOUT_MS",
+  "CUT_ADMISSION_TIMEOUT_MS",
+  "CUT_MAX_ATTEMPTS",
 ] as const;
 
 function required(name: string): string {
@@ -100,6 +106,12 @@ export interface ApiEnvironment {
   reconcileStaleAfterMs: number;
   reconcileLimit: number;
   reconcileStartupTimeoutMs: number;
+  redisHost: string;
+  redisPort: number;
+  redisPassword?: string;
+  cutQueuePublishTimeoutMs: number;
+  cutAdmissionTimeoutMs: number;
+  cutMaxAttempts: number;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -153,5 +165,18 @@ export function apiEnvironment(): ApiEnvironment {
       1,
       60_000,
     ),
+    redisHost: process.env.REDIS_HOST?.trim() || "127.0.0.1",
+    redisPort: boundedInteger("REDIS_PORT", 6379, 1, 65_535),
+    ...(process.env.REDIS_PASSWORD?.trim()
+      ? { redisPassword: process.env.REDIS_PASSWORD.trim() }
+      : {}),
+    cutQueuePublishTimeoutMs: boundedInteger(
+      "CUT_QUEUE_PUBLISH_TIMEOUT_MS",
+      2_000,
+      100,
+      30_000,
+    ),
+    cutAdmissionTimeoutMs: positiveInteger("CUT_ADMISSION_TIMEOUT_MS", 900_000),
+    cutMaxAttempts: boundedInteger("CUT_MAX_ATTEMPTS", 3, 1, 10),
   };
 }

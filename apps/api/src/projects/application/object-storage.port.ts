@@ -21,4 +21,10 @@ export interface ObjectStorage {
     signal?: AbortSignal,
   ): Promise<StoredObject | null>;
   deleteObject(objectKey: string, signal?: AbortSignal): Promise<void>;
+  getObjectStream?(input: {
+    objectKey: string;
+    start?: number;
+    end?: number;
+    signal?: AbortSignal;
+  }): Promise<NodeJS.ReadableStream>;
 }

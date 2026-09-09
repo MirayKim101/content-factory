@@ -232,6 +232,7 @@ export type ProjectWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   source?: Prisma.XOR<Prisma.VideoSourceNullableScalarRelationFilter, Prisma.VideoSourceWhereInput> | null
   artifacts?: Prisma.MediaArtifactListRelationFilter
+  pipelineJobs?: Prisma.PipelineJobListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -248,6 +249,7 @@ export type ProjectOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   source?: Prisma.VideoSourceOrderByWithRelationInput
   artifacts?: Prisma.MediaArtifactOrderByRelationAggregateInput
+  pipelineJobs?: Prisma.PipelineJobOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -267,6 +269,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   source?: Prisma.XOR<Prisma.VideoSourceNullableScalarRelationFilter, Prisma.VideoSourceWhereInput> | null
   artifacts?: Prisma.MediaArtifactListRelationFilter
+  pipelineJobs?: Prisma.PipelineJobListRelationFilter
 }, "id" | "idempotencyKey">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -317,6 +320,7 @@ export type ProjectCreateInput = {
   updatedAt?: Date | string
   source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -333,6 +337,7 @@ export type ProjectUncheckedCreateInput = {
   updatedAt?: Date | string
   source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -349,6 +354,7 @@ export type ProjectUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -365,6 +371,7 @@ export type ProjectUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -504,6 +511,20 @@ export type ProjectUpdateOneRequiredWithoutArtifactsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutArtifactsInput, Prisma.ProjectUpdateWithoutArtifactsInput>, Prisma.ProjectUncheckedUpdateWithoutArtifactsInput>
 }
 
+export type ProjectCreateNestedOneWithoutPipelineJobsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutPipelineJobsInput, Prisma.ProjectUncheckedCreateWithoutPipelineJobsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutPipelineJobsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutPipelineJobsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutPipelineJobsInput, Prisma.ProjectUncheckedCreateWithoutPipelineJobsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutPipelineJobsInput
+  upsert?: Prisma.ProjectUpsertWithoutPipelineJobsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutPipelineJobsInput, Prisma.ProjectUpdateWithoutPipelineJobsInput>, Prisma.ProjectUncheckedUpdateWithoutPipelineJobsInput>
+}
+
 export type ProjectCreateWithoutSourceInput = {
   id: string
   idempotencyKey: string
@@ -517,6 +538,7 @@ export type ProjectCreateWithoutSourceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutSourceInput = {
@@ -532,6 +554,7 @@ export type ProjectUncheckedCreateWithoutSourceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutSourceInput = {
@@ -563,6 +586,7 @@ export type ProjectUpdateWithoutSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutSourceInput = {
@@ -578,6 +602,7 @@ export type ProjectUncheckedUpdateWithoutSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutArtifactsInput = {
@@ -593,6 +618,7 @@ export type ProjectCreateWithoutArtifactsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutArtifactsInput = {
@@ -608,6 +634,7 @@ export type ProjectUncheckedCreateWithoutArtifactsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutArtifactsInput = {
@@ -639,6 +666,7 @@ export type ProjectUpdateWithoutArtifactsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutArtifactsInput = {
@@ -654,6 +682,87 @@ export type ProjectUncheckedUpdateWithoutArtifactsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutPipelineJobsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutPipelineJobsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutPipelineJobsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutPipelineJobsInput, Prisma.ProjectUncheckedCreateWithoutPipelineJobsInput>
+}
+
+export type ProjectUpsertWithoutPipelineJobsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutPipelineJobsInput, Prisma.ProjectUncheckedUpdateWithoutPipelineJobsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutPipelineJobsInput, Prisma.ProjectUncheckedCreateWithoutPipelineJobsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutPipelineJobsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutPipelineJobsInput, Prisma.ProjectUncheckedUpdateWithoutPipelineJobsInput>
+}
+
+export type ProjectUpdateWithoutPipelineJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutPipelineJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 
@@ -663,10 +772,12 @@ export type ProjectUncheckedUpdateWithoutArtifactsInput = {
 
 export type ProjectCountOutputType = {
   artifacts: number
+  pipelineJobs: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   artifacts?: boolean | ProjectCountOutputTypeCountArtifactsArgs
+  pipelineJobs?: boolean | ProjectCountOutputTypeCountPipelineJobsArgs
 }
 
 /**
@@ -686,6 +797,13 @@ export type ProjectCountOutputTypeCountArtifactsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.MediaArtifactWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountPipelineJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PipelineJobWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -701,6 +819,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   source?: boolean | Prisma.Project$sourceArgs<ExtArgs>
   artifacts?: boolean | Prisma.Project$artifactsArgs<ExtArgs>
+  pipelineJobs?: boolean | Prisma.Project$pipelineJobsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -750,6 +869,7 @@ export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   source?: boolean | Prisma.Project$sourceArgs<ExtArgs>
   artifacts?: boolean | Prisma.Project$artifactsArgs<ExtArgs>
+  pipelineJobs?: boolean | Prisma.Project$pipelineJobsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -760,6 +880,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   objects: {
     source: Prisma.$VideoSourcePayload<ExtArgs> | null
     artifacts: Prisma.$MediaArtifactPayload<ExtArgs>[]
+    pipelineJobs: Prisma.$PipelineJobPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1169,6 +1290,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   readonly [Symbol.toStringTag]: "PrismaPromise"
   source<T extends Prisma.Project$sourceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$sourceArgs<ExtArgs>>): Prisma.Prisma__VideoSourceClient<runtime.Types.Result.GetResult<Prisma.$VideoSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   artifacts<T extends Prisma.Project$artifactsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$artifactsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MediaArtifactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pipelineJobs<T extends Prisma.Project$pipelineJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$pipelineJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1642,6 +1764,30 @@ export type Project$artifactsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.MediaArtifactScalarFieldEnum | Prisma.MediaArtifactScalarFieldEnum[]
+}
+
+/**
+ * Project.pipelineJobs
+ */
+export type Project$pipelineJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PipelineJob
+   */
+  select?: Prisma.PipelineJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PipelineJob
+   */
+  omit?: Prisma.PipelineJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PipelineJobInclude<ExtArgs> | null
+  where?: Prisma.PipelineJobWhereInput
+  orderBy?: Prisma.PipelineJobOrderByWithRelationInput | Prisma.PipelineJobOrderByWithRelationInput[]
+  cursor?: Prisma.PipelineJobWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PipelineJobScalarFieldEnum | Prisma.PipelineJobScalarFieldEnum[]
 }
 
 /**

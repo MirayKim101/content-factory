@@ -1,0 +1,8 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": { "cache": false },
+    "lint": { "cache": false },
+    "typecheck": { "cache": false }
+  }
+}

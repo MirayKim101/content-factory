@@ -27,6 +27,7 @@ enum MediaArtifactStatus {
 
 enum MediaArtifactRole {
   SOURCE
+  HORIZONTAL_CUT
 }
 
 enum ArtifactCleanupStatus {
@@ -45,6 +46,26 @@ enum SourceAuthorizationBasis {
   LEGACY_ATTESTATION
 }
 
+enum PipelineJobType {
+  HORIZONTAL_CUT
+}
+
+enum PipelineJobState {
+  QUEUED
+  RUNNING
+  FAILED_RETRYABLE
+  SUCCEEDED
+  FAILED_FINAL
+}
+
+enum JobAttemptState {
+  RUNNING
+  FAILED_RETRYABLE
+  FAILED_FINAL
+  SUCCEEDED
+  ABANDONED
+}
+
 model Project {
   id                       String          @id @db.Uuid
   idempotencyKey           String          @unique
@@ -59,6 +80,7 @@ model Project {
   updatedAt                DateTime        @updatedAt
   source                   VideoSource?
   artifacts                MediaArtifact[]
+  pipelineJobs             PipelineJob[]
 }
 
 model VideoSource {
@@ -75,6 +97,7 @@ model VideoSource {
   updatedAt        DateTime              @updatedAt
   artifacts        MediaArtifact[]
   authorizations   SourceAuthorization[]
+  pipelineJobs     PipelineJob[]
 }
 
 model SourceAuthorization {
@@ -117,7 +140,74 @@ model MediaArtifact {
   recipeVersion        String
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+  winningForJob        PipelineJob?          @relation("WinningArtifact")
 
   @@index([status, createdAt])
   @@index([cleanupStatus, updatedAt])
+}
+
+model PipelineJob {
+  id                  String           @id @db.Uuid
+  projectId           String           @db.Uuid
+  project             Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId            String           @db.Uuid
+  source              VideoSource      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  type                PipelineJobType
+  state               PipelineJobState @default(QUEUED)
+  sourceVersion       Int
+  sourceSha256        String           @db.Char(64)
+  startMs             Int
+  endMs               Int
+  recipeVersion       String
+  idempotencyKey      String
+  requestFingerprint  String
+  revision            Int              @default(0)
+  maxAttempts         Int              @default(3)
+  attemptCount        Int              @default(0)
+  currentAttemptId    String?          @db.Uuid
+  nextAttemptAt       DateTime         @default(now())
+  admissionDeadlineAt DateTime
+  stage               String           @default("QUEUED")
+  progressCurrent     BigInt?
+  progressTotal       BigInt?
+  progressUnit        String?
+  queueReason         String?
+  failureCode         String?
+  failureMessage      String?
+  winningArtifactId   String?          @unique @db.Uuid
+  winningArtifact     MediaArtifact?   @relation("WinningArtifact", fields: [winningArtifactId], references: [id], onDelete: SetNull)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  attempts            JobAttempt[]
+
+  @@unique([projectId, idempotencyKey])
+  @@index([projectId, createdAt, id])
+  @@index([state, nextAttemptAt])
+}
+
+model JobAttempt {
+  id                       String                @id @db.Uuid
+  jobId                    String                @db.Uuid
+  job                      PipelineJob           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  attemptNumber            Int
+  state                    JobAttemptState       @default(RUNNING)
+  claimRevision            Int
+  leaseToken               String                @unique @db.Uuid
+  startedAt                DateTime              @default(now())
+  heartbeatAt              DateTime
+  leaseExpiresAt           DateTime
+  finishedAt               DateTime?
+  reservedScratchBytes     BigInt
+  failureCode              String?
+  failureMessage           String?
+  outputObjectKey          String?               @unique
+  outputCleanupStatus      ArtifactCleanupStatus @default(NOT_REQUIRED)
+  outputCleanupAttempts    Int                   @default(0)
+  outputCleanupLastError   String?
+  outputCleanupRequestedAt DateTime?
+  outputCleanupCompletedAt DateTime?
+
+  @@unique([jobId, attemptNumber])
+  @@index([state, leaseExpiresAt])
+  @@index([outputCleanupStatus, outputCleanupRequestedAt])
 }

@@ -145,8 +145,36 @@ curl --fail http://127.0.0.1:9000/minio/health/ready
    сохраняет исходное время подтверждения. Перезагрузка страницы восстанавливает
    последний исходник и читает допуск с сервера. Неверная версия/checksum даёт
    безопасный `409 SOURCE_VERSION_MISMATCH`. Сам статус `SOURCE_READY` не
-   является допуском. См. ADR-003; playback/cut/download появятся следующим
-   отдельным срезом и должны проверять этот допуск.
+   является допуском. См. ADR-003; playback, cut и download проверяют именно
+   эту точную разрешённую версию исходника.
+
+## Ручная нарезка Stage 1
+
+После миграции и подтверждения прав запусти worker по инструкции
+[worker-runtime.md](worker-runtime.md). В карточке проекта плеер позволяет
+поставить начало и конец по текущей позиции либо ввести точный timecode. Кнопка
+создания только сохраняет задание; FFmpeg выполняется отдельным worker.
+
+Статус и измеримый прогресс восстанавливаются из PostgreSQL после перезагрузки
+страницы. Готовый MP4 скачивается из списка заданий. Повтор запроса с тем же
+диапазоном после неопределённой сетевой ошибки использует тот же ключ и не
+создаёт второй job. Выход за длительность исходника завершается контролируемой
+ошибкой без повторов.
+
+Проверка пакетов и REST-контракта из корня проекта:
+
+```sh
+corepack pnpm --filter @content-factory/api db:generate
+corepack pnpm --filter @content-factory/prisma-client build
+corepack pnpm --filter @content-factory/manual-cut build
+corepack pnpm --filter @content-factory/worker build
+corepack pnpm --filter @content-factory/api check:openapi
+```
+
+Ожидаемый результат: все команды завершаются с кодом `0`, а OpenAPI не имеет
+drift. При rollback сначала останови только worker, чтобы прекратить новые
+claim. Сохрани строки job/attempt/artifact для аудита; additive migration и
+готовые объекты не удаляй.
 
 ### Что API гарантирует на этом шаге
 

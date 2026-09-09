@@ -1,0 +1,2 @@
+export const CUT_JOB_REPOSITORY = Symbol("CUT_JOB_REPOSITORY");
+export const CUT_QUEUE_PUBLISHER = Symbol("CUT_QUEUE_PUBLISHER");

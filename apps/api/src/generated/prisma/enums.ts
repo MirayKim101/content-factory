@@ -37,7 +37,8 @@ export type MediaArtifactStatus = (typeof MediaArtifactStatus)[keyof typeof Medi
 
 
 export const MediaArtifactRole = {
-  SOURCE: 'SOURCE'
+  SOURCE: 'SOURCE',
+  HORIZONTAL_CUT: 'HORIZONTAL_CUT'
 } as const
 
 export type MediaArtifactRole = (typeof MediaArtifactRole)[keyof typeof MediaArtifactRole]
@@ -66,3 +67,32 @@ export const SourceAuthorizationBasis = {
 } as const
 
 export type SourceAuthorizationBasis = (typeof SourceAuthorizationBasis)[keyof typeof SourceAuthorizationBasis]
+
+
+export const PipelineJobType = {
+  HORIZONTAL_CUT: 'HORIZONTAL_CUT'
+} as const
+
+export type PipelineJobType = (typeof PipelineJobType)[keyof typeof PipelineJobType]
+
+
+export const PipelineJobState = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  FAILED_RETRYABLE: 'FAILED_RETRYABLE',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type PipelineJobState = (typeof PipelineJobState)[keyof typeof PipelineJobState]
+
+
+export const JobAttemptState = {
+  RUNNING: 'RUNNING',
+  FAILED_RETRYABLE: 'FAILED_RETRYABLE',
+  FAILED_FINAL: 'FAILED_FINAL',
+  SUCCEEDED: 'SUCCEEDED',
+  ABANDONED: 'ABANDONED'
+} as const
+
+export type JobAttemptState = (typeof JobAttemptState)[keyof typeof JobAttemptState]

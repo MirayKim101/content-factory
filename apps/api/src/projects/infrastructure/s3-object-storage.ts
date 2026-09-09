@@ -1,7 +1,9 @@
 import { createReadStream } from "node:fs";
+import type { Readable } from "node:stream";
 
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadBucketCommand,
   HeadObjectCommand,
   S3Client,
@@ -100,6 +102,7 @@ export class S3ObjectStorage
     const abortFromCaller = (): void =>
       abortController.abort(input.signal?.reason);
     input.signal?.addEventListener("abort", abortFromCaller, { once: true });
+    if (input.signal?.aborted) abortFromCaller();
     try {
       const upload = new Upload({
         client: this.client,
@@ -158,6 +161,27 @@ export class S3ObjectStorage
       }),
       { abortSignal: this.operationSignal(signal) },
     );
+  }
+
+  async getObjectStream(input: {
+    objectKey: string;
+    start?: number;
+    end?: number;
+    signal?: AbortSignal;
+  }): Promise<Readable> {
+    const result = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.config.sourceBucket,
+        Key: input.objectKey,
+        ...(input.start === undefined
+          ? {}
+          : { Range: `bytes=${input.start}-${input.end ?? ""}` }),
+      }),
+      { abortSignal: this.operationSignal(input.signal) },
+    );
+    if (!result.Body || !("pipe" in result.Body))
+      throw new Error("S3_OBJECT_STREAM_UNAVAILABLE");
+    return result.Body as Readable;
   }
 
   private operationSignal(signal?: AbortSignal): AbortSignal {

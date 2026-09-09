@@ -73,6 +73,44 @@ describe("authoritative OpenAPI export", () => {
     ).toEqual(
       expect.arrayContaining(["basis", "confirmedAt", "declarationVersion"]),
     );
+    for (const [path, methods] of Object.entries({
+      "/api/v1/projects/{projectId}/cut-jobs": ["get", "post"],
+      "/api/v1/projects/{projectId}/cut-jobs/{jobId}": ["get"],
+      "/api/v1/projects/{projectId}/source/media": ["get", "head"],
+      "/api/v1/projects/{projectId}/cut-jobs/{jobId}/download": ["get", "head"],
+    })) {
+      for (const method of methods) {
+        const operation = document.paths[path][method];
+        expect(operation.parameters).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              in: "path",
+              name: "projectId",
+              required: true,
+            }),
+          ]),
+        );
+      }
+    }
+    for (const path of [
+      "/api/v1/projects/{projectId}/source/media",
+      "/api/v1/projects/{projectId}/cut-jobs/{jobId}/download",
+    ]) {
+      for (const method of ["get", "head"]) {
+        const operation = document.paths[path][method];
+        expect(operation.parameters).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ in: "header", name: "Range" }),
+          ]),
+        );
+        expect(Object.keys(operation.responses)).toEqual(
+          expect.arrayContaining(["200", "206", "416"]),
+        );
+      }
+    }
+    expect(document.components.schemas.CutJobPageDto.required).toContain(
+      "nextCursor",
+    );
     expect(() =>
       assertArtifactMatches(first, second, "OpenAPI JSON"),
     ).not.toThrow();

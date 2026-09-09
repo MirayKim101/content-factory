@@ -1,0 +1,63 @@
+# The worker image builds from the repository root. Start closed so the Docker
+# daemon receives only the files required to build the worker runtime.
+*
+
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.base.json
+
+!apps/
+!apps/worker/
+!apps/worker/package.json
+!apps/worker/tsconfig.json
+!apps/worker/tsconfig.build.json
+!apps/worker/src/
+!apps/worker/src/**
+
+!infrastructure/
+!infrastructure/worker/
+!infrastructure/worker/Dockerfile
+!infrastructure/worker/entrypoint.sh
+
+!packages/
+!packages/manual-cut/
+!packages/manual-cut/package.json
+!packages/manual-cut/tsconfig.json
+!packages/manual-cut/tsconfig.build.json
+!packages/manual-cut/src/
+!packages/manual-cut/src/**
+!packages/prisma-client/
+!packages/prisma-client/package.json
+!packages/prisma-client/tsconfig.json
+
+# This is the sole checked-in generated Prisma source. The neutral package
+# compiles it into its own dist directory during the image build.
+!apps/api/
+!apps/api/src/
+!apps/api/src/generated/
+!apps/api/src/generated/prisma/
+!apps/api/src/generated/prisma/**
+
+# Keep protected and local-only names excluded even if a future allow rule is
+# widened. Patterns cover root-level and nested names case-insensitively.
+.env
+.env.*
+**/.env
+**/.env.*
+.git
+.git/**
+**/.git
+**/.git/**
+.idea
+.idea/**
+**/.idea
+**/.idea/**
+[Ss][Ee][Aa][Nn][Oo][Vv][Aa]
+[Ss][Ee][Aa][Nn][Oo][Vv][Aa]/**
+**/[Ss][Ee][Aa][Nn][Oo][Vv][Aa]
+**/[Ss][Ee][Aa][Nn][Oo][Vv][Aa]/**
+[Dd][Oo][Cc][Kk][Ee][Rr][Ss][Ee][Rr][Vv][Ee][Rr]
+[Dd][Oo][Cc][Kk][Ee][Rr][Ss][Ee][Rr][Vv][Ee][Rr]/**
+**/[Dd][Oo][Cc][Kk][Ee][Rr][Ss][Ee][Rr][Vv][Ee][Rr]
+**/[Dd][Oo][Cc][Kk][Ee][Rr][Ss][Ee][Rr][Vv][Ee][Rr]/**

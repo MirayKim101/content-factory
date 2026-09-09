@@ -61,3 +61,13 @@ export type SourceAuthorization = Prisma.SourceAuthorizationModel
  * 
  */
 export type MediaArtifact = Prisma.MediaArtifactModel
+/**
+ * Model PipelineJob
+ * 
+ */
+export type PipelineJob = Prisma.PipelineJobModel
+/**
+ * Model JobAttempt
+ * 
+ */
+export type JobAttempt = Prisma.JobAttemptModel

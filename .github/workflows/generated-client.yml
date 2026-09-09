@@ -1,0 +1,61 @@
+name: Generated Prisma client
+
+on:
+  pull_request:
+    paths:
+      - "apps/api/**"
+      - "apps/worker/**"
+      - "packages/prisma-client/**"
+      - "packages/manual-cut/**"
+      - "pnpm-lock.yaml"
+      - "package.json"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - ".github/workflows/generated-client.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generated-client:
+    name: Verify generated Prisma boundary
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.15.0
+
+      - name: Install locked dependencies
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Regenerate the sole Prisma source output
+        run: pnpm --filter @content-factory/api db:generate
+        env:
+          # Prisma config validates its datasource URL even though generate does
+          # not connect to PostgreSQL. These are deliberately inert CI values.
+          POSTGRES_DB: generated_client_check
+          POSTGRES_USER: generated_client_check
+          POSTGRES_PASSWORD: generated_client_check
+
+      - name: Fail on generated source drift, including untracked files
+        run: |
+          git diff --exit-code -- apps/api/src/generated/prisma
+          test -z "$(git ls-files --others --exclude-standard -- apps/api/src/generated/prisma)"
+
+      - name: Typecheck and build the generated-client dependents
+        run: |
+          pnpm --filter @content-factory/prisma-client typecheck
+          pnpm --filter @content-factory/prisma-client build
+          pnpm --filter @content-factory/manual-cut typecheck
+          pnpm --filter @content-factory/manual-cut build
+          pnpm --filter @content-factory/api typecheck
+          pnpm --filter @content-factory/api build
+          pnpm --filter @content-factory/worker typecheck
+          pnpm --filter @content-factory/worker build

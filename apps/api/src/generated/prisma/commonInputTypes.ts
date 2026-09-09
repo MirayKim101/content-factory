@@ -335,6 +335,111 @@ export type EnumArtifactCleanupStatusWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumArtifactCleanupStatusFilter<$PrismaModel>
 }
 
+export type EnumPipelineJobTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobType | Prisma.EnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobTypeFilter<$PrismaModel> | $Enums.PipelineJobType
+}
+
+export type EnumPipelineJobStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobState | Prisma.EnumPipelineJobStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobStateFilter<$PrismaModel> | $Enums.PipelineJobState
+}
+
+export type UuidNullableFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  mode?: Prisma.QueryMode
+  not?: Prisma.NestedUuidNullableFilter<$PrismaModel> | string | null
+}
+
+export type BigIntNullableFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null
+}
+
+export type EnumPipelineJobTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobType | Prisma.EnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobTypeWithAggregatesFilter<$PrismaModel> | $Enums.PipelineJobType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPipelineJobTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPipelineJobTypeFilter<$PrismaModel>
+}
+
+export type EnumPipelineJobStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobState | Prisma.EnumPipelineJobStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobStateWithAggregatesFilter<$PrismaModel> | $Enums.PipelineJobState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPipelineJobStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPipelineJobStateFilter<$PrismaModel>
+}
+
+export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  mode?: Prisma.QueryMode
+  not?: Prisma.NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
+}
+
+export type BigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedBigIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedBigIntNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedBigIntNullableFilter<$PrismaModel>
+}
+
+export type EnumJobAttemptStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobAttemptState | Prisma.EnumJobAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel> | $Enums.JobAttemptState
+}
+
+export type EnumJobAttemptStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobAttemptState | Prisma.EnumJobAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobAttemptStateWithAggregatesFilter<$PrismaModel> | $Enums.JobAttemptState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -665,6 +770,120 @@ export type NestedEnumArtifactCleanupStatusWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumArtifactCleanupStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumArtifactCleanupStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumPipelineJobTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobType | Prisma.EnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobTypeFilter<$PrismaModel> | $Enums.PipelineJobType
+}
+
+export type NestedEnumPipelineJobStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobState | Prisma.EnumPipelineJobStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobStateFilter<$PrismaModel> | $Enums.PipelineJobState
+}
+
+export type NestedUuidNullableFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedUuidNullableFilter<$PrismaModel> | string | null
+}
+
+export type NestedBigIntNullableFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBigIntNullableFilter<$PrismaModel> | bigint | number | null
+}
+
+export type NestedEnumPipelineJobTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobType | Prisma.EnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobType[] | Prisma.ListEnumPipelineJobTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobTypeWithAggregatesFilter<$PrismaModel> | $Enums.PipelineJobType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPipelineJobTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPipelineJobTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumPipelineJobStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PipelineJobState | Prisma.EnumPipelineJobStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PipelineJobState[] | Prisma.ListEnumPipelineJobStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPipelineJobStateWithAggregatesFilter<$PrismaModel> | $Enums.PipelineJobState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPipelineJobStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPipelineJobStateFilter<$PrismaModel>
+}
+
+export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  notIn?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  lt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  lte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gt?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  gte?: string | Prisma.StringFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedUuidNullableWithAggregatesFilter<$PrismaModel> | string | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
+}
+
+export type NestedBigIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel> | null
+  in?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  notIn?: bigint[] | number[] | Prisma.ListBigIntFieldRefInput<$PrismaModel> | null
+  lt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  lte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gt?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  gte?: bigint | number | Prisma.BigIntFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBigIntNullableWithAggregatesFilter<$PrismaModel> | bigint | number | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _avg?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+  _sum?: Prisma.NestedBigIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedBigIntNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedBigIntNullableFilter<$PrismaModel>
+}
+
+export type NestedFloatNullableFilter<$PrismaModel = never> = {
+  equals?: number | Prisma.FloatFieldRefInput<$PrismaModel> | null
+  in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  notIn?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel> | null
+  lt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  lte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedFloatNullableFilter<$PrismaModel> | number | null
+}
+
+export type NestedEnumJobAttemptStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobAttemptState | Prisma.EnumJobAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel> | $Enums.JobAttemptState
+}
+
+export type NestedEnumJobAttemptStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.JobAttemptState | Prisma.EnumJobAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJobAttemptStateWithAggregatesFilter<$PrismaModel> | $Enums.JobAttemptState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumJobAttemptStateFilter<$PrismaModel>
 }
 
 

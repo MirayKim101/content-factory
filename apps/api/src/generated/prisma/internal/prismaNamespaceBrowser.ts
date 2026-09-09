@@ -54,7 +54,9 @@ export const ModelName = {
   Project: 'Project',
   VideoSource: 'VideoSource',
   SourceAuthorization: 'SourceAuthorization',
-  MediaArtifact: 'MediaArtifact'
+  MediaArtifact: 'MediaArtifact',
+  PipelineJob: 'PipelineJob',
+  JobAttempt: 'JobAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -146,6 +148,65 @@ export const MediaArtifactScalarFieldEnum = {
 } as const
 
 export type MediaArtifactScalarFieldEnum = (typeof MediaArtifactScalarFieldEnum)[keyof typeof MediaArtifactScalarFieldEnum]
+
+
+export const PipelineJobScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  type: 'type',
+  state: 'state',
+  sourceVersion: 'sourceVersion',
+  sourceSha256: 'sourceSha256',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  recipeVersion: 'recipeVersion',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  revision: 'revision',
+  maxAttempts: 'maxAttempts',
+  attemptCount: 'attemptCount',
+  currentAttemptId: 'currentAttemptId',
+  nextAttemptAt: 'nextAttemptAt',
+  admissionDeadlineAt: 'admissionDeadlineAt',
+  stage: 'stage',
+  progressCurrent: 'progressCurrent',
+  progressTotal: 'progressTotal',
+  progressUnit: 'progressUnit',
+  queueReason: 'queueReason',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  winningArtifactId: 'winningArtifactId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+
+
+export const JobAttemptScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  claimRevision: 'claimRevision',
+  leaseToken: 'leaseToken',
+  startedAt: 'startedAt',
+  heartbeatAt: 'heartbeatAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  finishedAt: 'finishedAt',
+  reservedScratchBytes: 'reservedScratchBytes',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  outputObjectKey: 'outputObjectKey',
+  outputCleanupStatus: 'outputCleanupStatus',
+  outputCleanupAttempts: 'outputCleanupAttempts',
+  outputCleanupLastError: 'outputCleanupLastError',
+  outputCleanupRequestedAt: 'outputCleanupRequestedAt',
+  outputCleanupCompletedAt: 'outputCleanupCompletedAt'
+} as const
+
+export type JobAttemptScalarFieldEnum = (typeof JobAttemptScalarFieldEnum)[keyof typeof JobAttemptScalarFieldEnum]
 
 
 export const SortOrder = {

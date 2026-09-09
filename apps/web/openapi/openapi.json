@@ -142,6 +142,188 @@
         "required": ["name", "file"],
         "type": "object"
       },
+      "CutArtifactDto": {
+        "properties": {
+          "contentType": {
+            "example": "video/mp4",
+            "type": "string"
+          },
+          "downloadUrl": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "sizeBytes", "sha256", "contentType", "downloadUrl"],
+        "type": "object"
+      },
+      "CutFailureDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "CutJobDto": {
+        "properties": {
+          "admissionDeadlineAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "artifact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CutArtifactDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "attempts": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "endMs": {
+            "type": "number"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CutFailureDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "progress": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CutProgressDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "queueReason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "recipeVersion": {
+            "example": "horizontal-cut-v1",
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceSha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "type": "number"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "startMs": {
+            "type": "number"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "RUNNING",
+              "FAILED_RETRYABLE",
+              "SUCCEEDED",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sourceId",
+          "sourceVersion",
+          "sourceSha256",
+          "startMs",
+          "endMs",
+          "state",
+          "stage",
+          "progress",
+          "attempts",
+          "queueReason",
+          "admissionDeadlineAt",
+          "failure",
+          "recipeVersion",
+          "revision",
+          "artifact",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "CutJobPageDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CutJobDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "CutProgressDto": {
+        "properties": {
+          "current": {
+            "example": "1000",
+            "type": "string"
+          },
+          "total": {
+            "example": "4000",
+            "type": "string"
+          },
+          "unit": {
+            "enum": ["BYTES", "MILLISECONDS"],
+            "type": "string"
+          }
+        },
+        "required": ["current", "total", "unit"],
+        "type": "object"
+      },
       "ErrorDetailDto": {
         "properties": {
           "code": {
@@ -555,6 +737,462 @@
         },
         "summary": "Confirm rights for the exact stored source version",
         "tags": ["projects"]
+      }
+    },
+    "/api/v1/projects/{projectId}/cut-jobs": {
+      "get": {
+        "operationId": "CutsController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CutJobPageDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["manual cuts"]
+      },
+      "post": {
+        "operationId": "CutsController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CutJobDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Persist and enqueue an accurate manual horizontal cut",
+        "tags": ["manual cuts"]
+      }
+    },
+    "/api/v1/projects/{projectId}/cut-jobs/{jobId}": {
+      "get": {
+        "operationId": "CutsController_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CutJobDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["manual cuts"]
+      }
+    },
+    "/api/v1/projects/{projectId}/cut-jobs/{jobId}/download": {
+      "get": {
+        "operationId": "CutsController_download",
+        "parameters": [
+          {
+            "description": "A single RFC 7233 bytes range.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Full ready cut stream."
+          },
+          "206": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Ready cut byte range."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "416": {
+            "description": "Malformed, multiple, or unsatisfiable range."
+          }
+        },
+        "tags": ["manual cuts"]
+      },
+      "head": {
+        "operationId": "CutsController_headDownload",
+        "parameters": [
+          {
+            "description": "A single RFC 7233 bytes range.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ready cut metadata."
+          },
+          "206": {
+            "description": "Ready cut range metadata."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "416": {
+            "description": "Malformed, multiple, or unsatisfiable range."
+          }
+        },
+        "tags": ["manual cuts"]
+      }
+    },
+    "/api/v1/projects/{projectId}/source/media": {
+      "get": {
+        "operationId": "CutsController_source",
+        "parameters": [
+          {
+            "description": "A single RFC 7233 bytes range.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Full authorized source stream."
+          },
+          "206": {
+            "content": {
+              "video/mp4": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Authorized source byte range."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "416": {
+            "description": "Malformed, multiple, or unsatisfiable range."
+          }
+        },
+        "tags": ["manual cuts"]
+      },
+      "head": {
+        "operationId": "CutsController_headSource",
+        "parameters": [
+          {
+            "description": "A single RFC 7233 bytes range.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized source metadata."
+          },
+          "206": {
+            "description": "Authorized source range metadata."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "416": {
+            "description": "Malformed, multiple, or unsatisfiable range."
+          }
+        },
+        "tags": ["manual cuts"]
       }
     }
   },
