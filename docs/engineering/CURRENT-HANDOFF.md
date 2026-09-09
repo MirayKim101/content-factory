@@ -30,6 +30,10 @@
   PostgreSQL, Redis и MinIO — healthy, minio-init завершился с кодом 0.
   Обе существующие миграции успешно применены. Данные с Mac не переносились.
 - Текущая рабочая ветка: `recovery/linux-mvp-20260909`.
+  В origin сохранены `0b814b9` (upload progress), `e733847` (ADR-003) и
+  `6911369` (media runtime). Approved manual-cut contract сохранён локально
+  в `e60b4ca`: `docs/engineering/RECOVERY-MANUAL-CUT.md`; его реализация
+  начинается только после независимой приёмки authorization.
 - API был проверен на `127.0.0.1:3001`, затем намеренно остановлен перед
   миграцией authorization; проверка health вернула connection refused.
   Web остаётся на `127.0.0.1:3000`, но загрузка недоступна до запуска нового API.
@@ -69,7 +73,7 @@
   Не расходовать reset credits автоматически. Способ через `app-server proxy`
   в этой среде не сработал; standalone stdio завершать после ответа.
   Локальная команда: `node tmp/recovery/read-quota.cjs`; последняя проверка
-  перед authorization implementation: 19% использовано. Скрипт в `tmp/`
+  2026-09-09 12:00 UTC: 23% использовано. Скрипт в `tmp/`
   не хранится в Git.
 
 ## Предыдущий handoff с Mac (исторические результаты)
