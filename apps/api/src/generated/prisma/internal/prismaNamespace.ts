@@ -399,6 +399,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   Project: 'Project',
   VideoSource: 'VideoSource',
+  SourceAuthorization: 'SourceAuthorization',
   MediaArtifact: 'MediaArtifact'
 } as const
 
@@ -415,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "mediaArtifact"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -567,6 +568,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SourceAuthorization: {
+      payload: Prisma.$SourceAuthorizationPayload<ExtArgs>
+      fields: Prisma.SourceAuthorizationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SourceAuthorizationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SourceAuthorizationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>
+        }
+        findFirst: {
+          args: Prisma.SourceAuthorizationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SourceAuthorizationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>
+        }
+        findMany: {
+          args: Prisma.SourceAuthorizationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>[]
+        }
+        create: {
+          args: Prisma.SourceAuthorizationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>
+        }
+        createMany: {
+          args: Prisma.SourceAuthorizationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SourceAuthorizationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>[]
+        }
+        delete: {
+          args: Prisma.SourceAuthorizationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>
+        }
+        update: {
+          args: Prisma.SourceAuthorizationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>
+        }
+        deleteMany: {
+          args: Prisma.SourceAuthorizationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SourceAuthorizationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SourceAuthorizationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>[]
+        }
+        upsert: {
+          args: Prisma.SourceAuthorizationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SourceAuthorizationPayload>
+        }
+        aggregate: {
+          args: Prisma.SourceAuthorizationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSourceAuthorization>
+        }
+        groupBy: {
+          args: Prisma.SourceAuthorizationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceAuthorizationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SourceAuthorizationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SourceAuthorizationCountAggregateOutputType> | number
+        }
+      }
+    }
     MediaArtifact: {
       payload: Prisma.$MediaArtifactPayload<ExtArgs>
       fields: Prisma.MediaArtifactFieldRefs
@@ -713,6 +788,21 @@ export const VideoSourceScalarFieldEnum = {
 export type VideoSourceScalarFieldEnum = (typeof VideoSourceScalarFieldEnum)[keyof typeof VideoSourceScalarFieldEnum]
 
 
+export const SourceAuthorizationScalarFieldEnum = {
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  sourceSha256: 'sourceSha256',
+  status: 'status',
+  basis: 'basis',
+  confirmedAt: 'confirmedAt',
+  declarationVersion: 'declarationVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SourceAuthorizationScalarFieldEnum = (typeof SourceAuthorizationScalarFieldEnum)[keyof typeof SourceAuthorizationScalarFieldEnum]
+
+
 export const MediaArtifactScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
@@ -851,6 +941,34 @@ export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'BigInt[]'
  */
 export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SourceAuthorizationStatus'
+ */
+export type EnumSourceAuthorizationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourceAuthorizationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SourceAuthorizationStatus[]'
+ */
+export type ListEnumSourceAuthorizationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourceAuthorizationStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SourceAuthorizationBasis'
+ */
+export type EnumSourceAuthorizationBasisFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourceAuthorizationBasis'>
+    
+
+
+/**
+ * Reference to a field of type 'SourceAuthorizationBasis[]'
+ */
+export type ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourceAuthorizationBasis[]'>
     
 
 
@@ -1062,6 +1180,7 @@ export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaC
 export type GlobalOmitConfig = {
   project?: Prisma.ProjectOmit
   videoSource?: Prisma.VideoSourceOmit
+  sourceAuthorization?: Prisma.SourceAuthorizationOmit
   mediaArtifact?: Prisma.MediaArtifactOmit
 }
 

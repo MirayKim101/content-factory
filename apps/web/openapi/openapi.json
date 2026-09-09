@@ -54,6 +54,72 @@
         ],
         "type": "object"
       },
+      "AuthorizationResponseDto": {
+        "properties": {
+          "basis": {
+            "enum": ["EXPLICIT_CONFIRMATION", "LEGACY_ATTESTATION"],
+            "nullable": true,
+            "type": "string"
+          },
+          "confirmedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "declarationVersion": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceSha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "example": 1,
+            "type": "number"
+          },
+          "status": {
+            "enum": ["NOT_REVIEWED", "CLEARED"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "sourceVersion",
+          "sourceSha256",
+          "basis",
+          "confirmedAt",
+          "declarationVersion"
+        ],
+        "type": "object"
+      },
+      "ConfirmSourceAuthorizationDto": {
+        "properties": {
+          "declarationVersion": {
+            "example": "source-rights-v1",
+            "type": "string"
+          },
+          "rightsConfirmed": {
+            "enum": [true],
+            "type": "boolean"
+          },
+          "sourceSha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "sourceVersion": {
+            "example": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "sourceVersion",
+          "sourceSha256",
+          "rightsConfirmed",
+          "declarationVersion"
+        ],
+        "type": "object"
+      },
       "CreateProjectUploadDto": {
         "properties": {
           "file": {
@@ -67,12 +133,13 @@
             "type": "string"
           },
           "rightsConfirmed": {
-            "description": "Must be literal true.",
+            "deprecated": true,
+            "description": "Legacy factual upload attestation. It never clears source authorization.",
             "enum": ["true"],
             "type": "string"
           }
         },
-        "required": ["name", "rightsConfirmed", "file"],
+        "required": ["name", "file"],
         "type": "object"
       },
       "ErrorDetailDto": {
@@ -89,7 +156,12 @@
               "PROJECT_NOT_FOUND",
               "INTERNAL_ERROR",
               "DATABASE_FINALIZE_FAILED",
-              "STORAGE_UPLOAD_FAILED"
+              "STORAGE_UPLOAD_FAILED",
+              "SOURCE_NOT_READY",
+              "SOURCE_VERSION_MISMATCH",
+              "RIGHTS_DECLARATION_OUTDATED",
+              "SOURCE_AUTHORIZATION_CONFLICT",
+              "SOURCE_NOT_AUTHORIZED"
             ],
             "type": "string"
           },
@@ -126,6 +198,9 @@
           "artifact": {
             "$ref": "#/components/schemas/ArtifactResponseDto"
           },
+          "authorization": {
+            "$ref": "#/components/schemas/AuthorizationResponseDto"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -141,7 +216,13 @@
             "type": "string"
           },
           "rights": {
-            "$ref": "#/components/schemas/RightsResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RightsResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
           },
           "source": {
             "$ref": "#/components/schemas/SourceResponseDto"
@@ -160,6 +241,7 @@
           "name",
           "status",
           "rights",
+          "authorization",
           "createdAt",
           "updatedAt",
           "source",
@@ -288,7 +370,7 @@
                 }
               }
             },
-            "description": "Invalid fields, rights, file, multipart body, or idempotency key."
+            "description": "Invalid fields, file, multipart body, or idempotency key."
           },
           "409": {
             "content": {
@@ -341,7 +423,7 @@
             "description": "Object storage upload failed."
           }
         },
-        "summary": "Create a project by uploading an authorized MP4 source",
+        "summary": "Create a project by uploading an MP4 source",
         "tags": ["projects"]
       }
     },
@@ -402,6 +484,76 @@
           }
         },
         "summary": "Get safe source-ingestion status and lineage",
+        "tags": ["projects"]
+      }
+    },
+    "/api/v1/projects/{id}/source/authorization": {
+      "put": {
+        "operationId": "ProjectsController_authorizeSource",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmSourceAuthorizationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Malformed body or rightsConfirmed is not literal true."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Project not found."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": "Source not ready, tuple mismatch, outdated declaration, or immutable confirmation conflict."
+          }
+        },
+        "summary": "Confirm rights for the exact stored source version",
         "tags": ["projects"]
       }
     }

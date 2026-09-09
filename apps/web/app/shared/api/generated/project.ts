@@ -9,9 +9,19 @@ export const projectSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   status: z.enum(["SOURCE_PENDING", "SOURCE_READY", "FAILED_FINAL"]),
-  rights: z.object({
-    confirmedAt: z.iso.datetime(),
-    declarationVersion: z.string(),
+  rights: z
+    .object({
+      confirmedAt: z.iso.datetime(),
+      declarationVersion: z.string(),
+    })
+    .nullable(),
+  authorization: z.object({
+    status: z.enum(["NOT_REVIEWED", "CLEARED"]),
+    sourceVersion: z.number().int().positive(),
+    sourceSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    basis: z.enum(["EXPLICIT_CONFIRMATION", "LEGACY_ATTESTATION"]).nullable(),
+    confirmedAt: z.iso.datetime().nullable(),
+    declarationVersion: z.string().nullable(),
   }),
   failure: z.object({ code: z.string(), message: z.string() }).optional(),
   createdAt: z.iso.datetime(),

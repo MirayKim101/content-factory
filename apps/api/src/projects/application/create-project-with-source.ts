@@ -21,6 +21,7 @@ export interface CreateProjectInput {
   originalFilename: string;
   filePath: string;
   idempotencyKey: string;
+  legacyRightsConfirmed?: boolean;
 }
 
 @Injectable()
@@ -42,13 +43,23 @@ export class CreateProjectWithSource {
       );
       const requestFingerprint = createHash("sha256")
         .update(
-          JSON.stringify({
-            name: normalizedName,
-            originalFilename,
-            rightsDeclarationVersion: "upload-rights-v1",
-            sha256: media.sha256,
-            sizeBytes: media.sizeBytes.toString(),
-          }),
+          JSON.stringify(
+            input.legacyRightsConfirmed === true
+              ? {
+                  name: normalizedName,
+                  originalFilename,
+                  rightsDeclarationVersion: "upload-rights-v1",
+                  sha256: media.sha256,
+                  sizeBytes: media.sizeBytes.toString(),
+                }
+              : {
+                  name: normalizedName,
+                  originalFilename,
+                  rightsDeclarationVersion: null,
+                  sha256: media.sha256,
+                  sizeBytes: media.sizeBytes.toString(),
+                },
+          ),
         )
         .digest("hex");
 
@@ -70,8 +81,10 @@ export class CreateProjectWithSource {
           sourceId,
           artifactId,
           name: normalizedName,
-          rightsConfirmedAt: new Date(),
-          rightsDeclarationVersion: "upload-rights-v1",
+          rightsConfirmedAt:
+            input.legacyRightsConfirmed === true ? new Date() : null,
+          rightsDeclarationVersion:
+            input.legacyRightsConfirmed === true ? "upload-rights-v1" : null,
           originalFilename,
           contentType: media.contentType,
           sizeBytes: media.sizeBytes,

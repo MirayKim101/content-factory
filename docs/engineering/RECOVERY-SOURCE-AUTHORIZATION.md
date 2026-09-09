@@ -1,9 +1,9 @@
 # Recovery task: exact-version source authorization
 
-- Status: ready for one implementation owner
+- Status: accepted after independent verification
 - Architecture: ADR-003 approved
-- Implementation: pending
-- Independent review: pending
+- Implementation: completed on WSL, 2026-09-09
+- Independent review: CLEAN, 2026-09-09; see `RECOVERY-SOURCE-AUTHORIZATION-REVIEW.md`
 
 ## Пользовательская цель
 
@@ -117,3 +117,28 @@ default; never start the old binary on the migrated schema.
 The implementer must leave changed files, commands, test output, migration
 counts, smoke evidence, known limitations, and rollback status in the current
 handoff. Independent review must remain marked pending until reproduced.
+
+## Implementation evidence — 2026-09-09
+
+- API unit: 27 tests; web unit: 32 tests; integration: 16 tests, including two
+  isolated migration cases. Lint, typecheck, build, format and both OpenAPI
+  drift checks passed in the pinned Node/pnpm environment.
+- Fresh quiesced snapshot:
+  `tmp/recovery/before-source-authorization-20260909T1911.dump` (0600,
+  `pg_restore --list` verified). Retained backfill: 3 sources, 3 authorization
+  rows, 3 legacy clearances and 3 preserved audit tuples. Only the new built API
+  started after migration/count verification.
+- `source-authorization.migration.integration.spec.ts` reproduces legacy audit
+  preservation and full rollback for malformed legacy input on isolated DBs.
+- Review-driven fixes cover required nullable DTO fields, correlated request
+  logs, locked source tuple plus confirmation CAS, delayed browser responses,
+  tuple-specific checkbox reset and unavailable browser storage.
+- Root Chromium smoke passed: actual multipart keys `name/file`, pending gate,
+  explicit confirmation, immutable repeat, wrong-checksum denial, durable reload
+  and no page errors. Script, JSON and screenshots live under ignored
+  `tmp/browser-smoke/authorization-*`.
+- Prisma generator output contains trailing whitespace and is intentionally
+  excluded from Prettier. No manual generated-code whitespace edits were made;
+  `git diff --check` reports only those generated files.
+- Independent final review is CLEAN; playback/cutting/download and worker routes
+  remain absent until the next accepted slice.

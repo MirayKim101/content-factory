@@ -1,13 +1,26 @@
 export type ProjectStatus = "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
 export type SourceStatus = "PENDING" | "READY" | "FAILED_FINAL";
 export type ArtifactStatus = "PENDING" | "READY" | "FAILED_FINAL";
+export type SourceAuthorizationStatus = "NOT_REVIEWED" | "CLEARED";
+export type SourceAuthorizationBasis =
+  "EXPLICIT_CONFIRMATION" | "LEGACY_ATTESTATION";
+
+export interface SourceAuthorizationView {
+  status: SourceAuthorizationStatus;
+  sourceVersion: number;
+  sourceSha256: string;
+  basis: SourceAuthorizationBasis | null;
+  confirmedAt: Date | null;
+  declarationVersion: string | null;
+}
 
 export interface ProjectView {
   id: string;
   name: string;
   status: ProjectStatus;
-  rightsConfirmedAt: Date;
-  rightsDeclarationVersion: string;
+  rightsConfirmedAt: Date | null;
+  rightsDeclarationVersion: string | null;
+  authorization: SourceAuthorizationView;
   failure?: { code: string; message: string };
   createdAt: Date;
   updatedAt: Date;

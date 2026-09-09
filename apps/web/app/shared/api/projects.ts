@@ -40,6 +40,15 @@ export class ProjectNetworkError extends Error {
 export interface ProjectsApi {
   createProject(request: CreateProjectRequest): Promise<Project>;
   getProject?(id: string, signal?: AbortSignal): Promise<Project>;
+  confirmSourceAuthorization?(
+    projectId: string,
+    request: {
+      sourceVersion: number;
+      sourceSha256: string;
+      rightsConfirmed: true;
+      declarationVersion: string;
+    },
+  ): Promise<Project>;
 }
 interface CreateProjectsApiOptions {
   apiBasePath: unknown;
@@ -75,6 +84,24 @@ export function createProjectsApi({
       if (!response.ok) throw toApiError(payload, response.status);
       return projectSchema.parse(payload);
     },
+    async confirmSourceAuthorization(projectId, request) {
+      let response: Response;
+      try {
+        response = await fetchImplementation(
+          `${basePath}/projects/${projectId}/source/authorization`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(request),
+          },
+        );
+      } catch {
+        throw new ProjectNetworkError();
+      }
+      const payload: unknown = await response.json().catch(() => undefined);
+      if (!response.ok) throw toApiError(payload, response.status);
+      return projectSchema.parse(payload);
+    },
   };
 }
 
@@ -97,7 +124,6 @@ function uploadProject({
   return new Promise((resolve, reject) => {
     const body = new FormData();
     body.set("name", request.name);
-    body.set("rightsConfirmed", "true");
     body.set("file", request.file);
     const xhr = xhrFactory();
     const startedAt = performance.now();
@@ -197,6 +223,13 @@ function toApiError(payload: unknown, status: number): ProjectApiError {
     IDEMPOTENCY_CONFLICT: "Этот ключ загрузки уже связан с другим файлом.",
     VALIDATION_FAILED: "Проверь заполнение формы.",
     STORAGE_UPLOAD_FAILED: "Хранилище временно недоступно.",
+    SOURCE_NOT_READY: "Исходник ещё не готов. Дождись завершения загрузки.",
+    SOURCE_VERSION_MISMATCH:
+      "Версия исходника изменилась. Обнови данные проекта и повтори проверку.",
+    RIGHTS_DECLARATION_OUTDATED:
+      "Текст подтверждения обновился. Перезагрузи страницу и прочитай его снова.",
+    SOURCE_AUTHORIZATION_CONFLICT:
+      "Права уже подтверждены с другими данными. Обнови проект.",
   };
   return new ProjectApiError(
     translations[parsedError.data.error.code] ??

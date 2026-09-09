@@ -68,14 +68,13 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
     await rm(uploadDirectory, { recursive: true, force: true });
   });
 
-  it("uploads an authorized MP4, persists lineage, stores the object, and supports GET", async () => {
+  it("uploads an unreviewed MP4 without legacy rights, persists lineage, and supports GET", async () => {
     expect(process.env.MINIO_ROOT_USER).toBeUndefined();
     expect(process.env.MINIO_ROOT_PASSWORD).toBeUndefined();
     const created = await request(app.getHttpServer())
       .post("/api/v1/projects")
       .set("Idempotency-Key", "integration-happy-0001")
       .field("name", "Integration source")
-      .field("rightsConfirmed", "true")
       .attach("file", tinyMp4(), {
         filename: "source.mp4",
         contentType: "video/mp4",
@@ -92,8 +91,32 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
         status: "READY",
         recipeVersion: "source-ingest-v1",
       },
+      rights: null,
+      authorization: {
+        status: "NOT_REVIEWED",
+        sourceVersion: 1,
+        basis: null,
+        confirmedAt: null,
+        declarationVersion: null,
+      },
     });
     expect(created.body.source.sizeBytes).toBe(String(tinyMp4().length));
+    expect(created.body.authorization.sourceSha256).toBe(
+      created.body.source.sha256,
+    );
+    await expect(
+      projects.isSourceAuthorized(
+        created.body.source.id as string,
+        created.body.source.sourceVersion as number,
+        created.body.source.sha256 as string,
+      ),
+    ).resolves.toBe(false);
+    await expect(
+      prisma.project.findUniqueOrThrow({ where: { id: created.body.id } }),
+    ).resolves.toMatchObject({
+      rightsConfirmedAt: null,
+      rightsDeclarationVersion: null,
+    });
     expect(created.body).not.toHaveProperty("artifact.objectKey");
     expect(JSON.stringify(created.body)).not.toContain(uploadDirectory);
 
@@ -114,11 +137,28 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
     expect(fetched.body).toEqual(created.body);
   });
 
-  it("requires the explicit rights declaration and removes its temp file", async () => {
-    await request(app.getHttpServer())
+  it("retains a literal legacy attestation without clearing the exact source", async () => {
+    const legacy = await request(app.getHttpServer())
       .post("/api/v1/projects")
       .set("Idempotency-Key", "integration-rights-0001")
-      .field("name", "No rights")
+      .field("name", "Legacy rights")
+      .field("rightsConfirmed", "true")
+      .attach("file", tinyMp4(), {
+        filename: "source.mp4",
+        contentType: "video/mp4",
+      })
+      .expect(201);
+    createdProjectIds.push(legacy.body.id as string);
+    expect(legacy.body).toMatchObject({
+      rights: { declarationVersion: "upload-rights-v1" },
+      authorization: { status: "NOT_REVIEWED", basis: null },
+    });
+
+    await request(app.getHttpServer())
+      .post("/api/v1/projects")
+      .set("Idempotency-Key", "integration-rights-0002")
+      .field("name", "False rights")
+      .field("rightsConfirmed", "false")
       .attach("file", tinyMp4(), {
         filename: "source.mp4",
         contentType: "video/mp4",
@@ -140,6 +180,122 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
         expect(body.error.code).toBe("IDEMPOTENCY_KEY_INVALID"),
       );
     expect(await readdir(uploadDirectory)).toEqual([]);
+  });
+
+  it("confirms only the exact ready tuple and keeps immutable idempotent audit", async () => {
+    const created = await request(app.getHttpServer())
+      .post("/api/v1/projects")
+      .set("Idempotency-Key", "integration-authorize-0001")
+      .field("name", "Authorization source")
+      .attach("file", tinyMp4(), {
+        filename: "source.mp4",
+        contentType: "video/mp4",
+      })
+      .expect(201);
+    createdProjectIds.push(created.body.id as string);
+    const endpoint = `/api/v1/projects/${created.body.id}/source/authorization`;
+    const confirmation = {
+      sourceVersion: created.body.source.sourceVersion as number,
+      sourceSha256: created.body.source.sha256 as string,
+      rightsConfirmed: true,
+      declarationVersion: "source-rights-v1",
+    };
+
+    await request(app.getHttpServer())
+      .put(endpoint)
+      .send({ ...confirmation, rightsConfirmed: false })
+      .expect(400)
+      .expect(({ body }) => expect(body.error.code).toBe("VALIDATION_FAILED"));
+    await request(app.getHttpServer())
+      .put(endpoint)
+      .send({ ...confirmation, sourceVersion: 2 })
+      .expect(409)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_VERSION_MISMATCH"),
+      );
+    await request(app.getHttpServer())
+      .put(endpoint)
+      .send({ ...confirmation, declarationVersion: "old-rights-v0" })
+      .expect(409)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("RIGHTS_DECLARATION_OUTDATED"),
+      );
+
+    const cleared = await request(app.getHttpServer())
+      .put(endpoint)
+      .send(confirmation)
+      .expect(200);
+    expect(cleared.body.authorization).toMatchObject({
+      status: "CLEARED",
+      basis: "EXPLICIT_CONFIRMATION",
+      declarationVersion: "source-rights-v1",
+    });
+    const immutableAudit = cleared.body.authorization.confirmedAt;
+    const repeated = await request(app.getHttpServer())
+      .put(endpoint)
+      .send(confirmation)
+      .expect(200);
+    expect(repeated.body.authorization.confirmedAt).toBe(immutableAudit);
+    await expect(
+      projects.confirmSourceAuthorization(
+        {
+          projectId: created.body.id as string,
+          sourceVersion: confirmation.sourceVersion,
+          sourceSha256: confirmation.sourceSha256,
+          declarationVersion: confirmation.declarationVersion,
+          confirmedAt: new Date("2099-01-01T00:00:00.000Z"),
+        },
+        "source-rights-v2",
+      ),
+    ).resolves.toMatchObject({ outcome: "CLEARED", changed: false });
+    await request(app.getHttpServer())
+      .put(endpoint)
+      .send({ ...confirmation, declarationVersion: "source-rights-v2" })
+      .expect(409)
+      .expect(({ body }) =>
+        expect(body.error.code).toBe("SOURCE_AUTHORIZATION_CONFLICT"),
+      );
+    await request(app.getHttpServer())
+      .put(
+        "/api/v1/projects/00000000-0000-4000-8000-000000000099/source/authorization",
+      )
+      .send(confirmation)
+      .expect(404)
+      .expect(({ body }) => expect(body.error.code).toBe("PROJECT_NOT_FOUND"));
+  });
+
+  it("rejects confirmation while a source is not ready", async () => {
+    const projectId = randomUUID();
+    const sourceId = randomUUID();
+    const artifactId = randomUUID();
+    createdProjectIds.push(projectId);
+    await projects.createPendingUpload({
+      projectId,
+      idempotencyKey: `not-ready-${randomUUID()}`,
+      requestFingerprint: "e".repeat(64),
+      sourceId,
+      artifactId,
+      name: "Not ready",
+      rightsConfirmedAt: null,
+      rightsDeclarationVersion: null,
+      originalFilename: "source.mp4",
+      contentType: "video/mp4",
+      sizeBytes: 100n,
+      sha256: "e".repeat(64),
+      sourceVersion: 1,
+      objectKey: `sources/${projectId}/${sourceId}/v1/source.mp4`,
+      recipeVersion: "source-ingest-v1",
+    });
+    await request(app.getHttpServer())
+      .put(`/api/v1/projects/${projectId}/source/authorization`)
+      .send({
+        sourceVersion: 1,
+        sourceSha256: "e".repeat(64),
+        rightsConfirmed: true,
+        declarationVersion: "source-rights-v1",
+      })
+      .expect(409)
+      .expect(({ body }) => expect(body.error.code).toBe("SOURCE_NOT_READY"));
   });
 
   it("rejects a fake MP4 by content and cleans the temp file", async () => {

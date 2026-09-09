@@ -11,6 +11,14 @@ const projectPayload = {
   name: "x",
   status: "SOURCE_READY",
   rights: { confirmedAt: "2026-09-01T00:00:00.000Z", declarationVersion: "x" },
+  authorization: {
+    status: "NOT_REVIEWED",
+    sourceVersion: 1,
+    sourceSha256: "a".repeat(64),
+    basis: null,
+    confirmedAt: null,
+    declarationVersion: null,
+  },
   createdAt: "2026-09-01T00:00:00.000Z",
   updatedAt: "2026-09-01T00:00:00.000Z",
   source: {
@@ -89,7 +97,7 @@ describe("projects API adapter", () => {
     );
     const body = xhr.send.mock.calls[0]?.[0] as FormData;
     expect(body.get("name")).toBe("x");
-    expect(body.get("rightsConfirmed")).toBe("true");
+    expect(body.has("rightsConfirmed")).toBe(false);
     expect(body.get("file")).toBeInstanceOf(File);
 
     const event = {
@@ -119,6 +127,49 @@ describe("projects API adapter", () => {
     ]);
     xhr.onload?.();
     await expect(pending).resolves.toMatchObject({ id: projectPayload.id });
+  });
+
+  it("confirms the exact server tuple with literal true and parses the response", async () => {
+    const cleared = {
+      ...projectPayload,
+      authorization: {
+        ...projectPayload.authorization,
+        status: "CLEARED",
+        basis: "EXPLICIT_CONFIRMATION",
+        confirmedAt: "2026-09-09T12:00:00.000Z",
+        declarationVersion: "source-rights-v1",
+      },
+    } as const;
+    const fetchImplementation = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify(cleared), { status: 200 }),
+      );
+    const api = createProjectsApi({
+      apiBasePath: "/api/v1",
+      fetchImplementation,
+      xhrFactory: () => fakeXhr() as unknown as XMLHttpRequest,
+    });
+    await expect(
+      api.confirmSourceAuthorization?.(projectPayload.id, {
+        sourceVersion: 1,
+        sourceSha256: "a".repeat(64),
+        rightsConfirmed: true,
+        declarationVersion: "source-rights-v1",
+      }),
+    ).resolves.toMatchObject({ authorization: { status: "CLEARED" } });
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      `/api/v1/projects/${projectPayload.id}/source/authorization`,
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({
+          sourceVersion: 1,
+          sourceSha256: "a".repeat(64),
+          rightsConfirmed: true,
+          declarationVersion: "source-rights-v1",
+        }),
+      }),
+    );
   });
 
   it("reports an indeterminate transfer and turns an XHR transport failure into a safe error", async () => {

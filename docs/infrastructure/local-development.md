@@ -90,7 +90,7 @@ curl --fail http://127.0.0.1:9000/minio/health/ready
    ```
 
    Зачем: первая команда создаёт типобезопасный клиент из схемы, вторая создаёт
-   таблицы `Project`, `VideoSource` и `MediaArtifact`. Успех: Prisma сообщает,
+   таблицы `Project`, `VideoSource`, `MediaArtifact` и `SourceAuthorization`. Успех: Prisma сообщает,
    что migration применена и база синхронизирована.
 
 2. Запусти API из корня проекта:
@@ -100,23 +100,24 @@ curl --fail http://127.0.0.1:9000/minio/health/ready
    ```
 
    Ожидаемый результат: Nest показывает маршруты `POST /api/v1/projects` и
-   `GET /api/v1/projects/:id`. Интерактивное описание API доступно на
+   `GET /api/v1/projects/:id`, `PUT /api/v1/projects/:id/source/authorization`.
+   Интерактивное описание API доступно на
    <http://127.0.0.1:3001/api/docs>, JSON-контракт — на
    <http://127.0.0.1:3001/api/docs-json>.
 
-3. Пока интерфейс ещё не сделан, загрузи собственный или разрешённый MP4 из
-   второго терминала:
+3. Загрузи собственный или разрешённый MP4 через интерфейс на
+   <http://127.0.0.1:3000/> либо из второго терминала:
 
    ```sh
    curl --fail-with-body --request POST http://127.0.0.1:3001/api/v1/projects \
      --header 'Idempotency-Key: upload-2026-09-01-001' \
      --form 'name=Первый исходник' \
-     --form 'rightsConfirmed=true' \
      --form 'file=@/ПОЛНЫЙ/ПУТЬ/К/ВИДЕО.mp4;type=video/mp4'
    ```
 
    Замени только путь после `@`. Успех: HTTP 201 и JSON со статусом
-   `SOURCE_READY`. Поле `sizeBytes` намеренно является строкой: так большие
+   `SOURCE_READY`, `authorization.status=NOT_REVIEWED` и `rights=null`.
+   Поле `sizeBytes` намеренно является строкой: так большие
    значения PostgreSQL `BIGINT` не теряют точность в JavaScript.
 
 4. Скопируй `id` из ответа и проверь сохранённый статус:
@@ -127,6 +128,25 @@ curl --fail http://127.0.0.1:9000/minio/health/ready
 
    Публичный ответ содержит checksum и lineage, но никогда не раскрывает S3
    bucket/object key или путь временного файла.
+
+5. В интерфейсе отдельно отметь подтверждение для показанной версии и нажми
+   «Подтвердить права». Через API используй `id`, `sourceVersion` и
+   `sourceSha256` из полученного ответа:
+
+   ```sh
+   curl --fail-with-body --request PUT \
+     http://127.0.0.1:3001/api/v1/projects/ВСТАВЬ_ID/source/authorization \
+     --header 'Content-Type: application/json' \
+     --data '{"sourceVersion":1,"sourceSha256":"ВСТАВЬ_SHA256","rightsConfirmed":true,"declarationVersion":"source-rights-v1"}'
+   ```
+
+   Замени ID, версию и SHA-256 данными именно этого исходника. Успех:
+   `authorization.status=CLEARED`, `basis=EXPLICIT_CONFIRMATION`; повтор
+   сохраняет исходное время подтверждения. Перезагрузка страницы восстанавливает
+   последний исходник и читает допуск с сервера. Неверная версия/checksum даёт
+   безопасный `409 SOURCE_VERSION_MISMATCH`. Сам статус `SOURCE_READY` не
+   является допуском. См. ADR-003; playback/cut/download появятся следующим
+   отдельным срезом и должны проверять этот допуск.
 
 ### Что API гарантирует на этом шаге
 
@@ -157,9 +177,14 @@ HTTP 409 `IDEMPOTENCY_CONFLICT`. Terminal-переходы выполняютс�
 READY нельзя превратить в FAILED и наоборот; повтор того же перехода безопасен.
 
 Контролируемые ошибки возвращаются как
-`{"error":{"code":"...","message":"..."}}`: отсутствие подтверждения прав
-даёт HTTP 400, конфликт ключа — 409, неверное MP4-содержимое — 415, превышение
+`{"error":{"code":"...","message":"..."}}`: неверные поля дают HTTP 400,
+конфликт ключа — 409, неверное MP4-содержимое — 415, превышение
 размера — 413, storage failure — 503. Все эти ответы описаны в OpenAPI.
+
+Upload больше не требует подтверждения прав. Старый multipart
+`rightsConfirmed=true` поддерживается как deprecated аттестация, но любой новый
+исходник всё равно начинает с `NOT_REVIEWED`. Обычный интерфейс это поле не
+отправляет; скрытого автоматического подтверждения нет.
 
 Проверка реализации:
 

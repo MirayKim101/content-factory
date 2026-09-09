@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import {
   clearActiveAttempt,
@@ -10,6 +9,7 @@ import {
   type ActiveAttempt,
 } from "~/features/upload-source/model/active-attempt-storage";
 import { useSourceUpload } from "~/features/upload-source/model/use-source-upload";
+import { loadLastSourceGate } from "~/features/upload-source/model/last-source-gate-storage";
 import { createProjectsApi } from "~/shared/api/projects";
 const config = useRuntimeConfig();
 const projectsApi = createProjectsApi({
@@ -33,10 +33,24 @@ const {
   startNewAttempt,
   prepareRecoveredRetry,
   retryPoll,
+  restoreLastSource,
+  confirmAuthorization,
+  isAuthorizing,
+  authorizationError,
 } = upload;
 const recoveredAttempt = ref<ActiveAttempt | null>(null);
 const recoveryMessage = ref<string | null>(null);
 const recoveredFile = ref<File | null>(null);
+const authorizationConfirmed = ref(false);
+watch(
+  () =>
+    result.value
+      ? `${result.value.id}:${result.value.authorization.sourceVersion}:${result.value.authorization.sourceSha256}`
+      : null,
+  () => {
+    authorizationConfirmed.value = false;
+  },
+);
 const recoveryLocksForm = computed(() => recoveredAttempt.value !== null);
 const canRetryRecoveredUpload = computed(
   () =>
@@ -45,6 +59,8 @@ const canRetryRecoveredUpload = computed(
 );
 onMounted(() => {
   recoveredAttempt.value = loadActiveAttempt();
+  const lastProjectId = loadLastSourceGate();
+  if (lastProjectId) void restoreLastSource(lastProjectId);
 });
 function continueRecoveredAttempt(): void {
   if (!recoveredAttempt.value?.projectId) return;
@@ -180,26 +196,6 @@ function formatDuration(seconds: number): string {
           {{ errors.file }}
         </p>
       </div>
-      <label class="checkbox-row" for="rights-confirmed"
-        ><Checkbox
-          input-id="rights-confirmed"
-          binary
-          :model-value="draft.rightsConfirmed"
-          :disabled="isSubmitting || recoveryLocksForm"
-          :aria-invalid="Boolean(errors.rightsConfirmed)"
-          aria-describedby="rights-confirmed-error"
-          @update:model-value="updateDraft({ rightsConfirmed: $event })"
-        /><span
-          >Подтверждаю, что у меня есть права на загрузку этого видео.</span
-        ></label
-      >
-      <p
-        v-if="errors.rightsConfirmed"
-        id="rights-confirmed-error"
-        class="error"
-      >
-        {{ errors.rightsConfirmed }}
-      </p>
       <div class="actions">
         <Button
           class="rounded-md bg-emerald-950 px-4 py-3 font-bold text-white"
@@ -288,6 +284,47 @@ function formatDuration(seconds: number): string {
             <dd>{{ result.source.sizeBytes }} байт</dd>
           </div>
         </dl>
+        <div class="authorization" aria-live="polite">
+          <template v-if="result.authorization.status === 'CLEARED'">
+            <p><strong>Права на эту версию подтверждены.</strong></p>
+            <p>
+              Версия {{ result.authorization.sourceVersion }}, SHA-256
+              {{ result.authorization.sourceSha256 }}.
+            </p>
+            <p v-if="result.authorization.confirmedAt">
+              Подтверждено {{ result.authorization.confirmedAt }} по декларации
+              {{ result.authorization.declarationVersion }}.
+            </p>
+          </template>
+          <template v-else>
+            <p><strong>Проверка прав ожидается.</strong></p>
+            <p>
+              Подтверждение относится только к версии
+              {{ result.authorization.sourceVersion }} с SHA-256
+              {{ result.authorization.sourceSha256 }}.
+            </p>
+            <label class="checkbox-row" for="source-rights-confirmed">
+              <input
+                id="source-rights-confirmed"
+                v-model="authorizationConfirmed"
+                type="checkbox"
+              />
+              <span
+                >Подтверждаю права на использование именно этой версии.</span
+              >
+            </label>
+            <Button
+              type="button"
+              :loading="isAuthorizing"
+              :disabled="isAuthorizing || !authorizationConfirmed"
+              @click="confirmAuthorization"
+              >Подтвердить права</Button
+            >
+            <p v-if="authorizationError" class="error">
+              {{ authorizationError }}
+            </p>
+          </template>
+        </div>
       </div>
     </div>
   </section>

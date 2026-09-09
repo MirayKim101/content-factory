@@ -29,7 +29,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Create a project by uploading an authorized MP4 source */
+    /** Create a project by uploading an MP4 source */
     post: operations["ProjectsController_create"];
     delete?: never;
     options?: never;
@@ -47,6 +47,23 @@ export interface paths {
     /** Get safe source-ingestion status and lineage */
     get: operations["ProjectsController_get"];
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{id}/source/authorization": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Confirm rights for the exact stored source version */
+    put: operations["ProjectsController_authorizeSource"];
     post?: never;
     delete?: never;
     options?: never;
@@ -80,16 +97,38 @@ export interface components {
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
     };
+    AuthorizationResponseDto: {
+      /** @enum {string|null} */
+      basis: "EXPLICIT_CONFIRMATION" | "LEGACY_ATTESTATION" | null;
+      /** Format: date-time */
+      confirmedAt: string | null;
+      declarationVersion: string | null;
+      sourceSha256: string;
+      /** @example 1 */
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "NOT_REVIEWED" | "CLEARED";
+    };
+    ConfirmSourceAuthorizationDto: {
+      /** @example source-rights-v1 */
+      declarationVersion: string;
+      /** @enum {boolean} */
+      rightsConfirmed: true;
+      sourceSha256: string;
+      /** @example 1 */
+      sourceVersion: number;
+    };
     CreateProjectUploadDto: {
       /** Format: binary */
       file: string;
       /** @example First source */
       name: string;
       /**
-       * @description Must be literal true.
+       * @deprecated
+       * @description Legacy factual upload attestation. It never clears source authorization.
        * @enum {string}
        */
-      rightsConfirmed: "true";
+      rightsConfirmed?: "true";
     };
     ErrorDetailDto: {
       /** @enum {string} */
@@ -104,7 +143,12 @@ export interface components {
         | "PROJECT_NOT_FOUND"
         | "INTERNAL_ERROR"
         | "DATABASE_FINALIZE_FAILED"
-        | "STORAGE_UPLOAD_FAILED";
+        | "STORAGE_UPLOAD_FAILED"
+        | "SOURCE_NOT_READY"
+        | "SOURCE_VERSION_MISMATCH"
+        | "RIGHTS_DECLARATION_OUTDATED"
+        | "SOURCE_AUTHORIZATION_CONFLICT"
+        | "SOURCE_NOT_AUTHORIZED";
       message: string;
     };
     ErrorResponseDto: {
@@ -116,13 +160,14 @@ export interface components {
     };
     ProjectResponseDto: {
       artifact: components["schemas"]["ArtifactResponseDto"];
+      authorization: components["schemas"]["AuthorizationResponseDto"];
       /** Format: date-time */
       createdAt: string;
       failure?: components["schemas"]["FailureResponseDto"];
       /** Format: uuid */
       id: string;
       name: string;
-      rights: components["schemas"]["RightsResponseDto"];
+      rights: components["schemas"]["RightsResponseDto"] | null;
       source: components["schemas"]["SourceResponseDto"];
       /** @enum {string} */
       status: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
@@ -203,7 +248,7 @@ export interface operations {
           "application/json": components["schemas"]["ProjectResponseDto"];
         };
       };
-      /** @description Invalid fields, rights, file, multipart body, or idempotency key. */
+      /** @description Invalid fields, file, multipart body, or idempotency key. */
       400: {
         headers: {
           [name: string]: unknown;
@@ -298,6 +343,58 @@ export interface operations {
       };
       /** @description Internal query failure. */
       500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ProjectsController_authorizeSource: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ConfirmSourceAuthorizationDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectResponseDto"];
+        };
+      };
+      /** @description Malformed body or rightsConfirmed is not literal true. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Project not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Source not ready, tuple mismatch, outdated declaration, or immutable confirmation conflict. */
+      409: {
         headers: {
           [name: string]: unknown;
         };

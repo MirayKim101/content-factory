@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Allow, Equals, IsString, Length, Matches } from "class-validator";
+import {
+  Allow,
+  Equals,
+  IsInt,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Length,
+  Matches,
+} from "class-validator";
 
 export class CreateProjectUploadDto {
   @ApiProperty({
@@ -13,13 +22,16 @@ export class CreateProjectUploadDto {
   @Matches(/\S/)
   name!: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: String,
     enum: ["true"],
-    description: "Must be literal true.",
+    deprecated: true,
+    description:
+      "Legacy factual upload attestation. It never clears source authorization.",
   })
+  @IsOptional()
   @Equals("true")
-  rightsConfirmed!: string;
+  rightsConfirmed?: string;
 
   @ApiProperty({ type: "string", format: "binary" })
   @Allow()
@@ -31,6 +43,51 @@ class RightsResponseDto {
   confirmedAt!: string;
 
   @ApiProperty({ type: String, example: "upload-rights-v1" })
+  declarationVersion!: string;
+}
+
+class AuthorizationResponseDto {
+  @ApiProperty({ type: String, enum: ["NOT_REVIEWED", "CLEARED"] })
+  status!: string;
+
+  @ApiProperty({ type: Number, example: 1 })
+  sourceVersion!: number;
+
+  @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
+  sourceSha256!: string;
+
+  @ApiProperty({
+    type: String,
+    enum: ["EXPLICIT_CONFIRMATION", "LEGACY_ATTESTATION"],
+    nullable: true,
+  })
+  basis!: string | null;
+
+  @ApiProperty({ type: String, format: "date-time", nullable: true })
+  confirmedAt!: string | null;
+
+  @ApiProperty({ type: String, nullable: true })
+  declarationVersion!: string | null;
+}
+
+export class ConfirmSourceAuthorizationDto {
+  @ApiProperty({ type: Number, example: 1 })
+  @IsInt()
+  @IsPositive()
+  sourceVersion!: number;
+
+  @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
+  @IsString()
+  @Matches(/^[a-f0-9]{64}$/)
+  sourceSha256!: string;
+
+  @ApiProperty({ type: Boolean, enum: [true] })
+  @Equals(true)
+  rightsConfirmed!: boolean;
+
+  @ApiProperty({ type: String, example: "source-rights-v1" })
+  @IsString()
+  @Length(1, 100)
   declarationVersion!: string;
 }
 
@@ -121,8 +178,11 @@ export class ProjectResponseDto {
   })
   status!: string;
 
-  @ApiProperty({ type: () => RightsResponseDto })
-  rights!: RightsResponseDto;
+  @ApiProperty({ type: () => RightsResponseDto, nullable: true })
+  rights!: RightsResponseDto | null;
+
+  @ApiProperty({ type: () => AuthorizationResponseDto })
+  authorization!: AuthorizationResponseDto;
 
   @ApiPropertyOptional({ type: () => FailureResponseDto })
   failure?: FailureResponseDto;
@@ -155,6 +215,11 @@ class ErrorDetailDto {
       "INTERNAL_ERROR",
       "DATABASE_FINALIZE_FAILED",
       "STORAGE_UPLOAD_FAILED",
+      "SOURCE_NOT_READY",
+      "SOURCE_VERSION_MISMATCH",
+      "RIGHTS_DECLARATION_OUTDATED",
+      "SOURCE_AUTHORIZATION_CONFLICT",
+      "SOURCE_NOT_AUTHORIZED",
     ],
   })
   code!: string;

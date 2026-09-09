@@ -59,11 +59,20 @@ describe("authoritative OpenAPI export", () => {
       components: {
         schemas: {
           CreateProjectUploadDto: {
-            required: ["name", "rightsConfirmed", "file"],
+            required: ["name", "file"],
           },
         },
       },
     });
+    const document = JSON.parse(first);
+    expect(document.components.schemas.ProjectResponseDto.required).toEqual(
+      expect.arrayContaining(["rights", "authorization"]),
+    );
+    expect(
+      document.components.schemas.AuthorizationResponseDto.required,
+    ).toEqual(
+      expect.arrayContaining(["basis", "confirmedAt", "declarationVersion"]),
+    );
     expect(() =>
       assertArtifactMatches(first, second, "OpenAPI JSON"),
     ).not.toThrow();

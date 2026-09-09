@@ -7,6 +7,7 @@ import {
   clearActiveAttempt,
   saveActiveAttempt,
 } from "~/features/upload-source/model/active-attempt-storage";
+import { saveLastSourceGate } from "~/features/upload-source/model/last-source-gate-storage";
 import SourceUploadWidget from "~/widgets/source-upload/ui/source-upload-widget.vue";
 
 const activeAttemptKey = "attempt-recovery-0001";
@@ -22,6 +23,14 @@ const readyProject = {
   rights: {
     confirmedAt: "2026-09-01T12:00:00.000Z",
     declarationVersion: "upload-rights-v1",
+  },
+  authorization: {
+    status: "NOT_REVIEWED",
+    sourceVersion: 1,
+    sourceSha256: "a".repeat(64),
+    basis: null,
+    confirmedAt: null,
+    declarationVersion: null,
   },
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-01T12:00:00.000Z",
@@ -59,6 +68,7 @@ type UploadXhr = {
   abort: ReturnType<typeof vi.fn>;
 };
 let uploadXhrs: UploadXhr[] = [];
+let nextXhrProject = readyProject;
 
 function createUploadXhr(): XMLHttpRequest {
   const xhr: UploadXhr = {
@@ -69,7 +79,7 @@ function createUploadXhr(): XMLHttpRequest {
     onerror: null,
     onabort: null,
     onload: null,
-    responseText: JSON.stringify(readyProject),
+    responseText: JSON.stringify(nextXhrProject),
     status: 201,
     open: vi.fn(),
     setRequestHeader: vi.fn(),
@@ -107,13 +117,103 @@ async function selectFile(
 
 describe("SourceUploadWidget runtime", () => {
   beforeEach(() => {
+    localStorage.clear();
     clearActiveAttempt();
     vi.stubGlobal("useRuntimeConfig", () => ({
       public: { apiBasePath: "/api/v1" },
     }));
     vi.stubGlobal("fetch", vi.fn());
     uploadXhrs = [];
+    nextXhrProject = readyProject;
     vi.stubGlobal("XMLHttpRequest", createUploadXhr);
+  });
+
+  it("requires a fresh confirmation when the displayed source tuple changes", async () => {
+    saveLastSourceGate(readyProject.id);
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(readyProject), { status: 200 }),
+    );
+    const wrapper = mountWidget();
+    await flushPromises();
+    await wrapper
+      .get<HTMLInputElement>("#source-rights-confirmed")
+      .setValue(true);
+    expect(
+      wrapper.get<HTMLInputElement>("#source-rights-confirmed").element.checked,
+    ).toBe(true);
+
+    nextXhrProject = {
+      ...readyProject,
+      id: "00000000-0000-4000-8000-000000000010",
+      name: "Second source",
+      authorization: {
+        ...readyProject.authorization,
+        sourceSha256: "b".repeat(64),
+      },
+      source: { ...readyProject.source, sha256: "b".repeat(64) },
+      artifact: { ...readyProject.artifact, sha256: "b".repeat(64) },
+    };
+    await wrapper.get("#project-name").setValue("Second source");
+    await selectFile(
+      wrapper.get<HTMLInputElement>('input[type="file"]'),
+      recoveredFile(),
+    );
+    await wrapper.get("form").trigger("submit");
+    await flushPromises();
+
+    expect(
+      wrapper.get<HTMLInputElement>("#source-rights-confirmed").element.checked,
+    ).toBe(false);
+    const confirmButton = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Подтвердить права"));
+    expect(confirmButton?.attributes("disabled")).toBeDefined();
+  });
+
+  it("requires a fresh checkbox for the displayed tuple and persists CLEARED after reload", async () => {
+    const cleared = {
+      ...readyProject,
+      authorization: {
+        ...readyProject.authorization,
+        status: "CLEARED",
+        basis: "EXPLICIT_CONFIRMATION",
+        confirmedAt: "2026-09-09T12:00:00.000Z",
+        declarationVersion: "source-rights-v1",
+      },
+    };
+    saveLastSourceGate(readyProject.id);
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(readyProject), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(cleared), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(cleared), { status: 200 }),
+      );
+    const wrapper = mountWidget();
+    await flushPromises();
+    expect(wrapper.text()).toContain("Проверка прав ожидается");
+    const confirmButton = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Подтвердить права"));
+    expect(confirmButton?.attributes("disabled")).toBeDefined();
+    await wrapper
+      .get<HTMLInputElement>("#source-rights-confirmed")
+      .setValue(true);
+    expect(confirmButton?.attributes("disabled")).toBeUndefined();
+    await confirmButton?.trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Права на эту версию подтверждены");
+
+    wrapper.unmount();
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(cleared), { status: 200 }),
+    );
+    const reloaded = mountWidget();
+    await flushPromises();
+    expect(reloaded.text()).toContain("Права на эту версию подтверждены");
   });
   afterEach(() => {
     clearActiveAttempt();
@@ -128,9 +228,9 @@ describe("SourceUploadWidget runtime", () => {
     expect(wrapper.get('input[type="file"]').attributes("accept")).toContain(
       "mp4",
     );
-    expect(
-      wrapper.get('[aria-describedby="rights-confirmed-error"]').exists(),
-    ).toBe(true);
+    expect(wrapper.text()).not.toContain(
+      "Подтверждаю, что у меня есть права на загрузку",
+    );
     expect(wrapper.get('[aria-live="polite"]').exists()).toBe(true);
   });
 

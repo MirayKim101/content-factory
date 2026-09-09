@@ -6,9 +6,16 @@ export function toProjectResponse(project: ProjectView): ProjectResponseDto {
     id: project.id,
     name: project.name,
     status: project.status,
-    rights: {
-      confirmedAt: project.rightsConfirmedAt.toISOString(),
-      declarationVersion: project.rightsDeclarationVersion,
+    rights:
+      project.rightsConfirmedAt && project.rightsDeclarationVersion
+        ? {
+            confirmedAt: project.rightsConfirmedAt.toISOString(),
+            declarationVersion: project.rightsDeclarationVersion,
+          }
+        : null,
+    authorization: {
+      ...project.authorization,
+      confirmedAt: project.authorization.confirmedAt?.toISOString() ?? null,
     },
     ...(project.failure ? { failure: project.failure } : {}),
     createdAt: project.createdAt.toISOString(),

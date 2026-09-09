@@ -35,14 +35,24 @@ enum ArtifactCleanupStatus {
   COMPLETED
 }
 
+enum SourceAuthorizationStatus {
+  NOT_REVIEWED
+  CLEARED
+}
+
+enum SourceAuthorizationBasis {
+  EXPLICIT_CONFIRMATION
+  LEGACY_ATTESTATION
+}
+
 model Project {
   id                       String          @id @db.Uuid
   idempotencyKey           String          @unique
   requestFingerprint       String
   name                     String
   status                   ProjectStatus   @default(SOURCE_PENDING)
-  rightsConfirmedAt        DateTime
-  rightsDeclarationVersion String
+  rightsConfirmedAt        DateTime?
+  rightsDeclarationVersion String?
   failureCode              String?
   failureMessage           String?
   createdAt                DateTime        @default(now())
@@ -52,18 +62,35 @@ model Project {
 }
 
 model VideoSource {
-  id               String            @id @db.Uuid
-  projectId        String            @unique @db.Uuid
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  status           VideoSourceStatus @default(PENDING)
-  sourceVersion    Int               @default(1)
+  id               String                @id @db.Uuid
+  projectId        String                @unique @db.Uuid
+  project          Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status           VideoSourceStatus     @default(PENDING)
+  sourceVersion    Int                   @default(1)
   originalFilename String
   contentType      String
   sizeBytes        BigInt
   sha256           String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
   artifacts        MediaArtifact[]
+  authorizations   SourceAuthorization[]
+}
+
+model SourceAuthorization {
+  sourceId           String                    @db.Uuid
+  source             VideoSource               @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceVersion      Int
+  sourceSha256       String                    @db.Char(64)
+  status             SourceAuthorizationStatus @default(NOT_REVIEWED)
+  basis              SourceAuthorizationBasis?
+  confirmedAt        DateTime?
+  declarationVersion String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  @@id([sourceId, sourceVersion])
+  @@index([sourceId, sourceVersion, sourceSha256, status], map: "SourceAuthorization_exact_clearance_idx")
 }
 
 model MediaArtifact {

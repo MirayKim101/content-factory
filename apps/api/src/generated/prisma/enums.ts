@@ -50,3 +50,19 @@ export const ArtifactCleanupStatus = {
 } as const
 
 export type ArtifactCleanupStatus = (typeof ArtifactCleanupStatus)[keyof typeof ArtifactCleanupStatus]
+
+
+export const SourceAuthorizationStatus = {
+  NOT_REVIEWED: 'NOT_REVIEWED',
+  CLEARED: 'CLEARED'
+} as const
+
+export type SourceAuthorizationStatus = (typeof SourceAuthorizationStatus)[keyof typeof SourceAuthorizationStatus]
+
+
+export const SourceAuthorizationBasis = {
+  EXPLICIT_CONFIRMATION: 'EXPLICIT_CONFIRMATION',
+  LEGACY_ATTESTATION: 'LEGACY_ATTESTATION'
+} as const
+
+export type SourceAuthorizationBasis = (typeof SourceAuthorizationBasis)[keyof typeof SourceAuthorizationBasis]

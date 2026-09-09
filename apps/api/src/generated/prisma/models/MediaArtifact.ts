@@ -823,10 +823,6 @@ export type EnumArtifactCleanupStatusFieldUpdateOperationsInput = {
   set?: $Enums.ArtifactCleanupStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type MediaArtifactCreateWithoutProjectInput = {
   id: string
   role: $Enums.MediaArtifactRole

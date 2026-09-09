@@ -18,7 +18,7 @@
 - Notion README от 2 сентября описывает нарезку, медиатеку и authorization
   и ссылается на `f93d1b1`. Этот commit отсутствует в доступных refs и Git
   objects; reflog содержит только clone, unreachable objects не найдены.
-- Текущий код содержит только загрузку и статус проекта. Восстановление
+- На момент clone код содержал только загрузку и статус проекта. Восстановление
   более свежего кода с Mac пока не подтверждено. Не считать возможности из
   Notion реализованными на этом компьютере без проверки исходников.
 - Notion: <https://app.notion.com/p/3cff0d44c82d8146a94dd8ff2ada3d08>.
@@ -34,9 +34,10 @@
   `6911369` (media runtime). Approved manual-cut contract сохранён локально
   в `e60b4ca`: `docs/engineering/RECOVERY-MANUAL-CUT.md`; его реализация
   начинается только после независимой приёмки authorization.
-- API был проверен на `127.0.0.1:3001`, затем намеренно остановлен перед
-  миграцией authorization; проверка health вернула connection refused.
-  Web остаётся на `127.0.0.1:3000`, но загрузка недоступна до запуска нового API.
+- API был намеренно остановлен перед миграцией authorization. После успешного
+  переноса 3/3 записей запущен только новый совместимый build на
+  `127.0.0.1:3001` (session 67766); health успешен.
+  Web остаётся на `127.0.0.1:3000`, загрузка снова доступна.
   При восстановлении сессии сначала проверить доступность; не предполагать,
   что процессы сохранились.
 - API verification на WSL: 22 unit и 12 integration tests passed, lint и
@@ -52,17 +53,37 @@
   Следующий срез — ADR-003 exact-version source authorization: design review
   завершён после исправления 3 замечаний (migration quiescence, отсутствие
   скрытой legacy-аттестации, replay после rotation декларации).
-  Один backend implementer выполняет вертикальный срез; review реализации
-  пока не проведён. Прогресс загрузки сохранён в commit `0b814b9`.
+  Реализация принята: независимый reviewer повторил все проверки и browser
+  smoke, итог CLEAN. Подробности в `RECOVERY-SOURCE-AUTHORIZATION-REVIEW.md`.
+  API 27 unit / 16 integration, web 32 tests; форматирование, lint, typecheck,
+  build и OpenAPI checks успешны. Прогресс загрузки сохранён
+  в commit `0b814b9`.
 - Снимок PostgreSQL повторно создан после остановки API:
   `tmp/recovery/before-source-authorization.dump` (0600, custom format,
   `pg_restore --list` успешен; 3 существующих источника). До запуска нового
-  совместимого API старый upload не включать. Migration и backfill counts
-  проверяются при остановленном API.
+  совместимого API старый upload не включать. Непосредственно перед миграцией
+  создан свежий проверенный snapshot
+  `tmp/recovery/before-source-authorization-20260909T1911.dump` (0600).
+  После миграции: sources=3, authorizations=3, legacy_cleared=3,
+  audit_preserved=3. Автоматический isolated migration test покрывает backfill
+  и полный rollback malformed legacy input; integration suite 16/16 passed.
+- Root browser authorization smoke прошёл: upload содержит только `name/file`,
+  legacy rights=null, `NOT_REVIEWED`; отдельное подтверждение даёт `CLEARED`,
+  повтор неизменяемый `200`, неверный checksum — безопасный `409`, reload
+  сохраняет audit, JavaScript errors отсутствуют. Evidence:
+  `tmp/browser-smoke/authorization-evidence.json`, скрипт и screenshots рядом.
+  Тестовый проект `e6a8313b-273c-4578-832a-afaa03679cb7` использует 6-секундный
+  synthetic MP4, пригодный для следующего cut smoke. Один предыдущий маленький
+  upload также сохранён после ошибки browser harness (Chromium не возвращает
+  multipart через postDataBuffer); это не ошибка приложения.
 - Media runtime image `content-factory-media-runtime:node24.15.0-ffmpeg5.1.9`
   собран из pinned Node/Debian и FFmpeg package. Orchestrator независимо
   повторил unprivileged, no-network encode/probe smoke: H.264 128×72,
   duration 1.000000. Worker и фоновые jobs пока не реализованы.
+- После независимого authorization smoke в локальной базе 6 источников и 6
+  authorization rows; 3 legacy clearance/audit сохранены. Reviewer также
+  проверил читаемость fresh dump. Следующий implementation owner реализует
+  `RECOVERY-MANUAL-CUT.md` по протоколу `RECOVERY-MANUAL-CUT-VERIFICATION.md`.
 - Исходные untracked файлы владельца: `.idea/` и `package-lock.json`; сохранять.
 - Владелец разрешил автономную работу и субагентов, с остановкой на 50% квоты.
   Чтение через `codex app-server --stdio`, JSON-RPC `initialize`, затем
@@ -73,7 +94,7 @@
   Не расходовать reset credits автоматически. Способ через `app-server proxy`
   в этой среде не сработал; standalone stdio завершать после ответа.
   Локальная команда: `node tmp/recovery/read-quota.cjs`; последняя проверка
-  2026-09-09 12:00 UTC: 23% использовано. Скрипт в `tmp/`
+  2026-09-09 12:15 UTC: 26% использовано. Скрипт в `tmp/`
   не хранится в Git.
 
 ## Предыдущий handoff с Mac (исторические результаты)

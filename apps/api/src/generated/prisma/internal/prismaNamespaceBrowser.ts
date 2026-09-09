@@ -53,6 +53,7 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Project: 'Project',
   VideoSource: 'VideoSource',
+  SourceAuthorization: 'SourceAuthorization',
   MediaArtifact: 'MediaArtifact'
 } as const
 
@@ -103,6 +104,21 @@ export const VideoSourceScalarFieldEnum = {
 } as const
 
 export type VideoSourceScalarFieldEnum = (typeof VideoSourceScalarFieldEnum)[keyof typeof VideoSourceScalarFieldEnum]
+
+
+export const SourceAuthorizationScalarFieldEnum = {
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  sourceSha256: 'sourceSha256',
+  status: 'status',
+  basis: 'basis',
+  confirmedAt: 'confirmedAt',
+  declarationVersion: 'declarationVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SourceAuthorizationScalarFieldEnum = (typeof SourceAuthorizationScalarFieldEnum)[keyof typeof SourceAuthorizationScalarFieldEnum]
 
 
 export const MediaArtifactScalarFieldEnum = {

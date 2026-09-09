@@ -35,6 +35,8 @@ function repository(
     requestCleanup: vi.fn(async () => undefined),
     findByIdempotencyKey: vi.fn(async () => null),
     getById: vi.fn(async () => projectView()),
+    confirmSourceAuthorization: vi.fn(),
+    isSourceAuthorized: vi.fn(async () => false),
     findStalePending: vi.fn(async () => []),
     findPendingCleanup: vi.fn(async () => []),
     markCleanupCompleted: vi.fn(async () => undefined),
@@ -61,6 +63,14 @@ function projectView(): ProjectView {
     status: "SOURCE_READY",
     rightsConfirmedAt: now,
     rightsDeclarationVersion: "upload-rights-v1",
+    authorization: {
+      status: "NOT_REVIEWED",
+      sourceVersion: 1,
+      sourceSha256: "a".repeat(64),
+      basis: null,
+      confirmedAt: null,
+      declarationVersion: null,
+    },
     createdAt: now,
     updatedAt: now,
     source: {
@@ -126,8 +136,32 @@ describe("CreateProjectWithSource", () => {
     expect(events).toEqual(["pending", "upload", "ready"]);
     await expect(access(path)).rejects.toThrow();
     expect(projects.createPendingUpload).toHaveBeenCalledWith(
-      expect.objectContaining({ name: "test", originalFilename: "source.mp4" }),
+      expect.objectContaining({
+        name: "test",
+        originalFilename: "source.mp4",
+        rightsConfirmedAt: null,
+        rightsDeclarationVersion: null,
+      }),
     );
+  });
+
+  it("keeps a literal legacy upload attestation factual but starts authorization pending", async () => {
+    const projects = repository();
+    const path = await temporaryMp4();
+    await new CreateProjectWithSource(projects, storage()).execute({
+      name: "legacy",
+      originalFilename: "source.mp4",
+      filePath: path,
+      idempotencyKey: "legacy-key-0001",
+      legacyRightsConfirmed: true,
+    });
+    expect(projects.createPendingUpload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rightsConfirmedAt: expect.any(Date),
+        rightsDeclarationVersion: "upload-rights-v1",
+      }),
+    );
+    expect(projectView().authorization.status).toBe("NOT_REVIEWED");
   });
 
   it("marks stable failure and cleans temp when storage fails", async () => {

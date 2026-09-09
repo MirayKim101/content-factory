@@ -189,8 +189,8 @@ export type ProjectGroupByOutputType = {
   requestFingerprint: string
   name: string
   status: $Enums.ProjectStatus
-  rightsConfirmedAt: Date
-  rightsDeclarationVersion: string
+  rightsConfirmedAt: Date | null
+  rightsDeclarationVersion: string | null
   failureCode: string | null
   failureMessage: string | null
   createdAt: Date
@@ -224,8 +224,8 @@ export type ProjectWhereInput = {
   requestFingerprint?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
   status?: Prisma.EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
-  rightsDeclarationVersion?: Prisma.StringFilter<"Project"> | string
+  rightsConfirmedAt?: Prisma.DateTimeNullableFilter<"Project"> | Date | string | null
+  rightsDeclarationVersion?: Prisma.StringNullableFilter<"Project"> | string | null
   failureCode?: Prisma.StringNullableFilter<"Project"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"Project"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
@@ -240,8 +240,8 @@ export type ProjectOrderByWithRelationInput = {
   requestFingerprint?: Prisma.SortOrder
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  rightsConfirmedAt?: Prisma.SortOrder
-  rightsDeclarationVersion?: Prisma.SortOrder
+  rightsConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  rightsDeclarationVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
   failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -259,8 +259,8 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   requestFingerprint?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
   status?: Prisma.EnumProjectStatusFilter<"Project"> | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
-  rightsDeclarationVersion?: Prisma.StringFilter<"Project"> | string
+  rightsConfirmedAt?: Prisma.DateTimeNullableFilter<"Project"> | Date | string | null
+  rightsDeclarationVersion?: Prisma.StringNullableFilter<"Project"> | string | null
   failureCode?: Prisma.StringNullableFilter<"Project"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"Project"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
@@ -275,8 +275,8 @@ export type ProjectOrderByWithAggregationInput = {
   requestFingerprint?: Prisma.SortOrder
   name?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  rightsConfirmedAt?: Prisma.SortOrder
-  rightsDeclarationVersion?: Prisma.SortOrder
+  rightsConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  rightsDeclarationVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
   failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -295,8 +295,8 @@ export type ProjectScalarWhereWithAggregatesInput = {
   requestFingerprint?: Prisma.StringWithAggregatesFilter<"Project"> | string
   name?: Prisma.StringWithAggregatesFilter<"Project"> | string
   status?: Prisma.EnumProjectStatusWithAggregatesFilter<"Project"> | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
-  rightsDeclarationVersion?: Prisma.StringWithAggregatesFilter<"Project"> | string
+  rightsConfirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Project"> | Date | string | null
+  rightsDeclarationVersion?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   failureCode?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   failureMessage?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
@@ -309,8 +309,8 @@ export type ProjectCreateInput = {
   requestFingerprint: string
   name: string
   status?: $Enums.ProjectStatus
-  rightsConfirmedAt: Date | string
-  rightsDeclarationVersion: string
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
   failureCode?: string | null
   failureMessage?: string | null
   createdAt?: Date | string
@@ -325,8 +325,8 @@ export type ProjectUncheckedCreateInput = {
   requestFingerprint: string
   name: string
   status?: $Enums.ProjectStatus
-  rightsConfirmedAt: Date | string
-  rightsDeclarationVersion: string
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
   failureCode?: string | null
   failureMessage?: string | null
   createdAt?: Date | string
@@ -341,8 +341,8 @@ export type ProjectUpdateInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -357,8 +357,8 @@ export type ProjectUncheckedUpdateInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -373,8 +373,8 @@ export type ProjectCreateManyInput = {
   requestFingerprint: string
   name: string
   status?: $Enums.ProjectStatus
-  rightsConfirmedAt: Date | string
-  rightsDeclarationVersion: string
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
   failureCode?: string | null
   failureMessage?: string | null
   createdAt?: Date | string
@@ -387,8 +387,8 @@ export type ProjectUpdateManyMutationInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -401,8 +401,8 @@ export type ProjectUncheckedUpdateManyInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -464,12 +464,16 @@ export type EnumProjectStatusFieldUpdateOperationsInput = {
   set?: $Enums.ProjectStatus
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 export type ProjectCreateNestedOneWithoutSourceInput = {
@@ -506,8 +510,8 @@ export type ProjectCreateWithoutSourceInput = {
   requestFingerprint: string
   name: string
   status?: $Enums.ProjectStatus
-  rightsConfirmedAt: Date | string
-  rightsDeclarationVersion: string
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
   failureCode?: string | null
   failureMessage?: string | null
   createdAt?: Date | string
@@ -521,8 +525,8 @@ export type ProjectUncheckedCreateWithoutSourceInput = {
   requestFingerprint: string
   name: string
   status?: $Enums.ProjectStatus
-  rightsConfirmedAt: Date | string
-  rightsDeclarationVersion: string
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
   failureCode?: string | null
   failureMessage?: string | null
   createdAt?: Date | string
@@ -552,8 +556,8 @@ export type ProjectUpdateWithoutSourceInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -567,8 +571,8 @@ export type ProjectUncheckedUpdateWithoutSourceInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -582,8 +586,8 @@ export type ProjectCreateWithoutArtifactsInput = {
   requestFingerprint: string
   name: string
   status?: $Enums.ProjectStatus
-  rightsConfirmedAt: Date | string
-  rightsDeclarationVersion: string
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
   failureCode?: string | null
   failureMessage?: string | null
   createdAt?: Date | string
@@ -597,8 +601,8 @@ export type ProjectUncheckedCreateWithoutArtifactsInput = {
   requestFingerprint: string
   name: string
   status?: $Enums.ProjectStatus
-  rightsConfirmedAt: Date | string
-  rightsDeclarationVersion: string
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
   failureCode?: string | null
   failureMessage?: string | null
   createdAt?: Date | string
@@ -628,8 +632,8 @@ export type ProjectUpdateWithoutArtifactsInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -643,8 +647,8 @@ export type ProjectUncheckedUpdateWithoutArtifactsInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-  rightsConfirmedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  rightsDeclarationVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -763,8 +767,8 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     requestFingerprint: string
     name: string
     status: $Enums.ProjectStatus
-    rightsConfirmedAt: Date
-    rightsDeclarationVersion: string
+    rightsConfirmedAt: Date | null
+    rightsDeclarationVersion: string | null
     failureCode: string | null
     failureMessage: string | null
     createdAt: Date

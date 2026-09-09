@@ -52,6 +52,11 @@ export type Project = Prisma.ProjectModel
  */
 export type VideoSource = Prisma.VideoSourceModel
 /**
+ * Model SourceAuthorization
+ * 
+ */
+export type SourceAuthorization = Prisma.SourceAuthorizationModel
+/**
  * Model MediaArtifact
  * 
  */

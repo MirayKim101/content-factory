@@ -262,6 +262,7 @@ export type VideoSourceWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"VideoSource"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   artifacts?: Prisma.MediaArtifactListRelationFilter
+  authorizations?: Prisma.SourceAuthorizationListRelationFilter
 }
 
 export type VideoSourceOrderByWithRelationInput = {
@@ -277,6 +278,7 @@ export type VideoSourceOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   artifacts?: Prisma.MediaArtifactOrderByRelationAggregateInput
+  authorizations?: Prisma.SourceAuthorizationOrderByRelationAggregateInput
 }
 
 export type VideoSourceWhereUniqueInput = Prisma.AtLeast<{
@@ -295,6 +297,7 @@ export type VideoSourceWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"VideoSource"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   artifacts?: Prisma.MediaArtifactListRelationFilter
+  authorizations?: Prisma.SourceAuthorizationListRelationFilter
 }, "id" | "projectId">
 
 export type VideoSourceOrderByWithAggregationInput = {
@@ -343,6 +346,7 @@ export type VideoSourceCreateInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutSourceInput
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateInput = {
@@ -357,6 +361,7 @@ export type VideoSourceUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUpdateInput = {
@@ -371,6 +376,7 @@ export type VideoSourceUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutSourceNestedInput
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateInput = {
@@ -385,6 +391,7 @@ export type VideoSourceUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateManyInput = {
@@ -536,6 +543,20 @@ export type BigIntFieldUpdateOperationsInput = {
   divide?: bigint | number
 }
 
+export type VideoSourceCreateNestedOneWithoutAuthorizationsInput = {
+  create?: Prisma.XOR<Prisma.VideoSourceCreateWithoutAuthorizationsInput, Prisma.VideoSourceUncheckedCreateWithoutAuthorizationsInput>
+  connectOrCreate?: Prisma.VideoSourceCreateOrConnectWithoutAuthorizationsInput
+  connect?: Prisma.VideoSourceWhereUniqueInput
+}
+
+export type VideoSourceUpdateOneRequiredWithoutAuthorizationsNestedInput = {
+  create?: Prisma.XOR<Prisma.VideoSourceCreateWithoutAuthorizationsInput, Prisma.VideoSourceUncheckedCreateWithoutAuthorizationsInput>
+  connectOrCreate?: Prisma.VideoSourceCreateOrConnectWithoutAuthorizationsInput
+  upsert?: Prisma.VideoSourceUpsertWithoutAuthorizationsInput
+  connect?: Prisma.VideoSourceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VideoSourceUpdateToOneWithWhereWithoutAuthorizationsInput, Prisma.VideoSourceUpdateWithoutAuthorizationsInput>, Prisma.VideoSourceUncheckedUpdateWithoutAuthorizationsInput>
+}
+
 export type VideoSourceCreateNestedOneWithoutArtifactsInput = {
   create?: Prisma.XOR<Prisma.VideoSourceCreateWithoutArtifactsInput, Prisma.VideoSourceUncheckedCreateWithoutArtifactsInput>
   connectOrCreate?: Prisma.VideoSourceCreateOrConnectWithoutArtifactsInput
@@ -561,6 +582,7 @@ export type VideoSourceCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutProjectInput = {
@@ -574,6 +596,7 @@ export type VideoSourceUncheckedCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutProjectInput = {
@@ -603,10 +626,84 @@ export type VideoSourceUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumVideoSourceStatusFieldUpdateOperationsInput | $Enums.VideoSourceStatus
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
+}
+
+export type VideoSourceCreateWithoutAuthorizationsInput = {
+  id: string
+  status?: $Enums.VideoSourceStatus
+  sourceVersion?: number
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutSourceInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
+}
+
+export type VideoSourceUncheckedCreateWithoutAuthorizationsInput = {
+  id: string
+  projectId: string
+  status?: $Enums.VideoSourceStatus
+  sourceVersion?: number
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
+}
+
+export type VideoSourceCreateOrConnectWithoutAuthorizationsInput = {
+  where: Prisma.VideoSourceWhereUniqueInput
+  create: Prisma.XOR<Prisma.VideoSourceCreateWithoutAuthorizationsInput, Prisma.VideoSourceUncheckedCreateWithoutAuthorizationsInput>
+}
+
+export type VideoSourceUpsertWithoutAuthorizationsInput = {
+  update: Prisma.XOR<Prisma.VideoSourceUpdateWithoutAuthorizationsInput, Prisma.VideoSourceUncheckedUpdateWithoutAuthorizationsInput>
+  create: Prisma.XOR<Prisma.VideoSourceCreateWithoutAuthorizationsInput, Prisma.VideoSourceUncheckedCreateWithoutAuthorizationsInput>
+  where?: Prisma.VideoSourceWhereInput
+}
+
+export type VideoSourceUpdateToOneWithWhereWithoutAuthorizationsInput = {
+  where?: Prisma.VideoSourceWhereInput
+  data: Prisma.XOR<Prisma.VideoSourceUpdateWithoutAuthorizationsInput, Prisma.VideoSourceUncheckedUpdateWithoutAuthorizationsInput>
+}
+
+export type VideoSourceUpdateWithoutAuthorizationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumVideoSourceStatusFieldUpdateOperationsInput | $Enums.VideoSourceStatus
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutSourceNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
+}
+
+export type VideoSourceUncheckedUpdateWithoutAuthorizationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumVideoSourceStatusFieldUpdateOperationsInput | $Enums.VideoSourceStatus
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
@@ -629,6 +726,7 @@ export type VideoSourceCreateWithoutArtifactsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutArtifactsInput = {
@@ -642,6 +740,7 @@ export type VideoSourceUncheckedCreateWithoutArtifactsInput = {
   sha256: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutArtifactsInput = {
@@ -671,6 +770,7 @@ export type VideoSourceUpdateWithoutArtifactsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutArtifactsInput = {
@@ -684,6 +784,7 @@ export type VideoSourceUncheckedUpdateWithoutArtifactsInput = {
   sha256?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 
@@ -693,10 +794,12 @@ export type VideoSourceUncheckedUpdateWithoutArtifactsInput = {
 
 export type VideoSourceCountOutputType = {
   artifacts: number
+  authorizations: number
 }
 
 export type VideoSourceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   artifacts?: boolean | VideoSourceCountOutputTypeCountArtifactsArgs
+  authorizations?: boolean | VideoSourceCountOutputTypeCountAuthorizationsArgs
 }
 
 /**
@@ -716,6 +819,13 @@ export type VideoSourceCountOutputTypeCountArtifactsArgs<ExtArgs extends runtime
   where?: Prisma.MediaArtifactWhereInput
 }
 
+/**
+ * VideoSourceCountOutputType without action
+ */
+export type VideoSourceCountOutputTypeCountAuthorizationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SourceAuthorizationWhereInput
+}
+
 
 export type VideoSourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -730,6 +840,7 @@ export type VideoSourceSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   artifacts?: boolean | Prisma.VideoSource$artifactsArgs<ExtArgs>
+  authorizations?: boolean | Prisma.VideoSource$authorizationsArgs<ExtArgs>
   _count?: boolean | Prisma.VideoSourceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["videoSource"]>
 
@@ -778,6 +889,7 @@ export type VideoSourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type VideoSourceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   artifacts?: boolean | Prisma.VideoSource$artifactsArgs<ExtArgs>
+  authorizations?: boolean | Prisma.VideoSource$authorizationsArgs<ExtArgs>
   _count?: boolean | Prisma.VideoSourceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VideoSourceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -792,6 +904,7 @@ export type $VideoSourcePayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
     artifacts: Prisma.$MediaArtifactPayload<ExtArgs>[]
+    authorizations: Prisma.$SourceAuthorizationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1200,6 +1313,7 @@ export interface Prisma__VideoSourceClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   artifacts<T extends Prisma.VideoSource$artifactsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$artifactsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MediaArtifactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  authorizations<T extends Prisma.VideoSource$authorizationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$authorizationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourceAuthorizationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1661,6 +1775,30 @@ export type VideoSource$artifactsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.MediaArtifactScalarFieldEnum | Prisma.MediaArtifactScalarFieldEnum[]
+}
+
+/**
+ * VideoSource.authorizations
+ */
+export type VideoSource$authorizationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SourceAuthorization
+   */
+  select?: Prisma.SourceAuthorizationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SourceAuthorization
+   */
+  omit?: Prisma.SourceAuthorizationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SourceAuthorizationInclude<ExtArgs> | null
+  where?: Prisma.SourceAuthorizationWhereInput
+  orderBy?: Prisma.SourceAuthorizationOrderByWithRelationInput | Prisma.SourceAuthorizationOrderByWithRelationInput[]
+  cursor?: Prisma.SourceAuthorizationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SourceAuthorizationScalarFieldEnum | Prisma.SourceAuthorizationScalarFieldEnum[]
 }
 
 /**
