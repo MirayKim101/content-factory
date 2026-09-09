@@ -38,10 +38,100 @@ export type MediaArtifactStatus = (typeof MediaArtifactStatus)[keyof typeof Medi
 
 export const MediaArtifactRole = {
   SOURCE: 'SOURCE',
-  HORIZONTAL_CUT: 'HORIZONTAL_CUT'
+  CUT_RESULT: 'CUT_RESULT',
+  HORIZONTAL_ASSEMBLY_RESULT: 'HORIZONTAL_ASSEMBLY_RESULT',
+  EDITORIAL_EXPORT_PACKAGE: 'EDITORIAL_EXPORT_PACKAGE'
 } as const
 
 export type MediaArtifactRole = (typeof MediaArtifactRole)[keyof typeof MediaArtifactRole]
+
+
+export const PipelineJobType = {
+  SOURCE_PROBE: 'SOURCE_PROBE',
+  CUT_SEGMENT: 'CUT_SEGMENT',
+  MONTAGE_ASSET_PROBE: 'MONTAGE_ASSET_PROBE',
+  ASSEMBLE_HORIZONTAL: 'ASSEMBLE_HORIZONTAL',
+  EXPORT_EDITORIAL_PACKAGE: 'EXPORT_EDITORIAL_PACKAGE'
+} as const
+
+export type PipelineJobType = (typeof PipelineJobType)[keyof typeof PipelineJobType]
+
+
+export const AssemblyProgressPhase = {
+  DOWNLOAD: 'DOWNLOAD',
+  READ_INPUTS: 'READ_INPUTS',
+  WRITE_ARCHIVE: 'WRITE_ARCHIVE',
+  AUDIO_ANALYSIS: 'AUDIO_ANALYSIS',
+  ENCODE: 'ENCODE',
+  OUTPUT_PROBE: 'OUTPUT_PROBE',
+  OUTPUT_HASH: 'OUTPUT_HASH',
+  UPLOAD: 'UPLOAD',
+  FINALIZE: 'FINALIZE'
+} as const
+
+export type AssemblyProgressPhase = (typeof AssemblyProgressPhase)[keyof typeof AssemblyProgressPhase]
+
+
+export const MontageAssetKind = {
+  ADVERTISEMENT: 'ADVERTISEMENT',
+  INTRO: 'INTRO',
+  OUTRO: 'OUTRO',
+  BANNER: 'BANNER'
+} as const
+
+export type MontageAssetKind = (typeof MontageAssetKind)[keyof typeof MontageAssetKind]
+
+
+export const MontageAssetStatus = {
+  UPLOADING: 'UPLOADING',
+  PROBE_PENDING: 'PROBE_PENDING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type MontageAssetStatus = (typeof MontageAssetStatus)[keyof typeof MontageAssetStatus]
+
+
+export const AssemblyAssetRole = {
+  INTRO: 'INTRO',
+  OUTRO: 'OUTRO',
+  ADVERTISEMENT: 'ADVERTISEMENT',
+  BANNER: 'BANNER'
+} as const
+
+export type AssemblyAssetRole = (typeof AssemblyAssetRole)[keyof typeof AssemblyAssetRole]
+
+
+export const AssemblyOverlayPosition = {
+  TOP_LEFT: 'TOP_LEFT',
+  TOP_RIGHT: 'TOP_RIGHT',
+  BOTTOM_LEFT: 'BOTTOM_LEFT',
+  BOTTOM_RIGHT: 'BOTTOM_RIGHT'
+} as const
+
+export type AssemblyOverlayPosition = (typeof AssemblyOverlayPosition)[keyof typeof AssemblyOverlayPosition]
+
+
+export const PipelineJobState = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  RETRY_WAIT: 'RETRY_WAIT',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type PipelineJobState = (typeof PipelineJobState)[keyof typeof PipelineJobState]
+
+
+export const JobAttemptState = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  FAILED_RETRYABLE: 'FAILED_RETRYABLE',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type JobAttemptState = (typeof JobAttemptState)[keyof typeof JobAttemptState]
 
 
 export const ArtifactCleanupStatus = {
@@ -62,37 +152,89 @@ export type SourceAuthorizationStatus = (typeof SourceAuthorizationStatus)[keyof
 
 
 export const SourceAuthorizationBasis = {
-  EXPLICIT_CONFIRMATION: 'EXPLICIT_CONFIRMATION',
-  LEGACY_ATTESTATION: 'LEGACY_ATTESTATION'
+  LEGACY_ATTESTATION: 'LEGACY_ATTESTATION',
+  OPERATOR_ATTESTATION: 'OPERATOR_ATTESTATION',
+  LOCAL_DEVELOPMENT_AUTO: 'LOCAL_DEVELOPMENT_AUTO'
 } as const
 
 export type SourceAuthorizationBasis = (typeof SourceAuthorizationBasis)[keyof typeof SourceAuthorizationBasis]
 
 
-export const PipelineJobType = {
-  HORIZONTAL_CUT: 'HORIZONTAL_CUT'
+export const EditorialAssetType = {
+  THUMBNAIL: 'THUMBNAIL'
 } as const
 
-export type PipelineJobType = (typeof PipelineJobType)[keyof typeof PipelineJobType]
+export type EditorialAssetType = (typeof EditorialAssetType)[keyof typeof EditorialAssetType]
 
 
-export const PipelineJobState = {
-  QUEUED: 'QUEUED',
-  RUNNING: 'RUNNING',
-  FAILED_RETRYABLE: 'FAILED_RETRYABLE',
-  SUCCEEDED: 'SUCCEEDED',
+export const EditorialAssetStatus = {
+  PENDING: 'PENDING',
+  READY: 'READY',
   FAILED_FINAL: 'FAILED_FINAL'
 } as const
 
-export type PipelineJobState = (typeof PipelineJobState)[keyof typeof PipelineJobState]
+export type EditorialAssetStatus = (typeof EditorialAssetStatus)[keyof typeof EditorialAssetStatus]
 
 
-export const JobAttemptState = {
-  RUNNING: 'RUNNING',
-  FAILED_RETRYABLE: 'FAILED_RETRYABLE',
-  FAILED_FINAL: 'FAILED_FINAL',
-  SUCCEEDED: 'SUCCEEDED',
-  ABANDONED: 'ABANDONED'
+export const EditorialOperationType = {
+  CREATE_EDITORIAL_APPROVAL: 'CREATE_EDITORIAL_APPROVAL',
+  CREATE_EDITORIAL_EXPORT: 'CREATE_EDITORIAL_EXPORT'
 } as const
 
-export type JobAttemptState = (typeof JobAttemptState)[keyof typeof JobAttemptState]
+export type EditorialOperationType = (typeof EditorialOperationType)[keyof typeof EditorialOperationType]
+
+
+export const CreatorLikenessPolicy = {
+  NO_REALISTIC_LIKENESS: 'NO_REALISTIC_LIKENESS',
+  CLEARED_REFERENCE_ONLY: 'CLEARED_REFERENCE_ONLY'
+} as const
+
+export type CreatorLikenessPolicy = (typeof CreatorLikenessPolicy)[keyof typeof CreatorLikenessPolicy]
+
+
+export const CreatorReferenceAssetStatus = {
+  PENDING: 'PENDING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type CreatorReferenceAssetStatus = (typeof CreatorReferenceAssetStatus)[keyof typeof CreatorReferenceAssetStatus]
+
+
+export const CreatorReferenceAuthorizationStatus = {
+  NOT_REVIEWED: 'NOT_REVIEWED',
+  CLEARED: 'CLEARED',
+  REVOKED: 'REVOKED'
+} as const
+
+export type CreatorReferenceAuthorizationStatus = (typeof CreatorReferenceAuthorizationStatus)[keyof typeof CreatorReferenceAuthorizationStatus]
+
+
+export const AiContentOperationType = {
+  CREATE_CREATOR_PROFILE: 'CREATE_CREATOR_PROFILE',
+  UPDATE_CREATOR_PROFILE: 'UPDATE_CREATOR_PROFILE',
+  UPLOAD_CREATOR_REFERENCE: 'UPLOAD_CREATOR_REFERENCE',
+  UPDATE_CREATOR_REFERENCE_AUTHORIZATION: 'UPDATE_CREATOR_REFERENCE_AUTHORIZATION',
+  SET_DEFAULT_CREATOR_REFERENCE: 'SET_DEFAULT_CREATOR_REFERENCE',
+  PUT_SOURCE_EDITORIAL_CONTEXT: 'PUT_SOURCE_EDITORIAL_CONTEXT',
+  PUT_CUT_EDITORIAL_PROMPT: 'PUT_CUT_EDITORIAL_PROMPT'
+} as const
+
+export type AiContentOperationType = (typeof AiContentOperationType)[keyof typeof AiContentOperationType]
+
+
+export const EditorialComponentType = {
+  METADATA: 'METADATA',
+  THUMBNAIL: 'THUMBNAIL'
+} as const
+
+export type EditorialComponentType = (typeof EditorialComponentType)[keyof typeof EditorialComponentType]
+
+
+export const EditorialProvenanceMode = {
+  MANUAL: 'MANUAL',
+  AI_ASSISTED: 'AI_ASSISTED',
+  MIXED: 'MIXED'
+} as const
+
+export type EditorialProvenanceMode = (typeof EditorialProvenanceMode)[keyof typeof EditorialProvenanceMode]

@@ -28,20 +28,22 @@ export type AggregateSourceAuthorization = {
 
 export type SourceAuthorizationAvgAggregateOutputType = {
   sourceVersion: number | null
+  revision: number | null
 }
 
 export type SourceAuthorizationSumAggregateOutputType = {
   sourceVersion: number | null
+  revision: number | null
 }
 
 export type SourceAuthorizationMinAggregateOutputType = {
   sourceId: string | null
   sourceVersion: number | null
-  sourceSha256: string | null
   status: $Enums.SourceAuthorizationStatus | null
   basis: $Enums.SourceAuthorizationBasis | null
-  confirmedAt: Date | null
   declarationVersion: string | null
+  decidedAt: Date | null
+  revision: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -49,11 +51,11 @@ export type SourceAuthorizationMinAggregateOutputType = {
 export type SourceAuthorizationMaxAggregateOutputType = {
   sourceId: string | null
   sourceVersion: number | null
-  sourceSha256: string | null
   status: $Enums.SourceAuthorizationStatus | null
   basis: $Enums.SourceAuthorizationBasis | null
-  confirmedAt: Date | null
   declarationVersion: string | null
+  decidedAt: Date | null
+  revision: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -61,11 +63,11 @@ export type SourceAuthorizationMaxAggregateOutputType = {
 export type SourceAuthorizationCountAggregateOutputType = {
   sourceId: number
   sourceVersion: number
-  sourceSha256: number
   status: number
   basis: number
-  confirmedAt: number
   declarationVersion: number
+  decidedAt: number
+  revision: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -74,20 +76,22 @@ export type SourceAuthorizationCountAggregateOutputType = {
 
 export type SourceAuthorizationAvgAggregateInputType = {
   sourceVersion?: true
+  revision?: true
 }
 
 export type SourceAuthorizationSumAggregateInputType = {
   sourceVersion?: true
+  revision?: true
 }
 
 export type SourceAuthorizationMinAggregateInputType = {
   sourceId?: true
   sourceVersion?: true
-  sourceSha256?: true
   status?: true
   basis?: true
-  confirmedAt?: true
   declarationVersion?: true
+  decidedAt?: true
+  revision?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -95,11 +99,11 @@ export type SourceAuthorizationMinAggregateInputType = {
 export type SourceAuthorizationMaxAggregateInputType = {
   sourceId?: true
   sourceVersion?: true
-  sourceSha256?: true
   status?: true
   basis?: true
-  confirmedAt?: true
   declarationVersion?: true
+  decidedAt?: true
+  revision?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -107,11 +111,11 @@ export type SourceAuthorizationMaxAggregateInputType = {
 export type SourceAuthorizationCountAggregateInputType = {
   sourceId?: true
   sourceVersion?: true
-  sourceSha256?: true
   status?: true
   basis?: true
-  confirmedAt?: true
   declarationVersion?: true
+  decidedAt?: true
+  revision?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -206,11 +210,11 @@ export type SourceAuthorizationGroupByArgs<ExtArgs extends runtime.Types.Extensi
 export type SourceAuthorizationGroupByOutputType = {
   sourceId: string
   sourceVersion: number
-  sourceSha256: string
   status: $Enums.SourceAuthorizationStatus
   basis: $Enums.SourceAuthorizationBasis | null
-  confirmedAt: Date | null
   declarationVersion: string | null
+  decidedAt: Date | null
+  revision: number
   createdAt: Date
   updatedAt: Date
   _count: SourceAuthorizationCountAggregateOutputType | null
@@ -239,13 +243,13 @@ export type SourceAuthorizationWhereInput = {
   AND?: Prisma.SourceAuthorizationWhereInput | Prisma.SourceAuthorizationWhereInput[]
   OR?: Prisma.SourceAuthorizationWhereInput[]
   NOT?: Prisma.SourceAuthorizationWhereInput | Prisma.SourceAuthorizationWhereInput[]
-  sourceId?: Prisma.UuidFilter<"SourceAuthorization"> | string
+  sourceId?: Prisma.StringFilter<"SourceAuthorization"> | string
   sourceVersion?: Prisma.IntFilter<"SourceAuthorization"> | number
-  sourceSha256?: Prisma.StringFilter<"SourceAuthorization"> | string
   status?: Prisma.EnumSourceAuthorizationStatusFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationStatus
   basis?: Prisma.EnumSourceAuthorizationBasisNullableFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.DateTimeNullableFilter<"SourceAuthorization"> | Date | string | null
   declarationVersion?: Prisma.StringNullableFilter<"SourceAuthorization"> | string | null
+  decidedAt?: Prisma.DateTimeNullableFilter<"SourceAuthorization"> | Date | string | null
+  revision?: Prisma.IntFilter<"SourceAuthorization"> | number
   createdAt?: Prisma.DateTimeFilter<"SourceAuthorization"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SourceAuthorization"> | Date | string
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
@@ -254,11 +258,11 @@ export type SourceAuthorizationWhereInput = {
 export type SourceAuthorizationOrderByWithRelationInput = {
   sourceId?: Prisma.SortOrder
   sourceVersion?: Prisma.SortOrder
-  sourceSha256?: Prisma.SortOrder
   status?: Prisma.SortOrder
   basis?: Prisma.SortOrderInput | Prisma.SortOrder
-  confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   declarationVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  decidedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  revision?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   source?: Prisma.VideoSourceOrderByWithRelationInput
@@ -269,26 +273,26 @@ export type SourceAuthorizationWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.SourceAuthorizationWhereInput | Prisma.SourceAuthorizationWhereInput[]
   OR?: Prisma.SourceAuthorizationWhereInput[]
   NOT?: Prisma.SourceAuthorizationWhereInput | Prisma.SourceAuthorizationWhereInput[]
-  sourceId?: Prisma.UuidFilter<"SourceAuthorization"> | string
+  sourceId?: Prisma.StringFilter<"SourceAuthorization"> | string
   sourceVersion?: Prisma.IntFilter<"SourceAuthorization"> | number
-  sourceSha256?: Prisma.StringFilter<"SourceAuthorization"> | string
   status?: Prisma.EnumSourceAuthorizationStatusFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationStatus
   basis?: Prisma.EnumSourceAuthorizationBasisNullableFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.DateTimeNullableFilter<"SourceAuthorization"> | Date | string | null
   declarationVersion?: Prisma.StringNullableFilter<"SourceAuthorization"> | string | null
+  decidedAt?: Prisma.DateTimeNullableFilter<"SourceAuthorization"> | Date | string | null
+  revision?: Prisma.IntFilter<"SourceAuthorization"> | number
   createdAt?: Prisma.DateTimeFilter<"SourceAuthorization"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SourceAuthorization"> | Date | string
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
-}, "sourceId_sourceVersion">
+}, "sourceId_sourceVersion" | "sourceId_sourceVersion">
 
 export type SourceAuthorizationOrderByWithAggregationInput = {
   sourceId?: Prisma.SortOrder
   sourceVersion?: Prisma.SortOrder
-  sourceSha256?: Prisma.SortOrder
   status?: Prisma.SortOrder
   basis?: Prisma.SortOrderInput | Prisma.SortOrder
-  confirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   declarationVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  decidedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  revision?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SourceAuthorizationCountOrderByAggregateInput
@@ -302,24 +306,24 @@ export type SourceAuthorizationScalarWhereWithAggregatesInput = {
   AND?: Prisma.SourceAuthorizationScalarWhereWithAggregatesInput | Prisma.SourceAuthorizationScalarWhereWithAggregatesInput[]
   OR?: Prisma.SourceAuthorizationScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SourceAuthorizationScalarWhereWithAggregatesInput | Prisma.SourceAuthorizationScalarWhereWithAggregatesInput[]
-  sourceId?: Prisma.UuidWithAggregatesFilter<"SourceAuthorization"> | string
+  sourceId?: Prisma.StringWithAggregatesFilter<"SourceAuthorization"> | string
   sourceVersion?: Prisma.IntWithAggregatesFilter<"SourceAuthorization"> | number
-  sourceSha256?: Prisma.StringWithAggregatesFilter<"SourceAuthorization"> | string
   status?: Prisma.EnumSourceAuthorizationStatusWithAggregatesFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationStatus
   basis?: Prisma.EnumSourceAuthorizationBasisNullableWithAggregatesFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SourceAuthorization"> | Date | string | null
   declarationVersion?: Prisma.StringNullableWithAggregatesFilter<"SourceAuthorization"> | string | null
+  decidedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"SourceAuthorization"> | Date | string | null
+  revision?: Prisma.IntWithAggregatesFilter<"SourceAuthorization"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SourceAuthorization"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SourceAuthorization"> | Date | string
 }
 
 export type SourceAuthorizationCreateInput = {
   sourceVersion: number
-  sourceSha256: string
   status?: $Enums.SourceAuthorizationStatus
   basis?: $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Date | string | null
   declarationVersion?: string | null
+  decidedAt?: Date | string | null
+  revision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   source: Prisma.VideoSourceCreateNestedOneWithoutAuthorizationsInput
@@ -328,22 +332,22 @@ export type SourceAuthorizationCreateInput = {
 export type SourceAuthorizationUncheckedCreateInput = {
   sourceId: string
   sourceVersion: number
-  sourceSha256: string
   status?: $Enums.SourceAuthorizationStatus
   basis?: $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Date | string | null
   declarationVersion?: string | null
+  decidedAt?: Date | string | null
+  revision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SourceAuthorizationUpdateInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSourceAuthorizationStatusFieldUpdateOperationsInput | $Enums.SourceAuthorizationStatus
   basis?: Prisma.NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutAuthorizationsNestedInput
@@ -352,11 +356,11 @@ export type SourceAuthorizationUpdateInput = {
 export type SourceAuthorizationUncheckedUpdateInput = {
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSourceAuthorizationStatusFieldUpdateOperationsInput | $Enums.SourceAuthorizationStatus
   basis?: Prisma.NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -364,22 +368,22 @@ export type SourceAuthorizationUncheckedUpdateInput = {
 export type SourceAuthorizationCreateManyInput = {
   sourceId: string
   sourceVersion: number
-  sourceSha256: string
   status?: $Enums.SourceAuthorizationStatus
   basis?: $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Date | string | null
   declarationVersion?: string | null
+  decidedAt?: Date | string | null
+  revision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SourceAuthorizationUpdateManyMutationInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSourceAuthorizationStatusFieldUpdateOperationsInput | $Enums.SourceAuthorizationStatus
   basis?: Prisma.NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -387,11 +391,11 @@ export type SourceAuthorizationUpdateManyMutationInput = {
 export type SourceAuthorizationUncheckedUpdateManyInput = {
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSourceAuthorizationStatusFieldUpdateOperationsInput | $Enums.SourceAuthorizationStatus
   basis?: Prisma.NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -414,27 +418,28 @@ export type SourceAuthorizationSourceIdSourceVersionCompoundUniqueInput = {
 export type SourceAuthorizationCountOrderByAggregateInput = {
   sourceId?: Prisma.SortOrder
   sourceVersion?: Prisma.SortOrder
-  sourceSha256?: Prisma.SortOrder
   status?: Prisma.SortOrder
   basis?: Prisma.SortOrder
-  confirmedAt?: Prisma.SortOrder
   declarationVersion?: Prisma.SortOrder
+  decidedAt?: Prisma.SortOrder
+  revision?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type SourceAuthorizationAvgOrderByAggregateInput = {
   sourceVersion?: Prisma.SortOrder
+  revision?: Prisma.SortOrder
 }
 
 export type SourceAuthorizationMaxOrderByAggregateInput = {
   sourceId?: Prisma.SortOrder
   sourceVersion?: Prisma.SortOrder
-  sourceSha256?: Prisma.SortOrder
   status?: Prisma.SortOrder
   basis?: Prisma.SortOrder
-  confirmedAt?: Prisma.SortOrder
   declarationVersion?: Prisma.SortOrder
+  decidedAt?: Prisma.SortOrder
+  revision?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -442,17 +447,18 @@ export type SourceAuthorizationMaxOrderByAggregateInput = {
 export type SourceAuthorizationMinOrderByAggregateInput = {
   sourceId?: Prisma.SortOrder
   sourceVersion?: Prisma.SortOrder
-  sourceSha256?: Prisma.SortOrder
   status?: Prisma.SortOrder
   basis?: Prisma.SortOrder
-  confirmedAt?: Prisma.SortOrder
   declarationVersion?: Prisma.SortOrder
+  decidedAt?: Prisma.SortOrder
+  revision?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type SourceAuthorizationSumOrderByAggregateInput = {
   sourceVersion?: Prisma.SortOrder
+  revision?: Prisma.SortOrder
 }
 
 export type SourceAuthorizationCreateNestedManyWithoutSourceInput = {
@@ -507,22 +513,22 @@ export type NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput = {
 
 export type SourceAuthorizationCreateWithoutSourceInput = {
   sourceVersion: number
-  sourceSha256: string
   status?: $Enums.SourceAuthorizationStatus
   basis?: $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Date | string | null
   declarationVersion?: string | null
+  decidedAt?: Date | string | null
+  revision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SourceAuthorizationUncheckedCreateWithoutSourceInput = {
   sourceVersion: number
-  sourceSha256: string
   status?: $Enums.SourceAuthorizationStatus
   basis?: $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Date | string | null
   declarationVersion?: string | null
+  decidedAt?: Date | string | null
+  revision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -557,57 +563,57 @@ export type SourceAuthorizationScalarWhereInput = {
   AND?: Prisma.SourceAuthorizationScalarWhereInput | Prisma.SourceAuthorizationScalarWhereInput[]
   OR?: Prisma.SourceAuthorizationScalarWhereInput[]
   NOT?: Prisma.SourceAuthorizationScalarWhereInput | Prisma.SourceAuthorizationScalarWhereInput[]
-  sourceId?: Prisma.UuidFilter<"SourceAuthorization"> | string
+  sourceId?: Prisma.StringFilter<"SourceAuthorization"> | string
   sourceVersion?: Prisma.IntFilter<"SourceAuthorization"> | number
-  sourceSha256?: Prisma.StringFilter<"SourceAuthorization"> | string
   status?: Prisma.EnumSourceAuthorizationStatusFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationStatus
   basis?: Prisma.EnumSourceAuthorizationBasisNullableFilter<"SourceAuthorization"> | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.DateTimeNullableFilter<"SourceAuthorization"> | Date | string | null
   declarationVersion?: Prisma.StringNullableFilter<"SourceAuthorization"> | string | null
+  decidedAt?: Prisma.DateTimeNullableFilter<"SourceAuthorization"> | Date | string | null
+  revision?: Prisma.IntFilter<"SourceAuthorization"> | number
   createdAt?: Prisma.DateTimeFilter<"SourceAuthorization"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SourceAuthorization"> | Date | string
 }
 
 export type SourceAuthorizationCreateManySourceInput = {
   sourceVersion: number
-  sourceSha256: string
   status?: $Enums.SourceAuthorizationStatus
   basis?: $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Date | string | null
   declarationVersion?: string | null
+  decidedAt?: Date | string | null
+  revision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SourceAuthorizationUpdateWithoutSourceInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSourceAuthorizationStatusFieldUpdateOperationsInput | $Enums.SourceAuthorizationStatus
   basis?: Prisma.NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SourceAuthorizationUncheckedUpdateWithoutSourceInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSourceAuthorizationStatusFieldUpdateOperationsInput | $Enums.SourceAuthorizationStatus
   basis?: Prisma.NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SourceAuthorizationUncheckedUpdateManyWithoutSourceInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
-  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumSourceAuthorizationStatusFieldUpdateOperationsInput | $Enums.SourceAuthorizationStatus
   basis?: Prisma.NullableEnumSourceAuthorizationBasisFieldUpdateOperationsInput | $Enums.SourceAuthorizationBasis | null
-  confirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   declarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  decidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -617,11 +623,11 @@ export type SourceAuthorizationUncheckedUpdateManyWithoutSourceInput = {
 export type SourceAuthorizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   sourceId?: boolean
   sourceVersion?: boolean
-  sourceSha256?: boolean
   status?: boolean
   basis?: boolean
-  confirmedAt?: boolean
   declarationVersion?: boolean
+  decidedAt?: boolean
+  revision?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
@@ -630,11 +636,11 @@ export type SourceAuthorizationSelect<ExtArgs extends runtime.Types.Extensions.I
 export type SourceAuthorizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   sourceId?: boolean
   sourceVersion?: boolean
-  sourceSha256?: boolean
   status?: boolean
   basis?: boolean
-  confirmedAt?: boolean
   declarationVersion?: boolean
+  decidedAt?: boolean
+  revision?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
@@ -643,11 +649,11 @@ export type SourceAuthorizationSelectCreateManyAndReturn<ExtArgs extends runtime
 export type SourceAuthorizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   sourceId?: boolean
   sourceVersion?: boolean
-  sourceSha256?: boolean
   status?: boolean
   basis?: boolean
-  confirmedAt?: boolean
   declarationVersion?: boolean
+  decidedAt?: boolean
+  revision?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
@@ -656,16 +662,16 @@ export type SourceAuthorizationSelectUpdateManyAndReturn<ExtArgs extends runtime
 export type SourceAuthorizationSelectScalar = {
   sourceId?: boolean
   sourceVersion?: boolean
-  sourceSha256?: boolean
   status?: boolean
   basis?: boolean
-  confirmedAt?: boolean
   declarationVersion?: boolean
+  decidedAt?: boolean
+  revision?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SourceAuthorizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"sourceId" | "sourceVersion" | "sourceSha256" | "status" | "basis" | "confirmedAt" | "declarationVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["sourceAuthorization"]>
+export type SourceAuthorizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"sourceId" | "sourceVersion" | "status" | "basis" | "declarationVersion" | "decidedAt" | "revision" | "createdAt" | "updatedAt", ExtArgs["result"]["sourceAuthorization"]>
 export type SourceAuthorizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
 }
@@ -684,11 +690,11 @@ export type $SourceAuthorizationPayload<ExtArgs extends runtime.Types.Extensions
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     sourceId: string
     sourceVersion: number
-    sourceSha256: string
     status: $Enums.SourceAuthorizationStatus
     basis: $Enums.SourceAuthorizationBasis | null
-    confirmedAt: Date | null
     declarationVersion: string | null
+    decidedAt: Date | null
+    revision: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["sourceAuthorization"]>
@@ -1117,11 +1123,11 @@ export interface Prisma__SourceAuthorizationClient<T, Null = never, ExtArgs exte
 export interface SourceAuthorizationFieldRefs {
   readonly sourceId: Prisma.FieldRef<"SourceAuthorization", 'String'>
   readonly sourceVersion: Prisma.FieldRef<"SourceAuthorization", 'Int'>
-  readonly sourceSha256: Prisma.FieldRef<"SourceAuthorization", 'String'>
   readonly status: Prisma.FieldRef<"SourceAuthorization", 'SourceAuthorizationStatus'>
   readonly basis: Prisma.FieldRef<"SourceAuthorization", 'SourceAuthorizationBasis'>
-  readonly confirmedAt: Prisma.FieldRef<"SourceAuthorization", 'DateTime'>
   readonly declarationVersion: Prisma.FieldRef<"SourceAuthorization", 'String'>
+  readonly decidedAt: Prisma.FieldRef<"SourceAuthorization", 'DateTime'>
+  readonly revision: Prisma.FieldRef<"SourceAuthorization", 'Int'>
   readonly createdAt: Prisma.FieldRef<"SourceAuthorization", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SourceAuthorization", 'DateTime'>
 }

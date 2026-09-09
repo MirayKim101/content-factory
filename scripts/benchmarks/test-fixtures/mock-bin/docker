@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+: "${MOCK_STATE:?MOCK_STATE is required}"
+
+case "$1" in
+  compose)
+    printf 'compose %s\n' "$*" >>"$MOCK_STATE/actions"
+    if [[ " $* " == *' up '* ]]; then
+      printf '%s' "${MEDIA_WORKER_CONCURRENCY:-1}" >"$MOCK_STATE/concurrency"
+      : >"$MOCK_STATE/composed"
+    fi
+    ;;
+  inspect)
+    case "$*" in
+      *'.State.Health.Status'*) printf 'healthy\n' ;;
+      *'.HostConfig.NanoCpus'*) printf '2000000000\n' ;;
+      *'.State.Health'*) printf '{"Status":"healthy"} 2000000000 0 256\n' ;;
+    esac
+    ;;
+  exec)
+    shift
+    [[ "${1:-}" == '-i' ]] && shift
+    target="$1"
+    shift
+    request="$*"
+    if [[ "$target" == 'content-factory-postgres-1' ]]; then
+      if [[ "$request" == *'count(*)'* ]]; then
+        count_file="$MOCK_STATE/active-query-count"
+        previous=0
+        [[ -f "$count_file" ]] && previous="$(cat "$count_file")"
+        current=$((previous + 1))
+        printf '%s' "$current" >"$count_file"
+        if [[ "${MOCK_ACTIVE_QUEUE:-0}" == '1' || ( "${MOCK_ACTIVE_ON_SECOND:-0}" == '1' && "$current" -ge 2 ) ]]; then printf '1\n'; else printf '0\n'; fi
+      elif [[ "$request" == *'SELECT p.id'* ]]; then
+        printf 'id,state\njob-1,READY\njob-2,READY\njob-3,READY\njob-4,READY\n'
+      fi
+    elif [[ "$target" == 'content-factory-media-worker-1' ]]; then
+      case "$request" in
+        *'/usr/bin/ffprobe'*)
+          if [[ "$request" == *'-version'* ]]; then printf 'ffprobe mock\n'; else cat >/dev/null; if [[ "${MOCK_BAD_FFPROBE:-0}" == '1' ]]; then printf '%s\n' '{"format":{"duration":"1"},"streams":[]}'; else printf '%s\n' '{"format":{"duration":"1800"},"streams":[{"codec_name":"h264","codec_type":"video"},{"codec_name":"aac","codec_type":"audio"}]}'; fi; fi
+          ;;
+        *MEDIA_WORKER_CONCURRENCY*) cat "$MOCK_STATE/concurrency" ;;
+        *MemAvailable*)
+          count_file="$MOCK_STATE/memory-query-count"
+          previous=0
+          [[ -f "$count_file" ]] && previous="$(cat "$count_file")"
+          current=$((previous + 1))
+          printf '%s' "$current" >"$count_file"
+          if [[ "${MOCK_UNKNOWN_MEMORY:-0}" == '1' || ( "${MOCK_UNKNOWN_RUNTIME:-0}" == '1' && "$current" -ge 4 ) ]]; then printf 'unavailable unavailable\n'; elif [[ "${MOCK_LOW_MEMORY:-0}" == '1' || ( "${MOCK_LOW_AFTER_COMPOSE:-0}" == '1' && -f "$MOCK_STATE/composed" ) ]]; then printf '500000 8000000\n'; else printf '7000000 8000000\n'; fi
+          ;;
+        *memory.current*) printf '100\n' ;;
+        *memory.max*) printf 'max\n' ;;
+        *'df -B1'*) printf '0/100\n' ;;
+        *'du -sb'*) printf '0\n' ;;
+        *'ps -eo'*) printf '0\n' ;;
+        *) printf 'mock worker snapshot\n' ;;
+      esac
+    fi
+    ;;
+  stats) printf 'content-factory-media-worker-1\t1.00%%\t1MiB / 7GiB\t1.00%%\t10\n' ;;
+  logs|top) : ;;
+  *) printf 'Unexpected docker mock operation: %s\n' "$*" >&2; exit 64 ;;
+esac

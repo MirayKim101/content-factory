@@ -1,0 +1,24 @@
+#!/bin/sh
+set -eu
+
+required_variables='POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD REDIS_PASSWORD S3_ACCESS_KEY S3_SECRET_KEY'
+for variable_name in $required_variables; do
+  variable_value="$(printenv "$variable_name" 2>/dev/null || true)"
+  if [ -z "$variable_value" ]; then
+    printf '%s\n' "{\"event\":\"media_worker_configuration_invalid\",\"code\":\"CONFIG_${variable_name}_REQUIRED\"}" >&2
+    exit 78
+  fi
+done
+
+ffmpeg_path="${FFMPEG_PATH:-/usr/bin/ffmpeg}"
+ffprobe_path="${FFPROBE_PATH:-/usr/bin/ffprobe}"
+if ! "$ffmpeg_path" -version >/dev/null 2>&1; then
+  printf '%s\n' '{"event":"media_worker_runtime_invalid","code":"FFMPEG_UNAVAILABLE"}' >&2
+  exit 78
+fi
+if ! "$ffprobe_path" -version >/dev/null 2>&1; then
+  printf '%s\n' '{"event":"media_worker_runtime_invalid","code":"FFPROBE_UNAVAILABLE"}' >&2
+  exit 78
+fi
+
+exec "$@"

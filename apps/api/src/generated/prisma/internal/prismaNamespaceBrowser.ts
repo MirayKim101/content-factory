@@ -55,8 +55,40 @@ export const ModelName = {
   VideoSource: 'VideoSource',
   SourceAuthorization: 'SourceAuthorization',
   MediaArtifact: 'MediaArtifact',
+  CutRequest: 'CutRequest',
   PipelineJob: 'PipelineJob',
-  JobAttempt: 'JobAttempt'
+  MontageAsset: 'MontageAsset',
+  AssemblyRecipe: 'AssemblyRecipe',
+  AssemblyRecipeRevision: 'AssemblyRecipeRevision',
+  AssemblyRecipeAssetReference: 'AssemblyRecipeAssetReference',
+  AssemblyRecipeMutationRequest: 'AssemblyRecipeMutationRequest',
+  AssemblyRenderIntent: 'AssemblyRenderIntent',
+  AssemblyRenderRequest: 'AssemblyRenderRequest',
+  AssemblyRenderResult: 'AssemblyRenderResult',
+  ProcessingTemplate: 'ProcessingTemplate',
+  ProcessingTemplateRevision: 'ProcessingTemplateRevision',
+  EditorialAsset: 'EditorialAsset',
+  EditorialPackage: 'EditorialPackage',
+  EditorialPackageRevision: 'EditorialPackageRevision',
+  EditorialMutationRequest: 'EditorialMutationRequest',
+  EditorialApproval: 'EditorialApproval',
+  EditorialApprovalMetrics: 'EditorialApprovalMetrics',
+  EditorialOperationRequest: 'EditorialOperationRequest',
+  EditorialExportIntent: 'EditorialExportIntent',
+  EditorialExportResult: 'EditorialExportResult',
+  CutSegment: 'CutSegment',
+  JobAttempt: 'JobAttempt',
+  CreatorProfile: 'CreatorProfile',
+  CreatorProfileOfficialUrlIdentity: 'CreatorProfileOfficialUrlIdentity',
+  CreatorProfileRevision: 'CreatorProfileRevision',
+  CreatorReferenceAsset: 'CreatorReferenceAsset',
+  CreatorReferenceAuthorizationRevision: 'CreatorReferenceAuthorizationRevision',
+  SourceEditorialContext: 'SourceEditorialContext',
+  SourceEditorialContextRevision: 'SourceEditorialContextRevision',
+  CutEditorialPrompt: 'CutEditorialPrompt',
+  CutEditorialPromptRevision: 'CutEditorialPromptRevision',
+  AiContentOperationRequest: 'AiContentOperationRequest',
+  EditorialComponentProvenance: 'EditorialComponentProvenance'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -101,6 +133,9 @@ export const VideoSourceScalarFieldEnum = {
   contentType: 'contentType',
   sizeBytes: 'sizeBytes',
   sha256: 'sha256',
+  durationMs: 'durationMs',
+  probedAt: 'probedAt',
+  probeVersion: 'probeVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -111,11 +146,11 @@ export type VideoSourceScalarFieldEnum = (typeof VideoSourceScalarFieldEnum)[key
 export const SourceAuthorizationScalarFieldEnum = {
   sourceId: 'sourceId',
   sourceVersion: 'sourceVersion',
-  sourceSha256: 'sourceSha256',
   status: 'status',
   basis: 'basis',
-  confirmedAt: 'confirmedAt',
   declarationVersion: 'declarationVersion',
+  decidedAt: 'decidedAt',
+  revision: 'revision',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -143,6 +178,9 @@ export const MediaArtifactScalarFieldEnum = {
   lineageSourceId: 'lineageSourceId',
   lineageSourceVersion: 'lineageSourceVersion',
   recipeVersion: 'recipeVersion',
+  pipelineJobId: 'pipelineJobId',
+  ffmpegVersion: 'ffmpegVersion',
+  outputFilename: 'outputFilename',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -150,38 +188,449 @@ export const MediaArtifactScalarFieldEnum = {
 export type MediaArtifactScalarFieldEnum = (typeof MediaArtifactScalarFieldEnum)[keyof typeof MediaArtifactScalarFieldEnum]
 
 
+export const CutRequestScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type CutRequestScalarFieldEnum = (typeof CutRequestScalarFieldEnum)[keyof typeof CutRequestScalarFieldEnum]
+
+
 export const PipelineJobScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
   sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutRequestId: 'cutRequestId',
   type: 'type',
   state: 'state',
-  sourceVersion: 'sourceVersion',
-  sourceSha256: 'sourceSha256',
-  startMs: 'startMs',
-  endMs: 'endMs',
-  recipeVersion: 'recipeVersion',
+  payloadVersion: 'payloadVersion',
   idempotencyKey: 'idempotencyKey',
-  requestFingerprint: 'requestFingerprint',
   revision: 'revision',
-  maxAttempts: 'maxAttempts',
+  priority: 'priority',
+  retryBudget: 'retryBudget',
   attemptCount: 'attemptCount',
-  currentAttemptId: 'currentAttemptId',
-  nextAttemptAt: 'nextAttemptAt',
-  admissionDeadlineAt: 'admissionDeadlineAt',
-  stage: 'stage',
-  progressCurrent: 'progressCurrent',
-  progressTotal: 'progressTotal',
-  progressUnit: 'progressUnit',
-  queueReason: 'queueReason',
+  processedMs: 'processedMs',
+  totalMs: 'totalMs',
+  leaseOwner: 'leaseOwner',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  heartbeatAt: 'heartbeatAt',
   failureCode: 'failureCode',
   failureMessage: 'failureMessage',
-  winningArtifactId: 'winningArtifactId',
+  failureRetryable: 'failureRetryable',
+  recipeVersion: 'recipeVersion',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  montageAssetId: 'montageAssetId',
+  assemblyRenderIntentId: 'assemblyRenderIntentId',
+  editorialExportIntentId: 'editorialExportIntentId',
+  nextAttemptAt: 'nextAttemptAt',
+  admissionReason: 'admissionReason',
+  progressAttemptNumber: 'progressAttemptNumber',
+  progressPhase: 'progressPhase',
+  progressBasisPoints: 'progressBasisPoints',
+  progressUpdatedAt: 'progressUpdatedAt'
+} as const
+
+export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+
+
+export const MontageAssetScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  kind: 'kind',
+  status: 'status',
+  revision: 'revision',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  objectKey: 'objectKey',
+  originalFilename: 'originalFilename',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  durationMs: 'durationMs',
+  hasAudio: 'hasAudio',
+  probeVersion: 'probeVersion',
+  probedAt: 'probedAt',
+  rightsBasis: 'rightsBasis',
+  rightsDeclaration: 'rightsDeclaration',
+  rightsDecidedAt: 'rightsDecidedAt',
+  uploadExpiresAt: 'uploadExpiresAt',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupCompletedAt: 'cleanupCompletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
+export type MontageAssetScalarFieldEnum = (typeof MontageAssetScalarFieldEnum)[keyof typeof MontageAssetScalarFieldEnum]
+
+
+export const AssemblyRecipeScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  pipelineJobId: 'pipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutResultRecipeVersion: 'cutResultRecipeVersion',
+  lineageSourceId: 'lineageSourceId',
+  lineageSourceVersion: 'lineageSourceVersion',
+  cutDurationMs: 'cutDurationMs',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssemblyRecipeScalarFieldEnum = (typeof AssemblyRecipeScalarFieldEnum)[keyof typeof AssemblyRecipeScalarFieldEnum]
+
+
+export const AssemblyRecipeRevisionScalarFieldEnum = {
+  id: 'id',
+  recipeId: 'recipeId',
+  revision: 'revision',
+  schemaVersion: 'schemaVersion',
+  configurationFingerprint: 'configurationFingerprint',
+  audioProfileVersion: 'audioProfileVersion',
+  encodingProfileVersion: 'encodingProfileVersion',
+  advertisementInsertAtMs: 'advertisementInsertAtMs',
+  ctaText: 'ctaText',
+  ctaStartMs: 'ctaStartMs',
+  ctaEndMs: 'ctaEndMs',
+  ctaPosition: 'ctaPosition',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRecipeRevisionScalarFieldEnum = (typeof AssemblyRecipeRevisionScalarFieldEnum)[keyof typeof AssemblyRecipeRevisionScalarFieldEnum]
+
+
+export const AssemblyRecipeAssetReferenceScalarFieldEnum = {
+  id: 'id',
+  recipeRevisionId: 'recipeRevisionId',
+  role: 'role',
+  ordinal: 'ordinal',
+  assetId: 'assetId',
+  assetRevision: 'assetRevision',
+  assetSha256: 'assetSha256',
+  assetSizeBytes: 'assetSizeBytes',
+  assetKind: 'assetKind',
+  assetDurationMs: 'assetDurationMs',
+  clientItemId: 'clientItemId',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  position: 'position',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRecipeAssetReferenceScalarFieldEnum = (typeof AssemblyRecipeAssetReferenceScalarFieldEnum)[keyof typeof AssemblyRecipeAssetReferenceScalarFieldEnum]
+
+
+export const AssemblyRecipeMutationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  recipeRevisionId: 'recipeRevisionId',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRecipeMutationRequestScalarFieldEnum = (typeof AssemblyRecipeMutationRequestScalarFieldEnum)[keyof typeof AssemblyRecipeMutationRequestScalarFieldEnum]
+
+
+export const AssemblyRenderIntentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutResultRecipeVersion: 'cutResultRecipeVersion',
+  assemblyRecipeId: 'assemblyRecipeId',
+  recipeRevisionId: 'recipeRevisionId',
+  recipeRevision: 'recipeRevision',
+  configurationFingerprint: 'configurationFingerprint',
+  renderContractVersion: 'renderContractVersion',
+  audioProfileVersion: 'audioProfileVersion',
+  encodingProfileVersion: 'encodingProfileVersion',
+  expectedDurationMs: 'expectedDurationMs',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderIntentScalarFieldEnum = (typeof AssemblyRenderIntentScalarFieldEnum)[keyof typeof AssemblyRenderIntentScalarFieldEnum]
+
+
+export const AssemblyRenderRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  renderIntentId: 'renderIntentId',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderRequestScalarFieldEnum = (typeof AssemblyRenderRequestScalarFieldEnum)[keyof typeof AssemblyRenderRequestScalarFieldEnum]
+
+
+export const AssemblyRenderResultScalarFieldEnum = {
+  id: 'id',
+  renderIntentId: 'renderIntentId',
+  artifactId: 'artifactId',
+  durationMs: 'durationMs',
+  width: 'width',
+  height: 'height',
+  fpsNumerator: 'fpsNumerator',
+  fpsDenominator: 'fpsDenominator',
+  videoCodec: 'videoCodec',
+  pixelFormat: 'pixelFormat',
+  audioCodec: 'audioCodec',
+  audioSampleRate: 'audioSampleRate',
+  audioChannels: 'audioChannels',
+  ffmpegVersion: 'ffmpegVersion',
+  ffprobeVersion: 'ffprobeVersion',
+  integratedLoudnessLufs: 'integratedLoudnessLufs',
+  truePeakDbtp: 'truePeakDbtp',
+  normalizationProfileResult: 'normalizationProfileResult',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AssemblyRenderResultScalarFieldEnum = (typeof AssemblyRenderResultScalarFieldEnum)[keyof typeof AssemblyRenderResultScalarFieldEnum]
+
+
+export const ProcessingTemplateScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type ProcessingTemplateScalarFieldEnum = (typeof ProcessingTemplateScalarFieldEnum)[keyof typeof ProcessingTemplateScalarFieldEnum]
+
+
+export const ProcessingTemplateRevisionScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  revision: 'revision',
+  name: 'name',
+  configurationVersion: 'configurationVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type ProcessingTemplateRevisionScalarFieldEnum = (typeof ProcessingTemplateRevisionScalarFieldEnum)[keyof typeof ProcessingTemplateRevisionScalarFieldEnum]
+
+
+export const EditorialAssetScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  type: 'type',
+  status: 'status',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  objectKey: 'objectKey',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  originalFilename: 'originalFilename',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EditorialAssetScalarFieldEnum = (typeof EditorialAssetScalarFieldEnum)[keyof typeof EditorialAssetScalarFieldEnum]
+
+
+export const EditorialPackageScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  pipelineJobId: 'pipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutResultRecipeVersion: 'cutResultRecipeVersion',
+  lineageSourceId: 'lineageSourceId',
+  lineageSourceVersion: 'lineageSourceVersion',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EditorialPackageScalarFieldEnum = (typeof EditorialPackageScalarFieldEnum)[keyof typeof EditorialPackageScalarFieldEnum]
+
+
+export const EditorialPackageRevisionScalarFieldEnum = {
+  id: 'id',
+  packageId: 'packageId',
+  revision: 'revision',
+  processingTemplateRevisionId: 'processingTemplateRevisionId',
+  title: 'title',
+  description: 'description',
+  tags: 'tags',
+  thumbnailAssetId: 'thumbnailAssetId',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialPackageRevisionScalarFieldEnum = (typeof EditorialPackageRevisionScalarFieldEnum)[keyof typeof EditorialPackageRevisionScalarFieldEnum]
+
+
+export const EditorialMutationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  packageRevisionId: 'packageRevisionId',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialMutationRequestScalarFieldEnum = (typeof EditorialMutationRequestScalarFieldEnum)[keyof typeof EditorialMutationRequestScalarFieldEnum]
+
+
+export const EditorialApprovalScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  editorialPackageId: 'editorialPackageId',
+  editorialPackageRevisionId: 'editorialPackageRevisionId',
+  editorialRevision: 'editorialRevision',
+  processingTemplateRevisionId: 'processingTemplateRevisionId',
+  thumbnailAssetId: 'thumbnailAssetId',
+  thumbnailSha256: 'thumbnailSha256',
+  thumbnailSizeBytes: 'thumbnailSizeBytes',
+  thumbnailContentType: 'thumbnailContentType',
+  assemblyRecipeId: 'assemblyRecipeId',
+  recipeRevisionId: 'recipeRevisionId',
+  recipeRevision: 'recipeRevision',
+  configurationFingerprint: 'configurationFingerprint',
+  assemblyRenderIntentId: 'assemblyRenderIntentId',
+  assemblyRenderResultId: 'assemblyRenderResultId',
+  renderArtifactId: 'renderArtifactId',
+  renderArtifactSha256: 'renderArtifactSha256',
+  renderArtifactSizeBytes: 'renderArtifactSizeBytes',
+  renderContractVersion: 'renderContractVersion',
+  approvalContractVersion: 'approvalContractVersion',
+  candidateFingerprint: 'candidateFingerprint',
+  approvedAt: 'approvedAt'
+} as const
+
+export type EditorialApprovalScalarFieldEnum = (typeof EditorialApprovalScalarFieldEnum)[keyof typeof EditorialApprovalScalarFieldEnum]
+
+
+export const EditorialApprovalMetricsScalarFieldEnum = {
+  approvalId: 'approvalId',
+  metricsSchemaVersion: 'metricsSchemaVersion',
+  timestampBasisVersion: 'timestampBasisVersion',
+  cutInitialQueueWaitMs: 'cutInitialQueueWaitMs',
+  cutRetryWaitMs: 'cutRetryWaitMs',
+  cutFirstStartToFinishMs: 'cutFirstStartToFinishMs',
+  cutActiveAttemptMs: 'cutActiveAttemptMs',
+  cutAttemptCount: 'cutAttemptCount',
+  cutRetryCount: 'cutRetryCount',
+  assemblyInitialQueueWaitMs: 'assemblyInitialQueueWaitMs',
+  assemblyRetryWaitMs: 'assemblyRetryWaitMs',
+  assemblyFirstStartToFinishMs: 'assemblyFirstStartToFinishMs',
+  assemblyActiveAttemptMs: 'assemblyActiveAttemptMs',
+  assemblyAttemptCount: 'assemblyAttemptCount',
+  assemblyRetryCount: 'assemblyRetryCount',
+  cutToAssemblyReadyElapsedMs: 'cutToAssemblyReadyElapsedMs',
+  outputDurationMs: 'outputDurationMs',
+  outputBytes: 'outputBytes',
+  manualAttentionMs: 'manualAttentionMs',
+  attentionMeasurementVersion: 'attentionMeasurementVersion',
+  directProviderCostMinor: 'directProviderCostMinor',
+  costCurrency: 'costCurrency',
+  costBasisVersion: 'costBasisVersion',
+  incompleteReasons: 'incompleteReasons',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialApprovalMetricsScalarFieldEnum = (typeof EditorialApprovalMetricsScalarFieldEnum)[keyof typeof EditorialApprovalMetricsScalarFieldEnum]
+
+
+export const EditorialOperationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  operation: 'operation',
+  canonicalRequestFingerprint: 'canonicalRequestFingerprint',
+  resolvedProjectId: 'resolvedProjectId',
+  approvalId: 'approvalId',
+  exportIntentId: 'exportIntentId',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialOperationRequestScalarFieldEnum = (typeof EditorialOperationRequestScalarFieldEnum)[keyof typeof EditorialOperationRequestScalarFieldEnum]
+
+
+export const EditorialExportIntentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  approvalId: 'approvalId',
+  approvalCandidateFingerprint: 'approvalCandidateFingerprint',
+  editorialPackageRevisionId: 'editorialPackageRevisionId',
+  recipeRevisionId: 'recipeRevisionId',
+  assemblyRenderResultId: 'assemblyRenderResultId',
+  exportContractVersion: 'exportContractVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialExportIntentScalarFieldEnum = (typeof EditorialExportIntentScalarFieldEnum)[keyof typeof EditorialExportIntentScalarFieldEnum]
+
+
+export const EditorialExportResultScalarFieldEnum = {
+  id: 'id',
+  exportIntentId: 'exportIntentId',
+  pipelineJobId: 'pipelineJobId',
+  artifactId: 'artifactId',
+  filename: 'filename',
+  archiveSizeBytes: 'archiveSizeBytes',
+  archiveSha256: 'archiveSha256',
+  manifest: 'manifest',
+  exportContractVersion: 'exportContractVersion',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialExportResultScalarFieldEnum = (typeof EditorialExportResultScalarFieldEnum)[keyof typeof EditorialExportResultScalarFieldEnum]
+
+
+export const CutSegmentScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  clientSegmentId: 'clientSegmentId',
+  startMs: 'startMs',
+  endMs: 'endMs',
+  createdAt: 'createdAt'
+} as const
+
+export type CutSegmentScalarFieldEnum = (typeof CutSegmentScalarFieldEnum)[keyof typeof CutSegmentScalarFieldEnum]
 
 
 export const JobAttemptScalarFieldEnum = {
@@ -189,24 +638,221 @@ export const JobAttemptScalarFieldEnum = {
   jobId: 'jobId',
   attemptNumber: 'attemptNumber',
   state: 'state',
-  claimRevision: 'claimRevision',
+  workerId: 'workerId',
   leaseToken: 'leaseToken',
   startedAt: 'startedAt',
   heartbeatAt: 'heartbeatAt',
-  leaseExpiresAt: 'leaseExpiresAt',
   finishedAt: 'finishedAt',
-  reservedScratchBytes: 'reservedScratchBytes',
   failureCode: 'failureCode',
-  failureMessage: 'failureMessage',
   outputObjectKey: 'outputObjectKey',
-  outputCleanupStatus: 'outputCleanupStatus',
-  outputCleanupAttempts: 'outputCleanupAttempts',
-  outputCleanupLastError: 'outputCleanupLastError',
-  outputCleanupRequestedAt: 'outputCleanupRequestedAt',
-  outputCleanupCompletedAt: 'outputCleanupCompletedAt'
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  scratchDirectoryName: 'scratchDirectoryName',
+  scratchLeaseHash: 'scratchLeaseHash',
+  scratchReservedBytes: 'scratchReservedBytes',
+  scratchCreatedAt: 'scratchCreatedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type JobAttemptScalarFieldEnum = (typeof JobAttemptScalarFieldEnum)[keyof typeof JobAttemptScalarFieldEnum]
+
+
+export const CreatorProfileScalarFieldEnum = {
+  id: 'id',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CreatorProfileScalarFieldEnum = (typeof CreatorProfileScalarFieldEnum)[keyof typeof CreatorProfileScalarFieldEnum]
+
+
+export const CreatorProfileOfficialUrlIdentityScalarFieldEnum = {
+  id: 'id',
+  creatorProfileId: 'creatorProfileId',
+  canonicalizationVersion: 'canonicalizationVersion',
+  canonicalUrl: 'canonicalUrl',
+  createdAt: 'createdAt'
+} as const
+
+export type CreatorProfileOfficialUrlIdentityScalarFieldEnum = (typeof CreatorProfileOfficialUrlIdentityScalarFieldEnum)[keyof typeof CreatorProfileOfficialUrlIdentityScalarFieldEnum]
+
+
+export const CreatorProfileRevisionScalarFieldEnum = {
+  id: 'id',
+  creatorProfileId: 'creatorProfileId',
+  revision: 'revision',
+  canonicalDisplayName: 'canonicalDisplayName',
+  officialUrlIdentityId: 'officialUrlIdentityId',
+  officialUrl: 'officialUrl',
+  primaryLanguage: 'primaryLanguage',
+  topics: 'topics',
+  editorialNotes: 'editorialNotes',
+  restrictions: 'restrictions',
+  likenessPolicy: 'likenessPolicy',
+  defaultReferenceAssetId: 'defaultReferenceAssetId',
+  defaultReferenceAuthorizationRevisionId: 'defaultReferenceAuthorizationRevisionId',
+  defaultReferenceAuthorizationRevision: 'defaultReferenceAuthorizationRevision',
+  createdAt: 'createdAt'
+} as const
+
+export type CreatorProfileRevisionScalarFieldEnum = (typeof CreatorProfileRevisionScalarFieldEnum)[keyof typeof CreatorProfileRevisionScalarFieldEnum]
+
+
+export const CreatorReferenceAssetScalarFieldEnum = {
+  id: 'id',
+  creatorProfileId: 'creatorProfileId',
+  status: 'status',
+  currentAuthorizationRevision: 'currentAuthorizationRevision',
+  objectKey: 'objectKey',
+  originalFilename: 'originalFilename',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  failureCode: 'failureCode',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CreatorReferenceAssetScalarFieldEnum = (typeof CreatorReferenceAssetScalarFieldEnum)[keyof typeof CreatorReferenceAssetScalarFieldEnum]
+
+
+export const CreatorReferenceAuthorizationRevisionScalarFieldEnum = {
+  id: 'id',
+  referenceAssetId: 'referenceAssetId',
+  revision: 'revision',
+  status: 'status',
+  declarationVersion: 'declarationVersion',
+  commercialAiImageUseAttested: 'commercialAiImageUseAttested',
+  basis: 'basis',
+  scope: 'scope',
+  expiresAt: 'expiresAt',
+  externalProviderTransferAllowed: 'externalProviderTransferAllowed',
+  decidedAt: 'decidedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type CreatorReferenceAuthorizationRevisionScalarFieldEnum = (typeof CreatorReferenceAuthorizationRevisionScalarFieldEnum)[keyof typeof CreatorReferenceAuthorizationRevisionScalarFieldEnum]
+
+
+export const SourceEditorialContextScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SourceEditorialContextScalarFieldEnum = (typeof SourceEditorialContextScalarFieldEnum)[keyof typeof SourceEditorialContextScalarFieldEnum]
+
+
+export const SourceEditorialContextRevisionScalarFieldEnum = {
+  id: 'id',
+  contextId: 'contextId',
+  revision: 'revision',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  creatorProfileId: 'creatorProfileId',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  creatorProfileRevisionNo: 'creatorProfileRevisionNo',
+  sourceTitle: 'sourceTitle',
+  gameOrTopic: 'gameOrTopic',
+  audience: 'audience',
+  editorialGoal: 'editorialGoal',
+  language: 'language',
+  defaultCta: 'defaultCta',
+  restrictions: 'restrictions',
+  operatorNotes: 'operatorNotes',
+  createdAt: 'createdAt'
+} as const
+
+export type SourceEditorialContextRevisionScalarFieldEnum = (typeof SourceEditorialContextRevisionScalarFieldEnum)[keyof typeof SourceEditorialContextRevisionScalarFieldEnum]
+
+
+export const CutEditorialPromptScalarFieldEnum = {
+  id: 'id',
+  cutPipelineJobId: 'cutPipelineJobId',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  currentRevision: 'currentRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CutEditorialPromptScalarFieldEnum = (typeof CutEditorialPromptScalarFieldEnum)[keyof typeof CutEditorialPromptScalarFieldEnum]
+
+
+export const CutEditorialPromptRevisionScalarFieldEnum = {
+  id: 'id',
+  promptId: 'promptId',
+  revision: 'revision',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  sourceContextId: 'sourceContextId',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  sourceContextRevisionNo: 'sourceContextRevisionNo',
+  whatHappens: 'whatHappens',
+  desiredAngle: 'desiredAngle',
+  tone: 'tone',
+  cta: 'cta',
+  restrictions: 'restrictions',
+  createdAt: 'createdAt'
+} as const
+
+export type CutEditorialPromptRevisionScalarFieldEnum = (typeof CutEditorialPromptRevisionScalarFieldEnum)[keyof typeof CutEditorialPromptRevisionScalarFieldEnum]
+
+
+export const AiContentOperationRequestScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  operation: 'operation',
+  canonicalRequestVersion: 'canonicalRequestVersion',
+  canonicalRequestFingerprint: 'canonicalRequestFingerprint',
+  resolvedProjectId: 'resolvedProjectId',
+  resolvedSourceId: 'resolvedSourceId',
+  resolvedSourceVersion: 'resolvedSourceVersion',
+  creatorProfileId: 'creatorProfileId',
+  referenceAssetId: 'referenceAssetId',
+  resultType: 'resultType',
+  resultId: 'resultId',
+  resultRevision: 'resultRevision',
+  createdAt: 'createdAt'
+} as const
+
+export type AiContentOperationRequestScalarFieldEnum = (typeof AiContentOperationRequestScalarFieldEnum)[keyof typeof AiContentOperationRequestScalarFieldEnum]
+
+
+export const EditorialComponentProvenanceScalarFieldEnum = {
+  id: 'id',
+  packageRevisionId: 'packageRevisionId',
+  component: 'component',
+  mode: 'mode',
+  basisVersion: 'basisVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialComponentProvenanceScalarFieldEnum = (typeof EditorialComponentProvenanceScalarFieldEnum)[keyof typeof EditorialComponentProvenanceScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -215,6 +861,21 @@ export const SortOrder = {
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -231,4 +892,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

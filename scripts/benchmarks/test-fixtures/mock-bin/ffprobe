@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+if [[ "${1:-}" == '-version' ]]; then
+  printf 'ffprobe mock\n'
+  exit 0
+fi
+cat >/dev/null
+if [[ "${MOCK_BAD_FFPROBE:-0}" == '1' ]]; then
+  printf '%s\n' '{"format":{"duration":"1"},"streams":[]}'
+  exit 0
+fi
+printf '%s\n' '{"format":{"duration":"1800"},"streams":[{"codec_name":"h264","codec_type":"video"},{"codec_name":"aac","codec_type":"audio"}]}'

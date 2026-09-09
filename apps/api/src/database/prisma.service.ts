@@ -6,7 +6,7 @@ import {
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { databaseUrl } from "../config/environment.js";
-import { PrismaClient } from "@content-factory/prisma-client";
+import { PrismaClient } from "../generated/prisma/client.js";
 
 @Injectable()
 export class PrismaService

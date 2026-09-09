@@ -1,26 +1,15 @@
+import type { SourceAuthorizationView } from "./source-authorization.js";
+
 export type ProjectStatus = "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
 export type SourceStatus = "PENDING" | "READY" | "FAILED_FINAL";
 export type ArtifactStatus = "PENDING" | "READY" | "FAILED_FINAL";
-export type SourceAuthorizationStatus = "NOT_REVIEWED" | "CLEARED";
-export type SourceAuthorizationBasis =
-  "EXPLICIT_CONFIRMATION" | "LEGACY_ATTESTATION";
-
-export interface SourceAuthorizationView {
-  status: SourceAuthorizationStatus;
-  sourceVersion: number;
-  sourceSha256: string;
-  basis: SourceAuthorizationBasis | null;
-  confirmedAt: Date | null;
-  declarationVersion: string | null;
-}
 
 export interface ProjectView {
   id: string;
   name: string;
   status: ProjectStatus;
-  rightsConfirmedAt: Date | null;
-  rightsDeclarationVersion: string | null;
-  authorization: SourceAuthorizationView;
+  rightsConfirmedAt?: Date;
+  rightsDeclarationVersion?: string;
   failure?: { code: string; message: string };
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +21,11 @@ export interface ProjectView {
     contentType: string;
     sizeBytes: bigint;
     sha256: string;
+    durationMs?: number;
+    probeState?:
+      "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    probeFailure?: { code: string; message: string };
+    authorization: SourceAuthorizationView;
   };
   artifact: {
     id: string;
@@ -44,6 +38,49 @@ export interface ProjectView {
     lineageSourceVersion: number;
     recipeVersion: string;
   };
+}
+
+export interface ProjectLibraryItem {
+  id: string;
+  name: string;
+  status: ProjectStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  source: {
+    id: string;
+    status: SourceStatus;
+    sourceVersion: number;
+    addedAt: Date;
+    originalFilename: string;
+    contentType: string;
+    sizeBytes: bigint;
+    durationMs?: number;
+    probeState?:
+      "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    authorization: SourceAuthorizationView;
+  };
+  cutJobCounts: {
+    total: number;
+    ready: number;
+    failed: number;
+  };
+}
+
+export interface ProjectListCursor {
+  createdAt: Date;
+  id: string;
+}
+
+export interface ProjectListQuery {
+  cursor?: ProjectListCursor;
+  limit: number;
+  status?: ProjectStatus;
+  q?: string;
+}
+
+export interface ProjectListPage {
+  items: ProjectLibraryItem[];
+  nextCursor: ProjectListCursor | null;
 }
 
 export interface PendingUpload {

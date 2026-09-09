@@ -28,16 +28,14 @@ export type AggregateJobAttempt = {
 
 export type JobAttemptAvgAggregateOutputType = {
   attemptNumber: number | null
-  claimRevision: number | null
-  reservedScratchBytes: number | null
-  outputCleanupAttempts: number | null
+  cleanupAttemptCount: number | null
+  scratchReservedBytes: number | null
 }
 
 export type JobAttemptSumAggregateOutputType = {
   attemptNumber: number | null
-  claimRevision: number | null
-  reservedScratchBytes: bigint | null
-  outputCleanupAttempts: number | null
+  cleanupAttemptCount: number | null
+  scratchReservedBytes: bigint | null
 }
 
 export type JobAttemptMinAggregateOutputType = {
@@ -45,21 +43,24 @@ export type JobAttemptMinAggregateOutputType = {
   jobId: string | null
   attemptNumber: number | null
   state: $Enums.JobAttemptState | null
-  claimRevision: number | null
+  workerId: string | null
   leaseToken: string | null
   startedAt: Date | null
   heartbeatAt: Date | null
-  leaseExpiresAt: Date | null
   finishedAt: Date | null
-  reservedScratchBytes: bigint | null
   failureCode: string | null
-  failureMessage: string | null
   outputObjectKey: string | null
-  outputCleanupStatus: $Enums.ArtifactCleanupStatus | null
-  outputCleanupAttempts: number | null
-  outputCleanupLastError: string | null
-  outputCleanupRequestedAt: Date | null
-  outputCleanupCompletedAt: Date | null
+  cleanupStatus: $Enums.ArtifactCleanupStatus | null
+  cleanupAttemptCount: number | null
+  cleanupLastErrorCode: string | null
+  cleanupRequestedAt: Date | null
+  cleanupCompletedAt: Date | null
+  scratchDirectoryName: string | null
+  scratchLeaseHash: string | null
+  scratchReservedBytes: bigint | null
+  scratchCreatedAt: Date | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type JobAttemptMaxAggregateOutputType = {
@@ -67,21 +68,24 @@ export type JobAttemptMaxAggregateOutputType = {
   jobId: string | null
   attemptNumber: number | null
   state: $Enums.JobAttemptState | null
-  claimRevision: number | null
+  workerId: string | null
   leaseToken: string | null
   startedAt: Date | null
   heartbeatAt: Date | null
-  leaseExpiresAt: Date | null
   finishedAt: Date | null
-  reservedScratchBytes: bigint | null
   failureCode: string | null
-  failureMessage: string | null
   outputObjectKey: string | null
-  outputCleanupStatus: $Enums.ArtifactCleanupStatus | null
-  outputCleanupAttempts: number | null
-  outputCleanupLastError: string | null
-  outputCleanupRequestedAt: Date | null
-  outputCleanupCompletedAt: Date | null
+  cleanupStatus: $Enums.ArtifactCleanupStatus | null
+  cleanupAttemptCount: number | null
+  cleanupLastErrorCode: string | null
+  cleanupRequestedAt: Date | null
+  cleanupCompletedAt: Date | null
+  scratchDirectoryName: string | null
+  scratchLeaseHash: string | null
+  scratchReservedBytes: bigint | null
+  scratchCreatedAt: Date | null
+  createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type JobAttemptCountAggregateOutputType = {
@@ -89,37 +93,38 @@ export type JobAttemptCountAggregateOutputType = {
   jobId: number
   attemptNumber: number
   state: number
-  claimRevision: number
+  workerId: number
   leaseToken: number
   startedAt: number
   heartbeatAt: number
-  leaseExpiresAt: number
   finishedAt: number
-  reservedScratchBytes: number
   failureCode: number
-  failureMessage: number
   outputObjectKey: number
-  outputCleanupStatus: number
-  outputCleanupAttempts: number
-  outputCleanupLastError: number
-  outputCleanupRequestedAt: number
-  outputCleanupCompletedAt: number
+  cleanupStatus: number
+  cleanupAttemptCount: number
+  cleanupLastErrorCode: number
+  cleanupRequestedAt: number
+  cleanupCompletedAt: number
+  scratchDirectoryName: number
+  scratchLeaseHash: number
+  scratchReservedBytes: number
+  scratchCreatedAt: number
+  createdAt: number
+  updatedAt: number
   _all: number
 }
 
 
 export type JobAttemptAvgAggregateInputType = {
   attemptNumber?: true
-  claimRevision?: true
-  reservedScratchBytes?: true
-  outputCleanupAttempts?: true
+  cleanupAttemptCount?: true
+  scratchReservedBytes?: true
 }
 
 export type JobAttemptSumAggregateInputType = {
   attemptNumber?: true
-  claimRevision?: true
-  reservedScratchBytes?: true
-  outputCleanupAttempts?: true
+  cleanupAttemptCount?: true
+  scratchReservedBytes?: true
 }
 
 export type JobAttemptMinAggregateInputType = {
@@ -127,21 +132,24 @@ export type JobAttemptMinAggregateInputType = {
   jobId?: true
   attemptNumber?: true
   state?: true
-  claimRevision?: true
+  workerId?: true
   leaseToken?: true
   startedAt?: true
   heartbeatAt?: true
-  leaseExpiresAt?: true
   finishedAt?: true
-  reservedScratchBytes?: true
   failureCode?: true
-  failureMessage?: true
   outputObjectKey?: true
-  outputCleanupStatus?: true
-  outputCleanupAttempts?: true
-  outputCleanupLastError?: true
-  outputCleanupRequestedAt?: true
-  outputCleanupCompletedAt?: true
+  cleanupStatus?: true
+  cleanupAttemptCount?: true
+  cleanupLastErrorCode?: true
+  cleanupRequestedAt?: true
+  cleanupCompletedAt?: true
+  scratchDirectoryName?: true
+  scratchLeaseHash?: true
+  scratchReservedBytes?: true
+  scratchCreatedAt?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type JobAttemptMaxAggregateInputType = {
@@ -149,21 +157,24 @@ export type JobAttemptMaxAggregateInputType = {
   jobId?: true
   attemptNumber?: true
   state?: true
-  claimRevision?: true
+  workerId?: true
   leaseToken?: true
   startedAt?: true
   heartbeatAt?: true
-  leaseExpiresAt?: true
   finishedAt?: true
-  reservedScratchBytes?: true
   failureCode?: true
-  failureMessage?: true
   outputObjectKey?: true
-  outputCleanupStatus?: true
-  outputCleanupAttempts?: true
-  outputCleanupLastError?: true
-  outputCleanupRequestedAt?: true
-  outputCleanupCompletedAt?: true
+  cleanupStatus?: true
+  cleanupAttemptCount?: true
+  cleanupLastErrorCode?: true
+  cleanupRequestedAt?: true
+  cleanupCompletedAt?: true
+  scratchDirectoryName?: true
+  scratchLeaseHash?: true
+  scratchReservedBytes?: true
+  scratchCreatedAt?: true
+  createdAt?: true
+  updatedAt?: true
 }
 
 export type JobAttemptCountAggregateInputType = {
@@ -171,21 +182,24 @@ export type JobAttemptCountAggregateInputType = {
   jobId?: true
   attemptNumber?: true
   state?: true
-  claimRevision?: true
+  workerId?: true
   leaseToken?: true
   startedAt?: true
   heartbeatAt?: true
-  leaseExpiresAt?: true
   finishedAt?: true
-  reservedScratchBytes?: true
   failureCode?: true
-  failureMessage?: true
   outputObjectKey?: true
-  outputCleanupStatus?: true
-  outputCleanupAttempts?: true
-  outputCleanupLastError?: true
-  outputCleanupRequestedAt?: true
-  outputCleanupCompletedAt?: true
+  cleanupStatus?: true
+  cleanupAttemptCount?: true
+  cleanupLastErrorCode?: true
+  cleanupRequestedAt?: true
+  cleanupCompletedAt?: true
+  scratchDirectoryName?: true
+  scratchLeaseHash?: true
+  scratchReservedBytes?: true
+  scratchCreatedAt?: true
+  createdAt?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -280,21 +294,24 @@ export type JobAttemptGroupByOutputType = {
   jobId: string
   attemptNumber: number
   state: $Enums.JobAttemptState
-  claimRevision: number
-  leaseToken: string
-  startedAt: Date
-  heartbeatAt: Date
-  leaseExpiresAt: Date
+  workerId: string | null
+  leaseToken: string | null
+  startedAt: Date | null
+  heartbeatAt: Date | null
   finishedAt: Date | null
-  reservedScratchBytes: bigint
   failureCode: string | null
-  failureMessage: string | null
   outputObjectKey: string | null
-  outputCleanupStatus: $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts: number
-  outputCleanupLastError: string | null
-  outputCleanupRequestedAt: Date | null
-  outputCleanupCompletedAt: Date | null
+  cleanupStatus: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount: number
+  cleanupLastErrorCode: string | null
+  cleanupRequestedAt: Date | null
+  cleanupCompletedAt: Date | null
+  scratchDirectoryName: string | null
+  scratchLeaseHash: string | null
+  scratchReservedBytes: bigint | null
+  scratchCreatedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
   _count: JobAttemptCountAggregateOutputType | null
   _avg: JobAttemptAvgAggregateOutputType | null
   _sum: JobAttemptSumAggregateOutputType | null
@@ -325,21 +342,24 @@ export type JobAttemptWhereInput = {
   jobId?: Prisma.UuidFilter<"JobAttempt"> | string
   attemptNumber?: Prisma.IntFilter<"JobAttempt"> | number
   state?: Prisma.EnumJobAttemptStateFilter<"JobAttempt"> | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFilter<"JobAttempt"> | number
-  leaseToken?: Prisma.UuidFilter<"JobAttempt"> | string
-  startedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
-  heartbeatAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  workerId?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  leaseToken?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  startedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  heartbeatAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFilter<"JobAttempt"> | bigint | number
   failureCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  failureMessage?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
   outputObjectKey?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFilter<"JobAttempt"> | number
-  outputCleanupLastError?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  outputCleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
-  outputCleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFilter<"JobAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  cleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  scratchDirectoryName?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchLeaseHash?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   job?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
 }
 
@@ -348,28 +368,31 @@ export type JobAttemptOrderByWithRelationInput = {
   jobId?: Prisma.SortOrder
   attemptNumber?: Prisma.SortOrder
   state?: Prisma.SortOrder
-  claimRevision?: Prisma.SortOrder
-  leaseToken?: Prisma.SortOrder
-  startedAt?: Prisma.SortOrder
-  heartbeatAt?: Prisma.SortOrder
-  leaseExpiresAt?: Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  leaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  heartbeatAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  reservedScratchBytes?: Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
-  failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   outputObjectKey?: Prisma.SortOrderInput | Prisma.SortOrder
-  outputCleanupStatus?: Prisma.SortOrder
-  outputCleanupAttempts?: Prisma.SortOrder
-  outputCleanupLastError?: Prisma.SortOrderInput | Prisma.SortOrder
-  outputCleanupRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  outputCleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   job?: Prisma.PipelineJobOrderByWithRelationInput
 }
 
 export type JobAttemptWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  leaseToken?: string
   outputObjectKey?: string
+  scratchDirectoryName?: string
   jobId_attemptNumber?: Prisma.JobAttemptJobIdAttemptNumberCompoundUniqueInput
   AND?: Prisma.JobAttemptWhereInput | Prisma.JobAttemptWhereInput[]
   OR?: Prisma.JobAttemptWhereInput[]
@@ -377,42 +400,48 @@ export type JobAttemptWhereUniqueInput = Prisma.AtLeast<{
   jobId?: Prisma.UuidFilter<"JobAttempt"> | string
   attemptNumber?: Prisma.IntFilter<"JobAttempt"> | number
   state?: Prisma.EnumJobAttemptStateFilter<"JobAttempt"> | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFilter<"JobAttempt"> | number
-  startedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
-  heartbeatAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  workerId?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  leaseToken?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  startedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  heartbeatAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFilter<"JobAttempt"> | bigint | number
   failureCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  failureMessage?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFilter<"JobAttempt"> | number
-  outputCleanupLastError?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  outputCleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
-  outputCleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFilter<"JobAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  cleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  scratchLeaseHash?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   job?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
-}, "id" | "leaseToken" | "outputObjectKey" | "jobId_attemptNumber">
+}, "id" | "outputObjectKey" | "scratchDirectoryName" | "jobId_attemptNumber">
 
 export type JobAttemptOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
   attemptNumber?: Prisma.SortOrder
   state?: Prisma.SortOrder
-  claimRevision?: Prisma.SortOrder
-  leaseToken?: Prisma.SortOrder
-  startedAt?: Prisma.SortOrder
-  heartbeatAt?: Prisma.SortOrder
-  leaseExpiresAt?: Prisma.SortOrder
+  workerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  leaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  heartbeatAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  reservedScratchBytes?: Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
-  failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   outputObjectKey?: Prisma.SortOrderInput | Prisma.SortOrder
-  outputCleanupStatus?: Prisma.SortOrder
-  outputCleanupAttempts?: Prisma.SortOrder
-  outputCleanupLastError?: Prisma.SortOrderInput | Prisma.SortOrder
-  outputCleanupRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  outputCleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.JobAttemptCountOrderByAggregateInput
   _avg?: Prisma.JobAttemptAvgOrderByAggregateInput
   _max?: Prisma.JobAttemptMaxOrderByAggregateInput
@@ -428,42 +457,48 @@ export type JobAttemptScalarWhereWithAggregatesInput = {
   jobId?: Prisma.UuidWithAggregatesFilter<"JobAttempt"> | string
   attemptNumber?: Prisma.IntWithAggregatesFilter<"JobAttempt"> | number
   state?: Prisma.EnumJobAttemptStateWithAggregatesFilter<"JobAttempt"> | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntWithAggregatesFilter<"JobAttempt"> | number
-  leaseToken?: Prisma.UuidWithAggregatesFilter<"JobAttempt"> | string
-  startedAt?: Prisma.DateTimeWithAggregatesFilter<"JobAttempt"> | Date | string
-  heartbeatAt?: Prisma.DateTimeWithAggregatesFilter<"JobAttempt"> | Date | string
-  leaseExpiresAt?: Prisma.DateTimeWithAggregatesFilter<"JobAttempt"> | Date | string
+  workerId?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
+  leaseToken?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
+  startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
+  heartbeatAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntWithAggregatesFilter<"JobAttempt"> | bigint | number
   failureCode?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
-  failureMessage?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
   outputObjectKey?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusWithAggregatesFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntWithAggregatesFilter<"JobAttempt"> | number
-  outputCleanupLastError?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
-  outputCleanupRequestedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
-  outputCleanupCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusWithAggregatesFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntWithAggregatesFilter<"JobAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
+  cleanupRequestedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
+  cleanupCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
+  scratchDirectoryName?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
+  scratchLeaseHash?: Prisma.StringNullableWithAggregatesFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableWithAggregatesFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"JobAttempt"> | Date | string | null
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"JobAttempt"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"JobAttempt"> | Date | string
 }
 
 export type JobAttemptCreateInput = {
   id: string
   attemptNumber: number
   state?: $Enums.JobAttemptState
-  claimRevision: number
-  leaseToken: string
-  startedAt?: Date | string
-  heartbeatAt: Date | string
-  leaseExpiresAt: Date | string
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
   finishedAt?: Date | string | null
-  reservedScratchBytes: bigint | number
   failureCode?: string | null
-  failureMessage?: string | null
   outputObjectKey?: string | null
-  outputCleanupStatus?: $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: number
-  outputCleanupLastError?: string | null
-  outputCleanupRequestedAt?: Date | string | null
-  outputCleanupCompletedAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   job: Prisma.PipelineJobCreateNestedOneWithoutAttemptsInput
 }
 
@@ -472,42 +507,48 @@ export type JobAttemptUncheckedCreateInput = {
   jobId: string
   attemptNumber: number
   state?: $Enums.JobAttemptState
-  claimRevision: number
-  leaseToken: string
-  startedAt?: Date | string
-  heartbeatAt: Date | string
-  leaseExpiresAt: Date | string
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
   finishedAt?: Date | string | null
-  reservedScratchBytes: bigint | number
   failureCode?: string | null
-  failureMessage?: string | null
   outputObjectKey?: string | null
-  outputCleanupStatus?: $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: number
-  outputCleanupLastError?: string | null
-  outputCleanupRequestedAt?: Date | string | null
-  outputCleanupCompletedAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type JobAttemptUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFieldUpdateOperationsInput | number
-  leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
-  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  heartbeatAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFieldUpdateOperationsInput | number
-  outputCleanupLastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  outputCleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   job?: Prisma.PipelineJobUpdateOneRequiredWithoutAttemptsNestedInput
 }
 
@@ -516,21 +557,24 @@ export type JobAttemptUncheckedUpdateInput = {
   jobId?: Prisma.StringFieldUpdateOperationsInput | string
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFieldUpdateOperationsInput | number
-  leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
-  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  heartbeatAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFieldUpdateOperationsInput | number
-  outputCleanupLastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  outputCleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JobAttemptCreateManyInput = {
@@ -538,42 +582,48 @@ export type JobAttemptCreateManyInput = {
   jobId: string
   attemptNumber: number
   state?: $Enums.JobAttemptState
-  claimRevision: number
-  leaseToken: string
-  startedAt?: Date | string
-  heartbeatAt: Date | string
-  leaseExpiresAt: Date | string
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
   finishedAt?: Date | string | null
-  reservedScratchBytes: bigint | number
   failureCode?: string | null
-  failureMessage?: string | null
   outputObjectKey?: string | null
-  outputCleanupStatus?: $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: number
-  outputCleanupLastError?: string | null
-  outputCleanupRequestedAt?: Date | string | null
-  outputCleanupCompletedAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type JobAttemptUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFieldUpdateOperationsInput | number
-  leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
-  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  heartbeatAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFieldUpdateOperationsInput | number
-  outputCleanupLastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  outputCleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JobAttemptUncheckedUpdateManyInput = {
@@ -581,21 +631,24 @@ export type JobAttemptUncheckedUpdateManyInput = {
   jobId?: Prisma.StringFieldUpdateOperationsInput | string
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFieldUpdateOperationsInput | number
-  leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
-  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  heartbeatAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFieldUpdateOperationsInput | number
-  outputCleanupLastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  outputCleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JobAttemptListRelationFilter = {
@@ -618,28 +671,30 @@ export type JobAttemptCountOrderByAggregateInput = {
   jobId?: Prisma.SortOrder
   attemptNumber?: Prisma.SortOrder
   state?: Prisma.SortOrder
-  claimRevision?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   heartbeatAt?: Prisma.SortOrder
-  leaseExpiresAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
-  reservedScratchBytes?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
-  failureMessage?: Prisma.SortOrder
   outputObjectKey?: Prisma.SortOrder
-  outputCleanupStatus?: Prisma.SortOrder
-  outputCleanupAttempts?: Prisma.SortOrder
-  outputCleanupLastError?: Prisma.SortOrder
-  outputCleanupRequestedAt?: Prisma.SortOrder
-  outputCleanupCompletedAt?: Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrder
+  cleanupRequestedAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type JobAttemptAvgOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
-  claimRevision?: Prisma.SortOrder
-  reservedScratchBytes?: Prisma.SortOrder
-  outputCleanupAttempts?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
 }
 
 export type JobAttemptMaxOrderByAggregateInput = {
@@ -647,21 +702,24 @@ export type JobAttemptMaxOrderByAggregateInput = {
   jobId?: Prisma.SortOrder
   attemptNumber?: Prisma.SortOrder
   state?: Prisma.SortOrder
-  claimRevision?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   heartbeatAt?: Prisma.SortOrder
-  leaseExpiresAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
-  reservedScratchBytes?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
-  failureMessage?: Prisma.SortOrder
   outputObjectKey?: Prisma.SortOrder
-  outputCleanupStatus?: Prisma.SortOrder
-  outputCleanupAttempts?: Prisma.SortOrder
-  outputCleanupLastError?: Prisma.SortOrder
-  outputCleanupRequestedAt?: Prisma.SortOrder
-  outputCleanupCompletedAt?: Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrder
+  cleanupRequestedAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type JobAttemptMinOrderByAggregateInput = {
@@ -669,28 +727,30 @@ export type JobAttemptMinOrderByAggregateInput = {
   jobId?: Prisma.SortOrder
   attemptNumber?: Prisma.SortOrder
   state?: Prisma.SortOrder
-  claimRevision?: Prisma.SortOrder
+  workerId?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   heartbeatAt?: Prisma.SortOrder
-  leaseExpiresAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
-  reservedScratchBytes?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
-  failureMessage?: Prisma.SortOrder
   outputObjectKey?: Prisma.SortOrder
-  outputCleanupStatus?: Prisma.SortOrder
-  outputCleanupAttempts?: Prisma.SortOrder
-  outputCleanupLastError?: Prisma.SortOrder
-  outputCleanupRequestedAt?: Prisma.SortOrder
-  outputCleanupCompletedAt?: Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrder
+  cleanupRequestedAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrder
+  scratchDirectoryName?: Prisma.SortOrder
+  scratchLeaseHash?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
+  scratchCreatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type JobAttemptSumOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
-  claimRevision?: Prisma.SortOrder
-  reservedScratchBytes?: Prisma.SortOrder
-  outputCleanupAttempts?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  scratchReservedBytes?: Prisma.SortOrder
 }
 
 export type JobAttemptCreateNestedManyWithoutJobInput = {
@@ -743,42 +803,48 @@ export type JobAttemptCreateWithoutJobInput = {
   id: string
   attemptNumber: number
   state?: $Enums.JobAttemptState
-  claimRevision: number
-  leaseToken: string
-  startedAt?: Date | string
-  heartbeatAt: Date | string
-  leaseExpiresAt: Date | string
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
   finishedAt?: Date | string | null
-  reservedScratchBytes: bigint | number
   failureCode?: string | null
-  failureMessage?: string | null
   outputObjectKey?: string | null
-  outputCleanupStatus?: $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: number
-  outputCleanupLastError?: string | null
-  outputCleanupRequestedAt?: Date | string | null
-  outputCleanupCompletedAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type JobAttemptUncheckedCreateWithoutJobInput = {
   id: string
   attemptNumber: number
   state?: $Enums.JobAttemptState
-  claimRevision: number
-  leaseToken: string
-  startedAt?: Date | string
-  heartbeatAt: Date | string
-  leaseExpiresAt: Date | string
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
   finishedAt?: Date | string | null
-  reservedScratchBytes: bigint | number
   failureCode?: string | null
-  failureMessage?: string | null
   outputObjectKey?: string | null
-  outputCleanupStatus?: $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: number
-  outputCleanupLastError?: string | null
-  outputCleanupRequestedAt?: Date | string | null
-  outputCleanupCompletedAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type JobAttemptCreateOrConnectWithoutJobInput = {
@@ -815,105 +881,120 @@ export type JobAttemptScalarWhereInput = {
   jobId?: Prisma.UuidFilter<"JobAttempt"> | string
   attemptNumber?: Prisma.IntFilter<"JobAttempt"> | number
   state?: Prisma.EnumJobAttemptStateFilter<"JobAttempt"> | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFilter<"JobAttempt"> | number
-  leaseToken?: Prisma.UuidFilter<"JobAttempt"> | string
-  startedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
-  heartbeatAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  workerId?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  leaseToken?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  startedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  heartbeatAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFilter<"JobAttempt"> | bigint | number
   failureCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  failureMessage?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
   outputObjectKey?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFilter<"JobAttempt"> | number
-  outputCleanupLastError?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
-  outputCleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
-  outputCleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"JobAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFilter<"JobAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  cleanupRequestedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  scratchDirectoryName?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchLeaseHash?: Prisma.StringNullableFilter<"JobAttempt"> | string | null
+  scratchReservedBytes?: Prisma.BigIntNullableFilter<"JobAttempt"> | bigint | number | null
+  scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
 }
 
 export type JobAttemptCreateManyJobInput = {
   id: string
   attemptNumber: number
   state?: $Enums.JobAttemptState
-  claimRevision: number
-  leaseToken: string
-  startedAt?: Date | string
-  heartbeatAt: Date | string
-  leaseExpiresAt: Date | string
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
   finishedAt?: Date | string | null
-  reservedScratchBytes: bigint | number
   failureCode?: string | null
-  failureMessage?: string | null
   outputObjectKey?: string | null
-  outputCleanupStatus?: $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: number
-  outputCleanupLastError?: string | null
-  outputCleanupRequestedAt?: Date | string | null
-  outputCleanupCompletedAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type JobAttemptUpdateWithoutJobInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFieldUpdateOperationsInput | number
-  leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
-  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  heartbeatAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFieldUpdateOperationsInput | number
-  outputCleanupLastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  outputCleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JobAttemptUncheckedUpdateWithoutJobInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFieldUpdateOperationsInput | number
-  leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
-  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  heartbeatAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFieldUpdateOperationsInput | number
-  outputCleanupLastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  outputCleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JobAttemptUncheckedUpdateManyWithoutJobInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
   state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
-  claimRevision?: Prisma.IntFieldUpdateOperationsInput | number
-  leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
-  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  heartbeatAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  reservedScratchBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
-  outputCleanupAttempts?: Prisma.IntFieldUpdateOperationsInput | number
-  outputCleanupLastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outputCleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  outputCleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -923,21 +1004,24 @@ export type JobAttemptSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   jobId?: boolean
   attemptNumber?: boolean
   state?: boolean
-  claimRevision?: boolean
+  workerId?: boolean
   leaseToken?: boolean
   startedAt?: boolean
   heartbeatAt?: boolean
-  leaseExpiresAt?: boolean
   finishedAt?: boolean
-  reservedScratchBytes?: boolean
   failureCode?: boolean
-  failureMessage?: boolean
   outputObjectKey?: boolean
-  outputCleanupStatus?: boolean
-  outputCleanupAttempts?: boolean
-  outputCleanupLastError?: boolean
-  outputCleanupRequestedAt?: boolean
-  outputCleanupCompletedAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupRequestedAt?: boolean
+  cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["jobAttempt"]>
 
@@ -946,21 +1030,24 @@ export type JobAttemptSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   jobId?: boolean
   attemptNumber?: boolean
   state?: boolean
-  claimRevision?: boolean
+  workerId?: boolean
   leaseToken?: boolean
   startedAt?: boolean
   heartbeatAt?: boolean
-  leaseExpiresAt?: boolean
   finishedAt?: boolean
-  reservedScratchBytes?: boolean
   failureCode?: boolean
-  failureMessage?: boolean
   outputObjectKey?: boolean
-  outputCleanupStatus?: boolean
-  outputCleanupAttempts?: boolean
-  outputCleanupLastError?: boolean
-  outputCleanupRequestedAt?: boolean
-  outputCleanupCompletedAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupRequestedAt?: boolean
+  cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["jobAttempt"]>
 
@@ -969,21 +1056,24 @@ export type JobAttemptSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   jobId?: boolean
   attemptNumber?: boolean
   state?: boolean
-  claimRevision?: boolean
+  workerId?: boolean
   leaseToken?: boolean
   startedAt?: boolean
   heartbeatAt?: boolean
-  leaseExpiresAt?: boolean
   finishedAt?: boolean
-  reservedScratchBytes?: boolean
   failureCode?: boolean
-  failureMessage?: boolean
   outputObjectKey?: boolean
-  outputCleanupStatus?: boolean
-  outputCleanupAttempts?: boolean
-  outputCleanupLastError?: boolean
-  outputCleanupRequestedAt?: boolean
-  outputCleanupCompletedAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupRequestedAt?: boolean
+  cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["jobAttempt"]>
 
@@ -992,24 +1082,27 @@ export type JobAttemptSelectScalar = {
   jobId?: boolean
   attemptNumber?: boolean
   state?: boolean
-  claimRevision?: boolean
+  workerId?: boolean
   leaseToken?: boolean
   startedAt?: boolean
   heartbeatAt?: boolean
-  leaseExpiresAt?: boolean
   finishedAt?: boolean
-  reservedScratchBytes?: boolean
   failureCode?: boolean
-  failureMessage?: boolean
   outputObjectKey?: boolean
-  outputCleanupStatus?: boolean
-  outputCleanupAttempts?: boolean
-  outputCleanupLastError?: boolean
-  outputCleanupRequestedAt?: boolean
-  outputCleanupCompletedAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupRequestedAt?: boolean
+  cleanupCompletedAt?: boolean
+  scratchDirectoryName?: boolean
+  scratchLeaseHash?: boolean
+  scratchReservedBytes?: boolean
+  scratchCreatedAt?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
 }
 
-export type JobAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobId" | "attemptNumber" | "state" | "claimRevision" | "leaseToken" | "startedAt" | "heartbeatAt" | "leaseExpiresAt" | "finishedAt" | "reservedScratchBytes" | "failureCode" | "failureMessage" | "outputObjectKey" | "outputCleanupStatus" | "outputCleanupAttempts" | "outputCleanupLastError" | "outputCleanupRequestedAt" | "outputCleanupCompletedAt", ExtArgs["result"]["jobAttempt"]>
+export type JobAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobId" | "attemptNumber" | "state" | "workerId" | "leaseToken" | "startedAt" | "heartbeatAt" | "finishedAt" | "failureCode" | "outputObjectKey" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "scratchDirectoryName" | "scratchLeaseHash" | "scratchReservedBytes" | "scratchCreatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["jobAttempt"]>
 export type JobAttemptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
 }
@@ -1030,21 +1123,24 @@ export type $JobAttemptPayload<ExtArgs extends runtime.Types.Extensions.Internal
     jobId: string
     attemptNumber: number
     state: $Enums.JobAttemptState
-    claimRevision: number
-    leaseToken: string
-    startedAt: Date
-    heartbeatAt: Date
-    leaseExpiresAt: Date
+    workerId: string | null
+    leaseToken: string | null
+    startedAt: Date | null
+    heartbeatAt: Date | null
     finishedAt: Date | null
-    reservedScratchBytes: bigint
     failureCode: string | null
-    failureMessage: string | null
     outputObjectKey: string | null
-    outputCleanupStatus: $Enums.ArtifactCleanupStatus
-    outputCleanupAttempts: number
-    outputCleanupLastError: string | null
-    outputCleanupRequestedAt: Date | null
-    outputCleanupCompletedAt: Date | null
+    cleanupStatus: $Enums.ArtifactCleanupStatus
+    cleanupAttemptCount: number
+    cleanupLastErrorCode: string | null
+    cleanupRequestedAt: Date | null
+    cleanupCompletedAt: Date | null
+    scratchDirectoryName: string | null
+    scratchLeaseHash: string | null
+    scratchReservedBytes: bigint | null
+    scratchCreatedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["jobAttempt"]>
   composites: {}
 }
@@ -1473,21 +1569,24 @@ export interface JobAttemptFieldRefs {
   readonly jobId: Prisma.FieldRef<"JobAttempt", 'String'>
   readonly attemptNumber: Prisma.FieldRef<"JobAttempt", 'Int'>
   readonly state: Prisma.FieldRef<"JobAttempt", 'JobAttemptState'>
-  readonly claimRevision: Prisma.FieldRef<"JobAttempt", 'Int'>
+  readonly workerId: Prisma.FieldRef<"JobAttempt", 'String'>
   readonly leaseToken: Prisma.FieldRef<"JobAttempt", 'String'>
   readonly startedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
   readonly heartbeatAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
-  readonly leaseExpiresAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
-  readonly reservedScratchBytes: Prisma.FieldRef<"JobAttempt", 'BigInt'>
   readonly failureCode: Prisma.FieldRef<"JobAttempt", 'String'>
-  readonly failureMessage: Prisma.FieldRef<"JobAttempt", 'String'>
   readonly outputObjectKey: Prisma.FieldRef<"JobAttempt", 'String'>
-  readonly outputCleanupStatus: Prisma.FieldRef<"JobAttempt", 'ArtifactCleanupStatus'>
-  readonly outputCleanupAttempts: Prisma.FieldRef<"JobAttempt", 'Int'>
-  readonly outputCleanupLastError: Prisma.FieldRef<"JobAttempt", 'String'>
-  readonly outputCleanupRequestedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
-  readonly outputCleanupCompletedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
+  readonly cleanupStatus: Prisma.FieldRef<"JobAttempt", 'ArtifactCleanupStatus'>
+  readonly cleanupAttemptCount: Prisma.FieldRef<"JobAttempt", 'Int'>
+  readonly cleanupLastErrorCode: Prisma.FieldRef<"JobAttempt", 'String'>
+  readonly cleanupRequestedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
+  readonly cleanupCompletedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
+  readonly scratchDirectoryName: Prisma.FieldRef<"JobAttempt", 'String'>
+  readonly scratchLeaseHash: Prisma.FieldRef<"JobAttempt", 'String'>
+  readonly scratchReservedBytes: Prisma.FieldRef<"JobAttempt", 'BigInt'>
+  readonly scratchCreatedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
+  readonly createdAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"JobAttempt", 'DateTime'>
 }
     
 

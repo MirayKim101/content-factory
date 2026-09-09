@@ -43,7 +43,7 @@ describe("development OpenAPI bootstrap", () => {
     expect(document.components.schemas).toHaveProperty("ProjectResponseDto");
     expect(document.components.schemas).toHaveProperty("ErrorResponseDto");
     expect(document.components.schemas).toHaveProperty(
-      "ConfirmSourceAuthorizationDto",
+      "SourceAuthorizationResponseDto",
     );
   }, 20_000);
 });

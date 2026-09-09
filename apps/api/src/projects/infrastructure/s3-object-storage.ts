@@ -1,5 +1,4 @@
 import { createReadStream } from "node:fs";
-import type { Readable } from "node:stream";
 
 import {
   DeleteObjectCommand,
@@ -9,6 +8,7 @@ import {
   S3Client,
   S3ServiceException,
 } from "@aws-sdk/client-s3";
+import type { Readable } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
 import {
   Inject,
@@ -22,9 +22,10 @@ import {
   apiEnvironment,
   type ApiEnvironment,
 } from "../../config/environment.js";
-import type {
-  ObjectStorage,
-  StoredObject,
+import {
+  ObjectRangeNotSatisfiableError,
+  type ObjectStorage,
+  type StoredObject,
 } from "../application/object-storage.port.js";
 
 export const S3_CLIENT = Symbol("S3_CLIENT");
@@ -102,7 +103,6 @@ export class S3ObjectStorage
     const abortFromCaller = (): void =>
       abortController.abort(input.signal?.reason);
     input.signal?.addEventListener("abort", abortFromCaller, { once: true });
-    if (input.signal?.aborted) abortFromCaller();
     try {
       const upload = new Upload({
         client: this.client,
@@ -163,25 +163,43 @@ export class S3ObjectStorage
     );
   }
 
-  async getObjectStream(input: {
-    objectKey: string;
-    start?: number;
-    end?: number;
-    signal?: AbortSignal;
-  }): Promise<Readable> {
-    const result = await this.client.send(
-      new GetObjectCommand({
-        Bucket: this.config.sourceBucket,
-        Key: input.objectKey,
-        ...(input.start === undefined
-          ? {}
-          : { Range: `bytes=${input.start}-${input.end ?? ""}` }),
-      }),
-      { abortSignal: this.operationSignal(input.signal) },
-    );
-    if (!result.Body || !("pipe" in result.Body))
-      throw new Error("S3_OBJECT_STREAM_UNAVAILABLE");
-    return result.Body as Readable;
+  async readObject(
+    objectKey: string,
+    range?: string,
+    signal?: AbortSignal,
+  ): Promise<{
+    body: Readable;
+    contentLength: number;
+    contentType: string;
+    contentRange?: string;
+    etag?: string;
+  } | null> {
+    try {
+      const result = await this.client.send(
+        new GetObjectCommand({
+          Bucket: this.config.sourceBucket,
+          Key: objectKey,
+          ...(range ? { Range: range } : {}),
+        }),
+        { abortSignal: this.operationSignal(signal) },
+      );
+      if (!result.Body || result.ContentLength === undefined) {
+        throw new Error("S3_OBJECT_BODY_MISSING");
+      }
+      return {
+        body: result.Body as Readable,
+        contentLength: result.ContentLength,
+        contentType: result.ContentType ?? "application/octet-stream",
+        ...(result.ContentRange ? { contentRange: result.ContentRange } : {}),
+        ...(result.ETag ? { etag: result.ETag } : {}),
+      };
+    } catch (error) {
+      if (this.isNotFound(error)) return null;
+      if (this.isRangeNotSatisfiable(error)) {
+        throw new ObjectRangeNotSatisfiableError();
+      }
+      throw error;
+    }
   }
 
   private operationSignal(signal?: AbortSignal): AbortSignal {
@@ -193,6 +211,13 @@ export class S3ObjectStorage
     return (
       error instanceof S3ServiceException &&
       (error.name === "NotFound" || error.$metadata.httpStatusCode === 404)
+    );
+  }
+
+  private isRangeNotSatisfiable(error: unknown): boolean {
+    return (
+      error instanceof S3ServiceException &&
+      (error.name === "InvalidRange" || error.$metadata.httpStatusCode === 416)
     );
   }
 }

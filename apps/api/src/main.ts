@@ -15,12 +15,18 @@ import {
 } from "@nestjs/swagger";
 
 import { AppModule } from "./app.module.js";
-import { loadEnvironment } from "./config/environment.js";
+import {
+  apiEnvironment,
+  loadEnvironment,
+  sourceAuthorizationRuntime,
+} from "./config/environment.js";
 import { HttpExceptionFilter } from "./http-exception.filter.js";
+import { verifyAdmissionOffRollbackCompatibility } from "./rollback-compatibility.js";
 
 loadEnvironment();
 
 export async function createApp(): Promise<INestApplication> {
+  sourceAuthorizationRuntime();
   const app = await NestFactory.create(AppModule);
   app.enableCors({ origin: "http://localhost:3000" });
   app.useGlobalPipes(
@@ -60,11 +66,16 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
 }
 
 async function bootstrap(): Promise<void> {
+  const config = apiEnvironment();
   const app = await createApp();
-  await app.listen(Number(process.env.PORT ?? 3001), "127.0.0.1");
+  await app.listen(Number(process.env.PORT ?? 3001), config.apiHost);
 }
 
 const entrypoint = process.argv[1];
 if (entrypoint && import.meta.url === pathToFileURL(entrypoint).href) {
-  await bootstrap();
+  if (process.argv.includes("--verify-admission-off-rollback")) {
+    await verifyAdmissionOffRollbackCompatibility();
+  } else {
+    await bootstrap();
+  }
 }

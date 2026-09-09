@@ -1,8 +1,13 @@
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../../database/prisma.service.js";
+import { sourceAuthorizationRuntime } from "../../config/environment.js";
+import type { ProjectLibraryRepository } from "../application/project-library-repository.port.js";
 import {
   IdempotencyKeyAlreadyExistsError,
+  SourceAuthorizationConflictError,
+  SourceNotReadyForAuthorizationError,
+  SourceVersionConflictError,
   TerminalStateConflictError,
   type CreatePendingUploadRecord,
   type ProjectRepository,
@@ -11,11 +16,16 @@ import {
 import type {
   PendingCleanup,
   PendingUpload,
+  ProjectLibraryItem,
+  ProjectListPage,
+  ProjectListQuery,
   ProjectView,
 } from "../domain/project.js";
 
 @Injectable()
-export class PrismaProjectRepository implements ProjectRepository {
+export class PrismaProjectRepository
+  implements ProjectRepository, ProjectLibraryRepository
+{
   constructor(private readonly prisma: PrismaService) {}
 
   async createPendingUpload(record: CreatePendingUploadRecord): Promise<void> {
@@ -27,8 +37,8 @@ export class PrismaProjectRepository implements ProjectRepository {
             idempotencyKey: record.idempotencyKey,
             requestFingerprint: record.requestFingerprint,
             name: record.name,
-            rightsConfirmedAt: record.rightsConfirmedAt,
-            rightsDeclarationVersion: record.rightsDeclarationVersion,
+            rightsConfirmedAt: null,
+            rightsDeclarationVersion: null,
           },
         });
         await transaction.videoSource.create({
@@ -40,6 +50,13 @@ export class PrismaProjectRepository implements ProjectRepository {
             sizeBytes: record.sizeBytes,
             sha256: record.sha256,
             sourceVersion: record.sourceVersion,
+          },
+        });
+        await transaction.sourceAuthorization.create({
+          data: {
+            sourceId: record.sourceId,
+            sourceVersion: record.sourceVersion,
+            status: "NOT_REVIEWED",
           },
         });
         await transaction.mediaArtifact.create({
@@ -57,14 +74,6 @@ export class PrismaProjectRepository implements ProjectRepository {
             recipeVersion: record.recipeVersion,
           },
         });
-        await transaction.sourceAuthorization.create({
-          data: {
-            sourceId: record.sourceId,
-            sourceVersion: record.sourceVersion,
-            sourceSha256: record.sha256,
-            status: "NOT_REVIEWED",
-          },
-        });
       });
     } catch (error) {
       if (this.isUniqueConstraint(error))
@@ -77,6 +86,7 @@ export class PrismaProjectRepository implements ProjectRepository {
     artifactId: string,
     receipt: StorageReceipt,
   ): Promise<void> {
+    const autoAuthorize = sourceAuthorizationRuntime().policy === "local-auto";
     await this.prisma.$transaction(async (transaction) => {
       const current = await transaction.mediaArtifact.findUnique({
         where: { id: artifactId },
@@ -87,7 +97,9 @@ export class PrismaProjectRepository implements ProjectRepository {
       if (
         current.status !== "PENDING" ||
         current.source.status !== "PENDING" ||
-        current.project.status !== "SOURCE_PENDING"
+        current.project.status !== "SOURCE_PENDING" ||
+        current.sourceId !== current.lineageSourceId ||
+        current.source.sourceVersion !== current.lineageSourceVersion
       ) {
         throw new TerminalStateConflictError();
       }
@@ -122,6 +134,26 @@ export class PrismaProjectRepository implements ProjectRepository {
       });
       if (source.count !== 1 || project.count !== 1)
         throw new TerminalStateConflictError();
+      if (autoAuthorize) {
+        const authorization = await transaction.sourceAuthorization.updateMany({
+          where: {
+            sourceId: current.sourceId,
+            sourceVersion: current.lineageSourceVersion,
+            status: "NOT_REVIEWED",
+            basis: null,
+            declarationVersion: null,
+            decidedAt: null,
+          },
+          data: {
+            status: "CLEARED",
+            basis: "LOCAL_DEVELOPMENT_AUTO",
+            declarationVersion: "local-development-auto-v1",
+            decidedAt: new Date(),
+            revision: { increment: 1 },
+          },
+        });
+        if (authorization.count !== 1) throw new TerminalStateConflictError();
+      }
     });
   }
 
@@ -233,37 +265,37 @@ export class PrismaProjectRepository implements ProjectRepository {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       include: {
-        source: true,
+        source: {
+          include: {
+            authorizations: true,
+            pipelineJobs: {
+              where: { type: "SOURCE_PROBE" },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
         artifacts: { where: { role: "SOURCE" }, take: 1 },
       },
     });
     const source = project?.source;
     const artifact = project?.artifacts[0];
-    if (!project || !source || !artifact || artifact.role !== "SOURCE")
-      return null;
-    const authorization = await this.prisma.sourceAuthorization.findUnique({
-      where: {
-        sourceId_sourceVersion: {
-          sourceId: source.id,
-          sourceVersion: source.sourceVersion,
-        },
-      },
-    });
-    if (!authorization) return null;
+    if (!project || !source || !artifact) return null;
+    const probeJob = source.pipelineJobs[0];
+    const authorization = source.authorizations.find(
+      (decision) => decision.sourceVersion === source.sourceVersion,
+    );
+    if (!authorization) throw new Error("SOURCE_AUTHORIZATION_MISSING");
     return {
       id: project.id,
       name: project.name,
       status: project.status,
-      rightsConfirmedAt: project.rightsConfirmedAt,
-      rightsDeclarationVersion: project.rightsDeclarationVersion,
-      authorization: {
-        status: authorization.status,
-        sourceVersion: authorization.sourceVersion,
-        sourceSha256: authorization.sourceSha256,
-        basis: authorization.basis,
-        confirmedAt: authorization.confirmedAt,
-        declarationVersion: authorization.declarationVersion,
-      },
+      ...(project.rightsConfirmedAt
+        ? { rightsConfirmedAt: project.rightsConfirmedAt }
+        : {}),
+      ...(project.rightsDeclarationVersion
+        ? { rightsDeclarationVersion: project.rightsDeclarationVersion }
+        : {}),
       ...(project.failureCode && project.failureMessage
         ? {
             failure: {
@@ -282,10 +314,34 @@ export class PrismaProjectRepository implements ProjectRepository {
         contentType: source.contentType,
         sizeBytes: source.sizeBytes,
         sha256: source.sha256,
+        ...(source.durationMs === null
+          ? {}
+          : { durationMs: source.durationMs }),
+        ...(probeJob ? { probeState: probeJob.state } : {}),
+        ...(probeJob?.failureCode && probeJob.failureMessage
+          ? {
+              probeFailure: {
+                code: probeJob.failureCode,
+                message: probeJob.failureMessage,
+              },
+            }
+          : {}),
+        authorization: {
+          sourceVersion: authorization.sourceVersion,
+          status: authorization.status,
+          ...(authorization.basis ? { basis: authorization.basis } : {}),
+          ...(authorization.declarationVersion
+            ? { declarationVersion: authorization.declarationVersion }
+            : {}),
+          ...(authorization.decidedAt
+            ? { decidedAt: authorization.decidedAt }
+            : {}),
+          revision: authorization.revision,
+        },
       },
       artifact: {
         id: artifact.id,
-        role: artifact.role,
+        role: "SOURCE",
         status: artifact.status,
         sizeBytes: artifact.sizeBytes,
         sha256: artifact.sha256,
@@ -297,115 +353,206 @@ export class PrismaProjectRepository implements ProjectRepository {
     };
   }
 
-  async confirmSourceAuthorization(
-    record: import("../application/project-repository.port.js").ConfirmSourceAuthorizationRecord,
-    currentDeclarationVersion: string,
-  ): Promise<
-    import("../application/project-repository.port.js").ConfirmSourceAuthorizationResult
-  > {
-    const result = await this.prisma.$transaction(async (transaction) => {
-      await transaction.$queryRaw<Array<{ id: string }>>`
+  async list(query: ProjectListQuery): Promise<ProjectListPage> {
+    const escapedQuery = query.q ? escapeLikePattern(query.q) : undefined;
+    const rows = await this.prisma.project.findMany({
+      where: {
+        ...(query.status ? { status: query.status } : {}),
+        AND: [
+          ...(escapedQuery
+            ? [
+                {
+                  OR: [
+                    {
+                      name: {
+                        contains: escapedQuery,
+                        mode: "insensitive" as const,
+                      },
+                    },
+                    {
+                      source: {
+                        originalFilename: {
+                          contains: escapedQuery,
+                          mode: "insensitive" as const,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ]
+            : []),
+          ...(query.cursor
+            ? [
+                {
+                  OR: [
+                    { createdAt: { lt: query.cursor.createdAt } },
+                    {
+                      createdAt: query.cursor.createdAt,
+                      id: { lt: query.cursor.id },
+                    },
+                  ],
+                },
+              ]
+            : []),
+        ],
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: query.limit + 1,
+      include: {
+        source: {
+          include: {
+            authorizations: true,
+            pipelineJobs: {
+              where: { type: { in: ["SOURCE_PROBE", "CUT_SEGMENT"] } },
+              orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            },
+          },
+        },
+      },
+    });
+
+    const hasMore = rows.length > query.limit;
+    const visibleRows = rows.slice(0, query.limit);
+    const items: ProjectLibraryItem[] = visibleRows.flatMap((row) => {
+      const source = row.source;
+      if (!source) return [];
+      const authorization = source.authorizations.find(
+        (decision) => decision.sourceVersion === source.sourceVersion,
+      );
+      if (!authorization) throw new Error("SOURCE_AUTHORIZATION_MISSING");
+      const probe = source.pipelineJobs.find(
+        (job) => job.type === "SOURCE_PROBE",
+      );
+      const cuts = source.pipelineJobs.filter(
+        (job) => job.type === "CUT_SEGMENT",
+      );
+      return [
+        {
+          id: row.id,
+          name: row.name,
+          status: row.status,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          source: {
+            id: source.id,
+            status: source.status,
+            sourceVersion: source.sourceVersion,
+            addedAt: source.createdAt,
+            originalFilename: source.originalFilename,
+            contentType: source.contentType,
+            sizeBytes: source.sizeBytes,
+            ...(source.durationMs === null
+              ? {}
+              : { durationMs: source.durationMs }),
+            ...(probe ? { probeState: probe.state } : {}),
+            authorization: {
+              sourceVersion: authorization.sourceVersion,
+              status: authorization.status,
+              ...(authorization.basis ? { basis: authorization.basis } : {}),
+              ...(authorization.declarationVersion
+                ? { declarationVersion: authorization.declarationVersion }
+                : {}),
+              ...(authorization.decidedAt
+                ? { decidedAt: authorization.decidedAt }
+                : {}),
+              revision: authorization.revision,
+            },
+          },
+          cutJobCounts: {
+            total: cuts.length,
+            ready: cuts.filter((job) => job.state === "READY").length,
+            failed: cuts.filter((job) => job.state === "FAILED_FINAL").length,
+          },
+        },
+      ];
+    });
+    const last = visibleRows.at(-1);
+
+    return {
+      items,
+      nextCursor:
+        hasMore && last ? { createdAt: last.createdAt, id: last.id } : null,
+    };
+  }
+
+  async attestSourceAuthorization(input: {
+    projectId: string;
+    sourceVersion: number;
+    expectedRevision: number;
+    declarationVersion: string;
+  }): Promise<ProjectView> {
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`
         SELECT "id"
         FROM "VideoSource"
-        WHERE "projectId" = ${record.projectId}::uuid
+        WHERE "projectId" = ${input.projectId}::uuid
         FOR UPDATE
       `;
-      const project = await transaction.project.findUnique({
-        where: { id: record.projectId },
-        include: { source: true },
-      });
-      if (!project) return { outcome: "PROJECT_NOT_FOUND" as const };
-      const source = project.source;
-      if (!source || source.status !== "READY")
-        return { outcome: "SOURCE_NOT_READY" as const };
-      if (
-        source.sourceVersion !== record.sourceVersion ||
-        source.sha256 !== record.sourceSha256
-      )
-        return { outcome: "SOURCE_VERSION_MISMATCH" as const };
-
-      const authorization = await transaction.sourceAuthorization.findUnique({
-        where: {
-          sourceId_sourceVersion: {
-            sourceId: source.id,
-            sourceVersion: source.sourceVersion,
+      const source = await transaction.videoSource.findUnique({
+        where: { projectId: input.projectId },
+        include: {
+          authorizations: {
+            where: { sourceVersion: input.sourceVersion },
+            take: 1,
           },
         },
       });
-      if (!authorization) return { outcome: "SOURCE_NOT_READY" as const };
-      if (authorization.sourceSha256 !== source.sha256)
-        return { outcome: "SOURCE_VERSION_MISMATCH" as const };
-      if (authorization.status === "CLEARED") {
-        if (
-          authorization.declarationVersion === record.declarationVersion &&
-          authorization.basis === "EXPLICIT_CONFIRMATION"
-        )
-          return { outcome: "CLEARED" as const, changed: false };
-        return { outcome: "SOURCE_AUTHORIZATION_CONFLICT" as const };
+      if (!source || source.sourceVersion !== input.sourceVersion)
+        throw new SourceVersionConflictError();
+      if (source.status !== "READY")
+        throw new SourceNotReadyForAuthorizationError();
+      const current = source.authorizations[0];
+      if (!current) throw new SourceVersionConflictError();
+      if (
+        current.status === "CLEARED" &&
+        current.basis === "OPERATOR_ATTESTATION" &&
+        current.declarationVersion === input.declarationVersion
+      ) {
+        return;
       }
-      if (record.declarationVersion !== currentDeclarationVersion)
-        return { outcome: "RIGHTS_DECLARATION_OUTDATED" as const };
-
+      if (
+        current.status !== "NOT_REVIEWED" ||
+        current.revision !== input.expectedRevision
+      ) {
+        throw new SourceAuthorizationConflictError();
+      }
       const updated = await transaction.sourceAuthorization.updateMany({
         where: {
           sourceId: source.id,
-          sourceVersion: source.sourceVersion,
-          sourceSha256: source.sha256,
+          sourceVersion: input.sourceVersion,
           status: "NOT_REVIEWED",
-          basis: null,
-          confirmedAt: null,
-          declarationVersion: null,
+          revision: input.expectedRevision,
         },
         data: {
           status: "CLEARED",
-          basis: "EXPLICIT_CONFIRMATION",
-          confirmedAt: record.confirmedAt,
-          declarationVersion: record.declarationVersion,
+          basis: "OPERATOR_ATTESTATION",
+          declarationVersion: input.declarationVersion,
+          decidedAt: new Date(),
+          revision: { increment: 1 },
         },
       });
-      if (updated.count === 1)
-        return { outcome: "CLEARED" as const, changed: true };
-
-      const concurrent = await transaction.sourceAuthorization.findUnique({
-        where: {
-          sourceId_sourceVersion: {
-            sourceId: source.id,
-            sourceVersion: source.sourceVersion,
+      if (updated.count !== 1) {
+        const concurrent = await transaction.sourceAuthorization.findUnique({
+          where: {
+            sourceId_sourceVersion: {
+              sourceId: source.id,
+              sourceVersion: input.sourceVersion,
+            },
           },
-        },
-      });
-      if (
-        concurrent?.status === "CLEARED" &&
-        concurrent.basis === "EXPLICIT_CONFIRMATION" &&
-        concurrent.declarationVersion === record.declarationVersion
-      )
-        return { outcome: "CLEARED" as const, changed: false };
-      return { outcome: "SOURCE_AUTHORIZATION_CONFLICT" as const };
+        });
+        if (
+          concurrent?.status === "CLEARED" &&
+          concurrent.basis === "OPERATOR_ATTESTATION" &&
+          concurrent.declarationVersion === input.declarationVersion
+        ) {
+          return;
+        }
+        throw new SourceAuthorizationConflictError();
+      }
     });
-    if (result.outcome !== "CLEARED") return result;
-    const project = await this.getById(record.projectId);
-    if (!project) return { outcome: "PROJECT_NOT_FOUND" };
-    return { ...result, project };
-  }
-
-  async isSourceAuthorized(
-    sourceId: string,
-    sourceVersion: number,
-    sourceSha256: string,
-  ): Promise<boolean> {
-    try {
-      const count = await this.prisma.sourceAuthorization.count({
-        where: {
-          sourceId,
-          sourceVersion,
-          sourceSha256,
-          status: "CLEARED",
-        },
-      });
-      return count === 1;
-    } catch {
-      return false;
-    }
+    const project = await this.getById(input.projectId);
+    if (!project) throw new SourceVersionConflictError();
+    return project;
   }
 
   async findStalePending(
@@ -485,13 +632,18 @@ export class PrismaProjectRepository implements ProjectRepository {
 
   private isReady(current: {
     status: string;
-    source: { status: string };
+    sourceId: string;
+    lineageSourceId: string;
+    lineageSourceVersion: number;
+    source: { status: string; sourceVersion: number };
     project: { status: string };
   }): boolean {
     return (
       current.status === "READY" &&
       current.source.status === "READY" &&
-      current.project.status === "SOURCE_READY"
+      current.project.status === "SOURCE_READY" &&
+      current.sourceId === current.lineageSourceId &&
+      current.source.sourceVersion === current.lineageSourceVersion
     );
   }
 
@@ -503,4 +655,11 @@ export class PrismaProjectRepository implements ProjectRepository {
       error.code === "P2002"
     );
   }
+}
+
+function escapeLikePattern(value: string): string {
+  return value
+    .replaceAll("\\", "\\\\")
+    .replaceAll("%", "\\%")
+    .replaceAll("_", "\\_");
 }

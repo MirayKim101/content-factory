@@ -103,19 +103,21 @@ services:
       minio:
         condition: service_healthy
 
-  worker:
-    image: content-factory-worker:node24.15.0-ffmpeg5.1.9
+  media-worker:
+    image: content-factory-media-worker:0.0.0-stage1
     build:
       context: ..
-      dockerfile: infrastructure/worker/Dockerfile
-    profiles: ["worker"]
+      dockerfile: apps/worker/Dockerfile
     restart: unless-stopped
-    user: "1000:1000"
+    init: true
     read_only: true
     cap_drop:
       - ALL
     security_opt:
       - no-new-privileges:true
+    pids_limit: 256
+    cpus: 2.0
+    stop_grace_period: 45s
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?copy .env.example to .env and set POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER:?copy .env.example to .env and set POSTGRES_USER}
@@ -130,21 +132,21 @@ services:
       S3_SOURCE_BUCKET: ${S3_SOURCE_BUCKET:-content-factory-sources}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:?copy .env.example to .env and set S3_ACCESS_KEY}
       S3_SECRET_KEY: ${S3_SECRET_KEY:?copy .env.example to .env and set S3_SECRET_KEY}
-      S3_OPERATION_TIMEOUT_MS: ${S3_OPERATION_TIMEOUT_MS:-7200000}
+      DEPLOYMENT_PROFILE: ${DEPLOYMENT_PROFILE:-other}
+      SOURCE_AUTHORIZATION_POLICY: ${SOURCE_AUTHORIZATION_POLICY:-manual}
+      API_HOST: ${API_HOST:-127.0.0.1}
+      MEDIA_WORKER_CONCURRENCY: ${MEDIA_WORKER_CONCURRENCY:-1}
+      MEDIA_JOB_LEASE_MS: ${MEDIA_JOB_LEASE_MS:-30000}
+      MEDIA_JOB_TIMEOUT_MS: ${MEDIA_JOB_TIMEOUT_MS:-7200000}
+      MEDIA_SCRATCH_DIRECTORY: /tmp/media-worker
+      MEDIA_SCRATCH_SAFETY_MIB: ${MEDIA_SCRATCH_SAFETY_MIB:-1024}
+      MEDIA_SOURCE_CACHE_DIRECTORY: /tmp/media-cache
+      MEDIA_SOURCE_CACHE_MAX_MIB: ${MEDIA_SOURCE_CACHE_MAX_MIB:-12288}
+      MEDIA_SOURCE_CACHE_TTL_MS: ${MEDIA_SOURCE_CACHE_TTL_MS:-21600000}
       FFMPEG_PATH: /usr/bin/ffmpeg
       FFPROBE_PATH: /usr/bin/ffprobe
-      MEDIA_PROCESS_TIMEOUT_MS: ${MEDIA_PROCESS_TIMEOUT_MS:-7200000}
-      WORKER_SCRATCH_DIRECTORY: /var/lib/content-factory-worker
-      WORKER_SCRATCH_MAX_BYTES: ${WORKER_SCRATCH_MAX_BYTES:-21474836480}
-      WORKER_HEAVY_CONCURRENCY: ${WORKER_HEAVY_CONCURRENCY:-1}
-      CUT_LEASE_MS: ${CUT_LEASE_MS:-120000}
-      CUT_HEARTBEAT_MS: ${CUT_HEARTBEAT_MS:-30000}
-      CUT_RECONCILE_INTERVAL_MS: ${CUT_RECONCILE_INTERVAL_MS:-5000}
-      CUT_SCRATCH_SAFETY_BYTES: ${CUT_SCRATCH_SAFETY_BYTES:-536870912}
-    volumes:
-      - worker-scratch:/var/lib/content-factory-worker
     tmpfs:
-      - /tmp:rw,noexec,nosuid,size=64m,uid=1000,gid=1000,mode=1777
+      - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=${MEDIA_SCRATCH_SIZE:-24g}
     networks:
       - content-factory
     depends_on:
@@ -154,18 +156,24 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [
           "CMD",
           "node",
-          "-e",
-          "require('node:fs').accessSync('/var/lib/content-factory-worker/worker-ready')",
+          "/usr/local/bin/content-factory-media-worker-healthcheck.mjs",
         ]
-      interval: 10s
-      timeout: 3s
-      retries: 6
-      start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
 
 networks:
   content-factory:
@@ -175,4 +183,3 @@ volumes:
   postgres-data:
   redis-data:
   minio-data:
-  worker-scratch:

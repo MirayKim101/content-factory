@@ -82,6 +82,7 @@ Follow `docs/product/MVP-ROADMAP.md`.
   cutting, status, controlled failure, and result download.
 - Stage 2 adds the full local horizontal editorial pipeline and reusable
   self-promotion or advertising overlays.
+- Stage 2B adds AI-assisted editorial packaging after the manual Stage 2 path.
 - Stage 3 adds Twitch ingestion, provider-neutral AI vertical clipping,
   publishing, and analytics.
 - Do not introduce automatic highlight detection or an external clipping

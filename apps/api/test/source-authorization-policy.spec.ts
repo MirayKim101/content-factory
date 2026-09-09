@@ -1,58 +1,93 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import type { ProjectRepository } from "../src/projects/application/project-repository.port.js";
-import { SourceAuthorizationPolicy } from "../src/projects/application/source-authorization-policy.js";
+import { resolveSourceAuthorizationRuntime } from "../src/config/environment.js";
+import { isSourceAuthorizationCleared } from "../src/projects/domain/source-authorization.js";
 
-describe("SourceAuthorizationPolicy", () => {
-  it("allows only a cleared exact source tuple and fails closed", async () => {
-    const cleared = {
-      sourceId: "00000000-0000-4000-8000-000000000001",
-      sourceVersion: 2,
-      sourceSha256: "a".repeat(64),
-    };
-    const repository = {
-      isSourceAuthorized: vi.fn(async (id, version, sha256) =>
-        Promise.resolve(
-          id === cleared.sourceId &&
-            version === cleared.sourceVersion &&
-            sha256 === cleared.sourceSha256,
-        ),
-      ),
-    } as unknown as ProjectRepository;
-    const policy = new SourceAuthorizationPolicy(repository);
+const localAuthorization = {
+  sourceVersion: 1,
+  status: "CLEARED" as const,
+  basis: "LOCAL_DEVELOPMENT_AUTO" as const,
+  declarationVersion: "local-development-auto-v1",
+  decidedAt: new Date("2026-09-02T08:00:00.000Z"),
+  revision: 2,
+};
 
-    await expect(
-      policy.isCleared(
-        cleared.sourceId,
-        cleared.sourceVersion,
-        cleared.sourceSha256,
-      ),
-    ).resolves.toBe(true);
-    await expect(
-      policy.isCleared(
-        "00000000-0000-4000-8000-000000000099",
-        2,
-        cleared.sourceSha256,
-      ),
-    ).resolves.toBe(false);
-    await expect(
-      policy.isCleared(cleared.sourceId, 1, cleared.sourceSha256),
-    ).resolves.toBe(false);
-    await expect(
-      policy.isCleared(cleared.sourceId, 2, "b".repeat(64)),
-    ).resolves.toBe(false);
+describe("source authorization runtime policy", () => {
+  it("defaults missing and unknown values to manual", () => {
+    expect(resolveSourceAuthorizationRuntime({})).toEqual({
+      deploymentProfile: "other",
+      policy: "manual",
+      apiHost: "127.0.0.1",
+    });
+    expect(
+      resolveSourceAuthorizationRuntime({
+        DEPLOYMENT_PROFILE: "preview",
+        SOURCE_AUTHORIZATION_POLICY: "automatic",
+        API_HOST: "0.0.0.0",
+      }),
+    ).toEqual({
+      deploymentProfile: "other",
+      policy: "manual",
+      apiHost: "0.0.0.0",
+    });
   });
 
-  it("denies when authorization persistence cannot be read", async () => {
-    const repository = {
-      isSourceAuthorized: vi.fn(async () => false),
-    } as unknown as ProjectRepository;
-    await expect(
-      new SourceAuthorizationPolicy(repository).isCleared(
-        "source",
+  it.each(["127.0.0.1", "localhost", "::1"])(
+    "allows local-auto only on exact loopback host %s",
+    (apiHost) => {
+      expect(
+        resolveSourceAuthorizationRuntime({
+          DEPLOYMENT_PROFILE: "local",
+          SOURCE_AUTHORIZATION_POLICY: "local-auto",
+          API_HOST: apiHost,
+        }),
+      ).toEqual({
+        deploymentProfile: "local",
+        policy: "local-auto",
+        apiHost,
+      });
+    },
+  );
+
+  it.each([
+    { DEPLOYMENT_PROFILE: "production", API_HOST: "127.0.0.1" },
+    { DEPLOYMENT_PROFILE: "local", API_HOST: "0.0.0.0" },
+    { DEPLOYMENT_PROFILE: "local", API_HOST: "127.0.0.1.example.com" },
+  ])("rejects unsafe local-auto startup config %#", (environment) => {
+    expect(() =>
+      resolveSourceAuthorizationRuntime({
+        ...environment,
+        SOURCE_AUTHORIZATION_POLICY: "local-auto",
+      }),
+    ).toThrow("CONFIG_SOURCE_AUTHORIZATION_LOCAL_AUTO_UNSAFE");
+  });
+
+  it("recognizes local evidence only while local-auto is active", () => {
+    expect(isSourceAuthorizationCleared(localAuthorization, 1, "manual")).toBe(
+      false,
+    );
+    expect(
+      isSourceAuthorizationCleared(localAuthorization, 1, "local-auto"),
+    ).toBe(true);
+    expect(
+      isSourceAuthorizationCleared(
+        { ...localAuthorization, sourceVersion: 2 },
         1,
-        "a".repeat(64),
+        "local-auto",
       ),
-    ).resolves.toBe(false);
+    ).toBe(false);
   });
+
+  it.each(["LEGACY_ATTESTATION", "OPERATOR_ATTESTATION"] as const)(
+    "keeps %s evidence valid in manual policy",
+    (basis) => {
+      expect(
+        isSourceAuthorizationCleared(
+          { ...localAuthorization, basis },
+          1,
+          "manual",
+        ),
+      ).toBe(true);
+    },
+  );
 });

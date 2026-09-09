@@ -16,9 +16,20 @@ import {
   saveActiveAttempt,
   type ActiveAttempt,
 } from "./active-attempt-storage";
-import { saveLastSourceGate } from "./last-source-gate-storage";
 
 type SubmissionState = "idle" | "sending" | "pending" | "success" | "error";
+export interface SourceUploadProgress {
+  loaded: number;
+  total: number;
+  percent: number;
+}
+
+const emptyUploadProgress: SourceUploadProgress = {
+  loaded: 0,
+  total: 0,
+  percent: 0,
+};
+
 function newIdempotencyKey(): string {
   return `web-upload-${crypto.randomUUID()}`;
 }
@@ -31,10 +42,7 @@ export function useSourceUpload(api: ProjectsApi) {
   const phase = ref<"idle" | "pending">("idle");
   const activeProjectId = ref<string | null>(null);
   const idempotencyKey = ref<string | null>(null);
-  const uploadProgress = ref<UploadProgress | null>(null);
-  const recoveredProject = ref<Project | null>(null);
-  const authorizationError = ref<string | null>(null);
-  const isAuthorizing = ref(false);
+  const uploadProgress = ref<SourceUploadProgress>({ ...emptyUploadProgress });
   let attemptVersion = 0;
   const mutation = useMutation({
     mutationFn: (request: Parameters<ProjectsApi["createProject"]>[0]) =>
@@ -52,8 +60,7 @@ export function useSourceUpload(api: ProjectsApi) {
     retry: false,
   });
   const result = computed<Project | null>(
-    () =>
-      recoveredProject.value ?? poll.data.value ?? mutation.data.value ?? null,
+    () => poll.data.value ?? mutation.data.value ?? null,
   );
   const requestError = computed<string | null>(() =>
     mutation.error.value
@@ -76,18 +83,11 @@ export function useSourceUpload(api: ProjectsApi) {
             : "idle",
   );
   const isSubmitting = computed(
-    () =>
-      mutation.isPending.value ||
-      phase.value === "pending" ||
-      isAuthorizing.value,
+    () => mutation.isPending.value || phase.value === "pending",
   );
-  const isSending = computed(
-    () => mutation.isPending.value && !uploadProgress.value?.transferCompleted,
-  );
+  const isSending = computed(() => mutation.isPending.value);
   const isFinalizing = computed(
-    () =>
-      (mutation.isPending.value && uploadProgress.value?.transferCompleted) ||
-      (phase.value === "pending" && !poll.error.value),
+    () => phase.value === "pending" && !poll.error.value,
   );
   const pollError = computed(() =>
     phase.value === "pending" && poll.error.value
@@ -98,11 +98,9 @@ export function useSourceUpload(api: ProjectsApi) {
     attemptVersion += 1;
     idempotencyKey.value = null;
     activeProjectId.value = null;
-    uploadProgress.value = null;
     phase.value = "idle";
     mutation.reset();
-    recoveredProject.value = null;
-    authorizationError.value = null;
+    uploadProgress.value = { ...emptyUploadProgress };
     if (import.meta.client) clearActiveAttempt();
   }
   function updateDraft(next: Partial<SourceUploadFormDraft>): void {
@@ -117,8 +115,8 @@ export function useSourceUpload(api: ProjectsApi) {
       return;
     }
     errors.value = {};
+    uploadProgress.value = { ...emptyUploadProgress };
     const version = ++attemptVersion;
-    uploadProgress.value = null;
     const key = idempotencyKey.value ?? newIdempotencyKey();
     idempotencyKey.value = key;
     if (import.meta.client)
@@ -136,12 +134,11 @@ export function useSourceUpload(api: ProjectsApi) {
       const project = await mutation.mutateAsync({
         ...validated.data,
         idempotencyKey: key,
-        onUploadProgress: (progress) => {
-          if (version === attemptVersion) uploadProgress.value = progress;
+        onUploadProgress(progress) {
+          setUploadProgress(progress);
         },
       });
       if (version !== attemptVersion) return;
-      if (import.meta.client) saveLastSourceGate(project.id);
       if (project.status === "FAILED_FINAL") {
         if (import.meta.client) clearActiveAttempt();
         idempotencyKey.value = null;
@@ -177,8 +174,6 @@ export function useSourceUpload(api: ProjectsApi) {
       phase.value = "idle";
       if (project.status === "SOURCE_READY" && import.meta.client)
         clearActiveAttempt();
-      if (project.status === "SOURCE_READY" && import.meta.client)
-        saveLastSourceGate(project.id);
       if (project.status === "FAILED_FINAL" && import.meta.client) {
         clearActiveAttempt();
         idempotencyKey.value = null;
@@ -209,6 +204,9 @@ export function useSourceUpload(api: ProjectsApi) {
       return false;
     attemptVersion += 1;
     idempotencyKey.value = active.idempotencyKey;
+    // A stored attempt is written only after the original form passed this
+    // confirmation. Reconstruct it so the explicit same-key retry cannot be
+    // blocked by an unrelated, empty form after a page reload.
     draft.value = {
       ...draft.value,
       name: active.name,
@@ -223,51 +221,25 @@ export function useSourceUpload(api: ProjectsApi) {
   function retryPoll(): void {
     if (phase.value === "pending") void poll.refetch();
   }
-  async function restoreLastSource(projectId: string): Promise<void> {
-    if (!api.getProject) return;
-    const version = attemptVersion;
-    try {
-      const project = await api.getProject(projectId);
-      if (version === attemptVersion) recoveredProject.value = project;
-    } catch {
-      // A stale local pointer must not block a fresh upload.
-    }
-  }
-  async function confirmAuthorization(): Promise<void> {
-    const project = result.value;
-    if (
-      !project ||
-      project.status !== "SOURCE_READY" ||
-      project.authorization.status === "CLEARED" ||
-      !api.confirmSourceAuthorization ||
-      !api.getProject ||
-      isAuthorizing.value
-    )
-      return;
-    isAuthorizing.value = true;
-    authorizationError.value = null;
-    const version = attemptVersion;
-    const tuple = `${project.id}:${project.authorization.sourceVersion}:${project.authorization.sourceSha256}`;
-    try {
-      await api.confirmSourceAuthorization(project.id, {
-        sourceVersion: project.authorization.sourceVersion,
-        sourceSha256: project.authorization.sourceSha256,
-        rightsConfirmed: true,
-        declarationVersion: "source-rights-v1",
-      });
-      if (version !== attemptVersion || tuple !== projectTuple(result.value))
-        return;
-      const refreshed = await api.getProject(project.id);
-      if (version !== attemptVersion || tuple !== projectTuple(result.value))
-        return;
-      recoveredProject.value = refreshed;
-      if (import.meta.client) saveLastSourceGate(project.id);
-    } catch (error: unknown) {
-      if (version === attemptVersion)
-        authorizationError.value = toAuthorizationUserMessage(error);
-    } finally {
-      isAuthorizing.value = false;
-    }
+  function setUploadProgress(progress: UploadProgress): void {
+    if (!Number.isFinite(progress.total) || progress.total <= 0) return;
+    const total = Math.max(0, progress.total);
+    const loaded = Math.min(Math.max(0, progress.loaded), total);
+    // Keep 100% reserved for a successful server response. The browser may
+    // finish sending the request body while the server is still validating it.
+    const percent = Math.min(
+      99,
+      Math.max(0, Math.floor((loaded / total) * 100)),
+    );
+    const previous = uploadProgress.value;
+    if (total === previous.total && loaded < previous.loaded) return;
+    const monotonicLoaded =
+      total === previous.total ? Math.max(previous.loaded, loaded) : loaded;
+    uploadProgress.value = {
+      loaded: Math.min(monotonicLoaded, total),
+      total,
+      percent: Math.max(previous.percent, percent),
+    };
   }
   return {
     draft,
@@ -286,23 +258,7 @@ export function useSourceUpload(api: ProjectsApi) {
     startNewAttempt,
     prepareRecoveredRetry,
     retryPoll,
-    restoreLastSource,
-    confirmAuthorization,
-    isAuthorizing,
-    authorizationError,
   };
-}
-function projectTuple(project: Project | null): string | null {
-  return project
-    ? `${project.id}:${project.authorization.sourceVersion}:${project.authorization.sourceSha256}`
-    : null;
-}
-
-function toAuthorizationUserMessage(error: unknown): string {
-  if (error instanceof ProjectNetworkError)
-    return "Сеть не ответила. Обнови данные проекта и повтори подтверждение прав.";
-  if (error instanceof ProjectApiError) return error.message;
-  return "Не удалось подтвердить права. Обнови данные проекта и повтори попытку.";
 }
 function toUserMessage(error: unknown): string {
   if (error instanceof ProjectNetworkError)

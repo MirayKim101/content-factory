@@ -8,14 +8,14 @@ import { pathToFileURL } from "node:url";
 
 import type { OpenAPIObject } from "@nestjs/swagger";
 
-import { createApp, createOpenApiDocument } from "../src/main.js";
-
 const contractEnvironment = {
   POSTGRES_DB: "openapi_contract",
   POSTGRES_USER: "openapi_contract",
   POSTGRES_PASSWORD: "openapi_contract",
   S3_ACCESS_KEY: "openapi_contract",
   S3_SECRET_KEY: "openapi_contract",
+  REDIS_PASSWORD: "openapi_contract",
+  MEDIA_QUEUE_DISABLED: "1",
 } as const;
 const prettierCli = resolve(
   import.meta.dirname,
@@ -57,6 +57,7 @@ export function assertArtifactMatches(
 
 export async function exportOpenApiDocument(outputPath: string): Promise<void> {
   prepareContractEnvironment();
+  const { createApp, createOpenApiDocument } = await import("../src/main.js");
   const app = await createApp();
   try {
     const document = createOpenApiDocument(app);

@@ -22,12 +22,11 @@ function projects(): ProjectRepository {
     requestCleanup: vi.fn(),
     findByIdempotencyKey: vi.fn(),
     getById: vi.fn(),
-    confirmSourceAuthorization: vi.fn(),
-    isSourceAuthorized: vi.fn(async () => false),
     findStalePending: vi.fn(async () => [pending]),
     findPendingCleanup: vi.fn(async () => []),
     markCleanupCompleted: vi.fn(),
     recordCleanupFailure: vi.fn(),
+    attestSourceAuthorization: vi.fn(),
   };
 }
 

@@ -62,12 +62,172 @@ export type SourceAuthorization = Prisma.SourceAuthorizationModel
  */
 export type MediaArtifact = Prisma.MediaArtifactModel
 /**
+ * Model CutRequest
+ * 
+ */
+export type CutRequest = Prisma.CutRequestModel
+/**
  * Model PipelineJob
  * 
  */
 export type PipelineJob = Prisma.PipelineJobModel
 /**
+ * Model MontageAsset
+ * 
+ */
+export type MontageAsset = Prisma.MontageAssetModel
+/**
+ * Model AssemblyRecipe
+ * 
+ */
+export type AssemblyRecipe = Prisma.AssemblyRecipeModel
+/**
+ * Model AssemblyRecipeRevision
+ * 
+ */
+export type AssemblyRecipeRevision = Prisma.AssemblyRecipeRevisionModel
+/**
+ * Model AssemblyRecipeAssetReference
+ * 
+ */
+export type AssemblyRecipeAssetReference = Prisma.AssemblyRecipeAssetReferenceModel
+/**
+ * Model AssemblyRecipeMutationRequest
+ * 
+ */
+export type AssemblyRecipeMutationRequest = Prisma.AssemblyRecipeMutationRequestModel
+/**
+ * Model AssemblyRenderIntent
+ * 
+ */
+export type AssemblyRenderIntent = Prisma.AssemblyRenderIntentModel
+/**
+ * Model AssemblyRenderRequest
+ * 
+ */
+export type AssemblyRenderRequest = Prisma.AssemblyRenderRequestModel
+/**
+ * Model AssemblyRenderResult
+ * 
+ */
+export type AssemblyRenderResult = Prisma.AssemblyRenderResultModel
+/**
+ * Model ProcessingTemplate
+ * 
+ */
+export type ProcessingTemplate = Prisma.ProcessingTemplateModel
+/**
+ * Model ProcessingTemplateRevision
+ * 
+ */
+export type ProcessingTemplateRevision = Prisma.ProcessingTemplateRevisionModel
+/**
+ * Model EditorialAsset
+ * 
+ */
+export type EditorialAsset = Prisma.EditorialAssetModel
+/**
+ * Model EditorialPackage
+ * 
+ */
+export type EditorialPackage = Prisma.EditorialPackageModel
+/**
+ * Model EditorialPackageRevision
+ * 
+ */
+export type EditorialPackageRevision = Prisma.EditorialPackageRevisionModel
+/**
+ * Model EditorialMutationRequest
+ * 
+ */
+export type EditorialMutationRequest = Prisma.EditorialMutationRequestModel
+/**
+ * Model EditorialApproval
+ * 
+ */
+export type EditorialApproval = Prisma.EditorialApprovalModel
+/**
+ * Model EditorialApprovalMetrics
+ * 
+ */
+export type EditorialApprovalMetrics = Prisma.EditorialApprovalMetricsModel
+/**
+ * Model EditorialOperationRequest
+ * 
+ */
+export type EditorialOperationRequest = Prisma.EditorialOperationRequestModel
+/**
+ * Model EditorialExportIntent
+ * 
+ */
+export type EditorialExportIntent = Prisma.EditorialExportIntentModel
+/**
+ * Model EditorialExportResult
+ * 
+ */
+export type EditorialExportResult = Prisma.EditorialExportResultModel
+/**
+ * Model CutSegment
+ * 
+ */
+export type CutSegment = Prisma.CutSegmentModel
+/**
  * Model JobAttempt
  * 
  */
 export type JobAttempt = Prisma.JobAttemptModel
+/**
+ * Model CreatorProfile
+ * 
+ */
+export type CreatorProfile = Prisma.CreatorProfileModel
+/**
+ * Model CreatorProfileOfficialUrlIdentity
+ * 
+ */
+export type CreatorProfileOfficialUrlIdentity = Prisma.CreatorProfileOfficialUrlIdentityModel
+/**
+ * Model CreatorProfileRevision
+ * 
+ */
+export type CreatorProfileRevision = Prisma.CreatorProfileRevisionModel
+/**
+ * Model CreatorReferenceAsset
+ * 
+ */
+export type CreatorReferenceAsset = Prisma.CreatorReferenceAssetModel
+/**
+ * Model CreatorReferenceAuthorizationRevision
+ * 
+ */
+export type CreatorReferenceAuthorizationRevision = Prisma.CreatorReferenceAuthorizationRevisionModel
+/**
+ * Model SourceEditorialContext
+ * 
+ */
+export type SourceEditorialContext = Prisma.SourceEditorialContextModel
+/**
+ * Model SourceEditorialContextRevision
+ * 
+ */
+export type SourceEditorialContextRevision = Prisma.SourceEditorialContextRevisionModel
+/**
+ * Model CutEditorialPrompt
+ * 
+ */
+export type CutEditorialPrompt = Prisma.CutEditorialPromptModel
+/**
+ * Model CutEditorialPromptRevision
+ * 
+ */
+export type CutEditorialPromptRevision = Prisma.CutEditorialPromptRevisionModel
+/**
+ * Model AiContentOperationRequest
+ * 
+ */
+export type AiContentOperationRequest = Prisma.AiContentOperationRequestModel
+/**
+ * Model EditorialComponentProvenance
+ * 
+ */
+export type EditorialComponentProvenance = Prisma.EditorialComponentProvenanceModel

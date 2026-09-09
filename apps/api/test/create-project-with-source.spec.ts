@@ -1,4 +1,5 @@
 import { access, mkdtemp, stat, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -35,12 +36,11 @@ function repository(
     requestCleanup: vi.fn(async () => undefined),
     findByIdempotencyKey: vi.fn(async () => null),
     getById: vi.fn(async () => projectView()),
-    confirmSourceAuthorization: vi.fn(),
-    isSourceAuthorized: vi.fn(async () => false),
     findStalePending: vi.fn(async () => []),
     findPendingCleanup: vi.fn(async () => []),
     markCleanupCompleted: vi.fn(async () => undefined),
     recordCleanupFailure: vi.fn(async () => undefined),
+    attestSourceAuthorization: vi.fn(async () => projectView()),
     ...overrides,
   };
 }
@@ -63,14 +63,6 @@ function projectView(): ProjectView {
     status: "SOURCE_READY",
     rightsConfirmedAt: now,
     rightsDeclarationVersion: "upload-rights-v1",
-    authorization: {
-      status: "NOT_REVIEWED",
-      sourceVersion: 1,
-      sourceSha256: "a".repeat(64),
-      basis: null,
-      confirmedAt: null,
-      declarationVersion: null,
-    },
     createdAt: now,
     updatedAt: now,
     source: {
@@ -81,6 +73,14 @@ function projectView(): ProjectView {
       contentType: "video/mp4",
       sizeBytes: 44n,
       sha256: "a".repeat(64),
+      authorization: {
+        sourceVersion: 1,
+        status: "CLEARED",
+        basis: "LEGACY_ATTESTATION",
+        declarationVersion: "upload-rights-v1",
+        decidedAt: now,
+        revision: 1,
+      },
     },
     artifact: {
       id: "00000000-0000-4000-8000-000000000003",
@@ -136,32 +136,8 @@ describe("CreateProjectWithSource", () => {
     expect(events).toEqual(["pending", "upload", "ready"]);
     await expect(access(path)).rejects.toThrow();
     expect(projects.createPendingUpload).toHaveBeenCalledWith(
-      expect.objectContaining({
-        name: "test",
-        originalFilename: "source.mp4",
-        rightsConfirmedAt: null,
-        rightsDeclarationVersion: null,
-      }),
+      expect.objectContaining({ name: "test", originalFilename: "source.mp4" }),
     );
-  });
-
-  it("keeps a literal legacy upload attestation factual but starts authorization pending", async () => {
-    const projects = repository();
-    const path = await temporaryMp4();
-    await new CreateProjectWithSource(projects, storage()).execute({
-      name: "legacy",
-      originalFilename: "source.mp4",
-      filePath: path,
-      idempotencyKey: "legacy-key-0001",
-      legacyRightsConfirmed: true,
-    });
-    expect(projects.createPendingUpload).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rightsConfirmedAt: expect.any(Date),
-        rightsDeclarationVersion: "upload-rights-v1",
-      }),
-    );
-    expect(projectView().authorization.status).toBe("NOT_REVIEWED");
   });
 
   it("marks stable failure and cleans temp when storage fails", async () => {
@@ -221,25 +197,38 @@ describe("CreateProjectWithSource", () => {
     expect(projects.markCleanupCompleted).toHaveBeenCalledOnce();
   });
 
-  it("returns the existing project for the same idempotent payload without uploading", async () => {
+  it("replays an existing legacy v1 upload fingerprint without uploading", async () => {
     const path = await temporaryMp4();
     const existing = projectView();
-    const fingerprintRecord = { project: existing, requestFingerprint: "" };
+    const source = tinyMp4();
+    const fingerprintRecord = {
+      project: existing,
+      requestFingerprint: createHash("sha256")
+        .update(
+          JSON.stringify({
+            name: "test",
+            originalFilename: "source.mp4",
+            rightsDeclarationVersion: "upload-rights-v1",
+            sha256: createHash("sha256").update(source).digest("hex"),
+            sizeBytes: String(source.length),
+          }),
+        )
+        .digest("hex"),
+    };
     const projects = repository({
       findByIdempotencyKey: vi.fn(async () => fingerprintRecord),
     });
     const objects = storage();
     const service = new CreateProjectWithSource(projects, objects);
 
-    const firstAttempt = service.execute({
-      name: "test",
-      originalFilename: "source.mp4",
-      filePath: path,
-      idempotencyKey: "same-key-0001",
-    });
-    await expect(firstAttempt).rejects.toMatchObject({
-      code: "IDEMPOTENCY_CONFLICT",
-    });
+    await expect(
+      service.execute({
+        name: "test",
+        originalFilename: "source.mp4",
+        filePath: path,
+        idempotencyKey: "same-key-0001",
+      }),
+    ).resolves.toEqual(existing);
     expect(objects.putFile).not.toHaveBeenCalled();
   });
 });

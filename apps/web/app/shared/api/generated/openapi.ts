@@ -4,6 +4,232 @@
  */
 
 export interface paths {
+  "/api/v1/assembly-renders/{renderId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRenderController_one"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/assembly-renders/{renderId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRenderController_content"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/assembly-renders/{renderId}/editorial-approvals": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Approve one exact editorial and render revision */
+    post: operations["EditorialApprovalController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listProfiles"];
+    put?: never;
+    post: operations["CreatorContextController_createProfile"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getProfile"];
+    put: operations["CreatorContextController_updateProfile"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/default-reference": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations["CreatorContextController_setDefaultReference"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/reference-assets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listReferences"];
+    put?: never;
+    post: operations["CreatorContextController_uploadReference"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/authorization": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getAuthorization"];
+    put: operations["CreatorContextController_updateAuthorization"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_referenceContent"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/revisions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listProfileRevisions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/creator-profiles/{profileId}/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getProfileRevision"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/editorial-approvals/{approvalId}/exports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create one exact-approval background export package */
+    post: operations["EditorialExportController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/editorial-exports/{exportId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialExportController_one"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/editorial-exports/{exportId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialExportController_content"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/health": {
     parameters: {
       query?: never;
@@ -20,7 +246,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/projects": {
+  "/api/v1/pipeline-jobs/{cutJobId}/assembly-renders": {
     parameters: {
       query?: never;
       header?: never;
@@ -29,7 +255,188 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Create a project by uploading an MP4 source */
+    /** Create one exact-revision background horizontal render */
+    post: operations["AssemblyRenderController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getCutPrompt"];
+    put: operations["CreatorContextController_putCutPrompt"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listCutPromptRevisions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getCutPromptRevision"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{cutJobId}/editorial-review": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get one authoritative editorial review candidate */
+    get: operations["EditorialApprovalController_review"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MediaPipelineController_job"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{id}/result": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MediaPipelineController_result"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{jobId}/assembly-recipe": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRecipeController_current"];
+    put: operations["AssemblyRecipeController_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{jobId}/assembly-recipe/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["AssemblyRecipeController_historical"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/pipeline-jobs/{jobId}/editorial-package": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_package"];
+    /** Save one immutable editorial package revision */
+    put: operations["EditorialController_putPackage"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/processing-templates": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_processingTemplates"];
+    put?: never;
+    /** Create immutable processing template revision 1 */
+    post: operations["EditorialController_createProcessingTemplate"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List source projects for the media library */
+    get: operations["ProjectsController_list"];
+    put?: never;
+    /** Create a project by uploading an MP4 source for later authorization */
     post: operations["ProjectsController_create"];
     delete?: never;
     options?: never;
@@ -54,7 +461,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/projects/{id}/source/authorization": {
+  "/api/v1/projects/{id}/source-authorization": {
     parameters: {
       query?: never;
       header?: never;
@@ -62,8 +469,8 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    /** Confirm rights for the exact stored source version */
-    put: operations["ProjectsController_authorizeSource"];
+    /** Explicitly attest the current source version */
+    put: operations["ProjectsController_authorize"];
     post?: never;
     delete?: never;
     options?: never;
@@ -71,31 +478,14 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/projects/{projectId}/cut-jobs": {
+  "/api/v1/projects/{projectId}/assembly-recipes": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations["CutsController_list"];
-    put?: never;
-    /** Persist and enqueue an accurate manual horizontal cut */
-    post: operations["CutsController_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/v1/projects/{projectId}/cut-jobs/{jobId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations["CutsController_get"];
+    get: operations["AssemblyRecipeController_project"];
     put?: never;
     post?: never;
     delete?: never;
@@ -104,35 +494,246 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/projects/{projectId}/cut-jobs/{jobId}/download": {
+  "/api/v1/projects/{projectId}/assembly-renders": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations["CutsController_download"];
+    get: operations["AssemblyRenderController_project"];
     put?: never;
     post?: never;
     delete?: never;
     options?: never;
-    head: operations["CutsController_headDownload"];
+    head?: never;
     patch?: never;
     trace?: never;
   };
-  "/api/v1/projects/{projectId}/source/media": {
+  "/api/v1/projects/{projectId}/cuts": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get: operations["CutsController_source"];
+    get?: never;
+    put?: never;
+    /** Atomically create one independent background job per cut segment */
+    post: operations["MediaPipelineController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-approvals": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialApprovalController_project"];
     put?: never;
     post?: never;
     delete?: never;
     options?: never;
-    head: operations["CutsController_headSource"];
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-assets/thumbnails": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_thumbnails"];
+    put?: never;
+    /** Upload one private project thumbnail */
+    post: operations["EditorialController_createThumbnail"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-assets/thumbnails/{assetId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_thumbnailContent"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-exports": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialExportController_project"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/editorial-packages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["EditorialController_projectPackages"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/montage-assets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MontageController_list"];
+    put?: never;
+    post: operations["MontageController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/montage-assets/{assetId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MontageController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/montage-assets/{assetId}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MontageController_content"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/pipeline-jobs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List persisted cut jobs for the current source */
+    get: operations["MediaPipelineController_projectJobs"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/source": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["MediaPipelineController_source"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getSourceContext"];
+    put: operations["CreatorContextController_putSourceContext"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_listSourceContextRevisions"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions/{revision}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["CreatorContextController_getSourceContextRevision"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
     patch?: never;
     trace?: never;
   };
@@ -140,6 +741,32 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    ApprovalJobMetricsResponseDto: {
+      activeAttemptMs: number | null;
+      attemptCount: number;
+      firstStartToFinishMs: number | null;
+      initialQueueWaitMs: number | null;
+      retryCount: number;
+      retryWaitMs: number | null;
+    };
+    ApprovalProcessingMetricsResponseDto: {
+      assembly: components["schemas"]["ApprovalJobMetricsResponseDto"];
+      /** @enum {string} */
+      costBasisVersion: "local-direct-provider-cost-v1";
+      /** @enum {string} */
+      costCurrency: "RUB";
+      cut: components["schemas"]["ApprovalJobMetricsResponseDto"];
+      cutToAssemblyReadyElapsedMs: number | null;
+      /** @enum {integer} */
+      directProviderCostMinor: 0;
+      incompleteReasons: string[];
+      /** @enum {string} */
+      metricsSchemaVersion: "approval-metrics-v1";
+      outputBytes: string;
+      outputDurationMs: number;
+      /** @enum {string} */
+      timestampBasisVersion: "persisted-job-attempt-v1";
+    };
     ArtifactResponseDto: {
       /** @example video/mp4 */
       contentType: string;
@@ -162,26 +789,255 @@ export interface components {
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
     };
-    AuthorizationResponseDto: {
-      /** @enum {string|null} */
-      basis: "EXPLICIT_CONFIRMATION" | "LEGACY_ATTESTATION" | null;
-      /** Format: date-time */
-      confirmedAt: string | null;
-      declarationVersion: string | null;
-      sourceSha256: string;
-      /** @example 1 */
-      sourceVersion: number;
-      /** @enum {string} */
-      status: "NOT_REVIEWED" | "CLEARED";
+    AssemblyAdvertisementDto: {
+      /** Format: uuid */
+      assetId: string;
+      /** Format: int32 */
+      insertAtMs: number;
     };
-    ConfirmSourceAuthorizationDto: {
-      /** @example source-rights-v1 */
-      declarationVersion: string;
-      /** @enum {boolean} */
-      rightsConfirmed: true;
-      sourceSha256: string;
-      /** @example 1 */
+    AssemblyAssetSnapshotResponseDto: {
+      durationMs: number | null;
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      kind: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
+      revision: number;
+      sha256: string;
+      sizeBytes: string;
+    };
+    AssemblyAssetSnapshotsResponseDto: {
+      advertisement:
+        components["schemas"]["AssemblyAssetSnapshotResponseDto"] | null;
+      banners: components["schemas"]["AssemblyAssetSnapshotResponseDto"][];
+      intro: components["schemas"]["AssemblyAssetSnapshotResponseDto"] | null;
+      outro: components["schemas"]["AssemblyAssetSnapshotResponseDto"] | null;
+    };
+    AssemblyBannerDto: {
+      /** Format: uuid */
+      assetId: string;
+      clientItemId: string;
+      /** Format: int32 */
+      endMs: number;
+      /** @enum {string} */
+      position: "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_RIGHT";
+      /** Format: int32 */
+      startMs: number;
+    };
+    AssemblyConfigurationResponseDto: {
+      advertisement: components["schemas"]["AssemblyAdvertisementDto"] | null;
+      /** @enum {string} */
+      audioProfileVersion: "youtube-stereo-v1";
+      banners: components["schemas"]["AssemblyBannerDto"][];
+      cta: components["schemas"]["AssemblyCtaDto"] | null;
+      /** @enum {string} */
+      encodingProfileVersion: "youtube-h264-v1";
+      /** Format: uuid */
+      introAssetId: string | null;
+      /** Format: uuid */
+      outroAssetId: string | null;
+    };
+    AssemblyCtaDto: {
+      /** Format: int32 */
+      endMs: number;
+      /** @enum {string} */
+      position: "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_RIGHT";
+      /** Format: int32 */
+      startMs: number;
+      text: string;
+    };
+    AssemblyCutSnapshotResponseDto: {
+      durationMs: number;
+      /** Format: uuid */
+      id: string;
+      recipeVersion: string;
+      sha256: string;
+      sizeBytes: string;
+      /** Format: uuid */
+      sourceId: string;
       sourceVersion: number;
+    };
+    AssemblyRecipeListResponseDto: {
+      items: components["schemas"]["AssemblyRecipeResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    AssemblyRecipeResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      cutResultArtifact: components["schemas"]["AssemblyCutSnapshotResponseDto"];
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      pipelineJobId: string;
+      /** Format: uuid */
+      projectId: string;
+      revision: components["schemas"]["AssemblyRecipeRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+      validation: components["schemas"]["AssemblyRecipeValidationResponseDto"];
+    };
+    AssemblyRecipeRevisionResponseDto: {
+      assets: components["schemas"]["AssemblyAssetSnapshotsResponseDto"];
+      configuration: components["schemas"]["AssemblyConfigurationResponseDto"];
+      configurationFingerprint: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      id: string;
+      revision: number;
+      /** @enum {string} */
+      schemaVersion: "horizontal-assembly-v1";
+    };
+    AssemblyRecipeValidationResponseDto: {
+      /** @enum {boolean} */
+      valid: true;
+    };
+    AssemblyRenderFailureResponseDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    AssemblyRenderInputResponseDto: {
+      durationMs: number | null;
+      /** Format: uuid */
+      id: string;
+      revision: number | null;
+      /** @enum {string} */
+      role: "CUT" | "INTRO" | "OUTRO" | "ADVERTISEMENT" | "BANNER";
+      sha256: string;
+      sizeBytes: string;
+    };
+    AssemblyRenderJobResponseDto: {
+      admissionReason: string | null;
+      attempt: number;
+      failure: components["schemas"]["AssemblyRenderFailureResponseDto"] | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      nextAttemptAt: string | null;
+      progress:
+        components["schemas"]["AssemblyRenderProgressResponseDto"] | null;
+      retryBudget: number;
+      revision: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    };
+    AssemblyRenderListResponseDto: {
+      items: components["schemas"]["AssemblyRenderResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    AssemblyRenderProgressResponseDto: {
+      attemptNumber: number;
+      basisPoints: number;
+      /** @enum {string} */
+      phase:
+        | "DOWNLOAD"
+        | "AUDIO_ANALYSIS"
+        | "ENCODE"
+        | "OUTPUT_PROBE"
+        | "OUTPUT_HASH"
+        | "UPLOAD"
+        | "FINALIZE";
+      /** @enum {string} */
+      schemaVersion: "assembly-progress-v1";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    AssemblyRenderResponseDto: {
+      /** Format: uuid */
+      assemblyRecipeId: string;
+      /** @enum {string} */
+      audioProfileVersion: "youtube-stereo-v1";
+      configurationFingerprint: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** Format: uuid */
+      cutResultArtifactId: string;
+      /** @enum {string} */
+      encodingProfileVersion: "youtube-h264-v1";
+      expectedDurationMs: number;
+      /** Format: uuid */
+      id: string;
+      inputs: components["schemas"]["AssemblyRenderInputResponseDto"][];
+      job: components["schemas"]["AssemblyRenderJobResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      recipeRevision: number;
+      /** Format: uuid */
+      recipeRevisionId: string;
+      /** @enum {string} */
+      renderContractVersion: "horizontal-render-v1";
+      result: components["schemas"]["AssemblyRenderResultResponseDto"] | null;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+    };
+    AssemblyRenderResultResponseDto: {
+      audioChannels: number;
+      audioCodec: string;
+      audioSampleRate: number;
+      /** Format: date-time */
+      completedAt: string;
+      /** Format: uri-reference */
+      downloadUrl: string;
+      durationMs: number;
+      ffmpegVersion: string;
+      ffprobeVersion: string;
+      filename: string;
+      fpsDenominator: number;
+      fpsNumerator: number;
+      height: number;
+      integratedLoudnessLufs: number | null;
+      normalizationProfileResult: string;
+      pixelFormat: string;
+      sha256: string;
+      sizeBytes: string;
+      truePeakDbtp: number | null;
+      videoCodec: string;
+      width: number;
+    };
+    AttestSourceAuthorizationDto: {
+      /** @enum {boolean} */
+      attested: true;
+      /** @enum {string} */
+      declarationVersion: "source-authorization-v1";
+      expectedRevision: number;
+      sourceVersion: number;
+    };
+    AuthorizationDetailResponseDto: {
+      /** Format: uuid */
+      assetId: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      current: components["schemas"]["CreatorReferenceAuthorizationResponseDto"];
+      currentRevision: number;
+      history: components["schemas"]["CreatorReferenceAuthorizationResponseDto"][];
+    };
+    CreateAssemblyRenderDto: {
+      recipeRevision: number;
+    };
+    CreateCutsDto: {
+      segments: components["schemas"]["CutSegmentDto"][];
+    };
+    CreateCutsResponseDto: {
+      jobs: components["schemas"]["PipelineJobResponseDto"][];
+      /** Format: uuid */
+      projectId: string;
+      /** Format: uuid */
+      requestId: string;
+    };
+    CreateEditorialApprovalDto: {
+      /** @enum {string} */
+      attentionMeasurementVersion: "foreground-preview-v1";
+      candidateFingerprint: string;
+      editorialRevision: number;
+      manualAttentionMs: number;
+    };
+    CreateProcessingTemplateDto: {
+      name: string;
     };
     CreateProjectUploadDto: {
       /** Format: binary */
@@ -190,67 +1046,512 @@ export interface components {
       name: string;
       /**
        * @deprecated
-       * @description Legacy factual upload attestation. It never clears source authorization.
+       * @description Ignored legacy upload field. Authorization is a separate step.
        * @enum {string}
        */
       rightsConfirmed?: "true";
     };
-    CutArtifactDto: {
-      /** @example video/mp4 */
-      contentType: string;
+    CreatorDefaultReferenceResponseDto: {
+      /** Format: uuid */
+      assetId: string;
+      authorizationRevision: number;
+      /** Format: uuid */
+      authorizationRevisionId: string;
+      /** @enum {string} */
+      authorizationStatus: "NOT_REVIEWED" | "CLEARED" | "REVOKED";
+      /** Format: date-time */
+      expiresAt: string | null;
+      externalProviderTransferAllowed: boolean;
+    };
+    CreatorProfileDetailResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      revision: components["schemas"]["CreatorProfileRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CreatorProfileListResponseDto: {
+      items: components["schemas"]["CreatorProfileSummaryResponseDto"][];
+      nextCursor: string | null;
+    };
+    CreatorProfileRevisionInputDto: {
+      canonicalDisplayName: string;
+      editorialNotes: string;
+      /** Format: uri */
+      officialUrl: string;
+      primaryLanguage: string;
+      restrictions: string[];
+      topics: string[];
+    };
+    CreatorProfileRevisionListResponseDto: {
+      items: components["schemas"]["CreatorProfileRevisionResponseDto"][];
+      nextCursor: string | null;
+    };
+    CreatorProfileRevisionResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      defaultReference:
+        components["schemas"]["CreatorDefaultReferenceResponseDto"] | null;
+      editableRevision: components["schemas"]["CreatorProfileRevisionInputDto"];
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      likenessPolicy: "NO_REALISTIC_LIKENESS" | "CLEARED_REFERENCE_ONLY";
+      likenessUsability: components["schemas"]["LikenessUsabilityResponseDto"];
+      officialUrlIdentity: {
+        /** Format: uri */
+        canonicalUrl?: string;
+        canonicalizationVersion?: string;
+        /** Format: uuid */
+        id?: string;
+      };
+      /** Format: uuid */
+      profileId: string;
+      revision: number;
+      /** @enum {string} */
+      status: "CURRENT" | "STALE";
+    };
+    CreatorProfileSummaryResponseDto: {
+      canonicalDisplayName: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      likenessAllowed: boolean;
+      /** @enum {string} */
+      likenessPolicy: "NO_REALISTIC_LIKENESS" | "CLEARED_REFERENCE_ONLY";
+      /** Format: uri */
+      officialUrl: string;
+      primaryLanguage: string;
+      topics: string[];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CreatorReferenceAssetListResponseDto: {
+      items: components["schemas"]["CreatorReferenceAssetResponseDto"][];
+      nextCursor: string | null;
+    };
+    CreatorReferenceAssetResponseDto: {
+      /** @enum {string} */
+      contentType: "image/jpeg" | "image/png" | "image/webp";
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      currentAuthorization: components["schemas"]["CreatorReferenceAuthorizationResponseDto"];
+      height: number;
+      /** Format: uuid */
+      id: string;
+      originalFilename: string;
+      sha256: string;
+      sizeBytes: string;
+      /** @enum {string} */
+      status: "PENDING" | "READY" | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+      width: number;
+    };
+    CreatorReferenceAuthorizationResponseDto: {
+      basis: string | null;
+      commercialAiImageUseAttested: boolean;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      decidedAt: string | null;
+      declarationVersion: string | null;
+      /** Format: date-time */
+      expiresAt: string | null;
+      externalProviderTransferAllowed: boolean;
+      /** Format: uuid */
+      id: string;
+      revision: number;
+      scope: string | null;
+      /** @enum {string} */
+      status: "NOT_REVIEWED" | "CLEARED" | "REVOKED";
+    };
+    CreatorReferenceUploadDto: {
+      /** Format: binary */
+      file: string;
+    };
+    CutEditorialPromptDetailResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      revision: components["schemas"]["CutEditorialPromptRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    CutEditorialPromptInputDto: {
+      cta: string;
+      desiredAngle: string;
+      restrictions: string[];
+      /** Format: uuid */
+      sourceContextId: string;
+      sourceContextRevision: number;
+      tone: string;
+      whatHappens: string;
+    };
+    CutEditorialPromptRevisionListResponseDto: {
+      items: components["schemas"]["CutEditorialPromptRevisionResponseDto"][];
+      nextCursor: string | null;
+    };
+    CutEditorialPromptRevisionResponseDto: {
+      blockers: string[];
+      contextPolicyFingerprint: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      cutResultArtifact: {
+        /** Format: uuid */
+        id?: string;
+        sha256?: string;
+        sizeBytes?: string;
+      };
+      editableRevision: components["schemas"]["CutEditorialPromptInputDto"];
+      /** Format: uuid */
+      id: string;
+      likenessUsability: components["schemas"]["LikenessUsabilityResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      /** Format: uuid */
+      promptId: string;
+      revision: number;
+      /** Format: uuid */
+      sourceContextRevisionId: string;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "CURRENT" | "STALE";
+    };
+    CutJobCountsDto: {
+      /** @example 1 */
+      failed: number;
+      /** @example 2 */
+      ready: number;
+      /** @example 5 */
+      total: number;
+    };
+    CutResultArtifactResponseDto: {
+      /** Format: uuid */
+      id: string;
+      recipeVersion: string;
+      sha256: string;
+      sizeBytes: string;
+      /** Format: uuid */
+      sourceId: string;
+      /** Format: int32 */
+      sourceVersion: number;
+    };
+    CutSegmentDto: {
+      /** Format: uuid */
+      clientSegmentId: string;
+      endMs: number;
+      startMs: number;
+    };
+    EditorialApprovalListResponseDto: {
+      items: components["schemas"]["EditorialApprovalResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    EditorialApprovalMetricsResponseDto: {
+      assembly: components["schemas"]["ApprovalJobMetricsResponseDto"];
+      /** @enum {string} */
+      attentionMeasurementVersion: "foreground-preview-v1";
+      /** @enum {string} */
+      costBasisVersion: "local-direct-provider-cost-v1";
+      /** @enum {string} */
+      costCurrency: "RUB";
+      cut: components["schemas"]["ApprovalJobMetricsResponseDto"];
+      cutToAssemblyReadyElapsedMs: number | null;
+      /** @enum {integer} */
+      directProviderCostMinor: 0;
+      incompleteReasons: string[];
+      manualAttentionMs: number;
+      /** @enum {string} */
+      metricsSchemaVersion: "approval-metrics-v1";
+      outputBytes: string;
+      outputDurationMs: number;
+      /** @enum {string} */
+      timestampBasisVersion: "persisted-job-attempt-v1";
+    };
+    EditorialApprovalResponseDto: {
+      /** @enum {string} */
+      approvalContractVersion: "manual-horizontal-approval-v1";
+      /** Format: date-time */
+      approvedAt: string;
+      /** Format: uuid */
+      assemblyRecipeId: string;
+      /** Format: uuid */
+      assemblyRenderIntentId: string;
+      /** Format: uuid */
+      assemblyRenderResultId: string;
+      candidateFingerprint: string;
+      configurationFingerprint: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** Format: uuid */
+      editorialPackageId: string;
+      /** Format: uuid */
+      editorialPackageRevisionId: string;
+      editorialRevision: number;
+      /** Format: uuid */
+      id: string;
+      metrics: components["schemas"]["EditorialApprovalMetricsResponseDto"];
+      /** Format: uuid */
+      processingTemplateRevisionId: string;
+      /** Format: uuid */
+      projectId: string;
+      recipeRevision: number;
+      /** Format: uuid */
+      recipeRevisionId: string;
+      /** Format: uuid */
+      renderArtifactId: string;
+      renderArtifactSha256: string;
+      renderArtifactSizeBytes: string;
+      /** @enum {string} */
+      renderContractVersion: "horizontal-render-v1";
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+      staleReasons: string[];
+      /** @enum {string} */
+      state: "CURRENT" | "STALE";
+      /** Format: uuid */
+      thumbnailAssetId: string;
+      /** @enum {string} */
+      thumbnailContentType: "image/jpeg" | "image/png" | "image/webp";
+      thumbnailSha256: string;
+      thumbnailSizeBytes: string;
+    };
+    EditorialAssetListResponseDto: {
+      items: components["schemas"]["EditorialAssetResponseDto"][];
+    };
+    EditorialAssetResponseDto: {
+      /** @enum {string} */
+      contentType: "image/jpeg" | "image/png" | "image/webp";
+      /** Format: date-time */
+      createdAt: string;
+      failure?: components["schemas"]["EditorialFailureResponseDto"];
+      /** Format: int32 */
+      height: number;
+      /** Format: uuid */
+      id: string;
+      originalFilename: string;
+      /** Format: uuid */
+      projectId: string;
+      sha256: string;
+      /** @description Decimal string for bigint safety. */
+      sizeBytes: string;
+      /** @enum {string} */
+      status: "PENDING" | "READY" | "FAILED_FINAL";
+      /** @enum {string} */
+      type: "THUMBNAIL";
+      /** Format: date-time */
+      updatedAt: string;
+      /** Format: int32 */
+      width: number;
+    };
+    EditorialExportFailureResponseDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    EditorialExportJobResponseDto: {
+      admissionReason: string | null;
+      attempt: number;
+      failure:
+        components["schemas"]["EditorialExportFailureResponseDto"] | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      nextAttemptAt: string | null;
+      progress:
+        components["schemas"]["EditorialExportProgressResponseDto"] | null;
+      retryBudget: number;
+      revision: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    };
+    EditorialExportListResponseDto: {
+      items: components["schemas"]["EditorialExportResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    EditorialExportProgressResponseDto: {
+      attemptNumber: number;
+      basisPoints: number;
+      /** @enum {string} */
+      phase:
+        "READ_INPUTS" | "WRITE_ARCHIVE" | "OUTPUT_HASH" | "UPLOAD" | "FINALIZE";
+      /** @enum {string} */
+      schemaVersion: "editorial-export-progress-v1";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    EditorialExportResponseDto: {
+      approvalCandidateFingerprint: string;
+      approvalCurrent: boolean;
+      /** Format: uuid */
+      approvalId: string;
+      /** Format: uuid */
+      assemblyRenderResultId: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** Format: uuid */
+      editorialPackageRevisionId: string;
+      /** @enum {string} */
+      exportContractVersion: "editorial-export-zip-v1";
+      /** Format: uuid */
+      id: string;
+      job: components["schemas"]["EditorialExportJobResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      /** Format: uuid */
+      recipeRevisionId: string;
+      result: components["schemas"]["EditorialExportResultResponseDto"] | null;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+    };
+    EditorialExportResultResponseDto: {
+      /** Format: date-time */
+      completedAt: string;
+      /** Format: uri-reference */
       downloadUrl: string;
+      filename: string;
+      manifest: Record<string, never>;
+      sha256: string;
+      sizeBytes: string;
+    };
+    EditorialFailureResponseDto: {
+      code: string;
+      message: string;
+    };
+    EditorialPackageListResponseDto: {
+      items: components["schemas"]["EditorialPackageResponseDto"][];
+    };
+    EditorialPackageResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      cutResultArtifact: components["schemas"]["CutResultArtifactResponseDto"];
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      pipelineJobId: string;
+      /** Format: uuid */
+      projectId: string;
+      revision: components["schemas"]["EditorialRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+      validation: components["schemas"]["EditorialValidationResponseDto"];
+    };
+    EditorialReviewEditorialResponseDto: {
+      description: string;
+      /** Format: uuid */
+      packageId: string;
+      /** Format: uuid */
+      processingTemplateRevisionId: string;
+      revision: number;
+      /** Format: uuid */
+      revisionId: string;
+      tags: string[];
+      thumbnail: components["schemas"]["EditorialReviewThumbnailResponseDto"];
+      title: string;
+    };
+    EditorialReviewRecipeResponseDto: {
+      configurationFingerprint: string;
+      /** Format: uuid */
+      id: string;
+      revision: number;
+      /** Format: uuid */
+      revisionId: string;
+    };
+    EditorialReviewRenderResponseDto: {
+      /** Format: uuid */
+      artifactId: string;
+      artifactSha256: string;
+      artifactSizeBytes: string;
+      /** Format: uri-reference */
+      contentUrl: string;
+      durationMs: number;
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      renderContractVersion: "horizontal-render-v1";
+      /** Format: uuid */
+      resultId: string;
+    };
+    EditorialReviewResponseDto: {
+      approvable: boolean;
+      blockers: string[];
+      candidateFingerprint: string | null;
+      currentApproval:
+        components["schemas"]["EditorialApprovalResponseDto"] | null;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** Format: uuid */
+      cutResultArtifactId: string | null;
+      editorial:
+        components["schemas"]["EditorialReviewEditorialResponseDto"] | null;
+      latestApproval:
+        components["schemas"]["EditorialApprovalResponseDto"] | null;
+      processingMetrics:
+        components["schemas"]["ApprovalProcessingMetricsResponseDto"] | null;
+      /** Format: uuid */
+      projectId: string;
+      recipe: components["schemas"]["EditorialReviewRecipeResponseDto"] | null;
+      render: components["schemas"]["EditorialReviewRenderResponseDto"] | null;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+    };
+    EditorialReviewThumbnailResponseDto: {
+      /** @enum {string} */
+      contentType: "image/jpeg" | "image/png" | "image/webp";
+      /** Format: uri-reference */
+      contentUrl: string;
+      filename: string;
       /** Format: uuid */
       id: string;
       sha256: string;
       sizeBytes: string;
     };
-    CutFailureDto: {
-      code: string;
-      message: string;
-    };
-    CutJobDto: {
-      /** Format: date-time */
-      admissionDeadlineAt: string;
-      artifact: components["schemas"]["CutArtifactDto"] | null;
-      attempts: number;
+    EditorialRevisionResponseDto: {
       /** Format: date-time */
       createdAt: string;
-      endMs: number;
-      failure: components["schemas"]["CutFailureDto"] | null;
+      description: string | null;
       /** Format: uuid */
       id: string;
-      progress: components["schemas"]["CutProgressDto"] | null;
-      queueReason: string | null;
-      /** @example horizontal-cut-v1 */
-      recipeVersion: string;
+      processingTemplateRevision: components["schemas"]["ProcessingTemplateRevisionResponseDto"];
+      provenance?: {
+        metadata: {
+          basisVersion: string;
+          /** @enum {string} */
+          mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+        };
+        thumbnail: {
+          basisVersion: string;
+          /** @enum {string} */
+          mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+        };
+      };
+      /** Format: int32 */
       revision: number;
-      /** Format: uuid */
-      sourceId: string;
-      sourceSha256: string;
-      sourceVersion: number;
-      stage: string;
-      startMs: number;
-      /** @enum {string} */
-      state:
-        | "QUEUED"
-        | "RUNNING"
-        | "FAILED_RETRYABLE"
-        | "SUCCEEDED"
-        | "FAILED_FINAL";
-      /** Format: date-time */
-      updatedAt: string;
+      tags: string[] | null;
+      thumbnail: components["schemas"]["EditorialAssetResponseDto"] | null;
+      title: string | null;
     };
-    CutJobPageDto: {
-      items: components["schemas"]["CutJobDto"][];
-      nextCursor: string | null;
-    };
-    CutProgressDto: {
-      /** @example 1000 */
-      current: string;
-      /** @example 4000 */
-      total: string;
-      /** @enum {string} */
-      unit: "BYTES" | "MILLISECONDS";
+    EditorialValidationResponseDto: {
+      complete: boolean;
+      missingFields: ("TITLE" | "DESCRIPTION" | "TAGS" | "THUMBNAIL")[];
     };
     ErrorDetailDto: {
       /** @enum {string} */
@@ -263,14 +1564,10 @@ export interface components {
         | "UPLOAD_TOO_LARGE"
         | "INVALID_MP4"
         | "PROJECT_NOT_FOUND"
+        | "INVALID_CURSOR"
         | "INTERNAL_ERROR"
         | "DATABASE_FINALIZE_FAILED"
-        | "STORAGE_UPLOAD_FAILED"
-        | "SOURCE_NOT_READY"
-        | "SOURCE_VERSION_MISMATCH"
-        | "RIGHTS_DECLARATION_OUTDATED"
-        | "SOURCE_AUTHORIZATION_CONFLICT"
-        | "SOURCE_NOT_AUTHORIZED";
+        | "STORAGE_UPLOAD_FAILED";
       message: string;
     };
     ErrorResponseDto: {
@@ -280,21 +1577,203 @@ export interface components {
       code: string;
       message: string;
     };
+    JobFailureDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    JobResultDto: {
+      /** Format: uri-reference */
+      downloadUrl: string;
+      filename: string;
+      sha256: string;
+      /** @description Decimal bigint string. */
+      sizeBytes: string;
+    };
+    LikenessUsabilityResponseDto: {
+      blocker: string | null;
+      externalProviderTransferAllowed: boolean;
+      usable: boolean;
+    };
+    MontageAssetDto: {
+      /** @enum {string} */
+      contentType: "video/mp4" | "image/jpeg" | "image/png" | "image/webp";
+      /** Format: date-time */
+      createdAt: string;
+      durationMs: number | null;
+      failure: components["schemas"]["MontageFailureDto"] | null;
+      hasAudio: boolean | null;
+      height: number | null;
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      kind: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
+      originalFilename: string;
+      probe: components["schemas"]["MontageProbeDto"] | null;
+      /** Format: uuid */
+      probeJobId: string | null;
+      /** Format: uuid */
+      projectId: string;
+      revision: number;
+      sha256: string;
+      sizeBytes: string;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "UPLOADING" | "PROBE_PENDING" | "READY" | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+      width: number | null;
+    };
+    MontageAssetListDto: {
+      items: components["schemas"]["MontageAssetDto"][];
+      nextCursor: string | null;
+    };
+    MontageFailureDto: {
+      code: string;
+      message: string;
+      retryable: boolean;
+    };
+    MontageProbeDto: {
+      attempt: number;
+      failure: components["schemas"]["MontageFailureDto"] | null;
+      retryBudget: number;
+      revision: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    };
+    MontageUploadDto: {
+      /**
+       * Format: binary
+       * @description MP4 ≤256 MiB: 1–180000 ms, one H.264 video, ≤1 AAC audio, ≤3840×2160/60 fps. BANNER: static JPEG/PNG/WebP ≤10 MiB/40M pixels.
+       */
+      file: string;
+      /** @enum {string} */
+      kind: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
+    };
+    PipelineJobResponseDto: {
+      attempt: number;
+      /** Format: uuid */
+      clientSegmentId: string;
+      endMs: number;
+      failure?: components["schemas"]["JobFailureDto"];
+      /** Format: uuid */
+      id: string;
+      processedMs?: number;
+      result?: components["schemas"]["JobResultDto"];
+      retryBudget: number;
+      revision: number;
+      startMs: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+      totalMs?: number;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    ProcessingTemplateListResponseDto: {
+      items: components["schemas"]["ProcessingTemplateRevisionResponseDto"][];
+    };
+    ProcessingTemplateRevisionResponseDto: {
+      /** @enum {string} */
+      configurationVersion: "manual-editorial-v1";
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      id: string;
+      name: string;
+      /** Format: int32 */
+      revision: number;
+      /** Format: uuid */
+      templateId: string;
+    };
+    ProjectCutJobsResponseDto: {
+      items: components["schemas"]["PipelineJobResponseDto"][];
+    };
+    ProjectLibraryItemDto: {
+      /** Format: date-time */
+      createdAt: string;
+      cutJobCounts: components["schemas"]["CutJobCountsDto"];
+      /** Format: uuid */
+      id: string;
+      name: string;
+      source: components["schemas"]["ProjectLibrarySourceDto"];
+      /** @enum {string} */
+      status: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    ProjectLibraryPageDto: {
+      items: components["schemas"]["ProjectLibraryItemDto"][];
+      /** @description Opaque cursor for the next page, or null on the last page. */
+      nextCursor: string | null;
+    };
+    ProjectLibrarySourceDto: {
+      /**
+       * Format: date-time
+       * @description When the source was added to the media library.
+       */
+      addedAt: string;
+      authorization: components["schemas"]["SourceAuthorizationResponseDto"];
+      /** @example video/mp4 */
+      contentType: string;
+      /** @example 7200000 */
+      durationMs?: number;
+      /** Format: uuid */
+      id: string;
+      originalFilename: string;
+      /** @enum {string} */
+      probeState?:
+        "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+      /**
+       * @description Decimal string for bigint safety.
+       * @example 123456
+       */
+      sizeBytes: string;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "PENDING" | "READY" | "FAILED_FINAL";
+    };
     ProjectResponseDto: {
       artifact: components["schemas"]["ArtifactResponseDto"];
-      authorization: components["schemas"]["AuthorizationResponseDto"];
       /** Format: date-time */
       createdAt: string;
       failure?: components["schemas"]["FailureResponseDto"];
       /** Format: uuid */
       id: string;
       name: string;
-      rights: components["schemas"]["RightsResponseDto"] | null;
+      /** @deprecated */
+      rights?: components["schemas"]["RightsResponseDto"] | null;
       source: components["schemas"]["SourceResponseDto"];
       /** @enum {string} */
       status: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
       /** Format: date-time */
       updatedAt: string;
+    };
+    PutCutEditorialPromptDto: {
+      cta: string;
+      desiredAngle: string;
+      expectedRevision: number;
+      restrictions: string[];
+      /** Format: uuid */
+      sourceContextId: string;
+      sourceContextRevision: number;
+      tone: string;
+      whatHappens: string;
+    };
+    PutSourceEditorialContextDto: {
+      audience: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      creatorProfileRevision: number;
+      defaultCta: string;
+      editorialGoal: string;
+      expectedRevision: number;
+      gameOrTopic: string;
+      language: string;
+      operatorNotes: string;
+      restrictions: string[];
+      sourceTitle: string;
     };
     RightsResponseDto: {
       /** Format: date-time */
@@ -302,12 +1781,123 @@ export interface components {
       /** @example upload-rights-v1 */
       declarationVersion: string;
     };
+    SaveAssemblyRecipeDto: {
+      advertisement?: components["schemas"]["AssemblyAdvertisementDto"] | null;
+      /** @enum {string} */
+      audioProfileVersion: "youtube-stereo-v1";
+      banners: components["schemas"]["AssemblyBannerDto"][];
+      cta?: components["schemas"]["AssemblyCtaDto"] | null;
+      /** @enum {string} */
+      encodingProfileVersion: "youtube-h264-v1";
+      /** Format: int32 */
+      expectedRevision: number;
+      /** Format: uuid */
+      introAssetId?: string | null;
+      /** Format: uuid */
+      outroAssetId?: string | null;
+    };
+    SaveEditorialPackageDto: {
+      description?: string | null;
+      /** Format: int32 */
+      expectedRevision: number;
+      /** Format: uuid */
+      processingTemplateRevisionId: string;
+      /** @description Ordered tags. Order is preserved exactly. */
+      tags?: string[] | null;
+      /** Format: uuid */
+      thumbnailAssetId?: string | null;
+      title?: string | null;
+    };
+    SetDefaultCreatorReferenceDto: {
+      /** @enum {string} */
+      action: "SET" | "CLEAR";
+      /** Format: uuid */
+      assetId?: string;
+      authorizationRevision?: number;
+      /** Format: uuid */
+      authorizationRevisionId?: string;
+      expectedProfileRevision: number;
+    };
+    SourceAuthorizationResponseDto: {
+      /** @enum {string} */
+      basis?:
+        | "LEGACY_ATTESTATION"
+        | "OPERATOR_ATTESTATION"
+        | "LOCAL_DEVELOPMENT_AUTO";
+      /** Format: date-time */
+      decidedAt?: string;
+      declarationVersion?: string;
+      revision: number;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "NOT_REVIEWED" | "CLEARED";
+      /** @description Policy-aware authorization eligibility for playback and processing. */
+      usable: boolean;
+    };
+    SourceEditorialContextDetailResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      currentRevision: number;
+      /** Format: uuid */
+      id: string;
+      revision: components["schemas"]["SourceEditorialContextRevisionResponseDto"];
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    SourceEditorialContextInputDto: {
+      audience: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      creatorProfileRevision: number;
+      defaultCta: string;
+      editorialGoal: string;
+      gameOrTopic: string;
+      language: string;
+      operatorNotes: string;
+      restrictions: string[];
+      sourceTitle: string;
+    };
+    SourceEditorialContextRevisionListResponseDto: {
+      items: components["schemas"]["SourceEditorialContextRevisionResponseDto"][];
+      nextCursor: string | null;
+    };
+    SourceEditorialContextRevisionResponseDto: {
+      blockers: string[];
+      /** Format: uuid */
+      contextId: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      creatorProfileRevisionId: string;
+      editableRevision: components["schemas"]["SourceEditorialContextInputDto"];
+      /** Format: uuid */
+      id: string;
+      likenessUsability: components["schemas"]["LikenessUsabilityResponseDto"];
+      /** Format: uuid */
+      projectId: string;
+      revision: number;
+      /** Format: uuid */
+      sourceId: string;
+      sourceVersion: number;
+      /** @enum {string} */
+      status: "CURRENT" | "STALE";
+    };
     SourceResponseDto: {
+      authorization: components["schemas"]["SourceAuthorizationResponseDto"];
       /** @example video/mp4 */
       contentType: string;
+      /**
+       * @description Authoritative FFprobe duration in integer milliseconds.
+       * @example 7200000
+       */
+      durationMs?: number;
       /** Format: uuid */
       id: string;
       originalFilename: string;
+      probeFailure?: components["schemas"]["FailureResponseDto"];
+      /** @enum {string} */
+      probeState?:
+        "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
       sha256: string;
       /**
        * @description Decimal string for bigint safety.
@@ -319,6 +1909,33 @@ export interface components {
       /** @enum {string} */
       status: "PENDING" | "READY" | "FAILED_FINAL";
     };
+    ThumbnailUploadDto: {
+      /** Format: binary */
+      file: string;
+    };
+    UpdateCreatorProfileDto: {
+      canonicalDisplayName: string;
+      editorialNotes: string;
+      expectedRevision: number;
+      /** Format: uri */
+      officialUrl: string;
+      primaryLanguage: string;
+      restrictions: string[];
+      topics: string[];
+    };
+    UpdateCreatorReferenceAuthorizationDto: {
+      basis?: string | null;
+      commercialAiImageUseAttested?: boolean;
+      /** @enum {string} */
+      decision: "CLEARED" | "REVOKED";
+      /** @enum {string|null} */
+      declarationVersion?: "creator-likeness-rights-v1" | null;
+      expectedRevision: number;
+      /** Format: date-time */
+      expiresAt?: string | null;
+      externalProviderTransferAllowed?: boolean;
+      scope?: string | null;
+    };
   };
   responses: never;
   parameters: never;
@@ -328,6 +1945,667 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  AssemblyRenderController_one: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRenderResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRenderController_content: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready private horizontal MP4. */
+      200: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Requested MP4 byte range. */
+      206: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Returned byte range. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Unsatisfied byte range. */
+      416: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Unsatisfied range with authoritative object size. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialApprovalController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateEditorialApprovalDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialApprovalResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CreatorContextController_listProfiles: {
+    parameters: {
+      query?: {
+        limit?: number;
+        cursor?: unknown;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_createProfile: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreatorProfileRevisionInputDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: {
+              code: string;
+              /** Format: uuid */
+              existingProfileId?: string;
+              message: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  CreatorContextController_getProfile: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_updateProfile: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateCreatorProfileDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            error: {
+              code: string;
+              /** Format: uuid */
+              existingProfileId?: string;
+              message: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  CreatorContextController_setDefaultReference: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SetDefaultCreatorReferenceDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listReferences: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorReferenceAssetListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_uploadReference: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["CreatorReferenceUploadDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorReferenceAssetResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getAuthorization: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        assetId: string;
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorizationDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_updateAuthorization: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        assetId: string;
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateCreatorReferenceAuthorizationDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AuthorizationDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_referenceContent: {
+    parameters: {
+      query?: never;
+      header?: {
+        Range?: string;
+      };
+      path: {
+        assetId: string;
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Private reference image bytes. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description One bounded byte range. */
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listProfileRevisions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileRevisionListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getProfileRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        revision: number;
+        profileId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreatorProfileRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialExportController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialExportResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  EditorialExportController_one: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialExportResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialExportController_content: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready private editorial ZIP64 package. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/zip": string;
+        };
+      };
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/zip": string;
+        };
+      };
+      416: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
   AppController_health: {
     parameters: {
       query?: never;
@@ -342,6 +2620,665 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  AssemblyRenderController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateAssemblyRenderDto"];
+      };
+    };
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRenderResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CreatorContextController_getCutPrompt: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        cutJobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_putCutPrompt: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        cutJobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PutCutEditorialPromptDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listCutPromptRevisions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        cutJobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptRevisionListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getCutPromptRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        revision: number;
+        cutJobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CutEditorialPromptRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialApprovalController_review: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialReviewResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  MediaPipelineController_job: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PipelineJobResponseDto"];
+        };
+      };
+    };
+  };
+  MediaPipelineController_result: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range, for example bytes=0-1048575. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Ready cut result MP4 attachment. */
+      200: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Requested cut-result byte range. */
+      206: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Returned or unsatisfied byte range. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description The requested byte range cannot be satisfied. */
+      416: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Unsatisfied range with the authoritative object size. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRecipeController_current: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRecipeResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRecipeController_put: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SaveAssemblyRecipeDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRecipeResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  AssemblyRecipeController_historical: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        revision: number;
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRecipeResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_package: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialPackageResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_putPackage: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        jobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SaveEditorialPackageDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialPackageResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_processingTemplates: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProcessingTemplateListResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_createProcessingTemplate: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateProcessingTemplateDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProcessingTemplateRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  ProjectsController_list: {
+    parameters: {
+      query?: {
+        /** @description Case-insensitive literal project name or original filename search. Control characters are rejected. */
+        q?: string;
+        status?: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
+        limit?: number;
+        /** @description Opaque cursor returned by the previous page. */
+        cursor?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectLibraryPageDto"];
+        };
+      };
+      /** @description Invalid cursor, limit, status, or search query. */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      /** @description Internal query failure. */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };
@@ -370,7 +3307,7 @@ export interface operations {
           "application/json": components["schemas"]["ProjectResponseDto"];
         };
       };
-      /** @description Invalid fields, file, multipart body, or idempotency key. */
+      /** @description Invalid fields, rights, file, multipart body, or idempotency key. */
       400: {
         headers: {
           [name: string]: unknown;
@@ -474,7 +3411,7 @@ export interface operations {
       };
     };
   };
-  ProjectsController_authorizeSource: {
+  ProjectsController_authorize: {
     parameters: {
       query?: never;
       header?: never;
@@ -485,7 +3422,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["ConfirmSourceAuthorizationDto"];
+        "application/json": components["schemas"]["AttestSourceAuthorizationDto"];
       };
     };
     responses: {
@@ -497,7 +3434,7 @@ export interface operations {
           "application/json": components["schemas"]["ProjectResponseDto"];
         };
       };
-      /** @description Malformed body or rightsConfirmed is not literal true. */
+      /** @description The path or request body is invalid. */
       400: {
         headers: {
           [name: string]: unknown;
@@ -506,8 +3443,8 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
-      /** @description Project not found. */
-      404: {
+      /** @description The source version, authorization revision, or source readiness changed. */
+      409: {
         headers: {
           [name: string]: unknown;
         };
@@ -515,8 +3452,8 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
-      /** @description Source not ready, tuple mismatch, outdated declaration, or immutable confirmation conflict. */
-      409: {
+      /** @description The declaration version or explicit attestation is unsupported. */
+      422: {
         headers: {
           [name: string]: unknown;
         };
@@ -526,11 +3463,11 @@ export interface operations {
       };
     };
   };
-  CutsController_list: {
+  AssemblyRecipeController_project: {
     parameters: {
       query?: {
-        cursor?: string;
         limit?: number;
+        cursor?: string;
       };
       header?: never;
       path: {
@@ -545,12 +3482,155 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["CutJobPageDto"];
+          "application/json": components["schemas"]["AssemblyRecipeListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
     };
   };
-  CutsController_create: {
+  AssemblyRenderController_project: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AssemblyRenderListResponseDto"];
+        };
+      };
+    };
+  };
+  MediaPipelineController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateCutsDto"];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CreateCutsResponseDto"];
+        };
+      };
+      /** @description Key belongs to a different request or source is not ready. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  EditorialApprovalController_project: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialApprovalListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  EditorialController_thumbnails: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EditorialAssetListResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  EditorialController_createThumbnail: {
     parameters: {
       query?: never;
       header: {
@@ -561,14 +3641,18 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["ThumbnailUploadDto"];
+      };
+    };
     responses: {
-      202: {
+      201: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["CutJobDto"];
+          "application/json": components["schemas"]["EditorialAssetResponseDto"];
         };
       };
       400: {
@@ -595,26 +3679,69 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
     };
   };
-  CutsController_get: {
+  EditorialController_thumbnailContent: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        jobId: string;
+        assetId: string;
         projectId: string;
       };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
+      /** @description Private thumbnail bytes. Storage object keys are never exposed. */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["CutJobDto"];
+          "image/jpeg": string;
+          "image/png": string;
+          "image/webp": string;
         };
       };
       404: {
@@ -622,130 +3749,36 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ErrorResponseDto"];
+          "image/jpeg": components["schemas"]["ErrorResponseDto"];
+          "image/png": components["schemas"]["ErrorResponseDto"];
+          "image/webp": components["schemas"]["ErrorResponseDto"];
         };
       };
     };
   };
-  CutsController_download: {
+  EditorialExportController_project: {
     parameters: {
       query?: never;
-      header?: {
-        /** @description A single RFC 7233 bytes range. */
-        Range?: string;
-      };
-      path: {
-        jobId: string;
-        projectId: string;
-      };
+      header?: never;
+      path?: never;
       cookie?: never;
     };
     requestBody?: never;
     responses: {
-      /** @description Full ready cut stream. */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "video/mp4": string;
+          "application/json": components["schemas"]["EditorialExportListResponseDto"];
         };
-      };
-      /** @description Ready cut byte range. */
-      206: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "video/mp4": string;
-        };
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponseDto"];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponseDto"];
-        };
-      };
-      /** @description Malformed, multiple, or unsatisfiable range. */
-      416: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
       };
     };
   };
-  CutsController_headDownload: {
+  EditorialController_projectPackages: {
     parameters: {
       query?: never;
-      header?: {
-        /** @description A single RFC 7233 bytes range. */
-        Range?: string;
-      };
-      path: {
-        jobId: string;
-        projectId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Ready cut metadata. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Ready cut range metadata. */
-      206: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponseDto"];
-        };
-      };
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["ErrorResponseDto"];
-        };
-      };
-      /** @description Malformed, multiple, or unsatisfiable range. */
-      416: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  CutsController_source: {
-    parameters: {
-      query?: never;
-      header?: {
-        /** @description A single RFC 7233 bytes range. */
-        Range?: string;
-      };
+      header?: never;
       path: {
         projectId: string;
       };
@@ -753,22 +3786,12 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Full authorized source stream. */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "video/mp4": string;
-        };
-      };
-      /** @description Authorized source byte range. */
-      206: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "video/mp4": string;
+          "application/json": components["schemas"]["EditorialPackageListResponseDto"];
         };
       };
       403: {
@@ -795,22 +3818,16 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
-      /** @description Malformed, multiple, or unsatisfiable range. */
-      416: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
     };
   };
-  CutsController_headSource: {
+  MontageController_list: {
     parameters: {
-      query?: never;
-      header?: {
-        /** @description A single RFC 7233 bytes range. */
-        Range?: string;
+      query?: {
+        limit?: number;
+        cursor?: string;
+        kind?: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
       };
+      header?: never;
       path: {
         projectId: string;
       };
@@ -818,19 +3835,21 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Authorized source metadata. */
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["MontageAssetListDto"];
+        };
       };
-      /** @description Authorized source range metadata. */
-      206: {
+      400: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
       403: {
         headers: {
@@ -856,12 +3875,434 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
-      /** @description Malformed, multiple, or unsatisfiable range. */
+    };
+  };
+  MontageController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["MontageUploadDto"];
+      };
+    };
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MontageAssetDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MontageController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        assetId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["MontageAssetDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MontageController_content: {
+    parameters: {
+      query?: never;
+      header?: {
+        Range?: string;
+      };
+      path: {
+        assetId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "image/jpeg": string;
+          "image/png": string;
+          "image/webp": string;
+          "video/mp4": string;
+        };
+      };
+      206: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
       416: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  MediaPipelineController_projectJobs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ProjectCutJobsResponseDto"];
+        };
+      };
+    };
+  };
+  MediaPipelineController_source: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description One RFC 9110 byte range, for example bytes=0-1048575. */
+        Range?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Private browser-playable source MP4 with byte-range support. */
+      200: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description Requested source byte range. */
+      206: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Returned or unsatisfied byte range. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "video/mp4": string;
+        };
+      };
+      /** @description The requested byte range cannot be satisfied. */
+      416: {
+        headers: {
+          /** @description Supported range unit. */
+          "Accept-Ranges"?: string;
+          /** @description Unsatisfied range with the authoritative object size. */
+          "Content-Range"?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getSourceContext: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_putSourceContext: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PutSourceEditorialContextDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextDetailResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_listSourceContextRevisions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextRevisionListResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  CreatorContextController_getSourceContextRevision: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        revision: number;
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SourceEditorialContextRevisionResponseDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
       };
     };
   };

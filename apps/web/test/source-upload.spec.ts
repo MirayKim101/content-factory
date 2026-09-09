@@ -7,7 +7,6 @@ import {
   ProjectApiError,
   ProjectNetworkError,
   type ProjectsApi,
-  type UploadProgress,
 } from "~/shared/api/projects";
 import { validateSourceUploadForm } from "~/features/upload-source/model/source-upload-form";
 import { useSourceUpload } from "~/features/upload-source/model/use-source-upload";
@@ -22,14 +21,6 @@ const project = (name = "Первый ролик"): Project => ({
     confirmedAt: "2026-09-01T12:00:00.000Z",
     declarationVersion: "upload-rights-v1",
   },
-  authorization: {
-    status: "NOT_REVIEWED",
-    sourceVersion: 1,
-    sourceSha256: "a".repeat(64),
-    basis: null,
-    confirmedAt: null,
-    declarationVersion: null,
-  },
   createdAt: "2026-09-01T12:00:00.000Z",
   updatedAt: "2026-09-01T12:00:00.000Z",
   source: {
@@ -40,6 +31,12 @@ const project = (name = "Первый ролик"): Project => ({
     contentType: "video/mp4",
     sizeBytes: "5",
     sha256: "a".repeat(64),
+    authorization: {
+      sourceVersion: 1,
+      status: "NOT_REVIEWED",
+      usable: false,
+      revision: 1,
+    },
   },
   artifact: {
     id: "00000000-0000-4000-8000-000000000003",
@@ -89,144 +86,6 @@ describe("source upload validation", () => {
 });
 
 describe("source upload workflow", () => {
-  it("restores the last source gate and refreshes from GET after explicit confirmation", async () => {
-    const pending = project();
-    const cleared: Project = {
-      ...pending,
-      authorization: {
-        ...pending.authorization,
-        status: "CLEARED",
-        basis: "EXPLICIT_CONFIRMATION",
-        confirmedAt: "2026-09-09T12:00:00.000Z",
-        declarationVersion: "source-rights-v1",
-      },
-    };
-    const api: ProjectsApi = {
-      createProject: vi.fn(),
-      getProject: vi
-        .fn()
-        .mockResolvedValueOnce(pending)
-        .mockResolvedValueOnce(cleared),
-      confirmSourceAuthorization: vi.fn().mockResolvedValue(cleared),
-    };
-    const app = createApp({});
-    app.use(VueQueryPlugin, { queryClient: new QueryClient() });
-    const scope = effectScope();
-    const upload = app.runWithContext(() =>
-      scope.run(() => useSourceUpload(api))!,
-    );
-    await upload.restoreLastSource(pending.id);
-    await upload.confirmAuthorization();
-    expect(api.confirmSourceAuthorization).toHaveBeenCalledWith(pending.id, {
-      sourceVersion: pending.authorization.sourceVersion,
-      sourceSha256: pending.authorization.sourceSha256,
-      rightsConfirmed: true,
-      declarationVersion: "source-rights-v1",
-    });
-    expect(api.getProject).toHaveBeenCalledTimes(2);
-    expect(upload.result.value?.authorization.status).toBe("CLEARED");
-  });
-
-  it("ignores a slow saved-project restore after a new upload starts", async () => {
-    let resolveOld: ((value: Project) => void) | undefined;
-    const oldProject = project("Old source");
-    const newProject: Project = {
-      ...project("New source"),
-      id: "00000000-0000-4000-8000-000000000010",
-      authorization: {
-        ...project().authorization,
-        sourceSha256: "b".repeat(64),
-      },
-    };
-    const api: ProjectsApi = {
-      createProject: vi.fn().mockResolvedValue(newProject),
-      getProject: vi.fn(
-        () =>
-          new Promise<Project>((resolve) => {
-            resolveOld = resolve;
-          }),
-      ),
-    };
-    const app = createApp({});
-    app.use(VueQueryPlugin, { queryClient: new QueryClient() });
-    const scope = effectScope();
-    const upload = app.runWithContext(() =>
-      scope.run(() => useSourceUpload(api))!,
-    );
-    const restoring = upload.restoreLastSource(oldProject.id);
-    upload.updateDraft({ name: "New source", file: sourceFile() });
-    await upload.submit();
-    resolveOld?.(oldProject);
-    await restoring;
-    expect(upload.result.value?.id).toBe(newProject.id);
-  });
-
-  it("uses confirmation-specific recovery text for a network failure", async () => {
-    const api: ProjectsApi = {
-      createProject: vi.fn(),
-      getProject: vi.fn().mockResolvedValue(project()),
-      confirmSourceAuthorization: vi
-        .fn()
-        .mockRejectedValue(new ProjectNetworkError()),
-    };
-    const app = createApp({});
-    app.use(VueQueryPlugin, { queryClient: new QueryClient() });
-    const scope = effectScope();
-    const upload = app.runWithContext(() =>
-      scope.run(() => useSourceUpload(api))!,
-    );
-    await upload.restoreLastSource(project().id);
-    await upload.confirmAuthorization();
-    expect(upload.authorizationError.value).toContain(
-      "повтори подтверждение прав",
-    );
-    expect(upload.authorizationError.value).not.toContain("загрузка");
-  });
-
-  it("moves from measured transfer to server finalization only after the bytes are sent", async () => {
-    let report: ((progress: UploadProgress) => void) | undefined;
-    let finish: ((value: Project) => void) | undefined;
-    const api: ProjectsApi = {
-      createProject: vi.fn(
-        (request) =>
-          new Promise<Project>((resolve) => {
-            report = request.onUploadProgress;
-            finish = resolve;
-          }),
-      ),
-    };
-    const upload = validUpload(api);
-    const pending = upload.submit();
-    await Promise.resolve();
-
-    report?.({
-      uploadedBytes: 5,
-      totalBytes: 10,
-      percent: 50,
-      bytesPerSecond: 5,
-      etaSeconds: 1,
-      transferCompleted: false,
-    });
-    expect(upload.isSending.value).toBe(true);
-    expect(upload.isFinalizing.value).toBe(false);
-    expect(upload.uploadProgress.value?.percent).toBe(50);
-
-    report?.({
-      uploadedBytes: 10,
-      totalBytes: 10,
-      percent: 100,
-      bytesPerSecond: 5,
-      etaSeconds: 0,
-      transferCompleted: true,
-    });
-    expect(upload.isSending.value).toBe(false);
-    expect(upload.isFinalizing.value).toBe(true);
-
-    finish?.(project());
-    await pending;
-    expect(upload.state.value).toBe("success");
-  });
-
   it("succeeds and shows the safe project result", async () => {
     const api: ProjectsApi = {
       createProject: vi.fn().mockResolvedValue(project()),
@@ -254,6 +113,56 @@ describe("source upload workflow", () => {
     expect(api.createProject).toHaveBeenCalledTimes(1);
     finish?.(project());
     await Promise.all([first, second]);
+  });
+
+  it("keeps byte upload progress monotonic and reserves 100% for server acceptance", async () => {
+    let report: ((progress: { loaded: number; total: number }) => void) | null =
+      null;
+    const api: ProjectsApi = {
+      createProject: vi.fn(
+        (request) =>
+          new Promise<Project>((resolve) => {
+            report = request.onUploadProgress ?? null;
+            resolve(project());
+          }),
+      ),
+    };
+    const upload = validUpload(api);
+    const submitted = upload.submit();
+    await Promise.resolve();
+    report?.({ loaded: 25, total: 100 });
+    report?.({ loaded: 10, total: 100 });
+    report?.({ loaded: 180, total: 100 });
+    expect(upload.uploadProgress.value).toEqual({
+      loaded: 100,
+      total: 100,
+      percent: 99,
+    });
+    await submitted;
+  });
+
+  it("does not claim 100% when the server rejects a fully sent request", async () => {
+    let report: ((progress: { loaded: number; total: number }) => void) | null =
+      null;
+    let rejectRequest: ((reason: unknown) => void) | null = null;
+    const api: ProjectsApi = {
+      createProject: vi.fn(
+        (request) =>
+          new Promise<Project>((_resolve, reject) => {
+            report = request.onUploadProgress ?? null;
+            rejectRequest = reject;
+          }),
+      ),
+    };
+    const upload = validUpload(api);
+    const submitted = upload.submit();
+    await Promise.resolve();
+    report?.({ loaded: 100, total: 100 });
+    expect(upload.uploadProgress.value.percent).toBe(99);
+    rejectRequest?.(new ProjectNetworkError());
+    await submitted;
+    expect(upload.state.value).toBe("error");
+    expect(upload.uploadProgress.value.percent).toBe(99);
   });
 
   it("uses the same idempotency key when explicitly retrying after an unknown network outcome", async () => {
@@ -294,31 +203,6 @@ describe("source upload workflow", () => {
     const calls = vi.mocked(api.createProject).mock.calls;
     expect(calls[0]?.[0].idempotencyKey).not.toBe(calls[1]?.[0].idempotencyKey);
     expect(upload.result.value?.name).toBe("Новый ролик");
-  });
-
-  it("clears progress and ignores a late progress event from an invalidated attempt", async () => {
-    let report: ((progress: UploadProgress) => void) | undefined;
-    const api: ProjectsApi = {
-      createProject: vi.fn(
-        (request) =>
-          new Promise<Project>(() => {
-            report = request.onUploadProgress;
-          }),
-      ),
-    };
-    const upload = validUpload(api);
-    void upload.submit();
-    await Promise.resolve();
-    upload.updateDraft({ name: "Новый ролик" });
-    report?.({
-      uploadedBytes: 10,
-      totalBytes: 10,
-      percent: 100,
-      bytesPerSecond: 1,
-      etaSeconds: 0,
-      transferCompleted: true,
-    });
-    expect(upload.uploadProgress.value).toBeNull();
   });
 
   it("shows a controlled server error", async () => {

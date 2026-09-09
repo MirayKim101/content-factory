@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+: "${MOCK_STATE:?MOCK_STATE is required}"
+request="$*"
+printf '%s\n' "$request" >>"$MOCK_STATE/curl-actions"
+if [[ "$request" == *' -X POST '* ]]; then
+  printf '%s\n' '{"requestId":"request-1","projectId":"ef703380-656e-4f15-9c5e-f722c7bbe01b","jobs":[{"id":"job-1"},{"id":"job-2"},{"id":"job-3"},{"id":"job-4"}]}'
+elif [[ "$request" == *'/pipeline-jobs' ]]; then
+  state="READY"
+  [[ "${MOCK_ACTIVE_STATUS:-0}" == '1' ]] && state="PROCESSING"
+  printf '{"items":['
+  for id in job-1 job-2 job-3 job-4; do printf '{"id":"%s","state":"%s"},' "$id" "$state"; done
+  printf '{"id":"unrelated","state":"READY"}]}'
+elif [[ "$request" == *'/result' ]]; then
+  printf 'mock-mp4-stream'
+else
+  printf '%s\n' '{"source":{"id":"146f4b93-5ccd-420f-81fa-1179130da2f8","status":"READY","sourceVersion":1,"sizeBytes":"3813099228","sha256":"99c0eba5e8d9c34e9736e39299524a438edefffa58ffff7b471296294bfc024a","durationMs":5878827,"authorization":{"status":"CLEARED","usable":true,"sourceVersion":1}},"artifact":{"lineageSourceId":"146f4b93-5ccd-420f-81fa-1179130da2f8","lineageSourceVersion":1,"sizeBytes":"3813099228","sha256":"99c0eba5e8d9c34e9736e39299524a438edefffa58ffff7b471296294bfc024a"}}'
+fi

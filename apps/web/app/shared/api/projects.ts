@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { projectSchema, type Project } from "~/shared/api/generated/project";
+import {
+  libraryPageSchema,
+  projectSchema,
+  type LibraryPage,
+  type Project,
+} from "~/shared/api/generated/project";
 import { parseApiBasePath } from "~/shared/config/api-config";
 
 const errorResponseSchema = z.object({
@@ -14,12 +19,8 @@ export interface CreateProjectRequest {
   onUploadProgress?: (progress: UploadProgress) => void;
 }
 export interface UploadProgress {
-  uploadedBytes: number;
-  totalBytes: number | null;
-  percent: number | null;
-  bytesPerSecond: number | null;
-  etaSeconds: number | null;
-  transferCompleted: boolean;
+  loaded: number;
+  total: number;
 }
 export class ProjectApiError extends Error {
   constructor(
@@ -40,36 +41,54 @@ export class ProjectNetworkError extends Error {
 export interface ProjectsApi {
   createProject(request: CreateProjectRequest): Promise<Project>;
   getProject?(id: string, signal?: AbortSignal): Promise<Project>;
-  confirmSourceAuthorization?(
-    projectId: string,
-    request: {
-      sourceVersion: number;
-      sourceSha256: string;
-      rightsConfirmed: true;
-      declarationVersion: string;
-    },
+  listProjects?(
+    query: ProjectListQuery,
+    signal?: AbortSignal,
+  ): Promise<LibraryPage>;
+  attestSourceAuthorization?(
+    request: AttestSourceAuthorizationRequest,
+    signal?: AbortSignal,
   ): Promise<Project>;
+}
+export interface AttestSourceAuthorizationRequest {
+  projectId: string;
+  sourceVersion: number;
+  expectedRevision: number;
+}
+export interface ProjectListQuery {
+  q?: string;
+  status?: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
+  cursor?: string;
+  limit?: number;
 }
 interface CreateProjectsApiOptions {
   apiBasePath: unknown;
   fetchImplementation?: typeof fetch;
-  xhrFactory?: () => XMLHttpRequest;
+  xmlHttpRequestFactory?: () => XMLHttpRequest;
 }
 
 /** Temporary typed adapter until the OpenAPI client is generated in a contract slice. */
 export function createProjectsApi({
   apiBasePath,
   fetchImplementation = fetch,
-  xhrFactory = () => new XMLHttpRequest(),
+  xmlHttpRequestFactory = () => new XMLHttpRequest(),
 }: CreateProjectsApiOptions): ProjectsApi {
   const basePath = parseApiBasePath(apiBasePath);
   return {
-    createProject(request) {
-      return uploadProject({
-        basePath,
-        request,
-        xhrFactory,
+    async createProject(request) {
+      const body = new FormData();
+      body.set("name", request.name);
+      body.set("file", request.file);
+      const payload = await sendProjectUpload({
+        url: `${basePath}/projects`,
+        body,
+        idempotencyKey: request.idempotencyKey,
+        signal: request.signal,
+        onUploadProgress: request.onUploadProgress,
+        createRequest: xmlHttpRequestFactory,
       });
+      if (!payload.ok) throw toApiError(payload.body, payload.status);
+      return projectSchema.parse(payload.body);
     },
     async getProject(id, signal) {
       let response: Response;
@@ -84,15 +103,40 @@ export function createProjectsApi({
       if (!response.ok) throw toApiError(payload, response.status);
       return projectSchema.parse(payload);
     },
-    async confirmSourceAuthorization(projectId, request) {
+    async listProjects(query, signal) {
+      const params = new URLSearchParams();
+      if (query.q) params.set("q", query.q);
+      if (query.status) params.set("status", query.status);
+      if (query.cursor) params.set("cursor", query.cursor);
+      if (query.limit) params.set("limit", String(query.limit));
       let response: Response;
       try {
         response = await fetchImplementation(
-          `${basePath}/projects/${projectId}/source/authorization`,
+          `${basePath}/projects${params.size ? `?${params}` : ""}`,
+          { signal },
+        );
+      } catch {
+        throw new ProjectNetworkError();
+      }
+      const payload: unknown = await response.json().catch(() => undefined);
+      if (!response.ok) throw toApiError(payload, response.status);
+      return libraryPageSchema.parse(payload);
+    },
+    async attestSourceAuthorization(request, signal) {
+      let response: Response;
+      try {
+        response = await fetchImplementation(
+          `${basePath}/projects/${request.projectId}/source-authorization`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(request),
+            body: JSON.stringify({
+              sourceVersion: request.sourceVersion,
+              expectedRevision: request.expectedRevision,
+              declarationVersion: "source-authorization-v1",
+              attested: true,
+            }),
+            signal,
           },
         );
       } catch {
@@ -105,107 +149,74 @@ export function createProjectsApi({
   };
 }
 
-interface UploadProjectOptions {
-  basePath: string;
-  request: CreateProjectRequest;
-  xhrFactory: () => XMLHttpRequest;
+interface UploadResponse {
+  ok: boolean;
+  status: number;
+  body: unknown;
 }
 
-/**
- * XHR is intentionally contained here: Fetch does not expose upload progress.
- * The API surface remains typed so feature and widget code never handles a
- * transport event directly.
- */
-function uploadProject({
-  basePath,
-  request,
-  xhrFactory,
-}: UploadProjectOptions): Promise<Project> {
+interface SendProjectUploadOptions {
+  url: string;
+  body: FormData;
+  idempotencyKey: string;
+  signal?: AbortSignal;
+  onUploadProgress?: (progress: UploadProgress) => void;
+  createRequest: () => XMLHttpRequest;
+}
+
+function sendProjectUpload({
+  url,
+  body,
+  idempotencyKey,
+  signal,
+  onUploadProgress,
+  createRequest,
+}: SendProjectUploadOptions): Promise<UploadResponse> {
   return new Promise((resolve, reject) => {
-    const body = new FormData();
-    body.set("name", request.name);
-    body.set("file", request.file);
-    const xhr = xhrFactory();
-    const startedAt = performance.now();
+    const request = createRequest();
     let settled = false;
-    const settle = (action: () => void): void => {
+    const finish = (callback: () => void): void => {
       if (settled) return;
       settled = true;
-      request.signal?.removeEventListener("abort", abort);
-      action();
+      signal?.removeEventListener("abort", abort);
+      callback();
     };
-    const abort = (): void => {
-      xhr.abort();
-      settle(() => reject(new ProjectNetworkError()));
-    };
-    const reportProgress = (
-      event: ProgressEvent<EventTarget>,
-      transferCompleted: boolean,
-    ): void => {
-      const elapsedSeconds = Math.max(
-        (performance.now() - startedAt) / 1000,
-        0,
-      );
-      const bytesPerSecond =
-        elapsedSeconds > 0 ? event.loaded / elapsedSeconds : null;
-      const totalBytes = event.lengthComputable ? event.total : null;
-      const percent =
-        totalBytes && totalBytes > 0 ? (event.loaded / totalBytes) * 100 : null;
-      const etaSeconds =
-        totalBytes && bytesPerSecond && bytesPerSecond > 0
-          ? Math.max((totalBytes - event.loaded) / bytesPerSecond, 0)
-          : null;
-      request.onUploadProgress?.({
-        uploadedBytes: event.loaded,
-        totalBytes,
-        percent,
-        bytesPerSecond,
-        etaSeconds: transferCompleted ? 0 : etaSeconds,
-        transferCompleted,
+    const abort = (): void => request.abort();
+    request.open("POST", url);
+    request.setRequestHeader("Idempotency-Key", idempotencyKey);
+    request.upload.onprogress = (event: ProgressEvent) => {
+      if (!event.lengthComputable || event.total <= 0) return;
+      onUploadProgress?.({
+        loaded: Math.min(Math.max(0, event.loaded), event.total),
+        total: event.total,
       });
     };
-    xhr.upload.onprogress = (event) => reportProgress(event, false);
-    xhr.upload.onload = (event) => reportProgress(event, true);
-    xhr.onerror = () => settle(() => reject(new ProjectNetworkError()));
-    xhr.onabort = () => settle(() => reject(new ProjectNetworkError()));
-    xhr.onload = () => {
-      const payload: unknown = parseJson(xhr.responseText);
-      if (xhr.status < 200 || xhr.status >= 300) {
-        settle(() => reject(toApiError(payload, xhr.status)));
-        return;
-      }
+    request.onerror = () => finish(() => reject(new ProjectNetworkError()));
+    request.onabort = () => finish(() => reject(new ProjectNetworkError()));
+    request.onload = () => {
+      let responseBody: unknown;
       try {
-        const project = projectSchema.parse(payload);
-        settle(() => resolve(project));
+        responseBody = request.responseText
+          ? (JSON.parse(request.responseText) as unknown)
+          : undefined;
       } catch {
-        settle(() =>
-          reject(
-            new ProjectApiError(
-              "Сервер вернул некорректный ответ. Повтори попытку позже.",
-              "API_RESPONSE_INVALID",
-              xhr.status,
-            ),
-          ),
-        );
+        responseBody = undefined;
       }
+      finish(() =>
+        resolve({
+          ok: request.status >= 200 && request.status < 300,
+          status: request.status,
+          body: responseBody,
+        }),
+      );
     };
-    if (request.signal?.aborted) {
-      abort();
+    if (signal?.aborted) {
+      request.abort();
       return;
     }
-    request.signal?.addEventListener("abort", abort, { once: true });
-    xhr.open("POST", `${basePath}/projects`);
-    xhr.setRequestHeader("Idempotency-Key", request.idempotencyKey);
-    xhr.send(body);
+    signal?.addEventListener("abort", abort, { once: true });
+    request.send(body);
   });
-}
-
-function parseJson(text: string): unknown {
-  try {
-    return JSON.parse(text) as unknown;
-  } catch {
-    return undefined;
-  }
 }
 
 function toApiError(payload: unknown, status: number): ProjectApiError {
@@ -223,13 +234,9 @@ function toApiError(payload: unknown, status: number): ProjectApiError {
     IDEMPOTENCY_CONFLICT: "Этот ключ загрузки уже связан с другим файлом.",
     VALIDATION_FAILED: "Проверь заполнение формы.",
     STORAGE_UPLOAD_FAILED: "Хранилище временно недоступно.",
-    SOURCE_NOT_READY: "Исходник ещё не готов. Дождись завершения загрузки.",
-    SOURCE_VERSION_MISMATCH:
-      "Версия исходника изменилась. Обнови данные проекта и повтори проверку.",
-    RIGHTS_DECLARATION_OUTDATED:
-      "Текст подтверждения обновился. Перезагрузи страницу и прочитай его снова.",
-    SOURCE_AUTHORIZATION_CONFLICT:
-      "Права уже подтверждены с другими данными. Обнови проект.",
+    SOURCE_VERSION_CONFLICT: "Версия исходника изменилась. Обнови медиатеку.",
+    SOURCE_AUTHORIZATION_CONFLICT: "Решение уже изменилось. Обнови медиатеку.",
+    SOURCE_NOT_READY: "Исходник ещё не готов к подтверждению.",
   };
   return new ProjectApiError(
     translations[parsedError.data.error.code] ??

@@ -1,23 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  createProjectsApi,
-  ProjectNetworkError,
-  type UploadProgress,
-} from "~/shared/api/projects";
+import { createProjectsApi } from "~/shared/api/projects";
 
-const projectPayload = {
+const readyProject = {
   id: "00000000-0000-4000-8000-000000000001",
   name: "x",
   status: "SOURCE_READY",
-  rights: { confirmedAt: "2026-09-01T00:00:00.000Z", declarationVersion: "x" },
-  authorization: {
-    status: "NOT_REVIEWED",
-    sourceVersion: 1,
-    sourceSha256: "a".repeat(64),
-    basis: null,
-    confirmedAt: null,
-    declarationVersion: null,
+  rights: {
+    confirmedAt: "2026-09-01T00:00:00.000Z",
+    declarationVersion: "x",
   },
   createdAt: "2026-09-01T00:00:00.000Z",
   updatedAt: "2026-09-01T00:00:00.000Z",
@@ -29,6 +20,15 @@ const projectPayload = {
     contentType: "video/mp4",
     sizeBytes: "1",
     sha256: "a".repeat(64),
+    authorization: {
+      sourceVersion: 1,
+      status: "CLEARED",
+      usable: true,
+      basis: "LEGACY_ATTESTATION",
+      declarationVersion: "upload-rights-v1",
+      decidedAt: "2026-09-01T00:00:00.000Z",
+      revision: 1,
+    },
   },
   artifact: {
     id: "00000000-0000-4000-8000-000000000003",
@@ -41,161 +41,81 @@ const projectPayload = {
     lineageSourceVersion: 1,
     recipeVersion: "x",
   },
-} as const;
-
-type FakeXhr = {
-  upload: {
-    onprogress:
-      ((event: ProgressEvent<XMLHttpRequestEventTarget>) => void) | null;
-    onload: ((event: ProgressEvent<XMLHttpRequestEventTarget>) => void) | null;
-  };
-  onerror: (() => void) | null;
-  onabort: (() => void) | null;
-  onload: (() => void) | null;
-  responseText: string;
-  status: number;
-  open: ReturnType<typeof vi.fn>;
-  setRequestHeader: ReturnType<typeof vi.fn>;
-  send: ReturnType<typeof vi.fn>;
-  abort: ReturnType<typeof vi.fn>;
 };
 
-function fakeXhr(): FakeXhr {
-  return {
-    upload: { onprogress: null, onload: null },
-    onerror: null,
-    onabort: null,
-    onload: null,
-    responseText: JSON.stringify(projectPayload),
-    status: 201,
-    open: vi.fn(),
-    setRequestHeader: vi.fn(),
-    send: vi.fn(),
-    abort: vi.fn(),
-  };
-}
-
 describe("projects API adapter", () => {
-  it("uses XHR for multipart upload and reports measured progress before finalization", async () => {
-    const xhr = fakeXhr();
+  it("sends the exact relative endpoint, idempotency header, and multipart fields", async () => {
+    const request = {
+      status: 201,
+      responseText: JSON.stringify(readyProject),
+      upload: {},
+      open: vi.fn(),
+      setRequestHeader: vi.fn(),
+      send: vi.fn(),
+      abort: vi.fn(),
+      onerror: null,
+      onabort: null,
+      onload: null,
+    } as unknown as XMLHttpRequest;
     const api = createProjectsApi({
       apiBasePath: "/api/v1",
-      xhrFactory: () => xhr as unknown as XMLHttpRequest,
+      xmlHttpRequestFactory: () => request,
     });
-    const progress: UploadProgress[] = [];
-    const pending = api.createProject({
+    const progress: Array<{ loaded: number; total: number }> = [];
+    const created = api.createProject({
       name: "x",
       file: new File(["x"], "x.mp4", { type: "video/mp4" }),
       idempotencyKey: "attempt-0001",
       onUploadProgress: (event) => progress.push(event),
     });
-
-    expect(xhr.open).toHaveBeenCalledWith("POST", "/api/v1/projects");
-    expect(xhr.setRequestHeader).toHaveBeenCalledWith(
+    expect(request.open).toHaveBeenCalledWith("POST", "/api/v1/projects");
+    expect(request.setRequestHeader).toHaveBeenCalledWith(
       "Idempotency-Key",
       "attempt-0001",
     );
-    const body = xhr.send.mock.calls[0]?.[0] as FormData;
+    const body = vi.mocked(request.send).mock.calls[0]?.[0] as FormData;
     expect(body.get("name")).toBe("x");
     expect(body.has("rightsConfirmed")).toBe(false);
     expect(body.get("file")).toBeInstanceOf(File);
-
-    const event = {
+    request.upload.onprogress?.({
       lengthComputable: true,
-      loaded: 5,
-      total: 10,
-    } as ProgressEvent<XMLHttpRequestEventTarget>;
-    xhr.upload.onprogress?.(event);
-    xhr.upload.onload?.({
-      ...event,
-      loaded: 10,
-    } as ProgressEvent<XMLHttpRequestEventTarget>);
-    expect(progress).toMatchObject([
-      {
-        uploadedBytes: 5,
-        totalBytes: 10,
-        percent: 50,
-        transferCompleted: false,
-      },
-      {
-        uploadedBytes: 10,
-        totalBytes: 10,
-        percent: 100,
-        etaSeconds: 0,
-        transferCompleted: true,
-      },
-    ]);
-    xhr.onload?.();
-    await expect(pending).resolves.toMatchObject({ id: projectPayload.id });
+      loaded: 25,
+      total: 100,
+    } as ProgressEvent);
+    request.onload?.(new Event("load"));
+    await created;
+    expect(progress).toEqual([{ loaded: 25, total: 100 }]);
   });
 
-  it("confirms the exact server tuple with literal true and parses the response", async () => {
-    const cleared = {
-      ...projectPayload,
-      authorization: {
-        ...projectPayload.authorization,
-        status: "CLEARED",
-        basis: "EXPLICIT_CONFIRMATION",
-        confirmedAt: "2026-09-09T12:00:00.000Z",
-        declarationVersion: "source-rights-v1",
-      },
-    } as const;
-    const fetchImplementation = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify(cleared), { status: 200 }),
-      );
+  it("sends an explicit versioned source authorization decision", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => readyProject,
+    });
     const api = createProjectsApi({
       apiBasePath: "/api/v1",
-      fetchImplementation,
-      xhrFactory: () => fakeXhr() as unknown as XMLHttpRequest,
+      fetchImplementation: fetchMock,
     });
-    await expect(
-      api.confirmSourceAuthorization?.(projectPayload.id, {
-        sourceVersion: 1,
-        sourceSha256: "a".repeat(64),
-        rightsConfirmed: true,
-        declarationVersion: "source-rights-v1",
-      }),
-    ).resolves.toMatchObject({ authorization: { status: "CLEARED" } });
-    expect(fetchImplementation).toHaveBeenCalledWith(
-      `/api/v1/projects/${projectPayload.id}/source/authorization`,
+
+    await api.attestSourceAuthorization?.({
+      projectId: readyProject.id,
+      sourceVersion: 3,
+      expectedRevision: 7,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/projects/${readyProject.id}/source-authorization`,
       expect.objectContaining({
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sourceVersion: 1,
-          sourceSha256: "a".repeat(64),
-          rightsConfirmed: true,
-          declarationVersion: "source-rights-v1",
+          sourceVersion: 3,
+          expectedRevision: 7,
+          declarationVersion: "source-authorization-v1",
+          attested: true,
         }),
       }),
     );
-  });
-
-  it("reports an indeterminate transfer and turns an XHR transport failure into a safe error", async () => {
-    const xhr = fakeXhr();
-    const api = createProjectsApi({
-      apiBasePath: "/api/v1",
-      xhrFactory: () => xhr as unknown as XMLHttpRequest,
-    });
-    const progress: UploadProgress[] = [];
-    const pending = api.createProject({
-      name: "x",
-      file: new File(["x"], "x.mp4", { type: "video/mp4" }),
-      idempotencyKey: "attempt-0001",
-      onUploadProgress: (event) => progress.push(event),
-    });
-    xhr.upload.onprogress?.({
-      lengthComputable: false,
-      loaded: 5,
-      total: 0,
-    } as ProgressEvent<XMLHttpRequestEventTarget>);
-    expect(progress[0]).toMatchObject({
-      uploadedBytes: 5,
-      totalBytes: null,
-      percent: null,
-    });
-    xhr.onerror?.();
-    await expect(pending).rejects.toBeInstanceOf(ProjectNetworkError);
   });
 });

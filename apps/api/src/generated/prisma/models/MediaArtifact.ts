@@ -58,6 +58,9 @@ export type MediaArtifactMinAggregateOutputType = {
   lineageSourceId: string | null
   lineageSourceVersion: number | null
   recipeVersion: string | null
+  pipelineJobId: string | null
+  ffmpegVersion: string | null
+  outputFilename: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -82,6 +85,9 @@ export type MediaArtifactMaxAggregateOutputType = {
   lineageSourceId: string | null
   lineageSourceVersion: number | null
   recipeVersion: string | null
+  pipelineJobId: string | null
+  ffmpegVersion: string | null
+  outputFilename: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -106,6 +112,9 @@ export type MediaArtifactCountAggregateOutputType = {
   lineageSourceId: number
   lineageSourceVersion: number
   recipeVersion: number
+  pipelineJobId: number
+  ffmpegVersion: number
+  outputFilename: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -144,6 +153,9 @@ export type MediaArtifactMinAggregateInputType = {
   lineageSourceId?: true
   lineageSourceVersion?: true
   recipeVersion?: true
+  pipelineJobId?: true
+  ffmpegVersion?: true
+  outputFilename?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -168,6 +180,9 @@ export type MediaArtifactMaxAggregateInputType = {
   lineageSourceId?: true
   lineageSourceVersion?: true
   recipeVersion?: true
+  pipelineJobId?: true
+  ffmpegVersion?: true
+  outputFilename?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -192,6 +207,9 @@ export type MediaArtifactCountAggregateInputType = {
   lineageSourceId?: true
   lineageSourceVersion?: true
   recipeVersion?: true
+  pipelineJobId?: true
+  ffmpegVersion?: true
+  outputFilename?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -303,6 +321,9 @@ export type MediaArtifactGroupByOutputType = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId: string | null
+  ffmpegVersion: string | null
+  outputFilename: string | null
   createdAt: Date
   updatedAt: Date
   _count: MediaArtifactCountAggregateOutputType | null
@@ -350,11 +371,21 @@ export type MediaArtifactWhereInput = {
   lineageSourceId?: Prisma.UuidFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringFilter<"MediaArtifact"> | string
+  pipelineJobId?: Prisma.UuidNullableFilter<"MediaArtifact"> | string | null
+  ffmpegVersion?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
-  winningForJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
+  pipelineJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
+  editorialPackage?: Prisma.XOR<Prisma.EditorialPackageNullableScalarRelationFilter, Prisma.EditorialPackageWhereInput> | null
+  assemblyRecipe?: Prisma.XOR<Prisma.AssemblyRecipeNullableScalarRelationFilter, Prisma.AssemblyRecipeWhereInput> | null
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentListRelationFilter
+  assemblyRenderResult?: Prisma.XOR<Prisma.AssemblyRenderResultNullableScalarRelationFilter, Prisma.AssemblyRenderResultWhereInput> | null
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
+  editorialExportResult?: Prisma.XOR<Prisma.EditorialExportResultNullableScalarRelationFilter, Prisma.EditorialExportResultWhereInput> | null
+  cutEditorialPrompt?: Prisma.XOR<Prisma.CutEditorialPromptNullableScalarRelationFilter, Prisma.CutEditorialPromptWhereInput> | null
 }
 
 export type MediaArtifactOrderByWithRelationInput = {
@@ -377,16 +408,28 @@ export type MediaArtifactOrderByWithRelationInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  outputFilename?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   source?: Prisma.VideoSourceOrderByWithRelationInput
-  winningForJob?: Prisma.PipelineJobOrderByWithRelationInput
+  pipelineJob?: Prisma.PipelineJobOrderByWithRelationInput
+  editorialPackage?: Prisma.EditorialPackageOrderByWithRelationInput
+  assemblyRecipe?: Prisma.AssemblyRecipeOrderByWithRelationInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentOrderByRelationAggregateInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultOrderByWithRelationInput
+  editorialApprovals?: Prisma.EditorialApprovalOrderByRelationAggregateInput
+  editorialExportResult?: Prisma.EditorialExportResultOrderByWithRelationInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptOrderByWithRelationInput
 }
 
 export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   objectKey?: string
+  pipelineJobId?: string
+  id_projectId_lineageSourceId_lineageSourceVersion_pipelineJobId?: Prisma.MediaArtifactIdProjectIdLineageSourceIdLineageSourceVersionPipelineJobIdCompoundUniqueInput
   AND?: Prisma.MediaArtifactWhereInput | Prisma.MediaArtifactWhereInput[]
   OR?: Prisma.MediaArtifactWhereInput[]
   NOT?: Prisma.MediaArtifactWhereInput | Prisma.MediaArtifactWhereInput[]
@@ -407,12 +450,21 @@ export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
   lineageSourceId?: Prisma.UuidFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringFilter<"MediaArtifact"> | string
+  ffmpegVersion?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
-  winningForJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
-}, "id" | "objectKey">
+  pipelineJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
+  editorialPackage?: Prisma.XOR<Prisma.EditorialPackageNullableScalarRelationFilter, Prisma.EditorialPackageWhereInput> | null
+  assemblyRecipe?: Prisma.XOR<Prisma.AssemblyRecipeNullableScalarRelationFilter, Prisma.AssemblyRecipeWhereInput> | null
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentListRelationFilter
+  assemblyRenderResult?: Prisma.XOR<Prisma.AssemblyRenderResultNullableScalarRelationFilter, Prisma.AssemblyRenderResultWhereInput> | null
+  editorialApprovals?: Prisma.EditorialApprovalListRelationFilter
+  editorialExportResult?: Prisma.XOR<Prisma.EditorialExportResultNullableScalarRelationFilter, Prisma.EditorialExportResultWhereInput> | null
+  cutEditorialPrompt?: Prisma.XOR<Prisma.CutEditorialPromptNullableScalarRelationFilter, Prisma.CutEditorialPromptWhereInput> | null
+}, "id" | "objectKey" | "pipelineJobId" | "id_projectId_lineageSourceId_lineageSourceVersion_pipelineJobId">
 
 export type MediaArtifactOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -434,6 +486,9 @@ export type MediaArtifactOrderByWithAggregationInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  outputFilename?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.MediaArtifactCountOrderByAggregateInput
@@ -466,6 +521,9 @@ export type MediaArtifactScalarWhereWithAggregatesInput = {
   lineageSourceId?: Prisma.UuidWithAggregatesFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntWithAggregatesFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringWithAggregatesFilter<"MediaArtifact"> | string
+  pipelineJobId?: Prisma.UuidNullableWithAggregatesFilter<"MediaArtifact"> | string | null
+  ffmpegVersion?: Prisma.StringNullableWithAggregatesFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableWithAggregatesFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"MediaArtifact"> | Date | string
 }
@@ -488,11 +546,20 @@ export type MediaArtifactCreateInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
-  winningForJob?: Prisma.PipelineJobCreateNestedOneWithoutWinningArtifactInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateInput = {
@@ -515,9 +582,18 @@ export type MediaArtifactUncheckedCreateInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  winningForJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutWinningArtifactInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
 }
 
 export type MediaArtifactUpdateInput = {
@@ -538,11 +614,20 @@ export type MediaArtifactUpdateInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
-  winningForJob?: Prisma.PipelineJobUpdateOneWithoutWinningArtifactNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateInput = {
@@ -565,9 +650,18 @@ export type MediaArtifactUncheckedUpdateInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  winningForJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutWinningArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
 }
 
 export type MediaArtifactCreateManyInput = {
@@ -590,6 +684,9 @@ export type MediaArtifactCreateManyInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -612,6 +709,8 @@ export type MediaArtifactUpdateManyMutationInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -636,6 +735,9 @@ export type MediaArtifactUncheckedUpdateManyInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -648,6 +750,14 @@ export type MediaArtifactListRelationFilter = {
 
 export type MediaArtifactOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type MediaArtifactIdProjectIdLineageSourceIdLineageSourceVersionPipelineJobIdCompoundUniqueInput = {
+  id: string
+  projectId: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  pipelineJobId: string
 }
 
 export type MediaArtifactCountOrderByAggregateInput = {
@@ -670,6 +780,9 @@ export type MediaArtifactCountOrderByAggregateInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrder
+  outputFilename?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -700,6 +813,9 @@ export type MediaArtifactMaxOrderByAggregateInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrder
+  outputFilename?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -724,6 +840,9 @@ export type MediaArtifactMinOrderByAggregateInput = {
   lineageSourceId?: Prisma.SortOrder
   lineageSourceVersion?: Prisma.SortOrder
   recipeVersion?: Prisma.SortOrder
+  pipelineJobId?: Prisma.SortOrder
+  ffmpegVersion?: Prisma.SortOrder
+  outputFilename?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -737,6 +856,11 @@ export type MediaArtifactSumOrderByAggregateInput = {
 export type MediaArtifactNullableScalarRelationFilter = {
   is?: Prisma.MediaArtifactWhereInput | null
   isNot?: Prisma.MediaArtifactWhereInput | null
+}
+
+export type MediaArtifactScalarRelationFilter = {
+  is?: Prisma.MediaArtifactWhereInput
+  isNot?: Prisma.MediaArtifactWhereInput
 }
 
 export type MediaArtifactCreateNestedManyWithoutProjectInput = {
@@ -835,20 +959,134 @@ export type EnumArtifactCleanupStatusFieldUpdateOperationsInput = {
   set?: $Enums.ArtifactCleanupStatus
 }
 
-export type MediaArtifactCreateNestedOneWithoutWinningForJobInput = {
-  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
-  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutWinningForJobInput
+export type MediaArtifactCreateNestedOneWithoutPipelineJobInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
   connect?: Prisma.MediaArtifactWhereUniqueInput
 }
 
-export type MediaArtifactUpdateOneWithoutWinningForJobNestedInput = {
-  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
-  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutWinningForJobInput
-  upsert?: Prisma.MediaArtifactUpsertWithoutWinningForJobInput
+export type MediaArtifactUncheckedCreateNestedOneWithoutPipelineJobInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneWithoutPipelineJobNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutPipelineJobInput
   disconnect?: Prisma.MediaArtifactWhereInput | boolean
   delete?: Prisma.MediaArtifactWhereInput | boolean
   connect?: Prisma.MediaArtifactWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutWinningForJobInput, Prisma.MediaArtifactUpdateWithoutWinningForJobInput>, Prisma.MediaArtifactUncheckedUpdateWithoutWinningForJobInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutPipelineJobInput, Prisma.MediaArtifactUpdateWithoutPipelineJobInput>, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
+}
+
+export type MediaArtifactUncheckedUpdateOneWithoutPipelineJobNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutPipelineJobInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutPipelineJobInput
+  disconnect?: Prisma.MediaArtifactWhereInput | boolean
+  delete?: Prisma.MediaArtifactWhereInput | boolean
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutPipelineJobInput, Prisma.MediaArtifactUpdateWithoutPipelineJobInput>, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
+}
+
+export type MediaArtifactCreateNestedOneWithoutAssemblyRecipeInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRecipeInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutAssemblyRecipeInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutAssemblyRecipeNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRecipeInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutAssemblyRecipeInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutAssemblyRecipeInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutAssemblyRecipeInput, Prisma.MediaArtifactUpdateWithoutAssemblyRecipeInput>, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRecipeInput>
+}
+
+export type MediaArtifactCreateNestedOneWithoutAssemblyRenderInputsInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutAssemblyRenderInputsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutAssemblyRenderInputsNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutAssemblyRenderInputsInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutAssemblyRenderInputsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutAssemblyRenderInputsInput, Prisma.MediaArtifactUpdateWithoutAssemblyRenderInputsInput>, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRenderInputsInput>
+}
+
+export type MediaArtifactCreateNestedOneWithoutAssemblyRenderResultInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderResultInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutAssemblyRenderResultInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutAssemblyRenderResultNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderResultInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutAssemblyRenderResultInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutAssemblyRenderResultInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutAssemblyRenderResultInput, Prisma.MediaArtifactUpdateWithoutAssemblyRenderResultInput>, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRenderResultInput>
+}
+
+export type MediaArtifactCreateNestedOneWithoutEditorialPackageInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialPackageInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialPackageInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialPackageInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutEditorialPackageNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialPackageInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialPackageInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialPackageInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutEditorialPackageInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutEditorialPackageInput, Prisma.MediaArtifactUpdateWithoutEditorialPackageInput>, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialPackageInput>
+}
+
+export type MediaArtifactCreateNestedOneWithoutEditorialApprovalsInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialApprovalsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutEditorialApprovalsNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialApprovalsInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutEditorialApprovalsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutEditorialApprovalsInput, Prisma.MediaArtifactUpdateWithoutEditorialApprovalsInput>, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
+export type MediaArtifactCreateNestedOneWithoutEditorialExportResultInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialExportResultInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialExportResultInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialExportResultInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutEditorialExportResultNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialExportResultInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialExportResultInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutEditorialExportResultInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutEditorialExportResultInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutEditorialExportResultInput, Prisma.MediaArtifactUpdateWithoutEditorialExportResultInput>, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialExportResultInput>
+}
+
+export type MediaArtifactCreateNestedOneWithoutCutEditorialPromptInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutCutEditorialPromptInput, Prisma.MediaArtifactUncheckedCreateWithoutCutEditorialPromptInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutCutEditorialPromptInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutCutEditorialPromptNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutCutEditorialPromptInput, Prisma.MediaArtifactUncheckedCreateWithoutCutEditorialPromptInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutCutEditorialPromptInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutCutEditorialPromptInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutCutEditorialPromptInput, Prisma.MediaArtifactUpdateWithoutCutEditorialPromptInput>, Prisma.MediaArtifactUncheckedUpdateWithoutCutEditorialPromptInput>
 }
 
 export type MediaArtifactCreateWithoutProjectInput = {
@@ -869,10 +1107,19 @@ export type MediaArtifactCreateWithoutProjectInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
-  winningForJob?: Prisma.PipelineJobCreateNestedOneWithoutWinningArtifactInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutProjectInput = {
@@ -894,9 +1141,18 @@ export type MediaArtifactUncheckedCreateWithoutProjectInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  winningForJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutWinningArtifactInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutProjectInput = {
@@ -948,6 +1204,9 @@ export type MediaArtifactScalarWhereInput = {
   lineageSourceId?: Prisma.UuidFilter<"MediaArtifact"> | string
   lineageSourceVersion?: Prisma.IntFilter<"MediaArtifact"> | number
   recipeVersion?: Prisma.StringFilter<"MediaArtifact"> | string
+  pipelineJobId?: Prisma.UuidNullableFilter<"MediaArtifact"> | string | null
+  ffmpegVersion?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
+  outputFilename?: Prisma.StringNullableFilter<"MediaArtifact"> | string | null
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
 }
@@ -970,10 +1229,19 @@ export type MediaArtifactCreateWithoutSourceInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
-  winningForJob?: Prisma.PipelineJobCreateNestedOneWithoutWinningArtifactInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
 }
 
 export type MediaArtifactUncheckedCreateWithoutSourceInput = {
@@ -995,9 +1263,18 @@ export type MediaArtifactUncheckedCreateWithoutSourceInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  winningForJob?: Prisma.PipelineJobUncheckedCreateNestedOneWithoutWinningArtifactInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
 }
 
 export type MediaArtifactCreateOrConnectWithoutSourceInput = {
@@ -1026,7 +1303,7 @@ export type MediaArtifactUpdateManyWithWhereWithoutSourceInput = {
   data: Prisma.XOR<Prisma.MediaArtifactUpdateManyMutationInput, Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceInput>
 }
 
-export type MediaArtifactCreateWithoutWinningForJobInput = {
+export type MediaArtifactCreateWithoutPipelineJobInput = {
   id: string
   role: $Enums.MediaArtifactRole
   status?: $Enums.MediaArtifactStatus
@@ -1044,13 +1321,22 @@ export type MediaArtifactCreateWithoutWinningForJobInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
 }
 
-export type MediaArtifactUncheckedCreateWithoutWinningForJobInput = {
+export type MediaArtifactUncheckedCreateWithoutPipelineJobInput = {
   id: string
   projectId: string
   sourceId: string
@@ -1070,27 +1356,36 @@ export type MediaArtifactUncheckedCreateWithoutWinningForJobInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
 }
 
-export type MediaArtifactCreateOrConnectWithoutWinningForJobInput = {
+export type MediaArtifactCreateOrConnectWithoutPipelineJobInput = {
   where: Prisma.MediaArtifactWhereUniqueInput
-  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
 }
 
-export type MediaArtifactUpsertWithoutWinningForJobInput = {
-  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutWinningForJobInput>
-  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedCreateWithoutWinningForJobInput>
+export type MediaArtifactUpsertWithoutPipelineJobInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedCreateWithoutPipelineJobInput>
   where?: Prisma.MediaArtifactWhereInput
 }
 
-export type MediaArtifactUpdateToOneWithWhereWithoutWinningForJobInput = {
+export type MediaArtifactUpdateToOneWithWhereWithoutPipelineJobInput = {
   where?: Prisma.MediaArtifactWhereInput
-  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutWinningForJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutWinningForJobInput>
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutPipelineJobInput, Prisma.MediaArtifactUncheckedUpdateWithoutPipelineJobInput>
 }
 
-export type MediaArtifactUpdateWithoutWinningForJobInput = {
+export type MediaArtifactUpdateWithoutPipelineJobInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
   status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
@@ -1108,13 +1403,22 @@ export type MediaArtifactUpdateWithoutWinningForJobInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
 }
 
-export type MediaArtifactUncheckedUpdateWithoutWinningForJobInput = {
+export type MediaArtifactUncheckedUpdateWithoutPipelineJobInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1134,8 +1438,1053 @@ export type MediaArtifactUncheckedUpdateWithoutWinningForJobInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutAssemblyRecipeInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutAssemblyRecipeInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRecipeInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput>
+}
+
+export type MediaArtifactUpsertWithoutAssemblyRecipeInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutAssemblyRecipeInput, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRecipeInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRecipeInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutAssemblyRecipeInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutAssemblyRecipeInput, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRecipeInput>
+}
+
+export type MediaArtifactUpdateWithoutAssemblyRecipeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutAssemblyRecipeInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutAssemblyRenderInputsInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutAssemblyRenderInputsInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput>
+}
+
+export type MediaArtifactUpsertWithoutAssemblyRenderInputsInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutAssemblyRenderInputsInput, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRenderInputsInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutAssemblyRenderInputsInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutAssemblyRenderInputsInput, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRenderInputsInput>
+}
+
+export type MediaArtifactUpdateWithoutAssemblyRenderInputsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderInputsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutAssemblyRenderResultInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutAssemblyRenderResultInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderResultInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput>
+}
+
+export type MediaArtifactUpsertWithoutAssemblyRenderResultInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutAssemblyRenderResultInput, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRenderResultInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutAssemblyRenderResultInput, Prisma.MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutAssemblyRenderResultInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutAssemblyRenderResultInput, Prisma.MediaArtifactUncheckedUpdateWithoutAssemblyRenderResultInput>
+}
+
+export type MediaArtifactUpdateWithoutAssemblyRenderResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutEditorialPackageInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutEditorialPackageInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutEditorialPackageInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialPackageInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialPackageInput>
+}
+
+export type MediaArtifactUpsertWithoutEditorialPackageInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialPackageInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialPackageInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialPackageInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialPackageInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutEditorialPackageInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialPackageInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialPackageInput>
+}
+
+export type MediaArtifactUpdateWithoutEditorialPackageInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutEditorialPackageInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutEditorialApprovalsInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutEditorialApprovalsInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+}
+
+export type MediaArtifactUpsertWithoutEditorialApprovalsInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutEditorialApprovalsInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialApprovalsInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput>
+}
+
+export type MediaArtifactUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutEditorialExportResultInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutEditorialExportResultInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutEditorialExportResultInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialExportResultInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialExportResultInput>
+}
+
+export type MediaArtifactUpsertWithoutEditorialExportResultInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialExportResultInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialExportResultInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutEditorialExportResultInput, Prisma.MediaArtifactUncheckedCreateWithoutEditorialExportResultInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutEditorialExportResultInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutEditorialExportResultInput, Prisma.MediaArtifactUncheckedUpdateWithoutEditorialExportResultInput>
+}
+
+export type MediaArtifactUpdateWithoutEditorialExportResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutEditorialExportResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutCutEditorialPromptInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutCutEditorialPromptInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutCutEditorialPromptInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutCutEditorialPromptInput, Prisma.MediaArtifactUncheckedCreateWithoutCutEditorialPromptInput>
+}
+
+export type MediaArtifactUpsertWithoutCutEditorialPromptInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutCutEditorialPromptInput, Prisma.MediaArtifactUncheckedUpdateWithoutCutEditorialPromptInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutCutEditorialPromptInput, Prisma.MediaArtifactUncheckedCreateWithoutCutEditorialPromptInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutCutEditorialPromptInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutCutEditorialPromptInput, Prisma.MediaArtifactUncheckedUpdateWithoutCutEditorialPromptInput>
+}
+
+export type MediaArtifactUpdateWithoutCutEditorialPromptInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutCutEditorialPromptInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
 }
 
 export type MediaArtifactCreateManyProjectInput = {
@@ -1157,6 +2506,9 @@ export type MediaArtifactCreateManyProjectInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1179,10 +2531,19 @@ export type MediaArtifactUpdateWithoutProjectInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
-  winningForJob?: Prisma.PipelineJobUpdateOneWithoutWinningArtifactNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
@@ -1204,9 +2565,18 @@ export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  winningForJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutWinningArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateManyWithoutProjectInput = {
@@ -1228,6 +2598,9 @@ export type MediaArtifactUncheckedUpdateManyWithoutProjectInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1251,6 +2624,9 @@ export type MediaArtifactCreateManySourceInput = {
   lineageSourceId: string
   lineageSourceVersion: number
   recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1273,10 +2649,19 @@ export type MediaArtifactUpdateWithoutSourceInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
-  winningForJob?: Prisma.PipelineJobUpdateOneWithoutWinningArtifactNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
@@ -1298,9 +2683,18 @@ export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  winningForJob?: Prisma.PipelineJobUncheckedUpdateOneWithoutWinningArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
 }
 
 export type MediaArtifactUncheckedUpdateManyWithoutSourceInput = {
@@ -1322,10 +2716,51 @@ export type MediaArtifactUncheckedUpdateManyWithoutSourceInput = {
   lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
   lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type MediaArtifactCountOutputType
+ */
+
+export type MediaArtifactCountOutputType = {
+  assemblyRenderInputs: number
+  editorialApprovals: number
+}
+
+export type MediaArtifactCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  assemblyRenderInputs?: boolean | MediaArtifactCountOutputTypeCountAssemblyRenderInputsArgs
+  editorialApprovals?: boolean | MediaArtifactCountOutputTypeCountEditorialApprovalsArgs
+}
+
+/**
+ * MediaArtifactCountOutputType without action
+ */
+export type MediaArtifactCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MediaArtifactCountOutputType
+   */
+  select?: Prisma.MediaArtifactCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * MediaArtifactCountOutputType without action
+ */
+export type MediaArtifactCountOutputTypeCountAssemblyRenderInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AssemblyRenderIntentWhereInput
+}
+
+/**
+ * MediaArtifactCountOutputType without action
+ */
+export type MediaArtifactCountOutputTypeCountEditorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalWhereInput
+}
 
 
 export type MediaArtifactSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1348,11 +2783,22 @@ export type MediaArtifactSelect<ExtArgs extends runtime.Types.Extensions.Interna
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
-  winningForJob?: boolean | Prisma.MediaArtifact$winningForJobArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
+  editorialPackage?: boolean | Prisma.MediaArtifact$editorialPackageArgs<ExtArgs>
+  assemblyRecipe?: boolean | Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs>
+  assemblyRenderInputs?: boolean | Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs>
+  assemblyRenderResult?: boolean | Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs>
+  editorialExportResult?: boolean | Prisma.MediaArtifact$editorialExportResultArgs<ExtArgs>
+  cutEditorialPrompt?: boolean | Prisma.MediaArtifact$cutEditorialPromptArgs<ExtArgs>
+  _count?: boolean | Prisma.MediaArtifactCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
 export type MediaArtifactSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1375,10 +2821,14 @@ export type MediaArtifactSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
 export type MediaArtifactSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1401,10 +2851,14 @@ export type MediaArtifactSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }, ExtArgs["result"]["mediaArtifact"]>
 
 export type MediaArtifactSelectScalar = {
@@ -1427,23 +2881,36 @@ export type MediaArtifactSelectScalar = {
   lineageSourceId?: boolean
   lineageSourceVersion?: boolean
   recipeVersion?: boolean
+  pipelineJobId?: boolean
+  ffmpegVersion?: boolean
+  outputFilename?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type MediaArtifactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "role" | "status" | "objectKey" | "storageEtag" | "storageVersion" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "sizeBytes" | "sha256" | "contentType" | "lineageSourceId" | "lineageSourceVersion" | "recipeVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["mediaArtifact"]>
+export type MediaArtifactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "role" | "status" | "objectKey" | "storageEtag" | "storageVersion" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "sizeBytes" | "sha256" | "contentType" | "lineageSourceId" | "lineageSourceVersion" | "recipeVersion" | "pipelineJobId" | "ffmpegVersion" | "outputFilename" | "createdAt" | "updatedAt", ExtArgs["result"]["mediaArtifact"]>
 export type MediaArtifactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
-  winningForJob?: boolean | Prisma.MediaArtifact$winningForJobArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
+  editorialPackage?: boolean | Prisma.MediaArtifact$editorialPackageArgs<ExtArgs>
+  assemblyRecipe?: boolean | Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs>
+  assemblyRenderInputs?: boolean | Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs>
+  assemblyRenderResult?: boolean | Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs>
+  editorialApprovals?: boolean | Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs>
+  editorialExportResult?: boolean | Prisma.MediaArtifact$editorialExportResultArgs<ExtArgs>
+  cutEditorialPrompt?: boolean | Prisma.MediaArtifact$cutEditorialPromptArgs<ExtArgs>
+  _count?: boolean | Prisma.MediaArtifactCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MediaArtifactIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }
 export type MediaArtifactIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
+  pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
 }
 
 export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1451,7 +2918,14 @@ export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.Inter
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
     source: Prisma.$VideoSourcePayload<ExtArgs>
-    winningForJob: Prisma.$PipelineJobPayload<ExtArgs> | null
+    pipelineJob: Prisma.$PipelineJobPayload<ExtArgs> | null
+    editorialPackage: Prisma.$EditorialPackagePayload<ExtArgs> | null
+    assemblyRecipe: Prisma.$AssemblyRecipePayload<ExtArgs> | null
+    assemblyRenderInputs: Prisma.$AssemblyRenderIntentPayload<ExtArgs>[]
+    assemblyRenderResult: Prisma.$AssemblyRenderResultPayload<ExtArgs> | null
+    editorialApprovals: Prisma.$EditorialApprovalPayload<ExtArgs>[]
+    editorialExportResult: Prisma.$EditorialExportResultPayload<ExtArgs> | null
+    cutEditorialPrompt: Prisma.$CutEditorialPromptPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1473,6 +2947,9 @@ export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.Inter
     lineageSourceId: string
     lineageSourceVersion: number
     recipeVersion: string
+    pipelineJobId: string | null
+    ffmpegVersion: string | null
+    outputFilename: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["mediaArtifact"]>
@@ -1871,7 +3348,14 @@ export interface Prisma__MediaArtifactClient<T, Null = never, ExtArgs extends ru
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   source<T extends Prisma.VideoSourceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSourceDefaultArgs<ExtArgs>>): Prisma.Prisma__VideoSourceClient<runtime.Types.Result.GetResult<Prisma.$VideoSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  winningForJob<T extends Prisma.MediaArtifact$winningForJobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$winningForJobArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  pipelineJob<T extends Prisma.MediaArtifact$pipelineJobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  editorialPackage<T extends Prisma.MediaArtifact$editorialPackageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$editorialPackageArgs<ExtArgs>>): Prisma.Prisma__EditorialPackageClient<runtime.Types.Result.GetResult<Prisma.$EditorialPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  assemblyRecipe<T extends Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$assemblyRecipeArgs<ExtArgs>>): Prisma.Prisma__AssemblyRecipeClient<runtime.Types.Result.GetResult<Prisma.$AssemblyRecipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  assemblyRenderInputs<T extends Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$assemblyRenderInputsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssemblyRenderIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  assemblyRenderResult<T extends Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$assemblyRenderResultArgs<ExtArgs>>): Prisma.Prisma__AssemblyRenderResultClient<runtime.Types.Result.GetResult<Prisma.$AssemblyRenderResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  editorialApprovals<T extends Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$editorialApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  editorialExportResult<T extends Prisma.MediaArtifact$editorialExportResultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$editorialExportResultArgs<ExtArgs>>): Prisma.Prisma__EditorialExportResultClient<runtime.Types.Result.GetResult<Prisma.$EditorialExportResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  cutEditorialPrompt<T extends Prisma.MediaArtifact$cutEditorialPromptArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$cutEditorialPromptArgs<ExtArgs>>): Prisma.Prisma__CutEditorialPromptClient<runtime.Types.Result.GetResult<Prisma.$CutEditorialPromptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1920,6 +3404,9 @@ export interface MediaArtifactFieldRefs {
   readonly lineageSourceId: Prisma.FieldRef<"MediaArtifact", 'String'>
   readonly lineageSourceVersion: Prisma.FieldRef<"MediaArtifact", 'Int'>
   readonly recipeVersion: Prisma.FieldRef<"MediaArtifact", 'String'>
+  readonly pipelineJobId: Prisma.FieldRef<"MediaArtifact", 'String'>
+  readonly ffmpegVersion: Prisma.FieldRef<"MediaArtifact", 'String'>
+  readonly outputFilename: Prisma.FieldRef<"MediaArtifact", 'String'>
   readonly createdAt: Prisma.FieldRef<"MediaArtifact", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"MediaArtifact", 'DateTime'>
 }
@@ -2323,9 +3810,9 @@ export type MediaArtifactDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 /**
- * MediaArtifact.winningForJob
+ * MediaArtifact.pipelineJob
  */
-export type MediaArtifact$winningForJobArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type MediaArtifact$pipelineJobArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the PipelineJob
    */
@@ -2339,6 +3826,149 @@ export type MediaArtifact$winningForJobArgs<ExtArgs extends runtime.Types.Extens
    */
   include?: Prisma.PipelineJobInclude<ExtArgs> | null
   where?: Prisma.PipelineJobWhereInput
+}
+
+/**
+ * MediaArtifact.editorialPackage
+ */
+export type MediaArtifact$editorialPackageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialPackage
+   */
+  select?: Prisma.EditorialPackageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialPackage
+   */
+  omit?: Prisma.EditorialPackageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialPackageInclude<ExtArgs> | null
+  where?: Prisma.EditorialPackageWhereInput
+}
+
+/**
+ * MediaArtifact.assemblyRecipe
+ */
+export type MediaArtifact$assemblyRecipeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssemblyRecipe
+   */
+  select?: Prisma.AssemblyRecipeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AssemblyRecipe
+   */
+  omit?: Prisma.AssemblyRecipeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssemblyRecipeInclude<ExtArgs> | null
+  where?: Prisma.AssemblyRecipeWhereInput
+}
+
+/**
+ * MediaArtifact.assemblyRenderInputs
+ */
+export type MediaArtifact$assemblyRenderInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssemblyRenderIntent
+   */
+  select?: Prisma.AssemblyRenderIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AssemblyRenderIntent
+   */
+  omit?: Prisma.AssemblyRenderIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssemblyRenderIntentInclude<ExtArgs> | null
+  where?: Prisma.AssemblyRenderIntentWhereInput
+  orderBy?: Prisma.AssemblyRenderIntentOrderByWithRelationInput | Prisma.AssemblyRenderIntentOrderByWithRelationInput[]
+  cursor?: Prisma.AssemblyRenderIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AssemblyRenderIntentScalarFieldEnum | Prisma.AssemblyRenderIntentScalarFieldEnum[]
+}
+
+/**
+ * MediaArtifact.assemblyRenderResult
+ */
+export type MediaArtifact$assemblyRenderResultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AssemblyRenderResult
+   */
+  select?: Prisma.AssemblyRenderResultSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AssemblyRenderResult
+   */
+  omit?: Prisma.AssemblyRenderResultOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssemblyRenderResultInclude<ExtArgs> | null
+  where?: Prisma.AssemblyRenderResultWhereInput
+}
+
+/**
+ * MediaArtifact.editorialApprovals
+ */
+export type MediaArtifact$editorialApprovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApproval
+   */
+  select?: Prisma.EditorialApprovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApproval
+   */
+  omit?: Prisma.EditorialApprovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalWhereInput
+  orderBy?: Prisma.EditorialApprovalOrderByWithRelationInput | Prisma.EditorialApprovalOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalScalarFieldEnum | Prisma.EditorialApprovalScalarFieldEnum[]
+}
+
+/**
+ * MediaArtifact.editorialExportResult
+ */
+export type MediaArtifact$editorialExportResultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialExportResult
+   */
+  select?: Prisma.EditorialExportResultSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialExportResult
+   */
+  omit?: Prisma.EditorialExportResultOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialExportResultInclude<ExtArgs> | null
+  where?: Prisma.EditorialExportResultWhereInput
+}
+
+/**
+ * MediaArtifact.cutEditorialPrompt
+ */
+export type MediaArtifact$cutEditorialPromptArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CutEditorialPrompt
+   */
+  select?: Prisma.CutEditorialPromptSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CutEditorialPrompt
+   */
+  omit?: Prisma.CutEditorialPromptOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CutEditorialPromptInclude<ExtArgs> | null
+  where?: Prisma.CutEditorialPromptWhereInput
 }
 
 /**

@@ -1,32 +1,85 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createCutSubmissionSummary,
   formatTimecode,
   parseTimecode,
-} from "../app/features/manual-cut/model/timecode";
-import { CutIntentKeys } from "../app/features/manual-cut/model/use-manual-cut";
+  segmentFromBounds,
+  validateSegments,
+} from "../app/features/edit-cut-segments/model/segments";
+import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
 describe("manual cut timecodes", () => {
-  it("round-trips exact integer milliseconds", () => {
-    expect(parseTimecode("01:02:03.004")).toBe(3_723_004);
-    expect(formatTimecode(3_723_004)).toBe("01:02:03.004");
-    expect(parseTimecode("5.25")).toBe(5_250);
+  it("parses accepted values to exact integer milliseconds", () => {
+    expect(parseTimecode("00:00:00.1")).toBe(100);
+    expect(parseTimecode("12:04.250")).toBe(724_250);
+    expect(parseTimecode("01:12:04.250")).toBe(4_324_250);
+    expect(formatTimecode(4_324_250)).toBe("01:12:04.250");
   });
 
-  it.each(["", "00:60:00", "00:00:01.0000", "-1", "2147483.648"])(
-    "rejects %s",
-    (value) => expect(parseTimecode(value)).toBeNull(),
-  );
-});
+  it("rounds presentation without changing editable millisecond timecodes", () => {
+    expect(formatDisplayTimecode(4_324_250)).toBe("01:12:04");
+    expect(formatDisplayTimecode(4_324_750)).toBe("01:12:05");
+    expect(formatTimecode(4_324_250)).toBe("01:12:04.250");
+  });
 
-describe("cut request idempotency", () => {
-  it("reuses the key after an unknown response and rotates after success or an edit", () => {
-    let next = 0;
-    const keys = new CutIntentKeys(() => `key-${++next}`);
-    expect(keys.forRange(1_000, 2_000)).toBe("key-1");
-    expect(keys.forRange(1_000, 2_000)).toBe("key-1");
-    expect(keys.forRange(1_000, 2_001)).toBe("key-2");
-    keys.clear();
-    expect(keys.forRange(1_000, 2_001)).toBe("key-3");
+  it("rejects malformed and over-precise values", () => {
+    expect(parseTimecode("-1:00")).toBeNull();
+    expect(parseTimecode("00:00:00.0001")).toBeNull();
+    expect(parseTimecode("00:72:00")).toBeNull();
+    expect(parseTimecode("text")).toBeNull();
+  });
+
+  it("rejects invalid and duplicate bounds but permits overlaps", () => {
+    const result = validateSegments(
+      [
+        { clientKey: "a", startText: "00:00:01", endText: "00:00:05" },
+        { clientKey: "b", startText: "00:00:04", endText: "00:00:08" },
+        { clientKey: "c", startText: "00:00:01", endText: "00:00:05" },
+      ],
+      10_000,
+    );
+    expect(result.segments).toHaveLength(2);
+    expect(result.errors.c).toBe("Этот отрезок уже добавлен.");
+  });
+
+  it("clones failed bounds into a new independently identified draft", () => {
+    const first = segmentFromBounds(1_250, 9_500);
+    const second = segmentFromBounds(1_250, 9_500);
+    expect(first).toMatchObject({
+      startText: "00:00:01.250",
+      endText: "00:00:09.500",
+    });
+    expect(first.clientKey).not.toBe(second.clientKey);
+  });
+
+  it("normalizes MM:SS bounds and keeps the visible confirmation payload exact", () => {
+    const result = createCutSubmissionSummary(
+      [
+        {
+          clientKey: "expected-clip",
+          startText: "12:46",
+          endText: "13:21",
+        },
+      ],
+      60 * 60 * 1_000,
+    );
+
+    expect(result.errors).toEqual({});
+    expect(result.summary).toEqual({
+      segments: [
+        {
+          clientSegmentId: "expected-clip",
+          startMs: 766_000,
+          endMs: 801_000,
+        },
+      ],
+      totalDurationMs: 35_000,
+    });
+    expect(formatTimecode(result.summary!.segments[0]!.startMs)).toBe(
+      "00:12:46",
+    );
+    expect(formatTimecode(result.summary!.segments[0]!.endMs)).toBe("00:13:21");
+    expect(formatTimecode(result.summary!.totalDurationMs)).toBe("00:00:35");
   });
 });

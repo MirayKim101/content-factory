@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { MEDIA_QUEUE_NAME } from "@content-factory/contracts";
 import dotenv from "dotenv";
 
 let loaded = false;
@@ -9,7 +10,6 @@ export function loadEnvironment(): void {
   if (loaded) return;
   delete process.env.MINIO_ROOT_USER;
   delete process.env.MINIO_ROOT_PASSWORD;
-  delete process.env.REDIS_PASSWORD;
   const path = resolve(import.meta.dirname, "../../../../.env");
   try {
     const parsed = dotenv.parse(readFileSync(path));
@@ -30,6 +30,9 @@ const API_ENVIRONMENT_KEYS = [
   "POSTGRES_PASSWORD",
   "POSTGRES_HOST",
   "POSTGRES_PORT",
+  "REDIS_HOST",
+  "REDIS_PORT",
+  "REDIS_PASSWORD",
   "S3_ENDPOINT",
   "S3_REGION",
   "S3_SOURCE_BUCKET",
@@ -44,13 +47,57 @@ const API_ENVIRONMENT_KEYS = [
   "SOURCE_PENDING_STALE_AFTER_MS",
   "SOURCE_PENDING_RECONCILE_LIMIT",
   "SOURCE_PENDING_STARTUP_TIMEOUT_MS",
-  "REDIS_HOST",
-  "REDIS_PORT",
-  "REDIS_PASSWORD",
-  "CUT_QUEUE_PUBLISH_TIMEOUT_MS",
-  "CUT_ADMISSION_TIMEOUT_MS",
-  "CUT_MAX_ATTEMPTS",
+  "MEDIA_RECONCILE_INTERVAL_MS",
+  "MEDIA_RECONCILE_LIMIT",
+  "MEDIA_QUEUE_NAME",
+  "MEDIA_QUEUE_DISABLED",
+  "ASSEMBLY_RENDER_ENABLED",
+  "EDITORIAL_APPROVAL_ENABLED",
+  "EDITORIAL_EXPORT_ENABLED",
+  "AI_CONTEXT_ENABLED",
+  "DEPLOYMENT_PROFILE",
+  "SOURCE_AUTHORIZATION_POLICY",
+  "API_HOST",
 ] as const;
+
+export type DeploymentProfile = "local" | "other";
+export type SourceAuthorizationPolicy = "manual" | "local-auto";
+
+export interface SourceAuthorizationRuntime {
+  deploymentProfile: DeploymentProfile;
+  policy: SourceAuthorizationPolicy;
+  apiHost: string;
+}
+
+export function resolveSourceAuthorizationRuntime(
+  environment: NodeJS.ProcessEnv,
+): SourceAuthorizationRuntime {
+  const deploymentProfile =
+    environment.DEPLOYMENT_PROFILE?.trim() === "local" ? "local" : "other";
+  const policy =
+    environment.SOURCE_AUTHORIZATION_POLICY?.trim() === "local-auto"
+      ? "local-auto"
+      : "manual";
+  const apiHost = environment.API_HOST?.trim() || "127.0.0.1";
+
+  if (
+    policy === "local-auto" &&
+    (deploymentProfile !== "local" || !isLoopbackHost(apiHost))
+  ) {
+    throw new Error("CONFIG_SOURCE_AUTHORIZATION_LOCAL_AUTO_UNSAFE");
+  }
+
+  return { deploymentProfile, policy, apiHost };
+}
+
+export function sourceAuthorizationRuntime(): SourceAuthorizationRuntime {
+  loadEnvironment();
+  return resolveSourceAuthorizationRuntime(process.env);
+}
+
+function isLoopbackHost(host: string): boolean {
+  return host === "127.0.0.1" || host === "localhost" || host === "::1";
+}
 
 function required(name: string): string {
   loadEnvironment();
@@ -92,6 +139,9 @@ export function databaseUrl(): string {
 }
 
 export interface ApiEnvironment {
+  apiHost: string;
+  deploymentProfile: DeploymentProfile;
+  sourceAuthorizationPolicy: SourceAuthorizationPolicy;
   maxUploadBytes: number;
   uploadTempDirectory: string;
   uploadTempStaleAfterMs: number;
@@ -108,15 +158,24 @@ export interface ApiEnvironment {
   reconcileStartupTimeoutMs: number;
   redisHost: string;
   redisPort: number;
-  redisPassword?: string;
-  cutQueuePublishTimeoutMs: number;
-  cutAdmissionTimeoutMs: number;
-  cutMaxAttempts: number;
+  redisPassword: string;
+  mediaReconcileIntervalMs: number;
+  mediaReconcileLimit: number;
+  mediaQueueName: string;
+  mediaQueueDisabled: boolean;
+  assemblyRenderEnabled: boolean;
+  editorialApprovalEnabled: boolean;
+  editorialExportEnabled: boolean;
+  aiContextEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
   loadEnvironment();
+  const authorization = resolveSourceAuthorizationRuntime(process.env);
   return {
+    apiHost: authorization.apiHost,
+    deploymentProfile: authorization.deploymentProfile,
+    sourceAuthorizationPolicy: authorization.policy,
     maxUploadBytes: boundedInteger(
       "API_MAX_UPLOAD_BYTES",
       10 * 1024 ** 3,
@@ -167,16 +226,37 @@ export function apiEnvironment(): ApiEnvironment {
     ),
     redisHost: process.env.REDIS_HOST?.trim() || "127.0.0.1",
     redisPort: boundedInteger("REDIS_PORT", 6379, 1, 65_535),
-    ...(process.env.REDIS_PASSWORD?.trim()
-      ? { redisPassword: process.env.REDIS_PASSWORD.trim() }
-      : {}),
-    cutQueuePublishTimeoutMs: boundedInteger(
-      "CUT_QUEUE_PUBLISH_TIMEOUT_MS",
-      2_000,
-      100,
-      30_000,
+    redisPassword: required("REDIS_PASSWORD"),
+    mediaReconcileIntervalMs: boundedInteger(
+      "MEDIA_RECONCILE_INTERVAL_MS",
+      5_000,
+      1_000,
+      300_000,
     ),
-    cutAdmissionTimeoutMs: positiveInteger("CUT_ADMISSION_TIMEOUT_MS", 900_000),
-    cutMaxAttempts: boundedInteger("CUT_MAX_ATTEMPTS", 3, 1, 10),
+    mediaReconcileLimit: boundedInteger("MEDIA_RECONCILE_LIMIT", 100, 1, 1_000),
+    mediaQueueName: process.env.MEDIA_QUEUE_NAME?.trim() || MEDIA_QUEUE_NAME,
+    mediaQueueDisabled: process.env.MEDIA_QUEUE_DISABLED === "1",
+    assemblyRenderEnabled:
+      process.env.ASSEMBLY_RENDER_ENABLED === "1" ||
+      (process.env.ASSEMBLY_RENDER_ENABLED === undefined &&
+        authorization.deploymentProfile === "local"),
+    editorialApprovalEnabled:
+      process.env.EDITORIAL_APPROVAL_ENABLED === "1" ||
+      (process.env.EDITORIAL_APPROVAL_ENABLED === undefined &&
+        authorization.deploymentProfile === "local"),
+    editorialExportEnabled: editorialExportAdmissionEnabled(process.env),
+    aiContextEnabled: aiContextAdmissionEnabled(process.env),
   };
+}
+
+export function editorialExportAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.EDITORIAL_EXPORT_ENABLED === "1";
+}
+
+export function aiContextAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.AI_CONTEXT_ENABLED === "1";
 }

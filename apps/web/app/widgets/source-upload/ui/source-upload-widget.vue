@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import {
   clearActiveAttempt,
@@ -9,9 +9,7 @@ import {
   type ActiveAttempt,
 } from "~/features/upload-source/model/active-attempt-storage";
 import { useSourceUpload } from "~/features/upload-source/model/use-source-upload";
-import { loadLastSourceGate } from "~/features/upload-source/model/last-source-gate-storage";
 import { createProjectsApi } from "~/shared/api/projects";
-import ManualCutWidget from "~/widgets/manual-cut/ui/manual-cut-widget.vue";
 const config = useRuntimeConfig();
 const projectsApi = createProjectsApi({
   apiBasePath: config.public.apiBasePath,
@@ -34,24 +32,10 @@ const {
   startNewAttempt,
   prepareRecoveredRetry,
   retryPoll,
-  restoreLastSource,
-  confirmAuthorization,
-  isAuthorizing,
-  authorizationError,
 } = upload;
 const recoveredAttempt = ref<ActiveAttempt | null>(null);
 const recoveryMessage = ref<string | null>(null);
 const recoveredFile = ref<File | null>(null);
-const authorizationConfirmed = ref(false);
-watch(
-  () =>
-    result.value
-      ? `${result.value.id}:${result.value.authorization.sourceVersion}:${result.value.authorization.sourceSha256}`
-      : null,
-  () => {
-    authorizationConfirmed.value = false;
-  },
-);
 const recoveryLocksForm = computed(() => recoveredAttempt.value !== null);
 const canRetryRecoveredUpload = computed(
   () =>
@@ -60,8 +44,6 @@ const canRetryRecoveredUpload = computed(
 );
 onMounted(() => {
   recoveredAttempt.value = loadActiveAttempt();
-  const lastProjectId = loadLastSourceGate();
-  if (lastProjectId) void restoreLastSource(lastProjectId);
 });
 function continueRecoveredAttempt(): void {
   if (!recoveredAttempt.value?.projectId) return;
@@ -109,15 +91,18 @@ function onFileChange(event: Event): void {
   }
   updateDraft({ file });
 }
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} Б`;
-  const units = ["КиБ", "МиБ", "ГиБ", "ТиБ"];
-  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), 4);
-  return `${(bytes / 1024 ** exponent).toFixed(exponent === 1 ? 0 : 1)} ${units[exponent - 1]}`;
-}
-function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${Math.ceil(seconds)} с`;
-  return `${Math.ceil(seconds / 60)} мин`;
+  const units = ["КБ", "МБ", "ГБ", "ТБ"];
+  const unitIndex = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)) - 1,
+    units.length - 1,
+  );
+  const value = bytes / 1024 ** (unitIndex + 1);
+  return `${new Intl.NumberFormat("ru-RU", {
+    maximumFractionDigits: value >= 10 ? 0 : 1,
+  }).format(value)} ${units[unitIndex]}`;
 }
 </script>
 
@@ -218,35 +203,20 @@ function formatDuration(seconds: number): string {
       <p v-if="isSending">
         Файл отправляется на сервер. Не закрывай эту страницу.
       </p>
-      <template v-if="isSending">
+      <div v-if="isSending" class="upload-progress">
         <progress
-          v-if="uploadProgress && uploadProgress.percent !== null"
-          aria-label="Прогресс отправки файла"
           :value="uploadProgress.percent"
           max="100"
-        >
-          {{ Math.round(uploadProgress.percent) }}%
-        </progress>
-        <progress v-else aria-label="Отправка файла: прогресс неизвестен" />
-        <p v-if="uploadProgress">
-          Передано {{ formatBytes(uploadProgress.uploadedBytes)
-          }}<template v-if="uploadProgress.totalBytes !== null">
-            из {{ formatBytes(uploadProgress.totalBytes) }} ({{
-              Math.round(uploadProgress.percent ?? 0)
-            }}%)</template
-          >.
+          aria-label="Прогресс загрузки файла"
+        />
+        <p>
+          <strong>{{ uploadProgress.percent }}%</strong>
+          — загружено {{ formatBytes(uploadProgress.loaded) }} из
+          {{ formatBytes(uploadProgress.total) }}.
         </p>
-        <p v-if="uploadProgress && uploadProgress.bytesPerSecond !== null">
-          Примерно {{ formatBytes(uploadProgress.bytesPerSecond) }}/с<template
-            v-if="uploadProgress.etaSeconds !== null"
-            >, осталось примерно
-            {{ formatDuration(uploadProgress.etaSeconds) }}</template
-          >.
-        </p>
-        <p v-else>Скорость и оставшееся время будут показаны после замера.</p>
-      </template>
+      </div>
       <div v-else-if="isFinalizing || pollError">
-        <p>Файл передан. Сервер проверяет и сохраняет загруженный файл.</p>
+        <p>Сервер проверяет и сохраняет загруженный файл.</p>
         <p v-if="pollError" class="error">{{ pollError }}</p>
         <Button v-if="pollError" type="button" @click="retryPoll"
           >Повторить проверку статуса</Button
@@ -285,52 +255,16 @@ function formatDuration(seconds: number): string {
             <dd>{{ result.source.sizeBytes }} байт</dd>
           </div>
         </dl>
-        <div class="authorization" aria-live="polite">
-          <template v-if="result.authorization.status === 'CLEARED'">
-            <p><strong>Права на эту версию подтверждены.</strong></p>
-            <p>
-              Версия {{ result.authorization.sourceVersion }}, SHA-256
-              {{ result.authorization.sourceSha256 }}.
-            </p>
-            <p v-if="result.authorization.confirmedAt">
-              Подтверждено {{ result.authorization.confirmedAt }} по декларации
-              {{ result.authorization.declarationVersion }}.
-            </p>
-          </template>
-          <template v-else>
-            <p><strong>Проверка прав ожидается.</strong></p>
-            <p>
-              Подтверждение относится только к версии
-              {{ result.authorization.sourceVersion }} с SHA-256
-              {{ result.authorization.sourceSha256 }}.
-            </p>
-            <label class="checkbox-row" for="source-rights-confirmed">
-              <input
-                id="source-rights-confirmed"
-                v-model="authorizationConfirmed"
-                type="checkbox"
-              />
-              <span
-                >Подтверждаю права на использование именно этой версии.</span
-              >
-            </label>
-            <Button
-              type="button"
-              :loading="isAuthorizing"
-              :disabled="isAuthorizing || !authorizationConfirmed"
-              @click="confirmAuthorization"
-              >Подтвердить права</Button
-            >
-            <p v-if="authorizationError" class="error">
-              {{ authorizationError }}
-            </p>
-          </template>
-        </div>
-        <ManualCutWidget
-          v-if="result.authorization.status === 'CLEARED'"
-          :key="`${result.id}:${result.authorization.sourceVersion}:${result.authorization.sourceSha256}`"
-          :project-id="result.id"
-        />
+        <NuxtLink
+          v-if="result.status === 'SOURCE_READY'"
+          class="cut-link"
+          :to="{ path: '/cuts', query: { projectId: result.id } }"
+          >Открыть нарезку и задать таймкоды</NuxtLink
+        >
+        <p v-if="result.status === 'SOURCE_READY'" class="cut-help">
+          На следующем экране добавь несколько пар таймкодов «начало — конец».
+          Для каждой пары будет создан отдельный MP4 для скачивания.
+        </p>
       </div>
     </div>
   </section>
@@ -407,6 +341,21 @@ button:disabled {
 .status {
   min-height: 1.5rem;
   margin-top: 1.25rem;
+}
+.upload-progress {
+  margin-top: 0.75rem;
+}
+.upload-progress progress {
+  display: block;
+  width: min(100%, 32rem);
+  height: 1.25rem;
+}
+.upload-progress p,
+.cut-help {
+  margin: 0.45rem 0 0;
+}
+.cut-help {
+  color: #385346;
 }
 .success {
   padding: 1rem;

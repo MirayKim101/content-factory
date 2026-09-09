@@ -13,8 +13,6 @@ export interface CreatePendingUploadRecord {
   sourceId: string;
   artifactId: string;
   name: string;
-  rightsConfirmedAt: Date | null;
-  rightsDeclarationVersion: string | null;
   originalFilename: string;
   contentType: string;
   sizeBytes: bigint;
@@ -23,25 +21,6 @@ export interface CreatePendingUploadRecord {
   objectKey: string;
   recipeVersion: string;
 }
-
-export interface ConfirmSourceAuthorizationRecord {
-  projectId: string;
-  sourceVersion: number;
-  sourceSha256: string;
-  declarationVersion: string;
-  confirmedAt: Date;
-}
-
-export type ConfirmSourceAuthorizationResult =
-  | { outcome: "CLEARED"; project: ProjectView; changed: boolean }
-  | {
-      outcome:
-        | "PROJECT_NOT_FOUND"
-        | "SOURCE_NOT_READY"
-        | "SOURCE_VERSION_MISMATCH"
-        | "RIGHTS_DECLARATION_OUTDATED"
-        | "SOURCE_AUTHORIZATION_CONFLICT";
-    };
 
 export interface StorageReceipt {
   etag?: string;
@@ -62,21 +41,21 @@ export interface ProjectRepository {
     key: string,
   ): Promise<{ project: ProjectView; requestFingerprint: string } | null>;
   getById(projectId: string): Promise<ProjectView | null>;
-  confirmSourceAuthorization(
-    record: ConfirmSourceAuthorizationRecord,
-    currentDeclarationVersion: string,
-  ): Promise<ConfirmSourceAuthorizationResult>;
-  isSourceAuthorized(
-    sourceId: string,
-    sourceVersion: number,
-    sourceSha256: string,
-  ): Promise<boolean>;
   findStalePending(before: Date, limit: number): Promise<PendingUpload[]>;
   findPendingCleanup(limit: number): Promise<PendingCleanup[]>;
   markCleanupCompleted(artifactId: string): Promise<void>;
   recordCleanupFailure(artifactId: string, errorCode: string): Promise<void>;
+  attestSourceAuthorization(input: {
+    projectId: string;
+    sourceVersion: number;
+    expectedRevision: number;
+    declarationVersion: string;
+  }): Promise<ProjectView>;
 }
 
 export class IdempotencyKeyAlreadyExistsError extends Error {}
 
 export class TerminalStateConflictError extends Error {}
+export class SourceVersionConflictError extends Error {}
+export class SourceAuthorizationConflictError extends Error {}
+export class SourceNotReadyForAuthorizationError extends Error {}
