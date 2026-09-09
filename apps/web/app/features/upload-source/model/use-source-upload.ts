@@ -5,6 +5,7 @@ import {
   ProjectApiError,
   ProjectNetworkError,
   type ProjectsApi,
+  type UploadProgress,
 } from "~/shared/api/projects";
 import {
   type SourceUploadFormDraft,
@@ -30,6 +31,7 @@ export function useSourceUpload(api: ProjectsApi) {
   const phase = ref<"idle" | "pending">("idle");
   const activeProjectId = ref<string | null>(null);
   const idempotencyKey = ref<string | null>(null);
+  const uploadProgress = ref<UploadProgress | null>(null);
   let attemptVersion = 0;
   const mutation = useMutation({
     mutationFn: (request: Parameters<ProjectsApi["createProject"]>[0]) =>
@@ -72,9 +74,13 @@ export function useSourceUpload(api: ProjectsApi) {
   const isSubmitting = computed(
     () => mutation.isPending.value || phase.value === "pending",
   );
-  const isSending = computed(() => mutation.isPending.value);
+  const isSending = computed(
+    () => mutation.isPending.value && !uploadProgress.value?.transferCompleted,
+  );
   const isFinalizing = computed(
-    () => phase.value === "pending" && !poll.error.value,
+    () =>
+      (mutation.isPending.value && uploadProgress.value?.transferCompleted) ||
+      (phase.value === "pending" && !poll.error.value),
   );
   const pollError = computed(() =>
     phase.value === "pending" && poll.error.value
@@ -85,6 +91,7 @@ export function useSourceUpload(api: ProjectsApi) {
     attemptVersion += 1;
     idempotencyKey.value = null;
     activeProjectId.value = null;
+    uploadProgress.value = null;
     phase.value = "idle";
     mutation.reset();
     if (import.meta.client) clearActiveAttempt();
@@ -102,6 +109,7 @@ export function useSourceUpload(api: ProjectsApi) {
     }
     errors.value = {};
     const version = ++attemptVersion;
+    uploadProgress.value = null;
     const key = idempotencyKey.value ?? newIdempotencyKey();
     idempotencyKey.value = key;
     if (import.meta.client)
@@ -119,6 +127,9 @@ export function useSourceUpload(api: ProjectsApi) {
       const project = await mutation.mutateAsync({
         ...validated.data,
         idempotencyKey: key,
+        onUploadProgress: (progress) => {
+          if (version === attemptVersion) uploadProgress.value = progress;
+        },
       });
       if (version !== attemptVersion) return;
       if (project.status === "FAILED_FINAL") {
@@ -213,6 +224,7 @@ export function useSourceUpload(api: ProjectsApi) {
     isSubmitting,
     isSending,
     isFinalizing,
+    uploadProgress,
     pollError,
     updateDraft,
     submit,

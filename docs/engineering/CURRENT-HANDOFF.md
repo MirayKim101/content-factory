@@ -1,5 +1,64 @@
 # Content Factory — current handoff
 
+## Строгий запрет владельца — 2026-09-09
+
+Каталоги `Seanova` и `DockerServer` в любом регистре, включая `seanova` и
+`dockerServer`, полностью исключены из работы во всех расположениях вместе
+с содержимым. Запрещены чтение, просмотр, поиск, изменения, выполнение команд
+и косвенный доступ через ссылки, mounts или containers; связанные сервисы,
+контейнеры, volumes и данные также не трогать. Правило обязательно для всех
+субагентов. Полный доступ и автономный режим не отменяют запрет. Точная
+формулировка закреплена в `AGENTS.md`.
+
+## Восстановление на Linux — 2026-09-09, в работе
+
+- Рабочая папка: `/home/miray/Projects/ContentFactory`.
+- После `git fetch origin` локальный `main` и `origin/main` указывают на
+  `1dde0b41da57c6869a9c9414a451b0c9d7990af3`.
+- Notion README от 2 сентября описывает нарезку, медиатеку и authorization
+  и ссылается на `f93d1b1`. Этот commit отсутствует в доступных refs и Git
+  objects; reflog содержит только clone, unreachable objects не найдены.
+- Текущий код содержит только загрузку и статус проекта. Восстановление
+  более свежего кода с Mac пока не подтверждено. Не считать возможности из
+  Notion реализованными на этом компьютере без проверки исходников.
+- Notion: <https://app.notion.com/p/3cff0d44c82d8146a94dd8ff2ada3d08>.
+- Docker Desktop `4.89.0`, Engine `29.7.2`, Compose `v5.5.0` доступны из
+  WSL2 через context `default`. Node `24.15.0` и pnpm `10.34.5` установлены
+  в игнорируемый `tmp/runtime`; frozen-lockfile install прошёл. Инструкция:
+  `docs/infrastructure/linux-readiness.md`.
+- Создан новый локальный `.env` с правами `0600`; секреты не выводились.
+  PostgreSQL, Redis и MinIO — healthy, minio-init завершился с кодом 0.
+  Обе существующие миграции успешно применены. Данные с Mac не переносились.
+- Текущая рабочая ветка: `recovery/linux-mvp-20260909`.
+- API запущен на `127.0.0.1:3001`, web — `127.0.0.1:3000`.
+  При восстановлении сессии сначала проверить доступность; не предполагать,
+  что процессы сохранились.
+- API verification на WSL: 22 unit и 12 integration tests passed, lint и
+  typecheck passed; Prisma Client 7.10.0 сгенерирован.
+- Восстановлен upload progress; независимый reviewer — CLEAN. Полный web suite
+  23/23, lint, typecheck и OpenAPI checks прошли. Browser smoke
+  показал реальные bytes/percent/speed/ETA, отдельную server finalization,
+  HTTP 201 `SOURCE_READY` и HTTP 415 с понятной ошибкой для повреждённого MP4.
+  Evidence и повторяемый сценарий: `tmp/browser-smoke/` (игнорируемые файлы).
+  Маленькие тестовые исходники оставлены в новой локальной базе/MinIO.
+- Reviewer независимо повторил browser smoke, включая отдельную server
+  finalization и corrupted MP4 failure; JavaScript errors отсутствуют.
+  Следующий срез — ADR-003 exact-version source authorization; проектирование
+  завершено, реализация пока не начата.
+- Исходные untracked файлы владельца: `.idea/` и `package-lock.json`; сохранять.
+- Владелец разрешил автономную работу и субагентов, с остановкой на 50% квоты.
+  Чтение через `codex app-server --stdio`, JSON-RPC `initialize`, затем
+  `account/rateLimits/read` подтверждено: на первой успешной проверке
+  `codex.primary.usedPercent=13`, окно 10080 минут (неделя). Проверять между
+  рабочими шагами и перед новым делегированием; при 50% остановить новые работы
+  и сохранить состояние. Это периодическая проверка, а не жёсткий лимитер.
+  Не расходовать reset credits автоматически. Способ через `app-server proxy`
+  в этой среде не сработал; standalone stdio завершать после ответа.
+  Локальная команда: `node tmp/recovery/read-quota.cjs`; последняя проверка
+  перед browser smoke: 16% использовано. Скрипт в `tmp/` не хранится в Git.
+
+## Предыдущий handoff с Mac (исторические результаты)
+
 Обновлено: 2026-09-01
 Ветка: `main`
 Последний завершённый commit: `56bb2af feat: add stage 1 upload interface`

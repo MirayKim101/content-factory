@@ -46,6 +46,39 @@ const readyProject = {
     recipeVersion: "source-ingest-v1",
   },
 };
+type UploadXhr = {
+  upload: XMLHttpRequestUpload;
+  onerror: (() => void) | null;
+  onabort: (() => void) | null;
+  onload: (() => void) | null;
+  responseText: string;
+  status: number;
+  open: ReturnType<typeof vi.fn>;
+  setRequestHeader: ReturnType<typeof vi.fn>;
+  send: ReturnType<typeof vi.fn>;
+  abort: ReturnType<typeof vi.fn>;
+};
+let uploadXhrs: UploadXhr[] = [];
+
+function createUploadXhr(): XMLHttpRequest {
+  const xhr: UploadXhr = {
+    upload: {
+      onprogress: null,
+      onload: null,
+    } as unknown as XMLHttpRequestUpload,
+    onerror: null,
+    onabort: null,
+    onload: null,
+    responseText: JSON.stringify(readyProject),
+    status: 201,
+    open: vi.fn(),
+    setRequestHeader: vi.fn(),
+    send: vi.fn(() => queueMicrotask(() => xhr.onload?.())),
+    abort: vi.fn(),
+  };
+  uploadXhrs.push(xhr);
+  return xhr as unknown as XMLHttpRequest;
+}
 
 function mountWidget() {
   return mount(SourceUploadWidget, {
@@ -79,6 +112,8 @@ describe("SourceUploadWidget runtime", () => {
       public: { apiBasePath: "/api/v1" },
     }));
     vi.stubGlobal("fetch", vi.fn());
+    uploadXhrs = [];
+    vi.stubGlobal("XMLHttpRequest", createUploadXhr);
   });
   afterEach(() => {
     clearActiveAttempt();
@@ -144,12 +179,15 @@ describe("SourceUploadWidget runtime", () => {
     await retry?.trigger("click");
     await flushPromises();
 
-    expect(fetch).toHaveBeenCalledTimes(1);
-    const [, init] = vi.mocked(fetch).mock.calls[0] ?? [];
-    expect(init).toMatchObject({
-      method: "POST",
-      headers: { "Idempotency-Key": activeAttemptKey },
-    });
+    expect(uploadXhrs).toHaveLength(1);
+    expect(uploadXhrs[0]?.open).toHaveBeenCalledWith(
+      "POST",
+      "/api/v1/projects",
+    );
+    expect(uploadXhrs[0]?.setRequestHeader).toHaveBeenCalledWith(
+      "Idempotency-Key",
+      activeAttemptKey,
+    );
   });
 
   it("continues a known project with GET only", async () => {

@@ -22,6 +22,7 @@ const {
   isSubmitting,
   isSending,
   isFinalizing,
+  uploadProgress,
   pollError,
   requestError,
   result,
@@ -90,6 +91,16 @@ function onFileChange(event: Event): void {
     return;
   }
   updateDraft({ file });
+}
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} Б`;
+  const units = ["КиБ", "МиБ", "ГиБ", "ТиБ"];
+  const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), 4);
+  return `${(bytes / 1024 ** exponent).toFixed(exponent === 1 ? 0 : 1)} ${units[exponent - 1]}`;
+}
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${Math.ceil(seconds)} с`;
+  return `${Math.ceil(seconds / 60)} мин`;
 }
 </script>
 
@@ -210,8 +221,35 @@ function onFileChange(event: Event): void {
       <p v-if="isSending">
         Файл отправляется на сервер. Не закрывай эту страницу.
       </p>
+      <template v-if="isSending">
+        <progress
+          v-if="uploadProgress && uploadProgress.percent !== null"
+          aria-label="Прогресс отправки файла"
+          :value="uploadProgress.percent"
+          max="100"
+        >
+          {{ Math.round(uploadProgress.percent) }}%
+        </progress>
+        <progress v-else aria-label="Отправка файла: прогресс неизвестен" />
+        <p v-if="uploadProgress">
+          Передано {{ formatBytes(uploadProgress.uploadedBytes)
+          }}<template v-if="uploadProgress.totalBytes !== null">
+            из {{ formatBytes(uploadProgress.totalBytes) }} ({{
+              Math.round(uploadProgress.percent ?? 0)
+            }}%)</template
+          >.
+        </p>
+        <p v-if="uploadProgress && uploadProgress.bytesPerSecond !== null">
+          Примерно {{ formatBytes(uploadProgress.bytesPerSecond) }}/с<template
+            v-if="uploadProgress.etaSeconds !== null"
+            >, осталось примерно
+            {{ formatDuration(uploadProgress.etaSeconds) }}</template
+          >.
+        </p>
+        <p v-else>Скорость и оставшееся время будут показаны после замера.</p>
+      </template>
       <div v-else-if="isFinalizing || pollError">
-        <p>Сервер проверяет и сохраняет загруженный файл.</p>
+        <p>Файл передан. Сервер проверяет и сохраняет загруженный файл.</p>
         <p v-if="pollError" class="error">{{ pollError }}</p>
         <Button v-if="pollError" type="button" @click="retryPoll"
           >Повторить проверку статуса</Button

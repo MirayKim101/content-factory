@@ -25,12 +25,22 @@ The owner is learning the workflow. Explain work in small numbered steps:
 
 Avoid unexplained jargon. Never require the owner to infer the next action.
 
-## Protected external directories
+## Protected external directories — strict owner prohibition
 
-Never read, write, rename, move, delete, execute from, or otherwise interact
-with directories named `seanova` or `dockerServer`. They are outside this
-project's scope even when the current permission mode allows access. A new,
-explicit owner instruction is required to change this rule.
+Reaffirmed by the owner on 2026-09-09. This rule applies to the orchestrator,
+every subagent, and every tool or subprocess they invoke.
+
+- Never read, list contents, search, index, write, rename, move, delete, execute
+  from, or otherwise interact with directories named `Seanova` or
+  `DockerServer`, anywhere on the filesystem. Match names case-insensitively,
+  including `seanova` and `dockerServer`, and exclude all their descendants.
+- Do not access these directories indirectly through symlinks, mounts,
+  containers, scripts, or broad recursive scans. Restrict commands to known
+  Content Factory paths and exclude protected directories before traversal.
+- Do not manage their associated services, containers, volumes, or data.
+- Full filesystem access, autonomous operation, and general permission to run
+  commands do not override this prohibition. Only a new explicit owner
+  instruction specifically changing this rule can do so.
 
 ## Team operating model
 

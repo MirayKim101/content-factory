@@ -7,6 +7,7 @@ import {
   ProjectApiError,
   ProjectNetworkError,
   type ProjectsApi,
+  type UploadProgress,
 } from "~/shared/api/projects";
 import { validateSourceUploadForm } from "~/features/upload-source/model/source-upload-form";
 import { useSourceUpload } from "~/features/upload-source/model/use-source-upload";
@@ -84,6 +85,50 @@ describe("source upload validation", () => {
 });
 
 describe("source upload workflow", () => {
+  it("moves from measured transfer to server finalization only after the bytes are sent", async () => {
+    let report: ((progress: UploadProgress) => void) | undefined;
+    let finish: ((value: Project) => void) | undefined;
+    const api: ProjectsApi = {
+      createProject: vi.fn(
+        (request) =>
+          new Promise<Project>((resolve) => {
+            report = request.onUploadProgress;
+            finish = resolve;
+          }),
+      ),
+    };
+    const upload = validUpload(api);
+    const pending = upload.submit();
+    await Promise.resolve();
+
+    report?.({
+      uploadedBytes: 5,
+      totalBytes: 10,
+      percent: 50,
+      bytesPerSecond: 5,
+      etaSeconds: 1,
+      transferCompleted: false,
+    });
+    expect(upload.isSending.value).toBe(true);
+    expect(upload.isFinalizing.value).toBe(false);
+    expect(upload.uploadProgress.value?.percent).toBe(50);
+
+    report?.({
+      uploadedBytes: 10,
+      totalBytes: 10,
+      percent: 100,
+      bytesPerSecond: 5,
+      etaSeconds: 0,
+      transferCompleted: true,
+    });
+    expect(upload.isSending.value).toBe(false);
+    expect(upload.isFinalizing.value).toBe(true);
+
+    finish?.(project());
+    await pending;
+    expect(upload.state.value).toBe("success");
+  });
+
   it("succeeds and shows the safe project result", async () => {
     const api: ProjectsApi = {
       createProject: vi.fn().mockResolvedValue(project()),
@@ -151,6 +196,31 @@ describe("source upload workflow", () => {
     const calls = vi.mocked(api.createProject).mock.calls;
     expect(calls[0]?.[0].idempotencyKey).not.toBe(calls[1]?.[0].idempotencyKey);
     expect(upload.result.value?.name).toBe("Новый ролик");
+  });
+
+  it("clears progress and ignores a late progress event from an invalidated attempt", async () => {
+    let report: ((progress: UploadProgress) => void) | undefined;
+    const api: ProjectsApi = {
+      createProject: vi.fn(
+        (request) =>
+          new Promise<Project>(() => {
+            report = request.onUploadProgress;
+          }),
+      ),
+    };
+    const upload = validUpload(api);
+    void upload.submit();
+    await Promise.resolve();
+    upload.updateDraft({ name: "Новый ролик" });
+    report?.({
+      uploadedBytes: 10,
+      totalBytes: 10,
+      percent: 100,
+      bytesPerSecond: 1,
+      etaSeconds: 0,
+      transferCompleted: true,
+    });
+    expect(upload.uploadProgress.value).toBeNull();
   });
 
   it("shows a controlled server error", async () => {

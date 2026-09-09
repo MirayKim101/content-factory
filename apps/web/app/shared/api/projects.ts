@@ -11,6 +11,15 @@ export interface CreateProjectRequest {
   file: File;
   idempotencyKey: string;
   signal?: AbortSignal;
+  onUploadProgress?: (progress: UploadProgress) => void;
+}
+export interface UploadProgress {
+  uploadedBytes: number;
+  totalBytes: number | null;
+  percent: number | null;
+  bytesPerSecond: number | null;
+  etaSeconds: number | null;
+  transferCompleted: boolean;
 }
 export class ProjectApiError extends Error {
   constructor(
@@ -35,34 +44,23 @@ export interface ProjectsApi {
 interface CreateProjectsApiOptions {
   apiBasePath: unknown;
   fetchImplementation?: typeof fetch;
+  xhrFactory?: () => XMLHttpRequest;
 }
 
 /** Temporary typed adapter until the OpenAPI client is generated in a contract slice. */
 export function createProjectsApi({
   apiBasePath,
   fetchImplementation = fetch,
+  xhrFactory = () => new XMLHttpRequest(),
 }: CreateProjectsApiOptions): ProjectsApi {
   const basePath = parseApiBasePath(apiBasePath);
   return {
-    async createProject(request) {
-      const body = new FormData();
-      body.set("name", request.name);
-      body.set("rightsConfirmed", "true");
-      body.set("file", request.file);
-      let response: Response;
-      try {
-        response = await fetchImplementation(`${basePath}/projects`, {
-          method: "POST",
-          body,
-          signal: request.signal,
-          headers: { "Idempotency-Key": request.idempotencyKey },
-        });
-      } catch {
-        throw new ProjectNetworkError();
-      }
-      const payload: unknown = await response.json().catch(() => undefined);
-      if (!response.ok) throw toApiError(payload, response.status);
-      return projectSchema.parse(payload);
+    createProject(request) {
+      return uploadProject({
+        basePath,
+        request,
+        xhrFactory,
+      });
     },
     async getProject(id, signal) {
       let response: Response;
@@ -78,6 +76,110 @@ export function createProjectsApi({
       return projectSchema.parse(payload);
     },
   };
+}
+
+interface UploadProjectOptions {
+  basePath: string;
+  request: CreateProjectRequest;
+  xhrFactory: () => XMLHttpRequest;
+}
+
+/**
+ * XHR is intentionally contained here: Fetch does not expose upload progress.
+ * The API surface remains typed so feature and widget code never handles a
+ * transport event directly.
+ */
+function uploadProject({
+  basePath,
+  request,
+  xhrFactory,
+}: UploadProjectOptions): Promise<Project> {
+  return new Promise((resolve, reject) => {
+    const body = new FormData();
+    body.set("name", request.name);
+    body.set("rightsConfirmed", "true");
+    body.set("file", request.file);
+    const xhr = xhrFactory();
+    const startedAt = performance.now();
+    let settled = false;
+    const settle = (action: () => void): void => {
+      if (settled) return;
+      settled = true;
+      request.signal?.removeEventListener("abort", abort);
+      action();
+    };
+    const abort = (): void => {
+      xhr.abort();
+      settle(() => reject(new ProjectNetworkError()));
+    };
+    const reportProgress = (
+      event: ProgressEvent<EventTarget>,
+      transferCompleted: boolean,
+    ): void => {
+      const elapsedSeconds = Math.max(
+        (performance.now() - startedAt) / 1000,
+        0,
+      );
+      const bytesPerSecond =
+        elapsedSeconds > 0 ? event.loaded / elapsedSeconds : null;
+      const totalBytes = event.lengthComputable ? event.total : null;
+      const percent =
+        totalBytes && totalBytes > 0 ? (event.loaded / totalBytes) * 100 : null;
+      const etaSeconds =
+        totalBytes && bytesPerSecond && bytesPerSecond > 0
+          ? Math.max((totalBytes - event.loaded) / bytesPerSecond, 0)
+          : null;
+      request.onUploadProgress?.({
+        uploadedBytes: event.loaded,
+        totalBytes,
+        percent,
+        bytesPerSecond,
+        etaSeconds: transferCompleted ? 0 : etaSeconds,
+        transferCompleted,
+      });
+    };
+    xhr.upload.onprogress = (event) => reportProgress(event, false);
+    xhr.upload.onload = (event) => reportProgress(event, true);
+    xhr.onerror = () => settle(() => reject(new ProjectNetworkError()));
+    xhr.onabort = () => settle(() => reject(new ProjectNetworkError()));
+    xhr.onload = () => {
+      const payload: unknown = parseJson(xhr.responseText);
+      if (xhr.status < 200 || xhr.status >= 300) {
+        settle(() => reject(toApiError(payload, xhr.status)));
+        return;
+      }
+      try {
+        const project = projectSchema.parse(payload);
+        settle(() => resolve(project));
+      } catch {
+        settle(() =>
+          reject(
+            new ProjectApiError(
+              "Сервер вернул некорректный ответ. Повтори попытку позже.",
+              "API_RESPONSE_INVALID",
+              xhr.status,
+            ),
+          ),
+        );
+      }
+    };
+    if (request.signal?.aborted) {
+      abort();
+      return;
+    }
+    request.signal?.addEventListener("abort", abort, { once: true });
+    xhr.open("POST", `${basePath}/projects`);
+    xhr.setRequestHeader("Idempotency-Key", request.idempotencyKey);
+    xhr.send(body);
+  });
+}
+
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
 }
 
 function toApiError(payload: unknown, status: number): ProjectApiError {
