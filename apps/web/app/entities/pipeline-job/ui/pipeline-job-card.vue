@@ -16,6 +16,7 @@ const emit = defineEmits<{
   editEditorial: [jobId: string];
   editAssembly: [payload: { jobId: string; durationMs: number }];
   reviewEditorial: [payload: { jobId: string; renderId: string }];
+  editCreatorContext: [jobId: string];
 }>();
 const config = useRuntimeConfig();
 const api = createMediaPipelineApi(config.public.apiBasePath);
@@ -109,6 +110,13 @@ const label = computed(
           severity="secondary"
           @click="emit('editEditorial', query.data.value.id)"
           >Заголовок и обложка</Button
+        >
+        <Button
+          v-if="config.public.aiContextEnabled === true"
+          type="button"
+          severity="secondary"
+          @click="emit('editCreatorContext', query.data.value.id)"
+          >Контекст автора и prompt</Button
         >
         <Button
           type="button"

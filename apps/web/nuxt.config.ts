@@ -14,6 +14,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBasePath: "/api/v1",
+      aiContextEnabled: process.env.AI_CONTEXT_ENABLED === "1",
     },
   },
   vite: {

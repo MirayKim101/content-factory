@@ -1750,6 +1750,31 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
     };
+    PutCutEditorialPromptDto: {
+      cta: string;
+      desiredAngle: string;
+      expectedRevision: number;
+      restrictions: string[];
+      /** Format: uuid */
+      sourceContextId: string;
+      sourceContextRevision: number;
+      tone: string;
+      whatHappens: string;
+    };
+    PutSourceEditorialContextDto: {
+      audience: string;
+      /** Format: uuid */
+      creatorProfileId: string;
+      creatorProfileRevision: number;
+      defaultCta: string;
+      editorialGoal: string;
+      expectedRevision: number;
+      gameOrTopic: string;
+      language: string;
+      operatorNotes: string;
+      restrictions: string[];
+      sourceTitle: string;
+    };
     RightsResponseDto: {
       /** Format: date-time */
       confirmedAt: string;
@@ -1782,6 +1807,16 @@ export interface components {
       /** Format: uuid */
       thumbnailAssetId?: string | null;
       title?: string | null;
+    };
+    SetDefaultCreatorReferenceDto: {
+      /** @enum {string} */
+      action: "SET" | "CLEAR";
+      /** Format: uuid */
+      assetId?: string;
+      authorizationRevision?: number;
+      /** Format: uuid */
+      authorizationRevisionId?: string;
+      expectedProfileRevision: number;
     };
     SourceAuthorizationResponseDto: {
       /** @enum {string} */
@@ -1877,6 +1912,29 @@ export interface components {
     ThumbnailUploadDto: {
       /** Format: binary */
       file: string;
+    };
+    UpdateCreatorProfileDto: {
+      canonicalDisplayName: string;
+      editorialNotes: string;
+      expectedRevision: number;
+      /** Format: uri */
+      officialUrl: string;
+      primaryLanguage: string;
+      restrictions: string[];
+      topics: string[];
+    };
+    UpdateCreatorReferenceAuthorizationDto: {
+      basis?: string | null;
+      commercialAiImageUseAttested?: boolean;
+      /** @enum {string} */
+      decision: "CLEARED" | "REVOKED";
+      /** @enum {string|null} */
+      declarationVersion?: "creator-likeness-rights-v1" | null;
+      expectedRevision: number;
+      /** Format: date-time */
+      expiresAt?: string | null;
+      externalProviderTransferAllowed?: boolean;
+      scope?: string | null;
     };
   };
   responses: never;
@@ -2130,7 +2188,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateCreatorProfileDto"];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -2171,10 +2233,16 @@ export interface operations {
       header: {
         "Idempotency-Key": string;
       };
-      path?: never;
+      path: {
+        profileId: string;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SetDefaultCreatorReferenceDto"];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -2262,7 +2330,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        assetId: string;
+        profileId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -2291,10 +2362,17 @@ export interface operations {
       header: {
         "Idempotency-Key": string;
       };
-      path?: never;
+      path: {
+        assetId: string;
+        profileId: string;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateCreatorReferenceAuthorizationDto"];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -2394,6 +2472,7 @@ export interface operations {
       query?: never;
       header?: never;
       path: {
+        revision: number;
         profileId: string;
       };
       cookie?: never;
@@ -2609,7 +2688,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        cutJobId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -2638,10 +2719,16 @@ export interface operations {
       header: {
         "Idempotency-Key": string;
       };
-      path?: never;
+      path: {
+        cutJobId: string;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PutCutEditorialPromptDto"];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -2665,7 +2752,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        cutJobId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -2692,7 +2781,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        revision: number;
+        cutJobId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -4087,7 +4179,11 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -4116,10 +4212,18 @@ export interface operations {
       header: {
         "Idempotency-Key": string;
       };
-      path?: never;
+      path: {
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PutSourceEditorialContextDto"];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -4143,7 +4247,11 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -4170,7 +4278,12 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        revision: number;
+        sourceVersion: number;
+        sourceId: string;
+        projectId: string;
+      };
       cookie?: never;
     };
     requestBody?: never;

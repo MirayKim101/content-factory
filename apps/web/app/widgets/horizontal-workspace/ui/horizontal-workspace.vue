@@ -11,6 +11,7 @@ import EditorialExportCard from "~/entities/editorial-export/ui/editorial-export
 import AssemblyRecipeDialog from "~/features/edit-assembly-recipe/ui/assembly-recipe-dialog.vue";
 import EditorialPackageDialog from "~/features/edit-editorial-package/ui/editorial-package-dialog.vue";
 import EditorialReviewDialog from "~/features/review-editorial-package/ui/editorial-review-dialog.vue";
+import CreatorContextDialog from "~/features/edit-creator-context/ui/creator-context-dialog.vue";
 import {
   emptySegment,
   createCutSubmissionSummary,
@@ -65,6 +66,13 @@ const reviewTarget = ref<{
   projectId: string;
   jobId: string;
   renderId: string;
+  filename: string;
+}>();
+const creatorContextTarget = ref<{
+  projectId: string;
+  sourceId: string;
+  sourceVersion: number;
+  jobId: string;
   filename: string;
 }>();
 const projectQueries = useQueries({
@@ -323,6 +331,8 @@ watch(
       assemblyTarget.value = undefined;
     if (!next.includes(reviewTarget.value?.projectId ?? ""))
       reviewTarget.value = undefined;
+    if (!next.includes(creatorContextTarget.value?.projectId ?? ""))
+      creatorContextTarget.value = undefined;
   },
   { immediate: true },
 );
@@ -356,6 +366,8 @@ watch(
           assemblyTarget.value = undefined;
         if (reviewTarget.value?.projectId === source.id)
           reviewTarget.value = undefined;
+        if (creatorContextTarget.value?.projectId === source.id)
+          creatorContextTarget.value = undefined;
       }
     }
   },
@@ -544,6 +556,15 @@ watch(
                       row.query.data!.source.originalFilename,
                     )
                   "
+                  @edit-creator-context="
+                    creatorContextTarget = {
+                      projectId: row.id,
+                      sourceId: row.query.data!.source.id,
+                      sourceVersion: row.query.data!.source.sourceVersion,
+                      jobId: $event,
+                      filename: row.query.data!.source.originalFilename,
+                    }
+                  "
                 />
                 <EditorialExportCard :project-id="row.id" :cut-job-id="jobId" />
               </template>
@@ -566,6 +587,13 @@ watch(
           if (!value) reviewTarget = undefined;
         }
       "
+    />
+    <CreatorContextDialog
+      v-if="creatorContextTarget"
+      :key="`${creatorContextTarget.projectId}:${creatorContextTarget.sourceId}:${creatorContextTarget.sourceVersion}:${creatorContextTarget.jobId}`"
+      :visible="true"
+      v-bind="creatorContextTarget"
+      @update:visible="(value) => { if (!value) creatorContextTarget = undefined; }"
     />
 
     <Dialog

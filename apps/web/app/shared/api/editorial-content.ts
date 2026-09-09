@@ -54,6 +54,18 @@ const packageSchema: z.ZodType<EditorialPackage> = z.object({
     description: z.string().nullable(),
     tags: z.array(z.string()).nullable(),
     thumbnail: assetSchema.nullable(),
+    provenance: z
+      .object({
+        metadata: z.object({
+          mode: z.enum(["MANUAL", "AI_ASSISTED", "MIXED"]),
+          basisVersion: z.string(),
+        }),
+        thumbnail: z.object({
+          mode: z.enum(["MANUAL", "AI_ASSISTED", "MIXED"]),
+          basisVersion: z.string(),
+        }),
+      })
+      .optional(),
     createdAt: z.iso.datetime(),
   }),
   validation: z.object({

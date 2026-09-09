@@ -3330,6 +3330,123 @@
         ],
         "type": "object"
       },
+      "PutCutEditorialPromptDto": {
+        "properties": {
+          "cta": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "desiredAngle": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "maximum": 2147483646,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          },
+          "sourceContextId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceContextRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tone": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "whatHappens": {
+            "maxLength": 5000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceContextId",
+          "sourceContextRevision",
+          "whatHappens",
+          "desiredAngle",
+          "tone",
+          "cta",
+          "restrictions",
+          "expectedRevision"
+        ],
+        "type": "object"
+      },
+      "PutSourceEditorialContextDto": {
+        "properties": {
+          "audience": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "creatorProfileId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "creatorProfileRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "defaultCta": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "editorialGoal": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "maximum": 2147483646,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "gameOrTopic": {
+            "maxLength": 300,
+            "type": "string"
+          },
+          "language": {
+            "maxLength": 35,
+            "type": "string"
+          },
+          "operatorNotes": {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          },
+          "sourceTitle": {
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "required": [
+          "creatorProfileId",
+          "creatorProfileRevision",
+          "sourceTitle",
+          "gameOrTopic",
+          "audience",
+          "editorialGoal",
+          "language",
+          "defaultCta",
+          "restrictions",
+          "operatorNotes",
+          "expectedRevision"
+        ],
+        "type": "object"
+      },
       "RightsResponseDto": {
         "properties": {
           "confirmedAt": {
@@ -3445,6 +3562,32 @@
           }
         },
         "required": ["expectedRevision", "processingTemplateRevisionId"],
+        "type": "object"
+      },
+      "SetDefaultCreatorReferenceDto": {
+        "properties": {
+          "action": {
+            "enum": ["SET", "CLEAR"],
+            "type": "string"
+          },
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "authorizationRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "authorizationRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "expectedProfileRevision": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": ["expectedProfileRevision", "action"],
         "type": "object"
       },
       "SourceAuthorizationResponseDto": {
@@ -3727,6 +3870,98 @@
           }
         },
         "required": ["file"],
+        "type": "object"
+      },
+      "UpdateCreatorProfileDto": {
+        "properties": {
+          "canonicalDisplayName": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "editorialNotes": {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "maximum": 2147483646,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "officialUrl": {
+            "format": "uri",
+            "maxLength": 2048,
+            "type": "string"
+          },
+          "primaryLanguage": {
+            "maxLength": 35,
+            "minLength": 1,
+            "type": "string"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          },
+          "topics": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          }
+        },
+        "required": [
+          "canonicalDisplayName",
+          "officialUrl",
+          "primaryLanguage",
+          "topics",
+          "editorialNotes",
+          "restrictions",
+          "expectedRevision"
+        ],
+        "type": "object"
+      },
+      "UpdateCreatorReferenceAuthorizationDto": {
+        "properties": {
+          "basis": {
+            "maxLength": 1000,
+            "nullable": true,
+            "type": "string"
+          },
+          "commercialAiImageUseAttested": {
+            "type": "boolean"
+          },
+          "decision": {
+            "enum": ["CLEARED", "REVOKED"],
+            "type": "string"
+          },
+          "declarationVersion": {
+            "enum": ["creator-likeness-rights-v1"],
+            "nullable": true,
+            "type": "string"
+          },
+          "expectedRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "externalProviderTransferAllowed": {
+            "type": "boolean"
+          },
+          "scope": {
+            "maxLength": 1000,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["expectedRevision", "decision"],
         "type": "object"
       }
     }
@@ -4084,6 +4319,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCreatorProfileDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -4149,8 +4394,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDefaultCreatorReferenceDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -4273,7 +4537,26 @@
     "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/authorization": {
       "get": {
         "operationId": "CreatorContextController_getAuthorization",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -4308,8 +4591,36 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCreatorReferenceAuthorizationDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -4440,6 +4751,15 @@
       "get": {
         "operationId": "CreatorContextController_getProfileRevision",
         "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
           {
             "in": "path",
             "name": "profileId",
@@ -4661,7 +4981,17 @@
     "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt": {
       "get": {
         "operationId": "CreatorContextController_getCutPrompt",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -4696,8 +5026,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutCutEditorialPromptDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -4726,7 +5075,17 @@
     "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions": {
       "get": {
         "operationId": "CreatorContextController_listCutPromptRevisions",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -4755,7 +5114,26 @@
     "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt/revisions/{revision}": {
       "get": {
         "operationId": "CreatorContextController_getCutPromptRevision",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -6719,7 +7097,35 @@
     "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context": {
       "get": {
         "operationId": "CreatorContextController_getSourceContext",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sourceVersion",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sourceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -6754,8 +7160,45 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "sourceVersion",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sourceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutSourceEditorialContextDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -6784,7 +7227,35 @@
     "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions": {
       "get": {
         "operationId": "CreatorContextController_listSourceContextRevisions",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sourceVersion",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sourceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -6813,7 +7284,44 @@
     "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context/revisions/{revision}": {
       "get": {
         "operationId": "CreatorContextController_getSourceContextRevision",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sourceVersion",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sourceId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {

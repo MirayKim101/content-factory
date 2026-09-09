@@ -97,6 +97,64 @@ describe("authoritative OpenAPI export", () => {
         },
       },
     });
+
+    const creatorContextMutationBodies = {
+      "/api/v1/creator-profiles/{profileId}": "UpdateCreatorProfileDto",
+      "/api/v1/creator-profiles/{profileId}/default-reference":
+        "SetDefaultCreatorReferenceDto",
+      "/api/v1/creator-profiles/{profileId}/reference-assets/{assetId}/authorization":
+        "UpdateCreatorReferenceAuthorizationDto",
+      "/api/v1/projects/{projectId}/sources/{sourceId}/versions/{sourceVersion}/editorial-context":
+        "PutSourceEditorialContextDto",
+      "/api/v1/pipeline-jobs/{cutJobId}/editorial-prompt":
+        "PutCutEditorialPromptDto",
+    } as const;
+    for (const [path, schemaName] of Object.entries(
+      creatorContextMutationBodies,
+    )) {
+      expect(document.paths[path]?.put).toMatchObject({
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: `#/components/schemas/${schemaName}` },
+            },
+          },
+        },
+      });
+    }
+
+    const creatorContextPaths = Object.entries(document.paths).filter(
+      ([path]) =>
+        path.startsWith("/api/v1/creator-profiles") ||
+        path.includes("/editorial-context") ||
+        path.includes("/editorial-prompt"),
+    );
+    for (const [path, operations] of creatorContextPaths) {
+      const pathParameters = [...path.matchAll(/\{([^}]+)\}/g)].map(
+        (match) => match[1],
+      );
+      for (const method of ["get", "post", "put"] as const) {
+        const operation = operations[method];
+        if (!operation) continue;
+        for (const name of pathParameters) {
+          const schema =
+            name === "revision" || name === "sourceVersion"
+              ? { type: "integer", minimum: 1 }
+              : { type: "string", format: "uuid" };
+          expect(operation.parameters, `${method.toUpperCase()} ${path}`).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                in: "path",
+                name,
+                required: true,
+                schema,
+              }),
+            ]),
+          );
+        }
+      }
+    }
     expect(document.paths["/api/v1/processing-templates"]).toMatchObject({
       get: { responses: { "200": {} } },
       post: {

@@ -518,6 +518,10 @@ function reloadServerRevision(): void {
                 : `Не хватает: ${currentPackage.validation.missingFields.join(", ")}.`
             }}
           </p>
+          <div v-if="currentPackage?.revision.provenance" class="provenance" aria-label="Происхождение редакционных компонентов">
+            <span :title="currentPackage.revision.provenance.metadata.basisVersion">Метаданные: {{ currentPackage.revision.provenance.metadata.mode }}</span>
+            <span :title="currentPackage.revision.provenance.thumbnail.basisVersion">Обложка: {{ currentPackage.revision.provenance.thumbnail.mode }}</span>
+          </div>
           <p v-if="formError" class="error" role="alert">{{ formError }}</p>
           <p v-if="saveError" class="error" role="alert">{{ saveError }}</p>
           <p v-if="success" class="success" role="status">{{ success }}</p>
@@ -632,6 +636,8 @@ img {
 .error {
   color: #991b1b;
 }
+.provenance { display: flex; flex-wrap: wrap; gap: .5rem; }
+.provenance span { padding: .25rem .5rem; border-radius: 999px; background: #e7eee9; font-size: .875rem; }
 .success {
   color: #166534;
 }

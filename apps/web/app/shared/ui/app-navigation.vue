@@ -34,6 +34,7 @@ function close(): void {
       @click="close"
       >Монтажные материалы</NuxtLink
     >
+    <NuxtLink to="/creator-context" :aria-current="currentPath === '/creator-context' ? 'page' : undefined" @click="close">Контекст автора</NuxtLink>
     <span class="disabled" aria-disabled="true"
       >Вертикальные видео <small>Появится на Этапе 3</small></span
     >

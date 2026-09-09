@@ -101,6 +101,7 @@ import {
 
 const uuidPipe = new ParseUUIDPipe({ version: "4" });
 const uuidSchema = { type: "string", format: "uuid" } as const;
+const positiveIntegerSchema = { type: "integer", minimum: 1 } as const;
 const creatorProfileConflictSchema = {
   type: "object" as const,
   required: ["error"],
@@ -157,6 +158,7 @@ export class CreatorContextController {
   @UseInterceptors(AiContextAdmissionInterceptor)
   @ApiParam({ name: "profileId", schema: uuidSchema })
   @ApiHeader({ name: "Idempotency-Key", required: true })
+  @ApiBody({ type: UpdateCreatorProfileDto })
   @ApiOkResponse({ type: CreatorProfileDetailResponseDto })
   @ApiResponse({ status: 409, schema: creatorProfileConflictSchema })
   async updateProfile(
@@ -242,6 +244,7 @@ export class CreatorContextController {
 
   @Get("api/v1/creator-profiles/:profileId/revisions/:revision")
   @ApiParam({ name: "profileId", schema: uuidSchema })
+  @ApiParam({ name: "revision", schema: positiveIntegerSchema })
   @ApiOkResponse({ type: CreatorProfileRevisionResponseDto })
   async getProfileRevision(
     @Param("profileId", uuidPipe) profileId: string,
@@ -395,7 +398,10 @@ export class CreatorContextController {
     "api/v1/creator-profiles/:profileId/reference-assets/:assetId/authorization",
   )
   @UseInterceptors(AiContextAdmissionInterceptor)
+  @ApiParam({ name: "profileId", schema: uuidSchema })
+  @ApiParam({ name: "assetId", schema: uuidSchema })
   @ApiHeader({ name: "Idempotency-Key", required: true })
+  @ApiBody({ type: UpdateCreatorReferenceAuthorizationDto })
   @ApiOkResponse({ type: AuthorizationDetailResponseDto })
   async updateAuthorization(
     @Param("profileId", uuidPipe) profileId: string,
@@ -420,6 +426,8 @@ export class CreatorContextController {
   @Get(
     "api/v1/creator-profiles/:profileId/reference-assets/:assetId/authorization",
   )
+  @ApiParam({ name: "profileId", schema: uuidSchema })
+  @ApiParam({ name: "assetId", schema: uuidSchema })
   @ApiOkResponse({ type: AuthorizationDetailResponseDto })
   async getAuthorization(
     @Param("profileId", uuidPipe) profileId: string,
@@ -432,7 +440,9 @@ export class CreatorContextController {
 
   @Put("api/v1/creator-profiles/:profileId/default-reference")
   @UseInterceptors(AiContextAdmissionInterceptor)
+  @ApiParam({ name: "profileId", schema: uuidSchema })
   @ApiHeader({ name: "Idempotency-Key", required: true })
+  @ApiBody({ type: SetDefaultCreatorReferenceDto })
   @ApiOkResponse({ type: CreatorProfileDetailResponseDto })
   async setDefaultReference(
     @Param("profileId", uuidPipe) profileId: string,
@@ -458,7 +468,11 @@ export class CreatorContextController {
     "api/v1/projects/:projectId/sources/:sourceId/versions/:sourceVersion/editorial-context",
   )
   @UseInterceptors(AiContextAdmissionInterceptor)
+  @ApiParam({ name: "projectId", schema: uuidSchema })
+  @ApiParam({ name: "sourceId", schema: uuidSchema })
+  @ApiParam({ name: "sourceVersion", schema: positiveIntegerSchema })
   @ApiHeader({ name: "Idempotency-Key", required: true })
+  @ApiBody({ type: PutSourceEditorialContextDto })
   @ApiOkResponse({ type: SourceEditorialContextDetailResponseDto })
   async putSourceContext(
     @Param("projectId", uuidPipe) projectId: string,
@@ -488,6 +502,9 @@ export class CreatorContextController {
   @Get(
     "api/v1/projects/:projectId/sources/:sourceId/versions/:sourceVersion/editorial-context",
   )
+  @ApiParam({ name: "projectId", schema: uuidSchema })
+  @ApiParam({ name: "sourceId", schema: uuidSchema })
+  @ApiParam({ name: "sourceVersion", schema: positiveIntegerSchema })
   @ApiOkResponse({ type: SourceEditorialContextDetailResponseDto })
   async getSourceContext(
     @Param("projectId", uuidPipe) projectId: string,
@@ -507,6 +524,9 @@ export class CreatorContextController {
   @Get(
     "api/v1/projects/:projectId/sources/:sourceId/versions/:sourceVersion/editorial-context/revisions",
   )
+  @ApiParam({ name: "projectId", schema: uuidSchema })
+  @ApiParam({ name: "sourceId", schema: uuidSchema })
+  @ApiParam({ name: "sourceVersion", schema: positiveIntegerSchema })
   @ApiOkResponse({ type: SourceEditorialContextRevisionListResponseDto })
   async listSourceContextRevisions(
     @Param("projectId", uuidPipe) projectId: string,
@@ -536,6 +556,10 @@ export class CreatorContextController {
   @Get(
     "api/v1/projects/:projectId/sources/:sourceId/versions/:sourceVersion/editorial-context/revisions/:revision",
   )
+  @ApiParam({ name: "projectId", schema: uuidSchema })
+  @ApiParam({ name: "sourceId", schema: uuidSchema })
+  @ApiParam({ name: "sourceVersion", schema: positiveIntegerSchema })
+  @ApiParam({ name: "revision", schema: positiveIntegerSchema })
   @ApiOkResponse({ type: SourceEditorialContextRevisionResponseDto })
   async getSourceContextRevision(
     @Param("projectId", uuidPipe) projectId: string,
@@ -555,7 +579,9 @@ export class CreatorContextController {
 
   @Put("api/v1/pipeline-jobs/:cutJobId/editorial-prompt")
   @UseInterceptors(AiContextAdmissionInterceptor)
+  @ApiParam({ name: "cutJobId", schema: uuidSchema })
   @ApiHeader({ name: "Idempotency-Key", required: true })
+  @ApiBody({ type: PutCutEditorialPromptDto })
   @ApiOkResponse({ type: CutEditorialPromptDetailResponseDto })
   async putCutPrompt(
     @Param("cutJobId", uuidPipe) cutJobId: string,
@@ -578,6 +604,7 @@ export class CreatorContextController {
   }
 
   @Get("api/v1/pipeline-jobs/:cutJobId/editorial-prompt")
+  @ApiParam({ name: "cutJobId", schema: uuidSchema })
   @ApiOkResponse({ type: CutEditorialPromptDetailResponseDto })
   async getCutPrompt(
     @Param("cutJobId", uuidPipe) cutJobId: string,
@@ -588,6 +615,7 @@ export class CreatorContextController {
   }
 
   @Get("api/v1/pipeline-jobs/:cutJobId/editorial-prompt/revisions")
+  @ApiParam({ name: "cutJobId", schema: uuidSchema })
   @ApiOkResponse({ type: CutEditorialPromptRevisionListResponseDto })
   async listCutPromptRevisions(
     @Param("cutJobId", uuidPipe) cutJobId: string,
@@ -610,6 +638,8 @@ export class CreatorContextController {
   }
 
   @Get("api/v1/pipeline-jobs/:cutJobId/editorial-prompt/revisions/:revision")
+  @ApiParam({ name: "cutJobId", schema: uuidSchema })
+  @ApiParam({ name: "revision", schema: positiveIntegerSchema })
   @ApiOkResponse({ type: CutEditorialPromptRevisionResponseDto })
   async getCutPromptRevision(
     @Param("cutJobId", uuidPipe) cutJobId: string,
