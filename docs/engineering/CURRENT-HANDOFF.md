@@ -84,6 +84,24 @@
   authorization rows; 3 legacy clearance/audit сохранены. Reviewer также
   проверил читаемость fresh dump. Следующий implementation owner реализует
   `RECOVERY-MANUAL-CUT.md` по протоколу `RECOVERY-MANUAL-CUT-VERIFICATION.md`.
+- Authorization принят и отправлен в origin: `42daf8a`. Агент `manual_cut`
+  начал следующий срез и владеет API/schema/shared package/worker/UI/tests.
+  Планируется `packages/manual-cut`, `apps/worker`; точные dist paths ещё
+  проверяются первой компиляцией. Infrastructure остаётся отдельной DevOps
+  ответственностью после подтверждения entrypoint. Данные BullMQ — только
+  `{jobId}`. До успешных smoke/recovery/review не считать нарезку готовой.
+- Packaging checkpoint: type-only import API generated source дал TS6059.
+  Условно одобренный второй Prisma generator собрал shared package, но API
+  injection не прошёл TS2345 из-за разных generated type identities. Cast и
+  второй API pool запрещены. Независимый `source_authorization` одобрил
+  нейтральный build-only пакет `@content-factory/prisma-client`, компилирующий
+  единственный существующий API-owned generated source; prototype compile
+  прошёл. Финальный контракт в `RECOVERY-MANUAL-CUT.md` требует общей type
+  identity, одного API pool, чистой генерации и сборки по зависимостям.
+  CLI отказал в восстановлении
+  прежнего архитектора/новом thread (`agent thread limit reached`), поэтому
+  переиспользован действующий участник. `worker_runtime` готовит CI/runtime,
+  но ожидает подтверждения окончательных путей; рабочая миграция cut не применена.
 - Исходные untracked файлы владельца: `.idea/` и `package-lock.json`; сохранять.
 - Владелец разрешил автономную работу и субагентов, с остановкой на 50% квоты.
   Чтение через `codex app-server --stdio`, JSON-RPC `initialize`, затем
@@ -94,7 +112,7 @@
   Не расходовать reset credits автоматически. Способ через `app-server proxy`
   в этой среде не сработал; standalone stdio завершать после ответа.
   Локальная команда: `node tmp/recovery/read-quota.cjs`; последняя проверка
-  2026-09-09 12:15 UTC: 26% использовано. Скрипт в `tmp/`
+  2026-09-09 12:53 UTC: 30% использовано. Скрипт в `tmp/`
   не хранится в Git.
 
 ## Предыдущий handoff с Mac (исторические результаты)

@@ -58,15 +58,41 @@ and attempt-specific output intent. Extend `MediaArtifact.role` with
 `HORIZONTAL_CUT` and link one winning artifact to its job while preserving
 source ID/version, checksum and recipe lineage.
 
-Keep `apps/api/prisma` as the sole schema/migration owner and add `apps/worker`
-as a separate executable. Put only the new job state machine, repository port
-and one Prisma persistence implementation in a narrow shared workspace package
-consumed by API and worker. Do not move the existing schema/generated API client
-or refactor unrelated upload persistence. Worker imports no API controller,
-presentation module or HTTP use case; media and storage remain owned ports.
+Keep `apps/api/prisma/schema.prisma` as the sole schema/migration source and
+`apps/api/src/generated/prisma` as the sole generated source; add `apps/worker`
+as a separate executable. The duplicate-generator fallback was rejected after
+TypeScript proved the two Prisma 7 clients nominally incompatible through
+`$transaction`, internal enums and extension types.
 
-PostgreSQL is authoritative; BullMQ carries only `{ jobId }`. Persist before best-effort enqueue; failure stays visible
-as `QUEUED` for reconciliation. Local heavy-media concurrency defaults to one configurable slot.
+Package that one generated source through a build-only neutral workspace package
+named `@content-factory/prisma-client`. Its TypeScript build has the existing API
+generated directory as its exact `rootDir` and its own package `dist` as
+`outDir`. It contains no handwritten Prisma facade, model copy, schema,
+datasource configuration or client construction. The package depends only on
+the Prisma runtime/tooling needed by generated code; it has no package
+dependency on the API and therefore introduces no API/manual-cut build cycle.
+The API `PrismaService` and the manual-cut Prisma repository import the same
+neutral package client and types. The API still constructs and owns its one
+`PrismaService`; passing that instance into manual-cut must not open a second API
+pool. Worker code imports no API path or HTTP code and consumes the neutral
+client only when it directly needs Prisma types or construction.
+
+This packaging amendment is approved after a compile probe emitted the existing
+generated client, internal files and model types from the API-owned source into
+an isolated neutral output. Implementation acceptance still requires a clean
+proof in dependency order: generate once from the API schema, verify the sole
+generated tree has no drift, build the neutral package, then typecheck/build
+manual-cut, API and worker without relying on stale `dist`. Workspace task
+dependencies must encode that order for a clean checkout. Also prove that API
+runtime wiring creates only the existing `PrismaService` connection pool. Do
+not use a cast, structural facade, second generator, schema move, generated
+source copy, API declaration dependency or upload refactor to bypass these
+checks. If the generated-only build wrapper itself fails a clean proof, stop
+for a new explicit architecture amendment before changing generator output.
+
+PostgreSQL is authoritative; BullMQ carries only `{ jobId }`. Persist before
+best-effort enqueue; failure stays visible as `QUEUED` for reconciliation. Local
+heavy-media concurrency defaults to one configurable slot.
 
 ## 5. Claim, retry and recovery contract
 
@@ -147,8 +173,10 @@ Required evidence:
    lease, restart, and show recovery without duplicate output.
 4. Browser smoke with a small real H.264 MP4: Range seek, two independent cuts/downloads, checksum and FFprobe duration;
    repeat out-of-bounds and record safe failure/logs.
-5. Run format, lint, typecheck, all tests, API integration/OpenAPI drift and worker checks; hand off migration counts,
-   commands, logs, smoke artifacts, rollback and independent real-diff review.
+5. Run API `db:generate` and require clean generated diffs, then run format,
+   lint, typecheck/build manual-cut, API and worker, all unit/integration tests,
+   OpenAPI drift and worker checks. Hand off migration counts, commands, logs,
+   smoke artifacts, rollback and independent real-diff review.
 
 Rollback stops new cut creation and claims, lets an active lease finish or expire,
 and leaves job/attempt/artifact rows for audit. The additive schema stays; ready
