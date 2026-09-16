@@ -1178,7 +1178,11 @@ export class PrismaCreatorContextRepository implements CreatorContextRepository 
       blockers: uniqueBlockers,
       contextPolicyFingerprint: contextPolicyFingerprint({
         capability,
-        chain: policyFingerprintChain(chain),
+        chain: policyFingerprintChain(
+          capability === "FRAME_EXTRACTION"
+            ? { ...chain, reference: null }
+            : chain,
+        ),
       }),
       chain,
     };

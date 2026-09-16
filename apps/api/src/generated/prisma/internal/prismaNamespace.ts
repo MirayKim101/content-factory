@@ -434,7 +434,14 @@ export const ModelName = {
   CutEditorialPrompt: 'CutEditorialPrompt',
   CutEditorialPromptRevision: 'CutEditorialPromptRevision',
   AiContentOperationRequest: 'AiContentOperationRequest',
-  EditorialComponentProvenance: 'EditorialComponentProvenance'
+  EditorialComponentProvenance: 'EditorialComponentProvenance',
+  FrameEvidenceIntent: 'FrameEvidenceIntent',
+  FrameExtractionPool: 'FrameExtractionPool',
+  FrameExtractionSlot: 'FrameExtractionSlot',
+  FrameEvidenceAttempt: 'FrameEvidenceAttempt',
+  FrameEvidenceAttemptOutput: 'FrameEvidenceAttemptOutput',
+  FrameEvidenceResult: 'FrameEvidenceResult',
+  FrameEvidenceFrame: 'FrameEvidenceFrame'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -450,7 +457,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3266,6 +3273,524 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FrameEvidenceIntent: {
+      payload: Prisma.$FrameEvidenceIntentPayload<ExtArgs>
+      fields: Prisma.FrameEvidenceIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FrameEvidenceIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FrameEvidenceIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.FrameEvidenceIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FrameEvidenceIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>
+        }
+        findMany: {
+          args: Prisma.FrameEvidenceIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>[]
+        }
+        create: {
+          args: Prisma.FrameEvidenceIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>
+        }
+        createMany: {
+          args: Prisma.FrameEvidenceIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FrameEvidenceIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.FrameEvidenceIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>
+        }
+        update: {
+          args: Prisma.FrameEvidenceIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.FrameEvidenceIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FrameEvidenceIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FrameEvidenceIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.FrameEvidenceIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.FrameEvidenceIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFrameEvidenceIntent>
+        }
+        groupBy: {
+          args: Prisma.FrameEvidenceIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FrameEvidenceIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    FrameExtractionPool: {
+      payload: Prisma.$FrameExtractionPoolPayload<ExtArgs>
+      fields: Prisma.FrameExtractionPoolFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FrameExtractionPoolFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FrameExtractionPoolFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>
+        }
+        findFirst: {
+          args: Prisma.FrameExtractionPoolFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FrameExtractionPoolFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>
+        }
+        findMany: {
+          args: Prisma.FrameExtractionPoolFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>[]
+        }
+        create: {
+          args: Prisma.FrameExtractionPoolCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>
+        }
+        createMany: {
+          args: Prisma.FrameExtractionPoolCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FrameExtractionPoolCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>[]
+        }
+        delete: {
+          args: Prisma.FrameExtractionPoolDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>
+        }
+        update: {
+          args: Prisma.FrameExtractionPoolUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>
+        }
+        deleteMany: {
+          args: Prisma.FrameExtractionPoolDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FrameExtractionPoolUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FrameExtractionPoolUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>[]
+        }
+        upsert: {
+          args: Prisma.FrameExtractionPoolUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionPoolPayload>
+        }
+        aggregate: {
+          args: Prisma.FrameExtractionPoolAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFrameExtractionPool>
+        }
+        groupBy: {
+          args: Prisma.FrameExtractionPoolGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameExtractionPoolGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FrameExtractionPoolCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameExtractionPoolCountAggregateOutputType> | number
+        }
+      }
+    }
+    FrameExtractionSlot: {
+      payload: Prisma.$FrameExtractionSlotPayload<ExtArgs>
+      fields: Prisma.FrameExtractionSlotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FrameExtractionSlotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FrameExtractionSlotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>
+        }
+        findFirst: {
+          args: Prisma.FrameExtractionSlotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FrameExtractionSlotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>
+        }
+        findMany: {
+          args: Prisma.FrameExtractionSlotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>[]
+        }
+        create: {
+          args: Prisma.FrameExtractionSlotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>
+        }
+        createMany: {
+          args: Prisma.FrameExtractionSlotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FrameExtractionSlotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>[]
+        }
+        delete: {
+          args: Prisma.FrameExtractionSlotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>
+        }
+        update: {
+          args: Prisma.FrameExtractionSlotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>
+        }
+        deleteMany: {
+          args: Prisma.FrameExtractionSlotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FrameExtractionSlotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FrameExtractionSlotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>[]
+        }
+        upsert: {
+          args: Prisma.FrameExtractionSlotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameExtractionSlotPayload>
+        }
+        aggregate: {
+          args: Prisma.FrameExtractionSlotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFrameExtractionSlot>
+        }
+        groupBy: {
+          args: Prisma.FrameExtractionSlotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameExtractionSlotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FrameExtractionSlotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameExtractionSlotCountAggregateOutputType> | number
+        }
+      }
+    }
+    FrameEvidenceAttempt: {
+      payload: Prisma.$FrameEvidenceAttemptPayload<ExtArgs>
+      fields: Prisma.FrameEvidenceAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FrameEvidenceAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FrameEvidenceAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.FrameEvidenceAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FrameEvidenceAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.FrameEvidenceAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.FrameEvidenceAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.FrameEvidenceAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FrameEvidenceAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.FrameEvidenceAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>
+        }
+        update: {
+          args: Prisma.FrameEvidenceAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.FrameEvidenceAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FrameEvidenceAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FrameEvidenceAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.FrameEvidenceAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.FrameEvidenceAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFrameEvidenceAttempt>
+        }
+        groupBy: {
+          args: Prisma.FrameEvidenceAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FrameEvidenceAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
+    FrameEvidenceAttemptOutput: {
+      payload: Prisma.$FrameEvidenceAttemptOutputPayload<ExtArgs>
+      fields: Prisma.FrameEvidenceAttemptOutputFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FrameEvidenceAttemptOutputFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FrameEvidenceAttemptOutputFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>
+        }
+        findFirst: {
+          args: Prisma.FrameEvidenceAttemptOutputFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FrameEvidenceAttemptOutputFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>
+        }
+        findMany: {
+          args: Prisma.FrameEvidenceAttemptOutputFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>[]
+        }
+        create: {
+          args: Prisma.FrameEvidenceAttemptOutputCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>
+        }
+        createMany: {
+          args: Prisma.FrameEvidenceAttemptOutputCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FrameEvidenceAttemptOutputCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>[]
+        }
+        delete: {
+          args: Prisma.FrameEvidenceAttemptOutputDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>
+        }
+        update: {
+          args: Prisma.FrameEvidenceAttemptOutputUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>
+        }
+        deleteMany: {
+          args: Prisma.FrameEvidenceAttemptOutputDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FrameEvidenceAttemptOutputUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FrameEvidenceAttemptOutputUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>[]
+        }
+        upsert: {
+          args: Prisma.FrameEvidenceAttemptOutputUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceAttemptOutputPayload>
+        }
+        aggregate: {
+          args: Prisma.FrameEvidenceAttemptOutputAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFrameEvidenceAttemptOutput>
+        }
+        groupBy: {
+          args: Prisma.FrameEvidenceAttemptOutputGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceAttemptOutputGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FrameEvidenceAttemptOutputCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceAttemptOutputCountAggregateOutputType> | number
+        }
+      }
+    }
+    FrameEvidenceResult: {
+      payload: Prisma.$FrameEvidenceResultPayload<ExtArgs>
+      fields: Prisma.FrameEvidenceResultFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FrameEvidenceResultFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FrameEvidenceResultFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>
+        }
+        findFirst: {
+          args: Prisma.FrameEvidenceResultFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FrameEvidenceResultFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>
+        }
+        findMany: {
+          args: Prisma.FrameEvidenceResultFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>[]
+        }
+        create: {
+          args: Prisma.FrameEvidenceResultCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>
+        }
+        createMany: {
+          args: Prisma.FrameEvidenceResultCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FrameEvidenceResultCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>[]
+        }
+        delete: {
+          args: Prisma.FrameEvidenceResultDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>
+        }
+        update: {
+          args: Prisma.FrameEvidenceResultUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>
+        }
+        deleteMany: {
+          args: Prisma.FrameEvidenceResultDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FrameEvidenceResultUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FrameEvidenceResultUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>[]
+        }
+        upsert: {
+          args: Prisma.FrameEvidenceResultUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceResultPayload>
+        }
+        aggregate: {
+          args: Prisma.FrameEvidenceResultAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFrameEvidenceResult>
+        }
+        groupBy: {
+          args: Prisma.FrameEvidenceResultGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceResultGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FrameEvidenceResultCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceResultCountAggregateOutputType> | number
+        }
+      }
+    }
+    FrameEvidenceFrame: {
+      payload: Prisma.$FrameEvidenceFramePayload<ExtArgs>
+      fields: Prisma.FrameEvidenceFrameFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FrameEvidenceFrameFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FrameEvidenceFrameFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>
+        }
+        findFirst: {
+          args: Prisma.FrameEvidenceFrameFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FrameEvidenceFrameFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>
+        }
+        findMany: {
+          args: Prisma.FrameEvidenceFrameFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>[]
+        }
+        create: {
+          args: Prisma.FrameEvidenceFrameCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>
+        }
+        createMany: {
+          args: Prisma.FrameEvidenceFrameCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FrameEvidenceFrameCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>[]
+        }
+        delete: {
+          args: Prisma.FrameEvidenceFrameDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>
+        }
+        update: {
+          args: Prisma.FrameEvidenceFrameUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>
+        }
+        deleteMany: {
+          args: Prisma.FrameEvidenceFrameDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FrameEvidenceFrameUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FrameEvidenceFrameUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>[]
+        }
+        upsert: {
+          args: Prisma.FrameEvidenceFrameUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FrameEvidenceFramePayload>
+        }
+        aggregate: {
+          args: Prisma.FrameEvidenceFrameAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFrameEvidenceFrame>
+        }
+        groupBy: {
+          args: Prisma.FrameEvidenceFrameGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceFrameGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FrameEvidenceFrameCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FrameEvidenceFrameCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4053,6 +4578,136 @@ export const EditorialComponentProvenanceScalarFieldEnum = {
 export type EditorialComponentProvenanceScalarFieldEnum = (typeof EditorialComponentProvenanceScalarFieldEnum)[keyof typeof EditorialComponentProvenanceScalarFieldEnum]
 
 
+export const FrameEvidenceIntentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  pipelineJobId: 'pipelineJobId',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutStartMs: 'cutStartMs',
+  cutEndMs: 'cutEndMs',
+  contractDurationMs: 'contractDurationMs',
+  sourceSha256: 'sourceSha256',
+  sourceAuthorizationRevision: 'sourceAuthorizationRevision',
+  sourceAuthorizationBasis: 'sourceAuthorizationBasis',
+  sourceAuthorizationDeclarationVersion: 'sourceAuthorizationDeclarationVersion',
+  sourceAuthorizationDecidedAt: 'sourceAuthorizationDecidedAt',
+  creatorProfileId: 'creatorProfileId',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  creatorProfileRevisionNo: 'creatorProfileRevisionNo',
+  sourceContextId: 'sourceContextId',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  sourceContextRevisionNo: 'sourceContextRevisionNo',
+  cutPromptId: 'cutPromptId',
+  cutPromptRevisionId: 'cutPromptRevisionId',
+  cutPromptRevisionNo: 'cutPromptRevisionNo',
+  contextPolicyFingerprint: 'contextPolicyFingerprint',
+  contractVersion: 'contractVersion',
+  recipeVersion: 'recipeVersion',
+  requestedPositionsMs: 'requestedPositionsMs',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceIntentScalarFieldEnum = (typeof FrameEvidenceIntentScalarFieldEnum)[keyof typeof FrameEvidenceIntentScalarFieldEnum]
+
+
+export const FrameExtractionPoolScalarFieldEnum = {
+  resourceClass: 'resourceClass',
+  capacity: 'capacity',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameExtractionPoolScalarFieldEnum = (typeof FrameExtractionPoolScalarFieldEnum)[keyof typeof FrameExtractionPoolScalarFieldEnum]
+
+
+export const FrameExtractionSlotScalarFieldEnum = {
+  resourceClass: 'resourceClass',
+  ordinal: 'ordinal',
+  attemptId: 'attemptId',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  heartbeatAt: 'heartbeatAt',
+  workDeadlineAt: 'workDeadlineAt'
+} as const
+
+export type FrameExtractionSlotScalarFieldEnum = (typeof FrameExtractionSlotScalarFieldEnum)[keyof typeof FrameExtractionSlotScalarFieldEnum]
+
+
+export const FrameEvidenceAttemptScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  pipelineJobId: 'pipelineJobId',
+  attemptNumber: 'attemptNumber',
+  leaseToken: 'leaseToken',
+  workDeadlineAt: 'workDeadlineAt',
+  inputReadStartedAt: 'inputReadStartedAt',
+  inputReadFingerprint: 'inputReadFingerprint',
+  executionStoppedAt: 'executionStoppedAt',
+  progressPhase: 'progressPhase',
+  completedFrameCount: 'completedFrameCount',
+  progressBasisPoints: 'progressBasisPoints',
+  progressUpdatedAt: 'progressUpdatedAt',
+  scratchDirectoryName: 'scratchDirectoryName',
+  scratchReservedBytes: 'scratchReservedBytes',
+  scratchCleanedAt: 'scratchCleanedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceAttemptScalarFieldEnum = (typeof FrameEvidenceAttemptScalarFieldEnum)[keyof typeof FrameEvidenceAttemptScalarFieldEnum]
+
+
+export const FrameEvidenceAttemptOutputScalarFieldEnum = {
+  uploadStartedAt: 'uploadStartedAt',
+  uploadSettledAt: 'uploadSettledAt',
+  nextCleanupAt: 'nextCleanupAt',
+  id: 'id',
+  attemptId: 'attemptId',
+  intentId: 'intentId',
+  attemptNumber: 'attemptNumber',
+  ordinal: 'ordinal',
+  objectKey: 'objectKey',
+  state: 'state',
+  measurement: 'measurement',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FrameEvidenceAttemptOutputScalarFieldEnum = (typeof FrameEvidenceAttemptOutputScalarFieldEnum)[keyof typeof FrameEvidenceAttemptOutputScalarFieldEnum]
+
+
+export const FrameEvidenceResultScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptId: 'attemptId',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceResultScalarFieldEnum = (typeof FrameEvidenceResultScalarFieldEnum)[keyof typeof FrameEvidenceResultScalarFieldEnum]
+
+
+export const FrameEvidenceFrameScalarFieldEnum = {
+  id: 'id',
+  resultId: 'resultId',
+  intentId: 'intentId',
+  attemptId: 'attemptId',
+  ordinal: 'ordinal',
+  outputId: 'outputId',
+  measurement: 'measurement',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceFrameScalarFieldEnum = (typeof FrameEvidenceFrameScalarFieldEnum)[keyof typeof FrameEvidenceFrameScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4722,6 +5377,13 @@ export type GlobalOmitConfig = {
   cutEditorialPromptRevision?: Prisma.CutEditorialPromptRevisionOmit
   aiContentOperationRequest?: Prisma.AiContentOperationRequestOmit
   editorialComponentProvenance?: Prisma.EditorialComponentProvenanceOmit
+  frameEvidenceIntent?: Prisma.FrameEvidenceIntentOmit
+  frameExtractionPool?: Prisma.FrameExtractionPoolOmit
+  frameExtractionSlot?: Prisma.FrameExtractionSlotOmit
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptOmit
+  frameEvidenceAttemptOutput?: Prisma.FrameEvidenceAttemptOutputOmit
+  frameEvidenceResult?: Prisma.FrameEvidenceResultOmit
+  frameEvidenceFrame?: Prisma.FrameEvidenceFrameOmit
 }
 
 /* Types for Logging */

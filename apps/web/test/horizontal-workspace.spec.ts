@@ -106,6 +106,7 @@ function mountWorkspace(
           template: `<article class="pipeline-job-card">
             {{ jobId }}
             <button class="open-context" @click="$emit('editCreatorContext', jobId)">Контекст</button>
+            <button class="open-frames" @click="$emit('viewFrames', jobId)">Кадры</button>
             <button class="open-editorial" @click="$emit('editEditorial', jobId)">Редактор</button>
             <button class="open-assembly" @click="$emit('editAssembly', { jobId, durationMs: 1000 })">Монтаж</button>
           </article>`,
@@ -114,6 +115,10 @@ function mountWorkspace(
           props: ["visible"],
           methods: { canDiscard: () => discardCreator() },
           template: '<section v-if="visible" class="creator-target" />',
+        },
+        FrameEvidenceDialog: {
+          props: ["visible"],
+          template: '<section v-if="visible" class="frame-target" />',
         },
         EditorialExportCard: true,
         EditorialPackageDialog: {
@@ -256,6 +261,32 @@ describe("HorizontalWorkspace cut confirmation", () => {
     await flushPromises();
     expect(wrapper.find(".assembly-target").exists()).toBe(false);
   });
+
+  it.each(["source", "route"])(
+    "closes the frame target when its %s changes",
+    async (change) => {
+      mocks.listProjectJobs.mockResolvedValue({
+        items: [{ id: "00000000-0000-4000-8000-000000000201" }],
+      });
+      const client = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+      const wrapper = mountWorkspace([projectA, projectB], client);
+      await flushPromises();
+      await wrapper.find(".open-frames").trigger("click");
+      expect(wrapper.find(".frame-target").exists()).toBe(true);
+      if (change === "source") {
+        const updated = project(projectA);
+        updated.source.sourceVersion = 2;
+        updated.source.authorization.sourceVersion = 2;
+        client.setQueryData(["project", projectA], updated);
+      } else latestRoute.query.projectIds = projectB;
+      await flushPromises();
+      expect(wrapper.find(".frame-target").exists()).toBe(false);
+      wrapper.unmount();
+      client.clear();
+    },
+  );
 
   it("requires a discard decision before removing a dirty creator-context target", async () => {
     mocks.listProjectJobs.mockResolvedValue({

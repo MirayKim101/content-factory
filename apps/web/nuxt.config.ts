@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     public: {
       apiBasePath: "/api/v1",
       aiContextEnabled: process.env.AI_CONTEXT_ENABLED === "1",
+      editorialFramesEnabled: process.env.EDITORIAL_FRAMES_ENABLED === "1",
     },
   },
   vite: {

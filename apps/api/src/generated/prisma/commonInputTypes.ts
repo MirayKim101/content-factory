@@ -860,6 +860,23 @@ export type EnumEditorialProvenanceModeWithAggregatesFilter<$PrismaModel = never
   _max?: Prisma.NestedEnumEditorialProvenanceModeFilter<$PrismaModel>
 }
 
+export type EnumSourceAuthorizationBasisFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourceAuthorizationBasis | Prisma.EnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  in?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourceAuthorizationBasisFilter<$PrismaModel> | $Enums.SourceAuthorizationBasis
+}
+
+export type EnumSourceAuthorizationBasisWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourceAuthorizationBasis | Prisma.EnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  in?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourceAuthorizationBasisWithAggregatesFilter<$PrismaModel> | $Enums.SourceAuthorizationBasis
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSourceAuthorizationBasisFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSourceAuthorizationBasisFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1648,6 +1665,23 @@ export type NestedEnumEditorialProvenanceModeWithAggregatesFilter<$PrismaModel =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEditorialProvenanceModeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEditorialProvenanceModeFilter<$PrismaModel>
+}
+
+export type NestedEnumSourceAuthorizationBasisFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourceAuthorizationBasis | Prisma.EnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  in?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourceAuthorizationBasisFilter<$PrismaModel> | $Enums.SourceAuthorizationBasis
+}
+
+export type NestedEnumSourceAuthorizationBasisWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SourceAuthorizationBasis | Prisma.EnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  in?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SourceAuthorizationBasis[] | Prisma.ListEnumSourceAuthorizationBasisFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSourceAuthorizationBasisWithAggregatesFilter<$PrismaModel> | $Enums.SourceAuthorizationBasis
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSourceAuthorizationBasisFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSourceAuthorizationBasisFilter<$PrismaModel>
 }
 
 

@@ -7,6 +7,7 @@ export const MANUAL_PROVENANCE_VERSION = "manual-editorial-v1";
 export const LEGACY_MANUAL_PROVENANCE_VERSION = "legacy-manual-editorial-v1";
 
 export type AiCapability =
+  | "FRAME_EXTRACTION"
   | "RESEARCH"
   | "TEXT_GENERATION"
   | "TRANSCRIPT"

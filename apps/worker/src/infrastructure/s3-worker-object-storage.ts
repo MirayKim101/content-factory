@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from "node:fs";
-import { pipeline } from "node:stream/promises";
+import { finished, pipeline } from "node:stream/promises";
 import { Transform } from "node:stream";
 import { ControlledMediaError } from "../domain/media-job.js";
 
@@ -163,27 +163,45 @@ export class S3WorkerObjectStorage implements WorkerObjectStorage {
         callback(null, chunk);
       },
     });
-    const body = createReadStream(input.filePath).pipe(progress);
-    const result = await this.client.send(
-      new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: input.objectKey,
-        Body: body,
-        ContentLength: Number(input.sizeBytes),
-        ContentType: input.contentType ?? "application/zip",
-        Metadata: { sha256: input.sha256 },
-      }),
-      { abortSignal: input.signal },
+    input.signal.throwIfAborted();
+    const source = createReadStream(input.filePath, { signal: input.signal });
+    const sourceSettled = finished(source, { cleanup: true }).catch(
+      () => undefined,
     );
-    return {
-      ...(result.ETag ? { etag: result.ETag } : {}),
-      ...(result.VersionId ? { version: result.VersionId } : {}),
-    };
+    const bodySettled = finished(progress, { cleanup: true }).catch(
+      () => undefined,
+    );
+    source.on("error", (error) => progress.destroy(error));
+    const body = source.pipe(progress);
+    try {
+      const result = await this.client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: input.objectKey,
+          Body: body,
+          ContentLength: Number(input.sizeBytes),
+          ContentType: input.contentType ?? "application/zip",
+          Metadata: { sha256: input.sha256 },
+        }),
+        { abortSignal: input.signal },
+      );
+      return {
+        ...(result.ETag ? { etag: result.ETag } : {}),
+        ...(result.VersionId ? { version: result.VersionId } : {}),
+      };
+    } finally {
+      // The attempt's executionStopped fence must not precede local upload I/O
+      // settlement. A rejected request still leaves its remote outcome unknown.
+      source.destroy();
+      progress.destroy();
+      await Promise.all([sourceSettled, bodySettled]);
+    }
   }
 
-  async delete(objectKey: string): Promise<void> {
+  async delete(objectKey: string, signal?: AbortSignal): Promise<void> {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: objectKey }),
+      { abortSignal: signal },
     );
   }
 

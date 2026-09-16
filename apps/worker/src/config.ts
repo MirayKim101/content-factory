@@ -50,6 +50,8 @@ export interface WorkerConfig {
   concurrency: number;
   leaseMs: number;
   jobTimeoutMs: number;
+  frameExtractionCapacity: number;
+  frameWorkDeadlineMs: number;
   scratchDirectory: string;
   scratchSafetyBytes: bigint;
   sourceCacheDirectory: string;
@@ -104,6 +106,13 @@ export function workerConfig(): WorkerConfig {
       secretKey: required("S3_SECRET_KEY"),
     },
     concurrency: integer("MEDIA_WORKER_CONCURRENCY", 1, 1, 16),
+    frameExtractionCapacity: integer("FRAME_EXTRACTION_CAPACITY", 1, 1, 16),
+    frameWorkDeadlineMs: integer(
+      "FRAME_WORK_DEADLINE_MS",
+      300_000,
+      60_000,
+      1_800_000,
+    ),
     leaseMs: integer("MEDIA_JOB_LEASE_MS", 30_000, 10_000, 600_000),
     jobTimeoutMs: integer(
       "MEDIA_JOB_TIMEOUT_MS",

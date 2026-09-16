@@ -378,7 +378,11 @@ export class PrismaPipelineRepository implements PipelineRepository {
 
   async recoverExpiredLeases(limit: number) {
     const expired = await this.prisma.pipelineJob.findMany({
-      where: { state: "PROCESSING", leaseExpiresAt: { lt: new Date() } },
+      where: {
+        state: "PROCESSING",
+        leaseExpiresAt: { lt: new Date() },
+        type: { not: "EXTRACT_EDITORIAL_FRAMES" },
+      },
       take: limit,
       orderBy: { leaseExpiresAt: "asc" },
       select: expiredLeaseSelect,
@@ -787,6 +791,10 @@ export class PrismaPipelineRepository implements PipelineRepository {
   }
 
   private isDispatchCandidateCurrent(row: DispatchCandidateRow): boolean {
+    // Frame delivery carries only a job reference. Its owned serializable
+    // claim gate records a controlled stale-context failure before any I/O;
+    // suppressing delivery here would leave revoked-source jobs queued forever.
+    if (row.type === "EXTRACT_EDITORIAL_FRAMES") return true;
     const authorization = row.source.authorizations.find(
       (decision) => decision.sourceVersion === row.sourceVersion,
     );
@@ -1021,6 +1029,13 @@ export class PrismaPipelineRepository implements PipelineRepository {
     return {
       payloadVersion: 1,
       OR: [
+        {
+          type: "EXTRACT_EDITORIAL_FRAMES",
+          recipeVersion: "quartiles-jpeg-640-v1",
+          frameEvidenceJob: {
+            is: { contractVersion: "editorial-sparse-frames-v1" },
+          },
+        },
         { type: { in: ["SOURCE_PROBE", "CUT_SEGMENT"] }, montageAssetId: null },
         {
           type: "ASSEMBLE_HORIZONTAL",

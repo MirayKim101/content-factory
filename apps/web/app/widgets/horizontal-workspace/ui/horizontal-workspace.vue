@@ -12,6 +12,7 @@ import AssemblyRecipeDialog from "~/features/edit-assembly-recipe/ui/assembly-re
 import EditorialPackageDialog from "~/features/edit-editorial-package/ui/editorial-package-dialog.vue";
 import EditorialReviewDialog from "~/features/review-editorial-package/ui/editorial-review-dialog.vue";
 import CreatorContextDialog from "~/features/edit-creator-context/ui/creator-context-dialog.vue";
+import FrameEvidenceDialog from "~/features/frame-evidence/ui/frame-evidence-dialog.vue";
 import {
   emptySegment,
   createCutSubmissionSummary,
@@ -90,6 +91,7 @@ const creatorContextTarget = ref<{
   jobId: string;
   filename: string;
 }>();
+const frameTarget = ref<NonNullable<typeof creatorContextTarget.value>>();
 const projectQueries = useQueries({
   queries: computed(() =>
     ids.value.map((id) => ({
@@ -348,6 +350,8 @@ watch(
       assemblyTarget.value = undefined;
     if (!next.includes(reviewTarget.value?.projectId ?? ""))
       reviewTarget.value = undefined;
+    if (!next.includes(frameTarget.value?.projectId ?? ""))
+      frameTarget.value = undefined;
     if (!next.includes(creatorContextTarget.value?.projectId ?? ""))
       closeCreatorContext();
   },
@@ -383,6 +387,8 @@ watch(
           assemblyTarget.value = undefined;
         if (reviewTarget.value?.projectId === source.id)
           reviewTarget.value = undefined;
+        if (frameTarget.value?.projectId === source.id)
+          frameTarget.value = undefined;
         if (creatorContextTarget.value?.projectId === source.id)
           closeCreatorContext();
       }
@@ -573,6 +579,15 @@ watch(
                       row.query.data!.source.originalFilename,
                     )
                   "
+                  @view-frames="
+                    frameTarget = {
+                      projectId: row.id,
+                      sourceId: row.query.data!.source.id,
+                      sourceVersion: row.query.data!.source.sourceVersion,
+                      jobId: $event,
+                      filename: row.query.data!.source.originalFilename,
+                    }
+                  "
                   @edit-creator-context="
                     openCreatorContext({
                       projectId: row.id,
@@ -603,6 +618,21 @@ watch(
         (value) => {
           if (!value) reviewTarget = undefined;
         }
+      "
+    />
+    <FrameEvidenceDialog
+      v-if="frameTarget"
+      :key="`${frameTarget.projectId}:${frameTarget.sourceId}:${frameTarget.sourceVersion}:${frameTarget.jobId}`"
+      :visible="true"
+      v-bind="frameTarget"
+      @update:visible="
+        (value) => {
+          if (!value) frameTarget = undefined;
+        }
+      "
+      @edit-context="
+        openCreatorContext(frameTarget);
+        frameTarget = undefined;
       "
     />
     <CreatorContextDialog

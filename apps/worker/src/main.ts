@@ -6,6 +6,9 @@ import { parseMediaJobReference } from "@content-factory/contracts";
 import { Worker } from "bullmq";
 
 import { ProcessMediaJob } from "./application/process-media-job.js";
+import { ProcessFrameJob } from "./application/process-frame-job.js";
+import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.js";
+import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
 import { workerConfig } from "./config.js";
 import { FfmpegMediaProcessor } from "./infrastructure/ffmpeg-media-processor.js";
 import { FfmpegAssemblyRenderer } from "./infrastructure/ffmpeg-assembly-renderer.js";
@@ -47,6 +50,38 @@ async function startWorker(): Promise<void> {
     config.storage.bucket,
     config.storage,
   );
+  const frameRepository = new PgFrameJobRepository(
+    config.databaseUrl,
+    config.sourceAuthorizationPolicy,
+  );
+  await frameRepository.initializePool(config.frameExtractionCapacity);
+  const frameExtractor = new FfmpegFrameExtractor(
+    config.ffmpegPath,
+    config.ffprobePath,
+  );
+  await frameExtractor.verifyAvailable();
+  const processFrameJob = new ProcessFrameJob(
+    frameRepository,
+    storage,
+    frameExtractor,
+    workerId,
+    {
+      scratchDirectory: config.scratchDirectory,
+      scratchSafetyBytes: Number(config.scratchSafetyBytes),
+      leaseMs: config.leaseMs,
+      workDeadlineMs: config.frameWorkDeadlineMs,
+    },
+    (event) => console.log(JSON.stringify(event)),
+  );
+  await processFrameJob.reconcile();
+  const frameReconcileTimer = setInterval(() => {
+    void processFrameJob
+      .reconcile()
+      .catch(() =>
+        console.error(JSON.stringify({ event: "frame_reconciliation_failed" })),
+      );
+  }, 5000);
+  frameReconcileTimer.unref();
   const processor = new FfmpegMediaProcessor(
     config.ffmpegPath,
     config.ffprobePath,
@@ -138,7 +173,8 @@ async function startWorker(): Promise<void> {
           deliveryAttempt: delivery.attemptsMade + 1,
         }),
       );
-      await processJob.execute(reference.jobId);
+      if (!(await processFrameJob.execute(reference.jobId)))
+        await processJob.execute(reference.jobId);
     },
     {
       connection: {
@@ -191,11 +227,18 @@ async function startWorker(): Promise<void> {
       await unlink(readinessFile).catch(() => undefined);
       clearInterval(exportScratchTimer);
       clearInterval(mediaScratchTimer);
+      clearInterval(frameReconcileTimer);
+      processFrameJob.abortAll();
       console.log(
         JSON.stringify({ event: "media_worker_stopping", workerId, signal }),
       );
       await worker.close().catch(() => undefined);
-      await Promise.allSettled([sourceCache.close(), repository.close()]);
+      await processFrameJob.reconcile().catch(() => undefined);
+      await Promise.allSettled([
+        sourceCache.close(),
+        repository.close(),
+        frameRepository.close(),
+      ]);
       storage.close();
       process.exitCode = exitCode;
     })();
@@ -245,6 +288,7 @@ async function startWorker(): Promise<void> {
         "MONTAGE_ASSET_PROBE",
         "ASSEMBLE_HORIZONTAL",
         "EXPORT_EDITORIAL_PACKAGE",
+        "EXTRACT_EDITORIAL_FRAMES",
       ],
     }),
   );

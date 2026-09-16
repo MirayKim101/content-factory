@@ -3,7 +3,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -99,6 +99,82 @@ describe("S3 worker object storage export upload", () => {
       retryable: false,
     });
     expect(send).not.toHaveBeenCalled();
+    storage.close();
+  });
+
+  it("settles the local frame upload stream before rejecting an aborted PutObject", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "cf-frame-aborted-put-"));
+    directories.push(directory);
+    const path = join(directory, "frame.jpg");
+    await writeFile(path, Buffer.alloc(1024 * 1024, 1));
+    const storage = new S3WorkerObjectStorage("private", {
+      endpoint: "http://127.0.0.1:9000",
+      region: "us-east-1",
+      accessKey: "test",
+      secretKey: "test-secret",
+    });
+    let started!: () => void;
+    const began = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    let bodyClosed = false;
+    const send = vi.fn(
+      async (
+        command: PutObjectCommand,
+        options: { abortSignal: AbortSignal },
+      ) => {
+        const body = command.input.Body as NodeJS.ReadableStream;
+        body.on("close", () => {
+          bodyClosed = true;
+        });
+        started();
+        await new Promise<never>((_resolve, reject) =>
+          options.abortSignal.addEventListener(
+            "abort",
+            () => reject(options.abortSignal.reason),
+            { once: true },
+          ),
+        );
+        return {};
+      },
+    );
+    (storage as unknown as { client: { send: typeof send } }).client.send =
+      send;
+    const controller = new AbortController();
+    const upload = storage.upload({
+      objectKey: "ai-content/frame-evidence/test/attempts/1/frames/0",
+      filePath: path,
+      sha256: "a".repeat(64),
+      sizeBytes: 1024n * 1024n,
+      contentType: "image/jpeg",
+      uploadMode: "SINGLE_REQUEST",
+      signal: controller.signal,
+    });
+    await began;
+    controller.abort(new Error("lease lost"));
+    await expect(upload).rejects.toThrow("lease lost");
+    expect(bodyClosed).toBe(true);
+    storage.close();
+  });
+
+  it("forwards the bounded cleanup abort signal to exact-key deletion", async () => {
+    const storage = new S3WorkerObjectStorage("private", {
+      endpoint: "http://127.0.0.1:9000",
+      region: "us-east-1",
+      accessKey: "test",
+      secretKey: "test-secret",
+    });
+    const send = vi.fn().mockResolvedValue({});
+    (storage as unknown as { client: { send: typeof send } }).client.send =
+      send;
+    const signal = new AbortController().signal;
+    await storage.delete("owned/exact-loser", signal);
+    expect(send).toHaveBeenCalledWith(expect.any(DeleteObjectCommand), {
+      abortSignal: signal,
+    });
+    expect((send.mock.calls[0]![0] as DeleteObjectCommand).input.Key).toBe(
+      "owned/exact-loser",
+    );
     storage.close();
   });
 });

@@ -38,6 +38,7 @@ enum PipelineJobType {
   MONTAGE_ASSET_PROBE
   ASSEMBLE_HORIZONTAL
   EXPORT_EDITORIAL_PACKAGE
+  EXTRACT_EDITORIAL_FRAMES
 }
 
 enum AssemblyProgressPhase {
@@ -153,6 +154,7 @@ enum AiContentOperationType {
   SET_DEFAULT_CREATOR_REFERENCE
   PUT_SOURCE_EDITORIAL_CONTEXT
   PUT_CUT_EDITORIAL_PROMPT
+  CREATE_FRAME_EVIDENCE
 }
 
 enum EditorialComponentType {
@@ -238,6 +240,7 @@ model SourceAuthorization {
 }
 
 model MediaArtifact {
+  frameEvidenceInputs   FrameEvidenceIntent[]
   id                    String                 @id @db.Uuid
   projectId             String                 @db.Uuid
   project               Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -291,6 +294,8 @@ model CutRequest {
 }
 
 model PipelineJob {
+  frameEvidenceJob        FrameEvidenceIntent?   @relation("FrameEvidenceJob")
+  frameEvidenceInputs     FrameEvidenceIntent[]  @relation("FrameEvidenceCut")
   id                      String                 @id @db.Uuid
   projectId               String                 @db.Uuid
   project                 Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -825,6 +830,7 @@ model CutSegment {
 }
 
 model JobAttempt {
+  frameEvidenceAttempt FrameEvidenceAttempt?
   id                   String                @id @db.Uuid
   jobId                String                @db.Uuid
   job                  PipelineJob           @relation(fields: [jobId], references: [id], onDelete: Cascade)
@@ -850,6 +856,7 @@ model JobAttempt {
   updatedAt            DateTime              @updatedAt
 
   @@unique([jobId, attemptNumber])
+  @@unique([id, jobId, attemptNumber, leaseToken])
   @@index([state, updatedAt])
   @@index([cleanupStatus, updatedAt])
 }
@@ -882,6 +889,7 @@ model CreatorProfileOfficialUrlIdentity {
 }
 
 model CreatorProfileRevision {
+  frameEvidenceIntents                    FrameEvidenceIntent[]
   id                                      String                                 @id @db.Uuid
   creatorProfileId                        String                                 @db.Uuid
   creatorProfile                          CreatorProfile                         @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
@@ -979,6 +987,7 @@ model SourceEditorialContext {
 }
 
 model SourceEditorialContextRevision {
+  frameEvidenceIntents     FrameEvidenceIntent[]
   id                       String                       @id @db.Uuid
   contextId                String                       @db.Uuid
   context                  SourceEditorialContext       @relation(fields: [contextId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "SourceEditorialContextRevision_exact_context")
@@ -1005,32 +1014,36 @@ model SourceEditorialContextRevision {
   @@unique([contextId, revision], map: "SourceEditorialContextRevision_context_revision_key")
   @@unique([id, contextId, revision], map: "SourceEditorialContextRevision_exact_identity_key")
   @@unique([id, contextId, revision, projectId, sourceId, sourceVersion], map: "SourceEditorialContextRevision_lineage_key")
+  @@unique([id, contextId, revision, projectId, sourceId, sourceVersion, creatorProfileId, creatorProfileRevisionId, creatorProfileRevisionNo], map: "SourceContextRevision_frame_chain_key")
   @@index([creatorProfileRevisionId])
 }
 
 model CutEditorialPrompt {
-  id                  String                       @id @db.Uuid
-  cutPipelineJobId    String                       @unique @db.Uuid
-  cutPipelineJob      PipelineJob                  @relation(fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPrompt_exact_cut_job")
-  projectId           String                       @db.Uuid
-  sourceId            String                       @db.Uuid
-  sourceVersion       Int
-  cutResultArtifactId String                       @unique @db.Uuid
-  cutResultArtifact   MediaArtifact                @relation(fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "CutEditorialPrompt_exact_result_artifact")
-  cutResultSha256     String
-  cutResultSizeBytes  BigInt
-  currentRevision     Int                          @default(1)
-  createdAt           DateTime                     @default(now())
-  updatedAt           DateTime                     @updatedAt
-  revisions           CutEditorialPromptRevision[]
+  frameEvidenceIntents FrameEvidenceIntent[]
+  id                   String                       @id @db.Uuid
+  cutPipelineJobId     String                       @unique @db.Uuid
+  cutPipelineJob       PipelineJob                  @relation(fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPrompt_exact_cut_job")
+  projectId            String                       @db.Uuid
+  sourceId             String                       @db.Uuid
+  sourceVersion        Int
+  cutResultArtifactId  String                       @unique @db.Uuid
+  cutResultArtifact    MediaArtifact                @relation(fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "CutEditorialPrompt_exact_result_artifact")
+  cutResultSha256      String
+  cutResultSizeBytes   BigInt
+  currentRevision      Int                          @default(1)
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+  revisions            CutEditorialPromptRevision[]
 
   @@unique([cutPipelineJobId, projectId, sourceId, sourceVersion], map: "CutEditorialPrompt_cut_job_lineage_key")
   @@unique([cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], map: "CutEditorialPrompt_result_lineage_key")
   @@unique([id, projectId, sourceId, sourceVersion], map: "CutEditorialPrompt_exact_lineage_key")
+  @@unique([id, cutPipelineJobId, cutResultArtifactId, projectId, sourceId, sourceVersion], map: "CutPrompt_frame_chain_key")
   @@index([projectId, updatedAt, id])
 }
 
 model CutEditorialPromptRevision {
+  frameEvidenceIntents    FrameEvidenceIntent[]
   id                      String                         @id @db.Uuid
   promptId                String                         @db.Uuid
   prompt                  CutEditorialPrompt             @relation(fields: [promptId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPromptRevision_exact_prompt")
@@ -1051,6 +1064,7 @@ model CutEditorialPromptRevision {
 
   @@unique([promptId, revision], map: "CutEditorialPromptRevision_prompt_revision_key")
   @@unique([id, promptId, revision], map: "CutEditorialPromptRevision_exact_identity_key")
+  @@unique([id, promptId, revision, projectId, sourceId, sourceVersion, sourceContextId, sourceContextRevisionId, sourceContextRevisionNo], map: "CutPromptRevision_frame_chain_key")
   @@index([sourceContextRevisionId])
 }
 
@@ -1086,4 +1100,170 @@ model EditorialComponentProvenance {
 
   @@unique([packageRevisionId, component], map: "EditorialComponentProvenance_revision_component_key")
   @@index([packageRevisionId])
+}
+
+// Frame evidence is AI Content-owned; it does not overload MediaArtifact's
+// one-result-per-job invariant or the existing single-output attempt column.
+/// Immutable exact cut and creator-context capture for deterministic frame extraction.
+model FrameEvidenceIntent {
+  id                                    String                         @id @db.Uuid
+  projectId                             String                         @db.Uuid
+  sourceId                              String                         @db.Uuid
+  sourceVersion                         Int
+  pipelineJobId                         String                         @unique @db.Uuid
+  pipelineJob                           PipelineJob                    @relation("FrameEvidenceJob", fields: [pipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict)
+  cutPipelineJobId                      String                         @db.Uuid
+  cutPipelineJob                        PipelineJob                    @relation("FrameEvidenceCut", fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict)
+  cutResultArtifactId                   String                         @db.Uuid
+  cutResultArtifact                     MediaArtifact                  @relation(fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "FrameEvidenceIntent_exact_cut_result")
+  cutResultSha256                       String
+  cutResultSizeBytes                    BigInt
+  cutStartMs                            Int
+  cutEndMs                              Int
+  contractDurationMs                    Int
+  sourceSha256                          String
+  sourceAuthorizationRevision           Int
+  sourceAuthorizationBasis              SourceAuthorizationBasis
+  sourceAuthorizationDeclarationVersion String
+  sourceAuthorizationDecidedAt          DateTime
+  creatorProfileId                      String                         @db.Uuid
+  creatorProfileRevisionId              String                         @db.Uuid
+  creatorProfileRevisionNo              Int
+  creatorProfileRevision                CreatorProfileRevision         @relation(fields: [creatorProfileRevisionId, creatorProfileId, creatorProfileRevisionNo], references: [id, creatorProfileId, revision], onDelete: Restrict, map: "FrameEvidenceIntent_exact_profile")
+  sourceContextId                       String                         @db.Uuid
+  sourceContextRevisionId               String                         @db.Uuid
+  sourceContextRevisionNo               Int
+  sourceContextRevision                 SourceEditorialContextRevision @relation(fields: [sourceContextRevisionId, sourceContextId, sourceContextRevisionNo, projectId, sourceId, sourceVersion, creatorProfileId, creatorProfileRevisionId, creatorProfileRevisionNo], references: [id, contextId, revision, projectId, sourceId, sourceVersion, creatorProfileId, creatorProfileRevisionId, creatorProfileRevisionNo], onDelete: Restrict, map: "FrameEvidenceIntent_exact_context")
+  cutPromptId                           String                         @db.Uuid
+  cutPromptRevisionId                   String                         @db.Uuid
+  cutPromptRevisionNo                   Int
+  cutPromptRevision                     CutEditorialPromptRevision     @relation(fields: [cutPromptRevisionId, cutPromptId, cutPromptRevisionNo, projectId, sourceId, sourceVersion, sourceContextId, sourceContextRevisionId, sourceContextRevisionNo], references: [id, promptId, revision, projectId, sourceId, sourceVersion, sourceContextId, sourceContextRevisionId, sourceContextRevisionNo], onDelete: Restrict, map: "FrameEvidenceIntent_exact_prompt")
+  cutPrompt                             CutEditorialPrompt             @relation(fields: [cutPromptId, cutPipelineJobId, cutResultArtifactId, projectId, sourceId, sourceVersion], references: [id, cutPipelineJobId, cutResultArtifactId, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "FrameEvidenceIntent_exact_prompt_cut")
+  contextPolicyFingerprint              String
+  contractVersion                       String
+  recipeVersion                         String
+  requestedPositionsMs                  Json
+  createdAt                             DateTime                       @default(now())
+  attempts                              FrameEvidenceAttempt[]
+  result                                FrameEvidenceResult?
+
+  @@unique([id, pipelineJobId])
+  @@unique([pipelineJobId, projectId, sourceId, sourceVersion])
+  @@index([cutPipelineJobId, createdAt, id])
+}
+
+/// PostgreSQL-owned global extraction capacity shared across worker replicas.
+model FrameExtractionPool {
+  resourceClass String                @id
+  capacity      Int
+  slots         FrameExtractionSlot[]
+  createdAt     DateTime              @default(now())
+}
+
+/// A fenced slot bound to one immutable attempt lease and work deadline.
+model FrameExtractionSlot {
+  resourceClass  String
+  ordinal        Int
+  pool           FrameExtractionPool   @relation(fields: [resourceClass], references: [resourceClass], onDelete: Restrict)
+  attemptId      String?               @unique @db.Uuid
+  attempt        FrameEvidenceAttempt? @relation(fields: [attemptId, leaseToken, workDeadlineAt], references: [id, leaseToken, workDeadlineAt], onDelete: Restrict)
+  leaseToken     String?               @unique
+  leaseExpiresAt DateTime?
+  heartbeatAt    DateTime?
+  workDeadlineAt DateTime?
+
+  @@id([resourceClass, ordinal])
+  @@unique([attemptId, leaseToken, workDeadlineAt])
+}
+
+/// Attempt read admission, absolute work deadline, progress and scratch reservation.
+model FrameEvidenceAttempt {
+  id                   String                       @id @db.Uuid
+  jobAttempt           JobAttempt                   @relation(fields: [id, pipelineJobId, attemptNumber, leaseToken], references: [id, jobId, attemptNumber, leaseToken], onDelete: Restrict)
+  intentId             String                       @db.Uuid
+  pipelineJobId        String                       @db.Uuid
+  intent               FrameEvidenceIntent          @relation(fields: [intentId, pipelineJobId], references: [id, pipelineJobId], onDelete: Restrict)
+  attemptNumber        Int
+  leaseToken           String                       @unique
+  workDeadlineAt       DateTime
+  inputReadStartedAt   DateTime?
+  inputReadFingerprint String?
+  executionStoppedAt   DateTime?
+  progressPhase        String                       @default("READ_INPUT")
+  completedFrameCount  Int                          @default(0)
+  progressBasisPoints  Int                          @default(0)
+  progressUpdatedAt    DateTime                     @default(now())
+  scratchDirectoryName String                       @unique
+  scratchReservedBytes BigInt
+  scratchCleanedAt     DateTime?
+  createdAt            DateTime                     @default(now())
+  outputs              FrameEvidenceAttemptOutput[]
+  result               FrameEvidenceResult?
+  slot                 FrameExtractionSlot?
+
+  @@unique([intentId, attemptNumber])
+  @@unique([id, pipelineJobId, attemptNumber, leaseToken])
+  @@unique([id, intentId])
+  @@unique([id, intentId, attemptNumber])
+  @@unique([id, leaseToken, workDeadlineAt])
+  @@index([workDeadlineAt, executionStoppedAt])
+}
+
+/// Durable exact-key output and conservative unknown-upload cleanup tombstone.
+model FrameEvidenceAttemptOutput {
+  uploadStartedAt      DateTime              @default(now())
+  uploadSettledAt      DateTime?
+  nextCleanupAt        DateTime              @default(now())
+  id                   String                @id @db.Uuid
+  attemptId            String                @db.Uuid
+  intentId             String                @db.Uuid
+  attempt              FrameEvidenceAttempt  @relation(fields: [attemptId, intentId, attemptNumber], references: [id, intentId, attemptNumber], onDelete: Restrict)
+  attemptNumber        Int
+  ordinal              Int
+  objectKey            String                @unique
+  state                String                @default("PREPARED")
+  measurement          Json?
+  cleanupStatus        ArtifactCleanupStatus @default(PENDING)
+  cleanupAttemptCount  Int                   @default(0)
+  cleanupLastErrorCode String?
+  cleanupRequestedAt   DateTime              @default(now())
+  cleanupCompletedAt   DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  frame                FrameEvidenceFrame?
+
+  @@unique([attemptId, ordinal])
+  @@unique([id, attemptId, intentId, ordinal])
+  @@index([cleanupStatus, updatedAt])
+}
+
+/// One winning complete frame set per immutable intent.
+model FrameEvidenceResult {
+  id        String               @id @db.Uuid
+  intentId  String               @unique @db.Uuid
+  intent    FrameEvidenceIntent  @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptId String               @unique @db.Uuid
+  attempt   FrameEvidenceAttempt @relation(fields: [attemptId, intentId], references: [id, intentId], onDelete: Restrict)
+  createdAt DateTime             @default(now())
+  frames    FrameEvidenceFrame[]
+
+  @@unique([id, intentId, attemptId])
+  @@unique([attemptId, intentId])
+}
+
+/// One accepted frame bound to the winning attempt output and ordinal.
+model FrameEvidenceFrame {
+  id          String                     @id @db.Uuid
+  resultId    String                     @db.Uuid
+  intentId    String                     @db.Uuid
+  attemptId   String                     @db.Uuid
+  ordinal     Int
+  result      FrameEvidenceResult        @relation(fields: [resultId, intentId, attemptId], references: [id, intentId, attemptId], onDelete: Restrict)
+  outputId    String                     @unique @db.Uuid
+  output      FrameEvidenceAttemptOutput @relation(fields: [outputId, attemptId, intentId, ordinal], references: [id, attemptId, intentId, ordinal], onDelete: Restrict)
+  measurement Json
+  createdAt   DateTime                   @default(now())
+
+  @@unique([intentId, ordinal])
+  @@unique([outputId, attemptId, intentId, ordinal])
 }

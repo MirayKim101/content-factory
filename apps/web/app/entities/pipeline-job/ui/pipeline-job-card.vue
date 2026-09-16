@@ -17,6 +17,7 @@ const emit = defineEmits<{
   editAssembly: [payload: { jobId: string; durationMs: number }];
   reviewEditorial: [payload: { jobId: string; renderId: string }];
   editCreatorContext: [jobId: string];
+  viewFrames: [jobId: string];
 }>();
 const config = useRuntimeConfig();
 const api = createMediaPipelineApi(config.public.apiBasePath);
@@ -117,6 +118,13 @@ const label = computed(
           severity="secondary"
           @click="emit('editCreatorContext', query.data.value.id)"
           >Контекст автора и prompt</Button
+        >
+        <Button
+          v-if="projectId"
+          type="button"
+          severity="secondary"
+          @click="emit('viewFrames', query.data.value.id)"
+          >Кадры нарезки</Button
         >
         <Button
           type="button"

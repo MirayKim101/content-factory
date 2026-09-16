@@ -21,12 +21,20 @@ import { StructuralReferenceImageInspector } from "./infrastructure/reference-im
 import { CreatorReferenceReconciliationStartup } from "./infrastructure/creator-reference-reconciliation.startup.js";
 import { AiContextAdmissionInterceptor } from "./presentation/ai-context-admission.interceptor.js";
 import { CreatorContextController } from "./presentation/creator-context.controller.js";
+import { FrameEvidenceController } from "./presentation/frame-evidence.controller.js";
+import { PrismaFrameEvidenceRepository } from "./infrastructure/prisma-frame-evidence.repository.js";
+import { FRAME_EVIDENCE_REPOSITORY } from "./application/frame-evidence-repository.port.js";
 
 @Module({
   imports: [ProjectsModule, MediaPipelineModule],
-  controllers: [CreatorContextController],
+  controllers: [CreatorContextController, FrameEvidenceController],
   providers: [
     CreatorContextService,
+    PrismaFrameEvidenceRepository,
+    {
+      provide: FRAME_EVIDENCE_REPOSITORY,
+      useExisting: PrismaFrameEvidenceRepository,
+    },
     ResolveAiEditorialContext,
     ReconcileCreatorReferences,
     CreatorReferenceReconciliationStartup,

@@ -231,3 +231,38 @@ export type AiContentOperationRequest = Prisma.AiContentOperationRequestModel
  * 
  */
 export type EditorialComponentProvenance = Prisma.EditorialComponentProvenanceModel
+/**
+ * Model FrameEvidenceIntent
+ * Immutable exact cut and creator-context capture for deterministic frame extraction.
+ */
+export type FrameEvidenceIntent = Prisma.FrameEvidenceIntentModel
+/**
+ * Model FrameExtractionPool
+ * PostgreSQL-owned global extraction capacity shared across worker replicas.
+ */
+export type FrameExtractionPool = Prisma.FrameExtractionPoolModel
+/**
+ * Model FrameExtractionSlot
+ * A fenced slot bound to one immutable attempt lease and work deadline.
+ */
+export type FrameExtractionSlot = Prisma.FrameExtractionSlotModel
+/**
+ * Model FrameEvidenceAttempt
+ * Attempt read admission, absolute work deadline, progress and scratch reservation.
+ */
+export type FrameEvidenceAttempt = Prisma.FrameEvidenceAttemptModel
+/**
+ * Model FrameEvidenceAttemptOutput
+ * Durable exact-key output and conservative unknown-upload cleanup tombstone.
+ */
+export type FrameEvidenceAttemptOutput = Prisma.FrameEvidenceAttemptOutputModel
+/**
+ * Model FrameEvidenceResult
+ * One winning complete frame set per immutable intent.
+ */
+export type FrameEvidenceResult = Prisma.FrameEvidenceResultModel
+/**
+ * Model FrameEvidenceFrame
+ * One accepted frame bound to the winning attempt output and ordinal.
+ */
+export type FrameEvidenceFrame = Prisma.FrameEvidenceFrameModel

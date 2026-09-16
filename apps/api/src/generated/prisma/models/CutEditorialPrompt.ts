@@ -272,6 +272,7 @@ export type CutEditorialPromptWhereInput = {
   currentRevision?: Prisma.IntFilter<"CutEditorialPrompt"> | number
   createdAt?: Prisma.DateTimeFilter<"CutEditorialPrompt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CutEditorialPrompt"> | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentListRelationFilter
   cutPipelineJob?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
   cutResultArtifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
   revisions?: Prisma.CutEditorialPromptRevisionListRelationFilter
@@ -289,6 +290,7 @@ export type CutEditorialPromptOrderByWithRelationInput = {
   currentRevision?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentOrderByRelationAggregateInput
   cutPipelineJob?: Prisma.PipelineJobOrderByWithRelationInput
   cutResultArtifact?: Prisma.MediaArtifactOrderByWithRelationInput
   revisions?: Prisma.CutEditorialPromptRevisionOrderByRelationAggregateInput
@@ -301,6 +303,7 @@ export type CutEditorialPromptWhereUniqueInput = Prisma.AtLeast<{
   cutPipelineJobId_projectId_sourceId_sourceVersion?: Prisma.CutEditorialPromptCutPipelineJobIdProjectIdSourceIdSourceVersionCompoundUniqueInput
   cutResultArtifactId_projectId_sourceId_sourceVersion_cutPipelineJobId?: Prisma.CutEditorialPromptCutResultArtifactIdProjectIdSourceIdSourceVersionCutPipelineJobIdCompoundUniqueInput
   id_projectId_sourceId_sourceVersion?: Prisma.CutEditorialPromptIdProjectIdSourceIdSourceVersionCompoundUniqueInput
+  id_cutPipelineJobId_cutResultArtifactId_projectId_sourceId_sourceVersion?: Prisma.CutEditorialPromptIdCutPipelineJobIdCutResultArtifactIdProjectIdSourceIdSourceVersionCompoundUniqueInput
   AND?: Prisma.CutEditorialPromptWhereInput | Prisma.CutEditorialPromptWhereInput[]
   OR?: Prisma.CutEditorialPromptWhereInput[]
   NOT?: Prisma.CutEditorialPromptWhereInput | Prisma.CutEditorialPromptWhereInput[]
@@ -312,10 +315,11 @@ export type CutEditorialPromptWhereUniqueInput = Prisma.AtLeast<{
   currentRevision?: Prisma.IntFilter<"CutEditorialPrompt"> | number
   createdAt?: Prisma.DateTimeFilter<"CutEditorialPrompt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CutEditorialPrompt"> | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentListRelationFilter
   cutPipelineJob?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
   cutResultArtifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
   revisions?: Prisma.CutEditorialPromptRevisionListRelationFilter
-}, "id" | "cutPipelineJobId" | "cutResultArtifactId" | "cutPipelineJobId_projectId_sourceId_sourceVersion" | "cutResultArtifactId_projectId_sourceId_sourceVersion_cutPipelineJobId" | "id_projectId_sourceId_sourceVersion">
+}, "id" | "cutPipelineJobId" | "cutResultArtifactId" | "cutPipelineJobId_projectId_sourceId_sourceVersion" | "cutResultArtifactId_projectId_sourceId_sourceVersion_cutPipelineJobId" | "id_projectId_sourceId_sourceVersion" | "id_cutPipelineJobId_cutResultArtifactId_projectId_sourceId_sourceVersion">
 
 export type CutEditorialPromptOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -360,6 +364,7 @@ export type CutEditorialPromptCreateInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutPromptInput
   cutPipelineJob: Prisma.PipelineJobCreateNestedOneWithoutCutEditorialPromptInput
   cutResultArtifact: Prisma.MediaArtifactCreateNestedOneWithoutCutEditorialPromptInput
   revisions?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutPromptInput
@@ -377,6 +382,7 @@ export type CutEditorialPromptUncheckedCreateInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPromptInput
   revisions?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutPromptInput
 }
 
@@ -387,6 +393,7 @@ export type CutEditorialPromptUpdateInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutPromptNestedInput
   cutPipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutCutEditorialPromptNestedInput
   cutResultArtifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutCutEditorialPromptNestedInput
   revisions?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutPromptNestedInput
@@ -404,6 +411,7 @@ export type CutEditorialPromptUncheckedUpdateInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPromptNestedInput
   revisions?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutPromptNestedInput
 }
 
@@ -466,6 +474,15 @@ export type CutEditorialPromptCutResultArtifactIdProjectIdSourceIdSourceVersionC
 
 export type CutEditorialPromptIdProjectIdSourceIdSourceVersionCompoundUniqueInput = {
   id: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+}
+
+export type CutEditorialPromptIdCutPipelineJobIdCutResultArtifactIdProjectIdSourceIdSourceVersionCompoundUniqueInput = {
+  id: string
+  cutPipelineJobId: string
+  cutResultArtifactId: string
   projectId: string
   sourceId: string
   sourceVersion: number
@@ -608,6 +625,20 @@ export type CutEditorialPromptUpdateOneRequiredWithoutRevisionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CutEditorialPromptUpdateToOneWithWhereWithoutRevisionsInput, Prisma.CutEditorialPromptUpdateWithoutRevisionsInput>, Prisma.CutEditorialPromptUncheckedUpdateWithoutRevisionsInput>
 }
 
+export type CutEditorialPromptCreateNestedOneWithoutFrameEvidenceIntentsInput = {
+  create?: Prisma.XOR<Prisma.CutEditorialPromptCreateWithoutFrameEvidenceIntentsInput, Prisma.CutEditorialPromptUncheckedCreateWithoutFrameEvidenceIntentsInput>
+  connectOrCreate?: Prisma.CutEditorialPromptCreateOrConnectWithoutFrameEvidenceIntentsInput
+  connect?: Prisma.CutEditorialPromptWhereUniqueInput
+}
+
+export type CutEditorialPromptUpdateOneRequiredWithoutFrameEvidenceIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.CutEditorialPromptCreateWithoutFrameEvidenceIntentsInput, Prisma.CutEditorialPromptUncheckedCreateWithoutFrameEvidenceIntentsInput>
+  connectOrCreate?: Prisma.CutEditorialPromptCreateOrConnectWithoutFrameEvidenceIntentsInput
+  upsert?: Prisma.CutEditorialPromptUpsertWithoutFrameEvidenceIntentsInput
+  connect?: Prisma.CutEditorialPromptWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CutEditorialPromptUpdateToOneWithWhereWithoutFrameEvidenceIntentsInput, Prisma.CutEditorialPromptUpdateWithoutFrameEvidenceIntentsInput>, Prisma.CutEditorialPromptUncheckedUpdateWithoutFrameEvidenceIntentsInput>
+}
+
 export type CutEditorialPromptCreateWithoutCutResultArtifactInput = {
   id: string
   cutResultSha256: string
@@ -615,6 +646,7 @@ export type CutEditorialPromptCreateWithoutCutResultArtifactInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutPromptInput
   cutPipelineJob: Prisma.PipelineJobCreateNestedOneWithoutCutEditorialPromptInput
   revisions?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutPromptInput
 }
@@ -626,6 +658,7 @@ export type CutEditorialPromptUncheckedCreateWithoutCutResultArtifactInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPromptInput
   revisions?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutPromptInput
 }
 
@@ -652,6 +685,7 @@ export type CutEditorialPromptUpdateWithoutCutResultArtifactInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutPromptNestedInput
   cutPipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutCutEditorialPromptNestedInput
   revisions?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutPromptNestedInput
 }
@@ -663,6 +697,7 @@ export type CutEditorialPromptUncheckedUpdateWithoutCutResultArtifactInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPromptNestedInput
   revisions?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutPromptNestedInput
 }
 
@@ -673,6 +708,7 @@ export type CutEditorialPromptCreateWithoutCutPipelineJobInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutPromptInput
   cutResultArtifact: Prisma.MediaArtifactCreateNestedOneWithoutCutEditorialPromptInput
   revisions?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutPromptInput
 }
@@ -685,6 +721,7 @@ export type CutEditorialPromptUncheckedCreateWithoutCutPipelineJobInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPromptInput
   revisions?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutPromptInput
 }
 
@@ -711,6 +748,7 @@ export type CutEditorialPromptUpdateWithoutCutPipelineJobInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutPromptNestedInput
   cutResultArtifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutCutEditorialPromptNestedInput
   revisions?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutPromptNestedInput
 }
@@ -723,6 +761,7 @@ export type CutEditorialPromptUncheckedUpdateWithoutCutPipelineJobInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPromptNestedInput
   revisions?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutPromptNestedInput
 }
 
@@ -733,6 +772,7 @@ export type CutEditorialPromptCreateWithoutRevisionsInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutPromptInput
   cutPipelineJob: Prisma.PipelineJobCreateNestedOneWithoutCutEditorialPromptInput
   cutResultArtifact: Prisma.MediaArtifactCreateNestedOneWithoutCutEditorialPromptInput
 }
@@ -749,6 +789,7 @@ export type CutEditorialPromptUncheckedCreateWithoutRevisionsInput = {
   currentRevision?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPromptInput
 }
 
 export type CutEditorialPromptCreateOrConnectWithoutRevisionsInput = {
@@ -774,6 +815,7 @@ export type CutEditorialPromptUpdateWithoutRevisionsInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutPromptNestedInput
   cutPipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutCutEditorialPromptNestedInput
   cutResultArtifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutCutEditorialPromptNestedInput
 }
@@ -790,6 +832,77 @@ export type CutEditorialPromptUncheckedUpdateWithoutRevisionsInput = {
   currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPromptNestedInput
+}
+
+export type CutEditorialPromptCreateWithoutFrameEvidenceIntentsInput = {
+  id: string
+  cutResultSha256: string
+  cutResultSizeBytes: bigint | number
+  currentRevision?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  cutPipelineJob: Prisma.PipelineJobCreateNestedOneWithoutCutEditorialPromptInput
+  cutResultArtifact: Prisma.MediaArtifactCreateNestedOneWithoutCutEditorialPromptInput
+  revisions?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutPromptInput
+}
+
+export type CutEditorialPromptUncheckedCreateWithoutFrameEvidenceIntentsInput = {
+  id: string
+  cutPipelineJobId: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  cutResultArtifactId: string
+  cutResultSha256: string
+  cutResultSizeBytes: bigint | number
+  currentRevision?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  revisions?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutPromptInput
+}
+
+export type CutEditorialPromptCreateOrConnectWithoutFrameEvidenceIntentsInput = {
+  where: Prisma.CutEditorialPromptWhereUniqueInput
+  create: Prisma.XOR<Prisma.CutEditorialPromptCreateWithoutFrameEvidenceIntentsInput, Prisma.CutEditorialPromptUncheckedCreateWithoutFrameEvidenceIntentsInput>
+}
+
+export type CutEditorialPromptUpsertWithoutFrameEvidenceIntentsInput = {
+  update: Prisma.XOR<Prisma.CutEditorialPromptUpdateWithoutFrameEvidenceIntentsInput, Prisma.CutEditorialPromptUncheckedUpdateWithoutFrameEvidenceIntentsInput>
+  create: Prisma.XOR<Prisma.CutEditorialPromptCreateWithoutFrameEvidenceIntentsInput, Prisma.CutEditorialPromptUncheckedCreateWithoutFrameEvidenceIntentsInput>
+  where?: Prisma.CutEditorialPromptWhereInput
+}
+
+export type CutEditorialPromptUpdateToOneWithWhereWithoutFrameEvidenceIntentsInput = {
+  where?: Prisma.CutEditorialPromptWhereInput
+  data: Prisma.XOR<Prisma.CutEditorialPromptUpdateWithoutFrameEvidenceIntentsInput, Prisma.CutEditorialPromptUncheckedUpdateWithoutFrameEvidenceIntentsInput>
+}
+
+export type CutEditorialPromptUpdateWithoutFrameEvidenceIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cutPipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutCutEditorialPromptNestedInput
+  cutResultArtifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutCutEditorialPromptNestedInput
+  revisions?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutPromptNestedInput
+}
+
+export type CutEditorialPromptUncheckedUpdateWithoutFrameEvidenceIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currentRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  revisions?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutPromptNestedInput
 }
 
 
@@ -798,10 +911,12 @@ export type CutEditorialPromptUncheckedUpdateWithoutRevisionsInput = {
  */
 
 export type CutEditorialPromptCountOutputType = {
+  frameEvidenceIntents: number
   revisions: number
 }
 
 export type CutEditorialPromptCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  frameEvidenceIntents?: boolean | CutEditorialPromptCountOutputTypeCountFrameEvidenceIntentsArgs
   revisions?: boolean | CutEditorialPromptCountOutputTypeCountRevisionsArgs
 }
 
@@ -813,6 +928,13 @@ export type CutEditorialPromptCountOutputTypeDefaultArgs<ExtArgs extends runtime
    * Select specific fields to fetch from the CutEditorialPromptCountOutputType
    */
   select?: Prisma.CutEditorialPromptCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CutEditorialPromptCountOutputType without action
+ */
+export type CutEditorialPromptCountOutputTypeCountFrameEvidenceIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FrameEvidenceIntentWhereInput
 }
 
 /**
@@ -835,6 +957,7 @@ export type CutEditorialPromptSelect<ExtArgs extends runtime.Types.Extensions.In
   currentRevision?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  frameEvidenceIntents?: boolean | Prisma.CutEditorialPrompt$frameEvidenceIntentsArgs<ExtArgs>
   cutPipelineJob?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
   cutResultArtifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
   revisions?: boolean | Prisma.CutEditorialPrompt$revisionsArgs<ExtArgs>
@@ -889,6 +1012,7 @@ export type CutEditorialPromptSelectScalar = {
 
 export type CutEditorialPromptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "cutPipelineJobId" | "projectId" | "sourceId" | "sourceVersion" | "cutResultArtifactId" | "cutResultSha256" | "cutResultSizeBytes" | "currentRevision" | "createdAt" | "updatedAt", ExtArgs["result"]["cutEditorialPrompt"]>
 export type CutEditorialPromptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  frameEvidenceIntents?: boolean | Prisma.CutEditorialPrompt$frameEvidenceIntentsArgs<ExtArgs>
   cutPipelineJob?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
   cutResultArtifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
   revisions?: boolean | Prisma.CutEditorialPrompt$revisionsArgs<ExtArgs>
@@ -906,6 +1030,7 @@ export type CutEditorialPromptIncludeUpdateManyAndReturn<ExtArgs extends runtime
 export type $CutEditorialPromptPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CutEditorialPrompt"
   objects: {
+    frameEvidenceIntents: Prisma.$FrameEvidenceIntentPayload<ExtArgs>[]
     cutPipelineJob: Prisma.$PipelineJobPayload<ExtArgs>
     cutResultArtifact: Prisma.$MediaArtifactPayload<ExtArgs>
     revisions: Prisma.$CutEditorialPromptRevisionPayload<ExtArgs>[]
@@ -1316,6 +1441,7 @@ readonly fields: CutEditorialPromptFieldRefs;
  */
 export interface Prisma__CutEditorialPromptClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  frameEvidenceIntents<T extends Prisma.CutEditorialPrompt$frameEvidenceIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CutEditorialPrompt$frameEvidenceIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FrameEvidenceIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cutPipelineJob<T extends Prisma.PipelineJobDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJobDefaultArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   cutResultArtifact<T extends Prisma.MediaArtifactDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifactDefaultArgs<ExtArgs>>): Prisma.Prisma__MediaArtifactClient<runtime.Types.Result.GetResult<Prisma.$MediaArtifactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   revisions<T extends Prisma.CutEditorialPrompt$revisionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CutEditorialPrompt$revisionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CutEditorialPromptRevisionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1757,6 +1883,30 @@ export type CutEditorialPromptDeleteManyArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many CutEditorialPrompts to delete.
    */
   limit?: number
+}
+
+/**
+ * CutEditorialPrompt.frameEvidenceIntents
+ */
+export type CutEditorialPrompt$frameEvidenceIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FrameEvidenceIntent
+   */
+  select?: Prisma.FrameEvidenceIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FrameEvidenceIntent
+   */
+  omit?: Prisma.FrameEvidenceIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FrameEvidenceIntentInclude<ExtArgs> | null
+  where?: Prisma.FrameEvidenceIntentWhereInput
+  orderBy?: Prisma.FrameEvidenceIntentOrderByWithRelationInput | Prisma.FrameEvidenceIntentOrderByWithRelationInput[]
+  cursor?: Prisma.FrameEvidenceIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FrameEvidenceIntentScalarFieldEnum | Prisma.FrameEvidenceIntentScalarFieldEnum[]
 }
 
 /**

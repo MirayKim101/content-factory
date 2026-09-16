@@ -1012,6 +1012,20 @@
         ],
         "type": "object"
       },
+      "CreateFrameEvidenceDto": {
+        "properties": {
+          "cutPromptRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceContextRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": ["sourceContextRevisionId", "cutPromptRevisionId"],
+        "type": "object"
+      },
       "CreateProcessingTemplateDto": {
         "properties": {
           "name": {
@@ -2776,6 +2790,19 @@
         "required": ["error"],
         "type": "object"
       },
+      "EvidenceFrameDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "measurement": {
+            "$ref": "#/components/schemas/FrameMeasurementDto"
+          }
+        },
+        "required": ["id", "measurement"],
+        "type": "object"
+      },
       "FailureResponseDto": {
         "properties": {
           "code": {
@@ -2786,6 +2813,440 @@
           }
         },
         "required": ["code", "message"],
+        "type": "object"
+      },
+      "FrameContentAccessDto": {
+        "properties": {
+          "blocker": {
+            "enum": ["SOURCE_AUTHORIZATION_REQUIRED"],
+            "nullable": true,
+            "type": "string"
+          },
+          "bytesReadable": {
+            "type": "boolean"
+          }
+        },
+        "required": ["bytesReadable", "blocker"],
+        "type": "object"
+      },
+      "FrameCurrentUseDto": {
+        "properties": {
+          "blockers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "contextPolicyFingerprint": {
+            "nullable": true,
+            "type": "string"
+          },
+          "usableForGeneration": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "usableForGeneration",
+          "blockers",
+          "contextPolicyFingerprint"
+        ],
+        "type": "object"
+      },
+      "FrameEvidenceDto": {
+        "properties": {
+          "contentAccess": {
+            "$ref": "#/components/schemas/FrameContentAccessDto"
+          },
+          "contractVersion": {
+            "enum": ["editorial-sparse-frames-v1"],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currentUse": {
+            "$ref": "#/components/schemas/FrameCurrentUseDto"
+          },
+          "frames": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceFrameDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/FrameEvidenceIdentityDto"
+          },
+          "job": {
+            "$ref": "#/components/schemas/FrameEvidenceJobDto"
+          },
+          "pipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipeVersion": {
+            "enum": ["quartiles-jpeg-640-v1"],
+            "type": "string"
+          },
+          "requestedPositionsMs": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "pipelineJobId",
+          "identity",
+          "contractVersion",
+          "recipeVersion",
+          "requestedPositionsMs",
+          "createdAt",
+          "currentUse",
+          "contentAccess",
+          "job",
+          "frames"
+        ],
+        "type": "object"
+      },
+      "FrameEvidenceErrorDetailDto": {
+        "properties": {
+          "code": {
+            "description": "Safe operation code, including FRAME_CONTEXT_REQUIRED, SOURCE_AUTHORIZATION_REQUIRED, IDEMPOTENCY_CONFLICT, EDITORIAL_FRAMES_DISABLED, FRAME_CONTENT_INVALID, FRAME_STORAGE_UNAVAILABLE, RANGE_NOT_SATISFIABLE and validation/cursor errors.",
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "FrameEvidenceErrorResponseDto": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/FrameEvidenceErrorDetailDto"
+          }
+        },
+        "required": ["error"],
+        "type": "object"
+      },
+      "FrameEvidenceIdentityDto": {
+        "properties": {
+          "creatorProfileId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "creatorProfileRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "creatorProfileRevisionNo": {
+            "type": "number"
+          },
+          "cutEndMs": {
+            "type": "number"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutPromptId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutPromptRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutPromptRevisionNo": {
+            "type": "number"
+          },
+          "cutResultArtifactId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutResultSha256": {
+            "type": "string"
+          },
+          "cutResultSizeBytes": {
+            "description": "Exact decimal byte count.",
+            "type": "string"
+          },
+          "cutStartMs": {
+            "type": "number"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceAuthorizationBasis": {
+            "type": "string"
+          },
+          "sourceAuthorizationDecidedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "sourceAuthorizationDeclarationVersion": {
+            "type": "string"
+          },
+          "sourceAuthorizationRevision": {
+            "type": "number"
+          },
+          "sourceContextId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceContextRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceContextRevisionNo": {
+            "type": "number"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceSha256": {
+            "type": "string"
+          },
+          "sourceVersion": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "sourceSha256",
+          "sourceAuthorizationRevision",
+          "sourceAuthorizationBasis",
+          "sourceAuthorizationDeclarationVersion",
+          "sourceAuthorizationDecidedAt",
+          "cutPipelineJobId",
+          "cutResultArtifactId",
+          "cutResultSha256",
+          "cutResultSizeBytes",
+          "cutStartMs",
+          "cutEndMs",
+          "creatorProfileId",
+          "creatorProfileRevisionId",
+          "creatorProfileRevisionNo",
+          "sourceContextId",
+          "sourceContextRevisionId",
+          "sourceContextRevisionNo",
+          "cutPromptId",
+          "cutPromptRevisionId",
+          "cutPromptRevisionNo"
+        ],
+        "type": "object"
+      },
+      "FrameEvidenceJobDto": {
+        "properties": {
+          "admissionReason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "attempt": {
+            "type": "number"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FrameFailureDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "nextAttemptAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "progress": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FrameProgressDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "revision",
+          "attempt",
+          "nextAttemptAt",
+          "admissionReason",
+          "failure",
+          "progress"
+        ],
+        "type": "object"
+      },
+      "FrameEvidenceListDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FrameEvidenceDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "FrameFailureDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "FrameMeasurementDto": {
+        "properties": {
+          "actualCutMs": {
+            "type": "number"
+          },
+          "actualPtsTicks": {
+            "description": "Measured normalized decoded frame PTS; never requested seek time.",
+            "type": "number"
+          },
+          "contentType": {
+            "enum": ["image/jpeg"],
+            "type": "string"
+          },
+          "extractorVersion": {
+            "enum": ["ffmpeg-frame-extractor-v1"],
+            "type": "string"
+          },
+          "ffmpegVersion": {
+            "type": "string"
+          },
+          "height": {
+            "maximum": 640,
+            "minimum": 1,
+            "type": "number"
+          },
+          "mappedSourceMs": {
+            "description": "Cut start plus normalized actual time, not original source PTS.",
+            "type": "number"
+          },
+          "ordinal": {
+            "maximum": 2,
+            "minimum": 0,
+            "type": "number"
+          },
+          "recipeVersion": {
+            "enum": ["quartiles-jpeg-640-v1"],
+            "type": "string"
+          },
+          "requestedCutMs": {
+            "type": "number"
+          },
+          "requestedSourceMs": {
+            "type": "number"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "maximum": 4194304,
+            "minimum": 1,
+            "type": "number"
+          },
+          "timeBaseDenominator": {
+            "enum": [1000000],
+            "type": "number"
+          },
+          "timeBaseNumerator": {
+            "enum": [1],
+            "type": "number"
+          },
+          "width": {
+            "maximum": 640,
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "ordinal",
+          "requestedCutMs",
+          "requestedSourceMs",
+          "actualPtsTicks",
+          "timeBaseNumerator",
+          "timeBaseDenominator",
+          "actualCutMs",
+          "mappedSourceMs",
+          "width",
+          "height",
+          "sizeBytes",
+          "sha256",
+          "contentType",
+          "recipeVersion",
+          "extractorVersion",
+          "ffmpegVersion"
+        ],
+        "type": "object"
+      },
+      "FrameProgressDto": {
+        "properties": {
+          "basisPoints": {
+            "maximum": 10000,
+            "minimum": 0,
+            "type": "number"
+          },
+          "completedFrameCount": {
+            "maximum": 3,
+            "minimum": 0,
+            "type": "number"
+          },
+          "phase": {
+            "enum": ["READ_INPUT", "EXTRACT", "HASH", "UPLOAD", "FINALIZE"],
+            "type": "string"
+          },
+          "schemaVersion": {
+            "enum": ["editorial-frame-progress-v1"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "phase",
+          "completedFrameCount",
+          "basisPoints"
+        ],
         "type": "object"
       },
       "JobFailureDto": {
@@ -4909,6 +5370,467 @@
         "tags": ["editorial-content"]
       }
     },
+    "/api/v1/frame-evidence/{intentId}": {
+      "get": {
+        "operationId": "FrameEvidenceController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid UUID/body/idempotency key or pagination."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Exact intent/frame identity or private object not found."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Idempotency conflict, stale context, unsupported input or SOURCE_AUTHORIZATION_REQUIRED."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Admission disabled, private storage unavailable or integrity mismatch."
+          }
+        },
+        "tags": ["frame-evidence"]
+      }
+    },
+    "/api/v1/frame-evidence/{intentId}/frames/{frameId}/content": {
+      "get": {
+        "operationId": "FrameEvidenceController_content",
+        "parameters": [
+          {
+            "description": "One RFC byte range: bytes=start-end, bytes=start- or bytes=-suffix; multiple ranges are unsupported.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "frameId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Private JPEG bytes.",
+            "headers": {
+              "Accept-Ranges": {
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "example": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "example": "image/jpeg",
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "description": "Quoted immutable SHA-256.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "example": "nosniff",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "206": {
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Single byte range.",
+            "headers": {
+              "Accept-Ranges": {
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "example": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "Content-Range": {
+                "schema": {
+                  "example": "bytes 0-99/1000",
+                  "type": "string"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "example": "image/jpeg",
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "description": "Quoted immutable SHA-256.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "example": "nosniff",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid UUID/body/idempotency key or pagination."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Exact intent/frame identity or private object not found."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Idempotency conflict, stale context, unsupported input or SOURCE_AUTHORIZATION_REQUIRED."
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unsatisfiable byte range.",
+            "headers": {
+              "Accept-Ranges": {
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "schema": {
+                  "example": "bytes */1000",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Admission disabled, private storage unavailable or integrity mismatch."
+          }
+        },
+        "tags": ["frame-evidence"]
+      },
+      "head": {
+        "operationId": "FrameEvidenceController_head",
+        "parameters": [
+          {
+            "description": "One RFC byte range: bytes=start-end, bytes=start- or bytes=-suffix; multiple ranges are unsupported.",
+            "in": "header",
+            "name": "Range",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "frameId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private JPEG headers.",
+            "headers": {
+              "Accept-Ranges": {
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "example": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "example": "image/jpeg",
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "description": "Quoted immutable SHA-256.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "example": "nosniff",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Single range headers.",
+            "headers": {
+              "Accept-Ranges": {
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "example": "private, no-store",
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "Content-Range": {
+                "schema": {
+                  "example": "bytes 0-99/1000",
+                  "type": "string"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "example": "image/jpeg",
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "description": "Quoted immutable SHA-256.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "example": "nosniff",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid UUID/body/idempotency key or pagination."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Exact intent/frame identity or private object not found."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Idempotency conflict, stale context, unsupported input or SOURCE_AUTHORIZATION_REQUIRED."
+          },
+          "416": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Unsatisfiable byte range.",
+            "headers": {
+              "Accept-Ranges": {
+                "schema": {
+                  "example": "bytes",
+                  "type": "string"
+                }
+              },
+              "Content-Range": {
+                "schema": {
+                  "example": "bytes */1000",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Admission disabled, private storage unavailable or integrity mismatch."
+          }
+        },
+        "tags": ["frame-evidence"]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "AppController_health",
@@ -5183,6 +6105,182 @@
         },
         "summary": "Get one authoritative editorial review candidate",
         "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{cutJobId}/frame-evidence": {
+      "get": {
+        "operationId": "FrameEvidenceController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceListDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid UUID/body/idempotency key or pagination."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Exact intent/frame identity or private object not found."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Idempotency conflict, stale context, unsupported input or SOURCE_AUTHORIZATION_REQUIRED."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Admission disabled, private storage unavailable or integrity mismatch."
+          }
+        },
+        "tags": ["frame-evidence"]
+      },
+      "post": {
+        "operationId": "FrameEvidenceController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 8,
+              "pattern": "^[A-Za-z0-9._:-]{8,200}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFrameEvidenceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Invalid UUID/body/idempotency key or pagination."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Exact intent/frame identity or private object not found."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Idempotency conflict, stale context, unsupported input or SOURCE_AUTHORIZATION_REQUIRED."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": "Admission disabled, private storage unavailable or integrity mismatch."
+          }
+        },
+        "tags": ["frame-evidence"]
       }
     },
     "/api/v1/pipeline-jobs/{id}": {

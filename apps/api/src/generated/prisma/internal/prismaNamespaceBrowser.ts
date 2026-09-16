@@ -88,7 +88,14 @@ export const ModelName = {
   CutEditorialPrompt: 'CutEditorialPrompt',
   CutEditorialPromptRevision: 'CutEditorialPromptRevision',
   AiContentOperationRequest: 'AiContentOperationRequest',
-  EditorialComponentProvenance: 'EditorialComponentProvenance'
+  EditorialComponentProvenance: 'EditorialComponentProvenance',
+  FrameEvidenceIntent: 'FrameEvidenceIntent',
+  FrameExtractionPool: 'FrameExtractionPool',
+  FrameExtractionSlot: 'FrameExtractionSlot',
+  FrameEvidenceAttempt: 'FrameEvidenceAttempt',
+  FrameEvidenceAttemptOutput: 'FrameEvidenceAttemptOutput',
+  FrameEvidenceResult: 'FrameEvidenceResult',
+  FrameEvidenceFrame: 'FrameEvidenceFrame'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -853,6 +860,136 @@ export const EditorialComponentProvenanceScalarFieldEnum = {
 } as const
 
 export type EditorialComponentProvenanceScalarFieldEnum = (typeof EditorialComponentProvenanceScalarFieldEnum)[keyof typeof EditorialComponentProvenanceScalarFieldEnum]
+
+
+export const FrameEvidenceIntentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  pipelineJobId: 'pipelineJobId',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutStartMs: 'cutStartMs',
+  cutEndMs: 'cutEndMs',
+  contractDurationMs: 'contractDurationMs',
+  sourceSha256: 'sourceSha256',
+  sourceAuthorizationRevision: 'sourceAuthorizationRevision',
+  sourceAuthorizationBasis: 'sourceAuthorizationBasis',
+  sourceAuthorizationDeclarationVersion: 'sourceAuthorizationDeclarationVersion',
+  sourceAuthorizationDecidedAt: 'sourceAuthorizationDecidedAt',
+  creatorProfileId: 'creatorProfileId',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  creatorProfileRevisionNo: 'creatorProfileRevisionNo',
+  sourceContextId: 'sourceContextId',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  sourceContextRevisionNo: 'sourceContextRevisionNo',
+  cutPromptId: 'cutPromptId',
+  cutPromptRevisionId: 'cutPromptRevisionId',
+  cutPromptRevisionNo: 'cutPromptRevisionNo',
+  contextPolicyFingerprint: 'contextPolicyFingerprint',
+  contractVersion: 'contractVersion',
+  recipeVersion: 'recipeVersion',
+  requestedPositionsMs: 'requestedPositionsMs',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceIntentScalarFieldEnum = (typeof FrameEvidenceIntentScalarFieldEnum)[keyof typeof FrameEvidenceIntentScalarFieldEnum]
+
+
+export const FrameExtractionPoolScalarFieldEnum = {
+  resourceClass: 'resourceClass',
+  capacity: 'capacity',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameExtractionPoolScalarFieldEnum = (typeof FrameExtractionPoolScalarFieldEnum)[keyof typeof FrameExtractionPoolScalarFieldEnum]
+
+
+export const FrameExtractionSlotScalarFieldEnum = {
+  resourceClass: 'resourceClass',
+  ordinal: 'ordinal',
+  attemptId: 'attemptId',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  heartbeatAt: 'heartbeatAt',
+  workDeadlineAt: 'workDeadlineAt'
+} as const
+
+export type FrameExtractionSlotScalarFieldEnum = (typeof FrameExtractionSlotScalarFieldEnum)[keyof typeof FrameExtractionSlotScalarFieldEnum]
+
+
+export const FrameEvidenceAttemptScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  pipelineJobId: 'pipelineJobId',
+  attemptNumber: 'attemptNumber',
+  leaseToken: 'leaseToken',
+  workDeadlineAt: 'workDeadlineAt',
+  inputReadStartedAt: 'inputReadStartedAt',
+  inputReadFingerprint: 'inputReadFingerprint',
+  executionStoppedAt: 'executionStoppedAt',
+  progressPhase: 'progressPhase',
+  completedFrameCount: 'completedFrameCount',
+  progressBasisPoints: 'progressBasisPoints',
+  progressUpdatedAt: 'progressUpdatedAt',
+  scratchDirectoryName: 'scratchDirectoryName',
+  scratchReservedBytes: 'scratchReservedBytes',
+  scratchCleanedAt: 'scratchCleanedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceAttemptScalarFieldEnum = (typeof FrameEvidenceAttemptScalarFieldEnum)[keyof typeof FrameEvidenceAttemptScalarFieldEnum]
+
+
+export const FrameEvidenceAttemptOutputScalarFieldEnum = {
+  uploadStartedAt: 'uploadStartedAt',
+  uploadSettledAt: 'uploadSettledAt',
+  nextCleanupAt: 'nextCleanupAt',
+  id: 'id',
+  attemptId: 'attemptId',
+  intentId: 'intentId',
+  attemptNumber: 'attemptNumber',
+  ordinal: 'ordinal',
+  objectKey: 'objectKey',
+  state: 'state',
+  measurement: 'measurement',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupRequestedAt: 'cleanupRequestedAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FrameEvidenceAttemptOutputScalarFieldEnum = (typeof FrameEvidenceAttemptOutputScalarFieldEnum)[keyof typeof FrameEvidenceAttemptOutputScalarFieldEnum]
+
+
+export const FrameEvidenceResultScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptId: 'attemptId',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceResultScalarFieldEnum = (typeof FrameEvidenceResultScalarFieldEnum)[keyof typeof FrameEvidenceResultScalarFieldEnum]
+
+
+export const FrameEvidenceFrameScalarFieldEnum = {
+  id: 'id',
+  resultId: 'resultId',
+  intentId: 'intentId',
+  attemptId: 'attemptId',
+  ordinal: 'ordinal',
+  outputId: 'outputId',
+  measurement: 'measurement',
+  createdAt: 'createdAt'
+} as const
+
+export type FrameEvidenceFrameScalarFieldEnum = (typeof FrameEvidenceFrameScalarFieldEnum)[keyof typeof FrameEvidenceFrameScalarFieldEnum]
 
 
 export const SortOrder = {

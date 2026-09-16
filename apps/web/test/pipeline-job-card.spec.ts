@@ -81,6 +81,32 @@ describe("PipelineJobCard states", () => {
     ]);
   });
 
+  it("opens historical frames even when AI admission is disabled", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        response({
+          ...baseJob,
+          state: "READY",
+          result: {
+            filename: "cut.mp4",
+            sizeBytes: "2048",
+            sha256: "a".repeat(64),
+            downloadUrl: `/api/v1/pipeline-jobs/${jobId}/result`,
+          },
+        }),
+      ),
+    );
+    const wrapper = mountCard("00000000-0000-4000-8000-000000000003");
+    await flushPromises();
+    const button = wrapper
+      .findAll("button")
+      .find((item) => item.text() === "Кадры нарезки");
+    expect(button).toBeDefined();
+    await button!.trigger("click");
+    expect(wrapper.emitted("viewFrames")).toEqual([[jobId]]);
+  });
+
   it("does not regress the visible state when an older revision arrives", async () => {
     vi.stubGlobal(
       "fetch",
@@ -113,10 +139,11 @@ async function mountJob(job: Record<string, unknown>) {
   return wrapper;
 }
 
-function mountCard() {
+function mountCard(projectId?: string) {
   return mount(PipelineJobCard, {
-    props: { jobId },
+    props: { jobId, projectId },
     global: {
+      stubs: { AssemblyRenderCard: true },
       plugins: [
         [PrimeVue, { unstyled: true }],
         [VueQueryPlugin, { queryClient: new QueryClient() }],

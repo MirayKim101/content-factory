@@ -17,5 +17,9 @@
     "oxlint": "1.80.0",
     "typescript": "6.0.3",
     "vitest": "4.1.11"
+  },
+  "imports": {
+    "#frame-evidence": "./src/frame-evidence.ts",
+    "#frame-policy": "./src/frame-policy.ts"
   }
 }

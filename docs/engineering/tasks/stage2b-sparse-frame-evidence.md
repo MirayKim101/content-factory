@@ -181,6 +181,9 @@ container consumes no running CPU; a live partitioned owner is still bounded by
 the independent watchdog. Missing watchdog capability fails worker startup.
 Timeout is a visible controlled terminal outcome; delivery replay cannot silently
 extend the absolute deadline or create an endless retry loop.
+This also applies when a vanished owner's deadline expires: recovery waits for
+safe reclaim, then records `FRAME_WORK_DEADLINE_EXCEEDED`. Only a confirmed
+fenced execution stop before the deadline can follow bounded lease-loss retry.
 
 Finite local scratch is reserved before the successful database claim and is
 attached to that attempt during the claim transaction. Input reservation uses the
@@ -216,6 +219,13 @@ inactive attempt may move its unaccepted outputs to PENDING cleanup. Cleanup
 handles exact persisted owned keys, treats missing objects as idempotent success,
 and never scans a prefix or bucket. Scratch cleanup likewise proves attempt
 inactivity. No broad S3 bucket scans.
+
+Slot reclamation is not proof that an already-started remote upload settled.
+When that outcome remains unknown, a successful exact-key delete must not mark
+cleanup permanently completed: retain a pending tombstone with bounded scheduled
+backoff until settlement or fenced execution stop is proven. Later reconciliation
+must catch a losing object created after an earlier delete. This preserves the
+unknown-outcome rule without a hot deletion loop or touching accepted outputs.
 
 Storage permissions must be a narrow frames namespace, separate from creator
 reference, source and manual editorial assets. Provision only restored runtime.

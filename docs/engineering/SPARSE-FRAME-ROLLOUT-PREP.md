@@ -90,7 +90,7 @@ Result: **CLEAN** for the bounded backup and restore-preparation scope. This
 does not approve the Stage 2B-2 contract, migration, feature flags, MinIO
 policy extension, or runtime rollout.
 
-## Runtime readiness observations
+## Original runtime readiness observations (before contract freeze)
 
 The current media runtime is
 `content-factory-media-worker:0.0.0-stage1`, label-verified as
@@ -107,3 +107,28 @@ the approved Stage 2B-2 contract/implementation must first specify its exact
 owned prefix and only then add the matching minimal Get/Put/Delete/multipart
 actions to the restored runtime policy. Bucket-wide or generic `ai-content/*`
 permission remains prohibited.
+
+## Fresh backup before frame rollout — 04:25 UTC
+
+After contract freeze and the disposable migration proof, DevOps took another
+non-overwriting PostgreSQL consistent snapshot at `2026-09-16T04:25:38Z`.
+API and worker were not stopped. This is a database snapshot; it is not a claim
+that all application writers were quiesced.
+
+Dump: `tmp/recovery/content-factory-restored-pre-frame-rollout-20260916T042538Z.dump`
+(224046 bytes, mode 0600). SHA-256, independently rechecked by root:
+`ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
+
+Full `pg_restore --exit-on-error --no-owner --no-privileges` into the newly
+created `cf_frame_backup_restore_20260916` passed. It contained the expected
+15 baseline migrations, no frame migration/table/enum, four creator profiles,
+13 jobs, 15 attempts, 12 media artifacts and zero unvalidated constraints.
+The exact disposable restore database was guarded-dropped and confirmed absent.
+Sanitized detailed evidence is the adjacent `.restore-evidence.json`; the
+working database was never a restore target.
+
+The final additive migration separately passed clean deployment from baseline:
+`SPARSE-FRAME-MIGRATION-PROOF.md`. The narrow frame namespace is now frozen in
+`tasks/stage2b-sparse-frame-evidence.md` and reviewed in
+`SPARSE-FRAME-STORAGE-POLICY.md`. This backup operation itself applied no
+migration, policy, feature flag or service change.

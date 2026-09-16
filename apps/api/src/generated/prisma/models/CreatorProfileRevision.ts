@@ -292,6 +292,7 @@ export type CreatorProfileRevisionWhereInput = {
   defaultReferenceAuthorizationRevisionId?: Prisma.UuidNullableFilter<"CreatorProfileRevision"> | string | null
   defaultReferenceAuthorizationRevision?: Prisma.IntNullableFilter<"CreatorProfileRevision"> | number | null
   createdAt?: Prisma.DateTimeFilter<"CreatorProfileRevision"> | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentListRelationFilter
   creatorProfile?: Prisma.XOR<Prisma.CreatorProfileScalarRelationFilter, Prisma.CreatorProfileWhereInput>
   officialUrlIdentity?: Prisma.XOR<Prisma.CreatorProfileOfficialUrlIdentityScalarRelationFilter, Prisma.CreatorProfileOfficialUrlIdentityWhereInput>
   defaultReferenceAsset?: Prisma.XOR<Prisma.CreatorReferenceAssetNullableScalarRelationFilter, Prisma.CreatorReferenceAssetWhereInput> | null
@@ -315,6 +316,7 @@ export type CreatorProfileRevisionOrderByWithRelationInput = {
   defaultReferenceAuthorizationRevisionId?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultReferenceAuthorizationRevision?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentOrderByRelationAggregateInput
   creatorProfile?: Prisma.CreatorProfileOrderByWithRelationInput
   officialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityOrderByWithRelationInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetOrderByWithRelationInput
@@ -343,6 +345,7 @@ export type CreatorProfileRevisionWhereUniqueInput = Prisma.AtLeast<{
   defaultReferenceAuthorizationRevisionId?: Prisma.UuidNullableFilter<"CreatorProfileRevision"> | string | null
   defaultReferenceAuthorizationRevision?: Prisma.IntNullableFilter<"CreatorProfileRevision"> | number | null
   createdAt?: Prisma.DateTimeFilter<"CreatorProfileRevision"> | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentListRelationFilter
   creatorProfile?: Prisma.XOR<Prisma.CreatorProfileScalarRelationFilter, Prisma.CreatorProfileWhereInput>
   officialUrlIdentity?: Prisma.XOR<Prisma.CreatorProfileOfficialUrlIdentityScalarRelationFilter, Prisma.CreatorProfileOfficialUrlIdentityWhereInput>
   defaultReferenceAsset?: Prisma.XOR<Prisma.CreatorReferenceAssetNullableScalarRelationFilter, Prisma.CreatorReferenceAssetWhereInput> | null
@@ -405,6 +408,7 @@ export type CreatorProfileRevisionCreateInput = {
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: $Enums.CreatorLikenessPolicy
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCreatorProfileRevisionInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutRevisionsInput
   officialUrlIdentity: Prisma.CreatorProfileOfficialUrlIdentityCreateNestedOneWithoutRevisionsInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetCreateNestedOneWithoutSelectedByProfilesInput
@@ -428,6 +432,7 @@ export type CreatorProfileRevisionUncheckedCreateInput = {
   defaultReferenceAuthorizationRevisionId?: string | null
   defaultReferenceAuthorizationRevision?: number | null
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
 }
 
@@ -442,6 +447,7 @@ export type CreatorProfileRevisionUpdateInput = {
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCreatorProfileRevisionNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutRevisionsNestedInput
   officialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityUpdateOneRequiredWithoutRevisionsNestedInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetUpdateOneWithoutSelectedByProfilesNestedInput
@@ -465,6 +471,7 @@ export type CreatorProfileRevisionUncheckedUpdateInput = {
   defaultReferenceAuthorizationRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReferenceAuthorizationRevision?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
 }
 
@@ -789,6 +796,20 @@ export type CreatorProfileRevisionUpdateOneRequiredWithoutSourceContextsNestedIn
   update?: Prisma.XOR<Prisma.XOR<Prisma.CreatorProfileRevisionUpdateToOneWithWhereWithoutSourceContextsInput, Prisma.CreatorProfileRevisionUpdateWithoutSourceContextsInput>, Prisma.CreatorProfileRevisionUncheckedUpdateWithoutSourceContextsInput>
 }
 
+export type CreatorProfileRevisionCreateNestedOneWithoutFrameEvidenceIntentsInput = {
+  create?: Prisma.XOR<Prisma.CreatorProfileRevisionCreateWithoutFrameEvidenceIntentsInput, Prisma.CreatorProfileRevisionUncheckedCreateWithoutFrameEvidenceIntentsInput>
+  connectOrCreate?: Prisma.CreatorProfileRevisionCreateOrConnectWithoutFrameEvidenceIntentsInput
+  connect?: Prisma.CreatorProfileRevisionWhereUniqueInput
+}
+
+export type CreatorProfileRevisionUpdateOneRequiredWithoutFrameEvidenceIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.CreatorProfileRevisionCreateWithoutFrameEvidenceIntentsInput, Prisma.CreatorProfileRevisionUncheckedCreateWithoutFrameEvidenceIntentsInput>
+  connectOrCreate?: Prisma.CreatorProfileRevisionCreateOrConnectWithoutFrameEvidenceIntentsInput
+  upsert?: Prisma.CreatorProfileRevisionUpsertWithoutFrameEvidenceIntentsInput
+  connect?: Prisma.CreatorProfileRevisionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CreatorProfileRevisionUpdateToOneWithWhereWithoutFrameEvidenceIntentsInput, Prisma.CreatorProfileRevisionUpdateWithoutFrameEvidenceIntentsInput>, Prisma.CreatorProfileRevisionUncheckedUpdateWithoutFrameEvidenceIntentsInput>
+}
+
 export type CreatorProfileRevisionCreateWithoutCreatorProfileInput = {
   id: string
   revision: number
@@ -800,6 +821,7 @@ export type CreatorProfileRevisionCreateWithoutCreatorProfileInput = {
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: $Enums.CreatorLikenessPolicy
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCreatorProfileRevisionInput
   officialUrlIdentity: Prisma.CreatorProfileOfficialUrlIdentityCreateNestedOneWithoutRevisionsInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetCreateNestedOneWithoutSelectedByProfilesInput
   defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionCreateNestedOneWithoutSelectedByProfilesInput
@@ -821,6 +843,7 @@ export type CreatorProfileRevisionUncheckedCreateWithoutCreatorProfileInput = {
   defaultReferenceAuthorizationRevisionId?: string | null
   defaultReferenceAuthorizationRevision?: number | null
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
 }
 
@@ -882,6 +905,7 @@ export type CreatorProfileRevisionCreateWithoutOfficialUrlIdentityInput = {
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: $Enums.CreatorLikenessPolicy
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCreatorProfileRevisionInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutRevisionsInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetCreateNestedOneWithoutSelectedByProfilesInput
   defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionCreateNestedOneWithoutSelectedByProfilesInput
@@ -902,6 +926,7 @@ export type CreatorProfileRevisionUncheckedCreateWithoutOfficialUrlIdentityInput
   defaultReferenceAuthorizationRevisionId?: string | null
   defaultReferenceAuthorizationRevision?: number | null
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
 }
 
@@ -942,6 +967,7 @@ export type CreatorProfileRevisionCreateWithoutDefaultReferenceAssetInput = {
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: $Enums.CreatorLikenessPolicy
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCreatorProfileRevisionInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutRevisionsInput
   officialUrlIdentity: Prisma.CreatorProfileOfficialUrlIdentityCreateNestedOneWithoutRevisionsInput
   defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionCreateNestedOneWithoutSelectedByProfilesInput
@@ -962,6 +988,7 @@ export type CreatorProfileRevisionUncheckedCreateWithoutDefaultReferenceAssetInp
   defaultReferenceAuthorizationRevisionId?: string | null
   defaultReferenceAuthorizationRevision?: number | null
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
 }
 
@@ -1002,6 +1029,7 @@ export type CreatorProfileRevisionCreateWithoutDefaultReferenceAuthorizationInpu
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: $Enums.CreatorLikenessPolicy
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCreatorProfileRevisionInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutRevisionsInput
   officialUrlIdentity: Prisma.CreatorProfileOfficialUrlIdentityCreateNestedOneWithoutRevisionsInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetCreateNestedOneWithoutSelectedByProfilesInput
@@ -1021,6 +1049,7 @@ export type CreatorProfileRevisionUncheckedCreateWithoutDefaultReferenceAuthoriz
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: $Enums.CreatorLikenessPolicy
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
 }
 
@@ -1061,6 +1090,7 @@ export type CreatorProfileRevisionCreateWithoutSourceContextsInput = {
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: $Enums.CreatorLikenessPolicy
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCreatorProfileRevisionInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutRevisionsInput
   officialUrlIdentity: Prisma.CreatorProfileOfficialUrlIdentityCreateNestedOneWithoutRevisionsInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetCreateNestedOneWithoutSelectedByProfilesInput
@@ -1083,6 +1113,7 @@ export type CreatorProfileRevisionUncheckedCreateWithoutSourceContextsInput = {
   defaultReferenceAuthorizationRevisionId?: string | null
   defaultReferenceAuthorizationRevision?: number | null
   createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
 }
 
 export type CreatorProfileRevisionCreateOrConnectWithoutSourceContextsInput = {
@@ -1112,6 +1143,7 @@ export type CreatorProfileRevisionUpdateWithoutSourceContextsInput = {
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCreatorProfileRevisionNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutRevisionsNestedInput
   officialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityUpdateOneRequiredWithoutRevisionsNestedInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetUpdateOneWithoutSelectedByProfilesNestedInput
@@ -1134,6 +1166,97 @@ export type CreatorProfileRevisionUncheckedUpdateWithoutSourceContextsInput = {
   defaultReferenceAuthorizationRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReferenceAuthorizationRevision?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
+}
+
+export type CreatorProfileRevisionCreateWithoutFrameEvidenceIntentsInput = {
+  id: string
+  revision: number
+  canonicalDisplayName: string
+  officialUrl: string
+  primaryLanguage: string
+  topics: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  editorialNotes: string
+  restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  likenessPolicy?: $Enums.CreatorLikenessPolicy
+  createdAt?: Date | string
+  creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutRevisionsInput
+  officialUrlIdentity: Prisma.CreatorProfileOfficialUrlIdentityCreateNestedOneWithoutRevisionsInput
+  defaultReferenceAsset?: Prisma.CreatorReferenceAssetCreateNestedOneWithoutSelectedByProfilesInput
+  defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionCreateNestedOneWithoutSelectedByProfilesInput
+  sourceContexts?: Prisma.SourceEditorialContextRevisionCreateNestedManyWithoutCreatorProfileRevisionInput
+}
+
+export type CreatorProfileRevisionUncheckedCreateWithoutFrameEvidenceIntentsInput = {
+  id: string
+  creatorProfileId: string
+  revision: number
+  canonicalDisplayName: string
+  officialUrlIdentityId: string
+  officialUrl: string
+  primaryLanguage: string
+  topics: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  editorialNotes: string
+  restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  likenessPolicy?: $Enums.CreatorLikenessPolicy
+  defaultReferenceAssetId?: string | null
+  defaultReferenceAuthorizationRevisionId?: string | null
+  defaultReferenceAuthorizationRevision?: number | null
+  createdAt?: Date | string
+  sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedCreateNestedManyWithoutCreatorProfileRevisionInput
+}
+
+export type CreatorProfileRevisionCreateOrConnectWithoutFrameEvidenceIntentsInput = {
+  where: Prisma.CreatorProfileRevisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.CreatorProfileRevisionCreateWithoutFrameEvidenceIntentsInput, Prisma.CreatorProfileRevisionUncheckedCreateWithoutFrameEvidenceIntentsInput>
+}
+
+export type CreatorProfileRevisionUpsertWithoutFrameEvidenceIntentsInput = {
+  update: Prisma.XOR<Prisma.CreatorProfileRevisionUpdateWithoutFrameEvidenceIntentsInput, Prisma.CreatorProfileRevisionUncheckedUpdateWithoutFrameEvidenceIntentsInput>
+  create: Prisma.XOR<Prisma.CreatorProfileRevisionCreateWithoutFrameEvidenceIntentsInput, Prisma.CreatorProfileRevisionUncheckedCreateWithoutFrameEvidenceIntentsInput>
+  where?: Prisma.CreatorProfileRevisionWhereInput
+}
+
+export type CreatorProfileRevisionUpdateToOneWithWhereWithoutFrameEvidenceIntentsInput = {
+  where?: Prisma.CreatorProfileRevisionWhereInput
+  data: Prisma.XOR<Prisma.CreatorProfileRevisionUpdateWithoutFrameEvidenceIntentsInput, Prisma.CreatorProfileRevisionUncheckedUpdateWithoutFrameEvidenceIntentsInput>
+}
+
+export type CreatorProfileRevisionUpdateWithoutFrameEvidenceIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  canonicalDisplayName?: Prisma.StringFieldUpdateOperationsInput | string
+  officialUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  primaryLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  topics?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  editorialNotes?: Prisma.StringFieldUpdateOperationsInput | string
+  restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutRevisionsNestedInput
+  officialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityUpdateOneRequiredWithoutRevisionsNestedInput
+  defaultReferenceAsset?: Prisma.CreatorReferenceAssetUpdateOneWithoutSelectedByProfilesNestedInput
+  defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionUpdateOneWithoutSelectedByProfilesNestedInput
+  sourceContexts?: Prisma.SourceEditorialContextRevisionUpdateManyWithoutCreatorProfileRevisionNestedInput
+}
+
+export type CreatorProfileRevisionUncheckedUpdateWithoutFrameEvidenceIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  canonicalDisplayName?: Prisma.StringFieldUpdateOperationsInput | string
+  officialUrlIdentityId?: Prisma.StringFieldUpdateOperationsInput | string
+  officialUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  primaryLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  topics?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  editorialNotes?: Prisma.StringFieldUpdateOperationsInput | string
+  restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
+  defaultReferenceAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultReferenceAuthorizationRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultReferenceAuthorizationRevision?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
 }
 
 export type CreatorProfileRevisionCreateManyCreatorProfileInput = {
@@ -1164,6 +1287,7 @@ export type CreatorProfileRevisionUpdateWithoutCreatorProfileInput = {
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCreatorProfileRevisionNestedInput
   officialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityUpdateOneRequiredWithoutRevisionsNestedInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetUpdateOneWithoutSelectedByProfilesNestedInput
   defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionUpdateOneWithoutSelectedByProfilesNestedInput
@@ -1185,6 +1309,7 @@ export type CreatorProfileRevisionUncheckedUpdateWithoutCreatorProfileInput = {
   defaultReferenceAuthorizationRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReferenceAuthorizationRevision?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
 }
 
@@ -1232,6 +1357,7 @@ export type CreatorProfileRevisionUpdateWithoutOfficialUrlIdentityInput = {
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCreatorProfileRevisionNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutRevisionsNestedInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetUpdateOneWithoutSelectedByProfilesNestedInput
   defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionUpdateOneWithoutSelectedByProfilesNestedInput
@@ -1252,6 +1378,7 @@ export type CreatorProfileRevisionUncheckedUpdateWithoutOfficialUrlIdentityInput
   defaultReferenceAuthorizationRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReferenceAuthorizationRevision?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
 }
 
@@ -1298,6 +1425,7 @@ export type CreatorProfileRevisionUpdateWithoutDefaultReferenceAssetInput = {
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCreatorProfileRevisionNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutRevisionsNestedInput
   officialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityUpdateOneRequiredWithoutRevisionsNestedInput
   defaultReferenceAuthorization?: Prisma.CreatorReferenceAuthorizationRevisionUpdateOneWithoutSelectedByProfilesNestedInput
@@ -1318,6 +1446,7 @@ export type CreatorProfileRevisionUncheckedUpdateWithoutDefaultReferenceAssetInp
   defaultReferenceAuthorizationRevisionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultReferenceAuthorizationRevision?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
 }
 
@@ -1363,6 +1492,7 @@ export type CreatorProfileRevisionUpdateWithoutDefaultReferenceAuthorizationInpu
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutCreatorProfileRevisionNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutRevisionsNestedInput
   officialUrlIdentity?: Prisma.CreatorProfileOfficialUrlIdentityUpdateOneRequiredWithoutRevisionsNestedInput
   defaultReferenceAsset?: Prisma.CreatorReferenceAssetUpdateOneWithoutSelectedByProfilesNestedInput
@@ -1382,6 +1512,7 @@ export type CreatorProfileRevisionUncheckedUpdateWithoutDefaultReferenceAuthoriz
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   likenessPolicy?: Prisma.EnumCreatorLikenessPolicyFieldUpdateOperationsInput | $Enums.CreatorLikenessPolicy
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
   sourceContexts?: Prisma.SourceEditorialContextRevisionUncheckedUpdateManyWithoutCreatorProfileRevisionNestedInput
 }
 
@@ -1406,10 +1537,12 @@ export type CreatorProfileRevisionUncheckedUpdateManyWithoutDefaultReferenceAuth
  */
 
 export type CreatorProfileRevisionCountOutputType = {
+  frameEvidenceIntents: number
   sourceContexts: number
 }
 
 export type CreatorProfileRevisionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  frameEvidenceIntents?: boolean | CreatorProfileRevisionCountOutputTypeCountFrameEvidenceIntentsArgs
   sourceContexts?: boolean | CreatorProfileRevisionCountOutputTypeCountSourceContextsArgs
 }
 
@@ -1421,6 +1554,13 @@ export type CreatorProfileRevisionCountOutputTypeDefaultArgs<ExtArgs extends run
    * Select specific fields to fetch from the CreatorProfileRevisionCountOutputType
    */
   select?: Prisma.CreatorProfileRevisionCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CreatorProfileRevisionCountOutputType without action
+ */
+export type CreatorProfileRevisionCountOutputTypeCountFrameEvidenceIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FrameEvidenceIntentWhereInput
 }
 
 /**
@@ -1447,6 +1587,7 @@ export type CreatorProfileRevisionSelect<ExtArgs extends runtime.Types.Extension
   defaultReferenceAuthorizationRevisionId?: boolean
   defaultReferenceAuthorizationRevision?: boolean
   createdAt?: boolean
+  frameEvidenceIntents?: boolean | Prisma.CreatorProfileRevision$frameEvidenceIntentsArgs<ExtArgs>
   creatorProfile?: boolean | Prisma.CreatorProfileDefaultArgs<ExtArgs>
   officialUrlIdentity?: boolean | Prisma.CreatorProfileOfficialUrlIdentityDefaultArgs<ExtArgs>
   defaultReferenceAsset?: boolean | Prisma.CreatorProfileRevision$defaultReferenceAssetArgs<ExtArgs>
@@ -1519,6 +1660,7 @@ export type CreatorProfileRevisionSelectScalar = {
 
 export type CreatorProfileRevisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "creatorProfileId" | "revision" | "canonicalDisplayName" | "officialUrlIdentityId" | "officialUrl" | "primaryLanguage" | "topics" | "editorialNotes" | "restrictions" | "likenessPolicy" | "defaultReferenceAssetId" | "defaultReferenceAuthorizationRevisionId" | "defaultReferenceAuthorizationRevision" | "createdAt", ExtArgs["result"]["creatorProfileRevision"]>
 export type CreatorProfileRevisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  frameEvidenceIntents?: boolean | Prisma.CreatorProfileRevision$frameEvidenceIntentsArgs<ExtArgs>
   creatorProfile?: boolean | Prisma.CreatorProfileDefaultArgs<ExtArgs>
   officialUrlIdentity?: boolean | Prisma.CreatorProfileOfficialUrlIdentityDefaultArgs<ExtArgs>
   defaultReferenceAsset?: boolean | Prisma.CreatorProfileRevision$defaultReferenceAssetArgs<ExtArgs>
@@ -1542,6 +1684,7 @@ export type CreatorProfileRevisionIncludeUpdateManyAndReturn<ExtArgs extends run
 export type $CreatorProfileRevisionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CreatorProfileRevision"
   objects: {
+    frameEvidenceIntents: Prisma.$FrameEvidenceIntentPayload<ExtArgs>[]
     creatorProfile: Prisma.$CreatorProfilePayload<ExtArgs>
     officialUrlIdentity: Prisma.$CreatorProfileOfficialUrlIdentityPayload<ExtArgs>
     defaultReferenceAsset: Prisma.$CreatorReferenceAssetPayload<ExtArgs> | null
@@ -1958,6 +2101,7 @@ readonly fields: CreatorProfileRevisionFieldRefs;
  */
 export interface Prisma__CreatorProfileRevisionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  frameEvidenceIntents<T extends Prisma.CreatorProfileRevision$frameEvidenceIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreatorProfileRevision$frameEvidenceIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FrameEvidenceIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   creatorProfile<T extends Prisma.CreatorProfileDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreatorProfileDefaultArgs<ExtArgs>>): Prisma.Prisma__CreatorProfileClient<runtime.Types.Result.GetResult<Prisma.$CreatorProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   officialUrlIdentity<T extends Prisma.CreatorProfileOfficialUrlIdentityDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreatorProfileOfficialUrlIdentityDefaultArgs<ExtArgs>>): Prisma.Prisma__CreatorProfileOfficialUrlIdentityClient<runtime.Types.Result.GetResult<Prisma.$CreatorProfileOfficialUrlIdentityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   defaultReferenceAsset<T extends Prisma.CreatorProfileRevision$defaultReferenceAssetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreatorProfileRevision$defaultReferenceAssetArgs<ExtArgs>>): Prisma.Prisma__CreatorReferenceAssetClient<runtime.Types.Result.GetResult<Prisma.$CreatorReferenceAssetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2405,6 +2549,30 @@ export type CreatorProfileRevisionDeleteManyArgs<ExtArgs extends runtime.Types.E
    * Limit how many CreatorProfileRevisions to delete.
    */
   limit?: number
+}
+
+/**
+ * CreatorProfileRevision.frameEvidenceIntents
+ */
+export type CreatorProfileRevision$frameEvidenceIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FrameEvidenceIntent
+   */
+  select?: Prisma.FrameEvidenceIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FrameEvidenceIntent
+   */
+  omit?: Prisma.FrameEvidenceIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FrameEvidenceIntentInclude<ExtArgs> | null
+  where?: Prisma.FrameEvidenceIntentWhereInput
+  orderBy?: Prisma.FrameEvidenceIntentOrderByWithRelationInput | Prisma.FrameEvidenceIntentOrderByWithRelationInput[]
+  cursor?: Prisma.FrameEvidenceIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FrameEvidenceIntentScalarFieldEnum | Prisma.FrameEvidenceIntentScalarFieldEnum[]
 }
 
 /**

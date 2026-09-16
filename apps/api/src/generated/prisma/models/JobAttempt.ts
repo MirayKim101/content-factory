@@ -360,6 +360,7 @@ export type JobAttemptWhereInput = {
   scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  frameEvidenceAttempt?: Prisma.XOR<Prisma.FrameEvidenceAttemptNullableScalarRelationFilter, Prisma.FrameEvidenceAttemptWhereInput> | null
   job?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
 }
 
@@ -386,6 +387,7 @@ export type JobAttemptOrderByWithRelationInput = {
   scratchCreatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptOrderByWithRelationInput
   job?: Prisma.PipelineJobOrderByWithRelationInput
 }
 
@@ -394,6 +396,7 @@ export type JobAttemptWhereUniqueInput = Prisma.AtLeast<{
   outputObjectKey?: string
   scratchDirectoryName?: string
   jobId_attemptNumber?: Prisma.JobAttemptJobIdAttemptNumberCompoundUniqueInput
+  id_jobId_attemptNumber_leaseToken?: Prisma.JobAttemptIdJobIdAttemptNumberLeaseTokenCompoundUniqueInput
   AND?: Prisma.JobAttemptWhereInput | Prisma.JobAttemptWhereInput[]
   OR?: Prisma.JobAttemptWhereInput[]
   NOT?: Prisma.JobAttemptWhereInput | Prisma.JobAttemptWhereInput[]
@@ -416,8 +419,9 @@ export type JobAttemptWhereUniqueInput = Prisma.AtLeast<{
   scratchCreatedAt?: Prisma.DateTimeNullableFilter<"JobAttempt"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
+  frameEvidenceAttempt?: Prisma.XOR<Prisma.FrameEvidenceAttemptNullableScalarRelationFilter, Prisma.FrameEvidenceAttemptWhereInput> | null
   job?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
-}, "id" | "outputObjectKey" | "scratchDirectoryName" | "jobId_attemptNumber">
+}, "id" | "outputObjectKey" | "scratchDirectoryName" | "jobId_attemptNumber" | "id_jobId_attemptNumber_leaseToken">
 
 export type JobAttemptOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -499,6 +503,7 @@ export type JobAttemptCreateInput = {
   scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptCreateNestedOneWithoutJobAttemptInput
   job: Prisma.PipelineJobCreateNestedOneWithoutAttemptsInput
 }
 
@@ -525,6 +530,7 @@ export type JobAttemptUncheckedCreateInput = {
   scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptUncheckedCreateNestedOneWithoutJobAttemptInput
 }
 
 export type JobAttemptUpdateInput = {
@@ -549,6 +555,7 @@ export type JobAttemptUpdateInput = {
   scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptUpdateOneWithoutJobAttemptNestedInput
   job?: Prisma.PipelineJobUpdateOneRequiredWithoutAttemptsNestedInput
 }
 
@@ -575,6 +582,7 @@ export type JobAttemptUncheckedUpdateInput = {
   scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptUncheckedUpdateOneWithoutJobAttemptNestedInput
 }
 
 export type JobAttemptCreateManyInput = {
@@ -666,6 +674,13 @@ export type JobAttemptJobIdAttemptNumberCompoundUniqueInput = {
   attemptNumber: number
 }
 
+export type JobAttemptIdJobIdAttemptNumberLeaseTokenCompoundUniqueInput = {
+  id: string
+  jobId: string
+  attemptNumber: number
+  leaseToken: string
+}
+
 export type JobAttemptCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   jobId?: Prisma.SortOrder
@@ -753,6 +768,11 @@ export type JobAttemptSumOrderByAggregateInput = {
   scratchReservedBytes?: Prisma.SortOrder
 }
 
+export type JobAttemptScalarRelationFilter = {
+  is?: Prisma.JobAttemptWhereInput
+  isNot?: Prisma.JobAttemptWhereInput
+}
+
 export type JobAttemptCreateNestedManyWithoutJobInput = {
   create?: Prisma.XOR<Prisma.JobAttemptCreateWithoutJobInput, Prisma.JobAttemptUncheckedCreateWithoutJobInput> | Prisma.JobAttemptCreateWithoutJobInput[] | Prisma.JobAttemptUncheckedCreateWithoutJobInput[]
   connectOrCreate?: Prisma.JobAttemptCreateOrConnectWithoutJobInput | Prisma.JobAttemptCreateOrConnectWithoutJobInput[]
@@ -799,6 +819,20 @@ export type EnumJobAttemptStateFieldUpdateOperationsInput = {
   set?: $Enums.JobAttemptState
 }
 
+export type JobAttemptCreateNestedOneWithoutFrameEvidenceAttemptInput = {
+  create?: Prisma.XOR<Prisma.JobAttemptCreateWithoutFrameEvidenceAttemptInput, Prisma.JobAttemptUncheckedCreateWithoutFrameEvidenceAttemptInput>
+  connectOrCreate?: Prisma.JobAttemptCreateOrConnectWithoutFrameEvidenceAttemptInput
+  connect?: Prisma.JobAttemptWhereUniqueInput
+}
+
+export type JobAttemptUpdateOneRequiredWithoutFrameEvidenceAttemptNestedInput = {
+  create?: Prisma.XOR<Prisma.JobAttemptCreateWithoutFrameEvidenceAttemptInput, Prisma.JobAttemptUncheckedCreateWithoutFrameEvidenceAttemptInput>
+  connectOrCreate?: Prisma.JobAttemptCreateOrConnectWithoutFrameEvidenceAttemptInput
+  upsert?: Prisma.JobAttemptUpsertWithoutFrameEvidenceAttemptInput
+  connect?: Prisma.JobAttemptWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.JobAttemptUpdateToOneWithWhereWithoutFrameEvidenceAttemptInput, Prisma.JobAttemptUpdateWithoutFrameEvidenceAttemptInput>, Prisma.JobAttemptUncheckedUpdateWithoutFrameEvidenceAttemptInput>
+}
+
 export type JobAttemptCreateWithoutJobInput = {
   id: string
   attemptNumber: number
@@ -821,6 +855,7 @@ export type JobAttemptCreateWithoutJobInput = {
   scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptCreateNestedOneWithoutJobAttemptInput
 }
 
 export type JobAttemptUncheckedCreateWithoutJobInput = {
@@ -845,6 +880,7 @@ export type JobAttemptUncheckedCreateWithoutJobInput = {
   scratchCreatedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptUncheckedCreateNestedOneWithoutJobAttemptInput
 }
 
 export type JobAttemptCreateOrConnectWithoutJobInput = {
@@ -901,6 +937,122 @@ export type JobAttemptScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"JobAttempt"> | Date | string
 }
 
+export type JobAttemptCreateWithoutFrameEvidenceAttemptInput = {
+  id: string
+  attemptNumber: number
+  state?: $Enums.JobAttemptState
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  finishedAt?: Date | string | null
+  failureCode?: string | null
+  outputObjectKey?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  job: Prisma.PipelineJobCreateNestedOneWithoutAttemptsInput
+}
+
+export type JobAttemptUncheckedCreateWithoutFrameEvidenceAttemptInput = {
+  id: string
+  jobId: string
+  attemptNumber: number
+  state?: $Enums.JobAttemptState
+  workerId?: string | null
+  leaseToken?: string | null
+  startedAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  finishedAt?: Date | string | null
+  failureCode?: string | null
+  outputObjectKey?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  scratchDirectoryName?: string | null
+  scratchLeaseHash?: string | null
+  scratchReservedBytes?: bigint | number | null
+  scratchCreatedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type JobAttemptCreateOrConnectWithoutFrameEvidenceAttemptInput = {
+  where: Prisma.JobAttemptWhereUniqueInput
+  create: Prisma.XOR<Prisma.JobAttemptCreateWithoutFrameEvidenceAttemptInput, Prisma.JobAttemptUncheckedCreateWithoutFrameEvidenceAttemptInput>
+}
+
+export type JobAttemptUpsertWithoutFrameEvidenceAttemptInput = {
+  update: Prisma.XOR<Prisma.JobAttemptUpdateWithoutFrameEvidenceAttemptInput, Prisma.JobAttemptUncheckedUpdateWithoutFrameEvidenceAttemptInput>
+  create: Prisma.XOR<Prisma.JobAttemptCreateWithoutFrameEvidenceAttemptInput, Prisma.JobAttemptUncheckedCreateWithoutFrameEvidenceAttemptInput>
+  where?: Prisma.JobAttemptWhereInput
+}
+
+export type JobAttemptUpdateToOneWithWhereWithoutFrameEvidenceAttemptInput = {
+  where?: Prisma.JobAttemptWhereInput
+  data: Prisma.XOR<Prisma.JobAttemptUpdateWithoutFrameEvidenceAttemptInput, Prisma.JobAttemptUncheckedUpdateWithoutFrameEvidenceAttemptInput>
+}
+
+export type JobAttemptUpdateWithoutFrameEvidenceAttemptInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  job?: Prisma.PipelineJobUpdateOneRequiredWithoutAttemptsNestedInput
+}
+
+export type JobAttemptUncheckedUpdateWithoutFrameEvidenceAttemptInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  jobId?: Prisma.StringFieldUpdateOperationsInput | string
+  attemptNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  state?: Prisma.EnumJobAttemptStateFieldUpdateOperationsInput | $Enums.JobAttemptState
+  workerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputObjectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  scratchDirectoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchLeaseHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scratchReservedBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type JobAttemptCreateManyJobInput = {
   id: string
   attemptNumber: number
@@ -947,6 +1099,7 @@ export type JobAttemptUpdateWithoutJobInput = {
   scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptUpdateOneWithoutJobAttemptNestedInput
 }
 
 export type JobAttemptUncheckedUpdateWithoutJobInput = {
@@ -971,6 +1124,7 @@ export type JobAttemptUncheckedUpdateWithoutJobInput = {
   scratchCreatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceAttempt?: Prisma.FrameEvidenceAttemptUncheckedUpdateOneWithoutJobAttemptNestedInput
 }
 
 export type JobAttemptUncheckedUpdateManyWithoutJobInput = {
@@ -1022,6 +1176,7 @@ export type JobAttemptSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   scratchCreatedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  frameEvidenceAttempt?: boolean | Prisma.JobAttempt$frameEvidenceAttemptArgs<ExtArgs>
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["jobAttempt"]>
 
@@ -1104,6 +1259,7 @@ export type JobAttemptSelectScalar = {
 
 export type JobAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobId" | "attemptNumber" | "state" | "workerId" | "leaseToken" | "startedAt" | "heartbeatAt" | "finishedAt" | "failureCode" | "outputObjectKey" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "scratchDirectoryName" | "scratchLeaseHash" | "scratchReservedBytes" | "scratchCreatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["jobAttempt"]>
 export type JobAttemptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  frameEvidenceAttempt?: boolean | Prisma.JobAttempt$frameEvidenceAttemptArgs<ExtArgs>
   job?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
 }
 export type JobAttemptIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1116,6 +1272,7 @@ export type JobAttemptIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 export type $JobAttemptPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "JobAttempt"
   objects: {
+    frameEvidenceAttempt: Prisma.$FrameEvidenceAttemptPayload<ExtArgs> | null
     job: Prisma.$PipelineJobPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1535,6 +1692,7 @@ readonly fields: JobAttemptFieldRefs;
  */
 export interface Prisma__JobAttemptClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  frameEvidenceAttempt<T extends Prisma.JobAttempt$frameEvidenceAttemptArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.JobAttempt$frameEvidenceAttemptArgs<ExtArgs>>): Prisma.Prisma__FrameEvidenceAttemptClient<runtime.Types.Result.GetResult<Prisma.$FrameEvidenceAttemptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   job<T extends Prisma.PipelineJobDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJobDefaultArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1985,6 +2143,25 @@ export type JobAttemptDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many JobAttempts to delete.
    */
   limit?: number
+}
+
+/**
+ * JobAttempt.frameEvidenceAttempt
+ */
+export type JobAttempt$frameEvidenceAttemptArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FrameEvidenceAttempt
+   */
+  select?: Prisma.FrameEvidenceAttemptSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FrameEvidenceAttempt
+   */
+  omit?: Prisma.FrameEvidenceAttemptOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FrameEvidenceAttemptInclude<ExtArgs> | null
+  where?: Prisma.FrameEvidenceAttemptWhereInput
 }
 
 /**

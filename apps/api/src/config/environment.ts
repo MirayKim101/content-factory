@@ -55,6 +55,7 @@ const API_ENVIRONMENT_KEYS = [
   "EDITORIAL_APPROVAL_ENABLED",
   "EDITORIAL_EXPORT_ENABLED",
   "AI_CONTEXT_ENABLED",
+  "EDITORIAL_FRAMES_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -167,6 +168,7 @@ export interface ApiEnvironment {
   editorialApprovalEnabled: boolean;
   editorialExportEnabled: boolean;
   aiContextEnabled: boolean;
+  editorialFramesEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -246,6 +248,7 @@ export function apiEnvironment(): ApiEnvironment {
         authorization.deploymentProfile === "local"),
     editorialExportEnabled: editorialExportAdmissionEnabled(process.env),
     aiContextEnabled: aiContextAdmissionEnabled(process.env),
+    editorialFramesEnabled: process.env.EDITORIAL_FRAMES_ENABLED === "1",
   };
 }
 

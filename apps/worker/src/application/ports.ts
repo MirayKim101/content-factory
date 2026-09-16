@@ -233,7 +233,7 @@ export interface WorkerObjectStorage {
     signal: AbortSignal;
     onProgress?(uploadedBytes: bigint): void;
   }): Promise<{ etag?: string; version?: string }>;
-  delete(objectKey: string): Promise<void>;
+  delete(objectKey: string, signal?: AbortSignal): Promise<void>;
   close(): void;
 }
 
