@@ -35,16 +35,29 @@ render/export/recovery suite этой объединённой версии не
 
 ## Runtime и данные
 
-Старые API/web/WSL worker остановлены. Legacy PostgreSQL/Redis/MinIO и volumes
-сохранены. Verified dump:
-`tmp/recovery/before-mac-baseline-switch-20260909T144250Z.dump`.
-Старый `.env` перемещён в `tmp/recovery/wsl-reconstruction.env`, mode 0600.
-Активного `.env` нет: новый бинарник не должен подключиться к старой схеме.
+Изолированная восстановленная среда запущена 2026-09-16 и прошла независимую
+проверку. UI: `http://127.0.0.1:3000`, API: `127.0.0.1:3001`.
+Новые контейнеры, сеть и тома имеют префикс `content-factory-restored`.
+Порты зависимостей: 15432/16379/19000/19001. В новой базе применены 15 Mac
+миграций; рабочий `.env` содержит только новые credentials, ignored, mode 0600.
+Инструкция запуска и остановки: `docs/infrastructure/restored-runtime.md`.
+
+Legacy PostgreSQL/Redis/MinIO и volumes сохранены. Старые API/web/WSL worker
+остановлены. Старый env остаётся в `tmp/recovery/wsl-reconstruction.env`;
+verified dump — `tmp/recovery/before-mac-baseline-switch-20260909T144250Z.dump`.
 Никаких Mac migrations к старой базе не применять, migration checksums не менять.
 
-Следующий автономный шаг: выполнить изолированный local rollout по
-`docs/infrastructure/mac-wsl-recovery.md`, затем закрыть QA Creator Context UI
-по `tasks/stage2b-creator-context-qa.md`. Только после этого начать frames slice.
+API unit 123, worker unit 84, Creator Context API integration 2 и worker lease
+integration 5 прошли. Интеграционные тесты выполнялись в отдельной одноразовой
+`cf_acceptance_20260916`, не в рабочей restored базе. Независимый worker/runtime
+review CLEAN. См. `RESTORED-WORKER-VERIFICATION.md`.
+
+Manual assembly/approval/export flags включены только в новой local среде.
+Ручной Stage 2 smoke дал видео с рекламой/баннером/CTA, обложку и ZIP с exact
+revision. Его evidence: `RESTORED-MANUAL-PIPELINE-SMOKE.md`.
+Creator Context UI сейчас проходит исправления и приёмку; `AI_CONTEXT_ENABLED=0`
+до отдельного controlled browser rollout. Stage 2B-2 не начинать до CLEAN UI.
+
 Временный `ContentFactory-merge` удалён 2026-09-16 штатной командой
 `git worktree remove` после проверки чистого дерева и совпадения HEAD с main
 (`aae651c`). Уникальных исходников или локальных данных в нём не было, только
@@ -65,5 +78,5 @@ root `package-lock.json` сохранены вне Git.
 только merge; новые срезы проходят применимые проверки.
 
 Полный доступ filesystem/network и Docker подтверждён 2026-09-16; это не
-отменяет запрет внешних каталогов и их ресурсов. Текущая задача: изолированный
-rollout восстановленной версии, затем завершение Creator Context UI.
+отменяет запрет внешних каталогов и их ресурсов. Изолированный rollout завершён. Текущая задача: завершение и приёмка
+Creator Context UI, затем следующие срезы по MVP roadmap.

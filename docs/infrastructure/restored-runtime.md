@@ -110,8 +110,11 @@ edge proxy: для local UI используется именно dev proxy из
 - Невалидный cut с концом после source duration дал HTTP `422`
   `CUT_BOUNDS_INVALID`, не бесконечное задание.
 
-AI context, editorial export и external providers не включались. Этот runtime
-не означает приемку Stage 2B UI или production rollout.
+При первой проверке AI context и editorial export были выключены. Затем
+manual export включён для synthetic Stage 2 smoke, см.
+[отчёт](../engineering/RESTORED-MANUAL-PIPELINE-SMOKE.md). AI context и external
+providers остаются выключены. Этот runtime не означает приёмку Stage 2B UI или
+production rollout.
 
 ## Остановка и rollback
 
