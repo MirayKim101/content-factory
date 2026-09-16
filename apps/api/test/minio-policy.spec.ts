@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 describe("MinIO API least-privilege policy", () => {
-  it("keeps the bucket private and limits object access to source and editorial prefixes", async () => {
+  it("keeps the bucket private and limits object access to owned prefixes", async () => {
     const provision = await readFile(
       new URL("../../../infrastructure/minio/provision", import.meta.url),
       "utf8",
@@ -21,13 +21,23 @@ describe("MinIO API least-privilege policy", () => {
       statement.Action.includes("s3:GetObject"),
     );
 
-    expect(objectStatements).toHaveLength(2);
-    expect(objectStatements.flatMap(({ Resource }) => Resource).sort()).toEqual(
-      [
-        "arn:aws:s3:::test-bucket/editorial/*",
-        "arn:aws:s3:::test-bucket/sources/*",
-      ],
-    );
+    const objectResources = objectStatements
+      .flatMap(({ Resource }) => Resource)
+      .sort();
+    expect(objectStatements).toHaveLength(3);
+    expect(objectResources).toEqual([
+      "arn:aws:s3:::test-bucket/ai-content/creator-profiles/*/references/*",
+      "arn:aws:s3:::test-bucket/editorial/*",
+      "arn:aws:s3:::test-bucket/sources/*",
+    ]);
+    expect(
+      objectResources.some((resource) =>
+        resourceAllows(
+          resource,
+          "arn:aws:s3:::test-bucket/ai-content/unrelated-denied-probe",
+        ),
+      ),
+    ).toBe(false);
     expect(provision).toContain(
       'mc anonymous set none "local/$S3_SOURCE_BUCKET"',
     );
@@ -36,3 +46,11 @@ describe("MinIO API least-privilege policy", () => {
     );
   });
 });
+
+function resourceAllows(resource: string, target: string): boolean {
+  const expression = resource
+    .split("*")
+    .map((part) => part.replace(/[|\\{}()[\]^$+?.]/g, "\\$&"))
+    .join(".*");
+  return new RegExp(`^${expression}$`).test(target);
+}

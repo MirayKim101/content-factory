@@ -305,6 +305,14 @@ download `STALE`. Approval с manual thumbnail и text-only AI metadata этим
   manual Stage 2;
 - storage/transient database upload failure: bounded error с durable cleanup,
   без READY row с отсутствующим object;
+- `CREATOR_REFERENCE_OUTCOME_UNKNOWN` (`503`) означает, что запись окончательного
+  отказа не подтверждена: UI сохраняет исходный idempotency key, объект не
+  удаляется до reconciliation. Сетевой сбой и `UPLOAD_IN_PROGRESS` также не дают
+  права автоматически создать новую попытку. `CREATOR_REFERENCE_STORAGE_FAILED`
+  и `CREATOR_REFERENCE_FINALIZE_FAILED` выдаются как окончательные только после
+  сохранения `FAILED_FINAL` (либо чтения такого authoritative replay); следующий
+  явный upload пользователя может получить новый ключ, без автоматического
+  повторного запроса;
 - cross-project target всегда fail closed без existence disclosure.
 
 Safe public error содержит code и user action, но не object path, provider

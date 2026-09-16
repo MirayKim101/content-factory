@@ -351,7 +351,14 @@ export class CreatorContextService {
         assetId,
         cause: safeCause(error),
       });
-      return;
+      // The client may start a new upload only after a durable terminal
+      // failure. A lost failure-write response is still an ambiguous outcome;
+      // keep its idempotency identity and leave the object for reconciliation.
+      throw new CreatorContextError(
+        "CREATOR_REFERENCE_OUTCOME_UNKNOWN",
+        "Reference upload outcome is not confirmed. Retry with the same request.",
+        503,
+      );
     }
     try {
       await this.storage.deleteObject(objectKey);
