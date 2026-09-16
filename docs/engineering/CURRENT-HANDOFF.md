@@ -175,3 +175,17 @@ Worker healthy: container
 Его image собран до финального contracts import fix; worker использует tsx,
 API запускается native Node24. При следующем rebuild использовать текущий код.
 Новых frame extraction jobs в этой сессии не создавали.
+
+GitHub push при завершении: три bounded попытки HTTPS (HTTP/2 и HTTP/1.1)
+закончились сетевым timeout (exit 124). Remote feature checkpoint не подтверждён.
+Локальные commits сохранены; первым Git-действием следующей сессии выполнить
+`git push -u origin feat/stage2b2-frame-evidence` и сверить remote SHA.
+
+Финальная проверка DevOps: manual export
+`f504af29-bc47-4a1d-ae74-821be80f939e` повторно скачан (246691 bytes), SHA
+`14cb7a16d87687f917545e4eb99af6f1d62218590ab080b9d27a0b4c5f25e34a`
+совпадает с принятым Stage 2. Exact frame POST вернул контролируемый
+`503 EDITORIAL_FRAMES_DISABLED`, intent не создан. Evidence:
+`tmp/recovery/frame-admission-off-runtime-checkpoint-20260916.json`.
+Перед включением frames пересобрать worker из текущего commit, затем выполнить
+отложенные live checks. Все агенты закончили текущие задачи.
