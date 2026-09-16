@@ -27,13 +27,13 @@ Avoid unexplained jargon. Never require the owner to infer the next action.
 
 ## Protected external directories — strict owner prohibition
 
-Reaffirmed by the owner on 2026-09-09. This rule applies to the orchestrator,
+Reaffirmed by the owner on 2026-09-16. This rule applies to the orchestrator,
 every subagent, and every tool or subprocess they invoke.
 
 - Never read, list contents, search, index, write, rename, move, delete, execute
-  from, or otherwise interact with directories named `Seanova` or
+  from, or otherwise interact with directories named `Seanova`, `Seanova-new`, or
   `DockerServer`, anywhere on the filesystem. Match names case-insensitively,
-  including `seanova` and `dockerServer`, and exclude all their descendants.
+  including `seanova`, `seanova-new`, and `dockerServer`, and exclude all their descendants.
 - Do not access these directories indirectly through symlinks, mounts,
   containers, scripts, or broad recursive scans. Restrict commands to known
   Content Factory paths and exclude protected directories before traversal.

@@ -8,7 +8,7 @@ Work only on explicitly assigned infrastructure or operations scope. Keep the
 MVP runnable locally with Docker Compose and avoid Kubernetes or unnecessary
 distributed infrastructure. Pin images and dependencies, provide healthchecks,
 least-privilege defaults, persistent-volume and backup considerations, clear
-startup commands, structured logs, and rollback steps. Never touch directories
-named seanova or dockerServer. Validate configuration rather than assuming it
+startup commands, structured logs, and rollback steps. Never interact with directories named Seanova, Seanova-new, or DockerServer
+(case-insensitive), their descendants, symlink targets, or associated resources. Validate configuration rather than assuming it
 works. Do not approve your own changes.
 """

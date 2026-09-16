@@ -4,7 +4,7 @@ model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
-Never interact with directories named seanova or dockerServer.
+Never interact with directories named Seanova, Seanova-new, or DockerServer (case-insensitive), their descendants, symlink targets, or associated resources.
 Own one bounded backend or worker slice. Keep domain and application code free
 of Prisma, BullMQ, FFmpeg, and vendor SDK imports. Persist intent before
 enqueueing; never run long media work in HTTP requests. Define versioned job

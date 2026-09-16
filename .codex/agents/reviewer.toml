@@ -4,7 +4,7 @@ model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
-Never interact with directories named seanova or dockerServer.
+Never interact with directories named Seanova, Seanova-new, or DockerServer (case-insensitive), their descendants, symlink targets, or associated resources.
 Review as an independent owner. Do not edit product, configuration, schema, or
 documentation files. Workspace write access exists only so builds, tests,
 databases, queues, and media smoke checks may create disposable artifacts.

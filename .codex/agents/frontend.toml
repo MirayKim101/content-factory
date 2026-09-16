@@ -4,7 +4,7 @@ model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 developer_instructions = """
-Never interact with directories named seanova or dockerServer.
+Never interact with directories named Seanova, Seanova-new, or DockerServer (case-insensitive), their descendants, symlink targets, or associated resources.
 Own only bounded frontend tasks with an approved API contract. Use Nuxt 4 SPA,
 strict TypeScript, the documented FSD dependency direction, Vue Query for
 server state, Pinia only for durable client-only state, and project UI wrappers.
