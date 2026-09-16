@@ -74,6 +74,18 @@ describe("worker lease recovery race (PostgreSQL)", () => {
       recoveredDelivery = (await reconciliation.recoverExpiredLeases(10)).find(
         (delivery) => delivery.jobId === jobId,
       );
+      // Reconciliation schedules a retry with backoff. An early delivery must
+      // not claim it; advance only this disposable fixture's admission time.
+      await processJob.execute(jobId);
+      const waiting = await prisma.pipelineJob.findUniqueOrThrow({
+        where: { id: jobId },
+      });
+      expect(waiting).toMatchObject({ state: "RETRY_WAIT", attemptCount: 1 });
+      expect(waiting.nextAttemptAt!.getTime()).toBeGreaterThan(Date.now());
+      await prisma.pipelineJob.update({
+        where: { id: jobId },
+        data: { nextAttemptAt: new Date(Date.now() - 1_000) },
+      });
       await processJob.execute(jobId);
     };
 

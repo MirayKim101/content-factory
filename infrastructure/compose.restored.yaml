@@ -1,0 +1,38 @@
+# Overlay for the Mac-baseline runtime restored on WSL. Always use it together
+# with compose.yaml and --project-name content-factory-restored. Every stateful
+# resource deliberately has a different name from the pre-recovery runtime.
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - restored-postgres-data:/var/lib/postgresql
+
+  redis:
+    ports: !override
+      - "127.0.0.1:16379:6379"
+    volumes:
+      - restored-redis-data:/data
+
+  minio:
+    ports: !override
+      - "127.0.0.1:19000:9000"
+      - "127.0.0.1:19001:9001"
+    volumes:
+      - restored-minio-data:/data
+
+  media-worker:
+    environment:
+      MEDIA_QUEUE_NAME: ${MEDIA_QUEUE_NAME:?set MEDIA_QUEUE_NAME in .env}
+
+networks:
+  content-factory:
+    name: content-factory-restored-network
+
+volumes:
+  restored-postgres-data:
+    name: content-factory-restored-postgres-data
+  restored-redis-data:
+    name: content-factory-restored-redis-data
+  restored-minio-data:
+    name: content-factory-restored-minio-data

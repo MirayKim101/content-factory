@@ -719,6 +719,54 @@ describe("ProcessMediaJob", () => {
     });
   });
 
+  it("preserves a committed cut when the finalize response is lost", async () => {
+    const job = claimed("CUT_SEGMENT");
+    const deps = dependencies(job);
+    vi.mocked(deps.repository.completeCut).mockRejectedValueOnce(
+      new Error("database response lost after commit"),
+    );
+    vi.mocked(deps.repository.isCutResultAccepted).mockResolvedValueOnce(true);
+
+    await expect(worker(deps).execute(job.id)).resolves.toBeUndefined();
+
+    const upload = vi.mocked(deps.storage.upload).mock.calls[0]?.[0];
+    expect(upload).toBeDefined();
+    expect(deps.repository.isCutResultAccepted).toHaveBeenCalledWith(
+      job,
+      upload?.objectKey,
+    );
+    expect(deps.storage.delete).not.toHaveBeenCalled();
+    expect(deps.repository.completeAttemptCleanup).not.toHaveBeenCalled();
+    expect(deps.repository.fail).not.toHaveBeenCalled();
+  });
+
+  it("retains a cut cleanup intent when the finalize outcome cannot be read", async () => {
+    const job = claimed("CUT_SEGMENT");
+    const deps = dependencies(job);
+    vi.mocked(deps.repository.completeCut).mockRejectedValueOnce(
+      new Error("database response lost after commit"),
+    );
+    vi.mocked(deps.repository.isCutResultAccepted).mockRejectedValueOnce(
+      new Error("database unavailable"),
+    );
+    vi.mocked(deps.repository.fail).mockResolvedValueOnce("RETRY_SCHEDULED");
+
+    await expect(worker(deps).execute(job.id)).rejects.toMatchObject({
+      code: "CUT_FINALIZE_OUTCOME_UNKNOWN",
+      retryable: true,
+    });
+
+    expect(deps.repository.prepareAttemptOutput).toHaveBeenCalledOnce();
+    expect(deps.storage.delete).not.toHaveBeenCalled();
+    expect(deps.repository.completeAttemptCleanup).not.toHaveBeenCalled();
+    expect(deps.repository.fail).toHaveBeenCalledWith(
+      job,
+      "CUT_FINALIZE_OUTCOME_UNKNOWN",
+      expect.any(String),
+      true,
+    );
+  });
+
   it("deletes an attempt upload when finalization rejects a lost lease", async () => {
     const job = claimed("CUT_SEGMENT");
     const deps = dependencies(job);
