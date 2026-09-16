@@ -20,12 +20,14 @@ Nuxt SPA, NestJS REST API, PostgreSQL, BullMQ, FFmpeg и private S3 storage.
 Node.js 24.15.0 и pnpm 10.34.5. Зависимости восстанавливаются через
 `pnpm install --frozen-lockfile`; новые версии библиотек не подменяются.
 
-На WSL после восстановления сначала прочитайте
-[границу между старой и восстановленной средой](docs/infrastructure/mac-wsl-recovery.md).
-Текущая старая WSL-база несовместима с восстановленной схемой. Её данные и
-конфигурация сохранены отдельно; активный `.env` намеренно отсутствует.
-Общие инструкции первого запуска находятся в
-[local-development.md](docs/infrastructure/local-development.md).
+На WSL восстановленная версия запущена в отдельной среде: интерфейс
+`http://localhost:3000`, API `http://localhost:3001`. Команды запуска и остановки:
+[restored-runtime.md](docs/infrastructure/restored-runtime.md).
+Старая WSL-база несовместима с восстановленной схемой; её данные и конфигурация
+сохранены отдельно и не используются новым приложением. Подробнее:
+[граница сред](docs/infrastructure/mac-wsl-recovery.md).
 
 Полный прогон тестов при объединении пропущен по явному решению владельца.
-Проверки сборки и контракта не означают приёмку незавершённого Stage 2B UI.
+После запуска 16 сентября повторно проверены API/worker и полный ручной Stage 2:
+[проверка конвейера](docs/engineering/RESTORED-MANUAL-PIPELINE-SMOKE.md).
+Creator Context UI проходит отдельную приёмку; AI-провайдеры не подключены.
