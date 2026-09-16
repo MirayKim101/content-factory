@@ -149,3 +149,19 @@ docker compose --project-name content-factory-restored --env-file .env \
 томов `content-factory-restored-*`. Откат к alternate WSL line остаётся
 branch/runtime операцией из `mac-wsl-recovery.md`; он не включает перенос или
 перезапись данных этой изолированной базы.
+
+## Stage 2B-2 checkpoint, admission выключен
+
+16 сентября применена additive migration
+`20260916090000_sparse_frame_evidence` только к `content_factory_restored`:
+всего 16 миграций. До неё сделан проверенный restore backup, см.
+`docs/engineering/SPARSE-FRAME-ROLLOUT-PREP.md`. Узкая policy расширена только
+на `ai-content/frame-evidence/*`; allow/deny и anonymous denial проверены.
+
+Для текущей остановки сохранять `AI_CONTEXT_ENABLED=1` и
+`EDITORIAL_FRAMES_ENABLED=0` на API и UI. Worker defaults:
+`FRAME_EXTRACTION_CAPACITY=1`, `FRAME_WORK_DEADLINE_MS=300000`.
+Не включать создание frame jobs до продолжения live acceptance. Код находится
+в `feat/stage2b2-frame-evidence`; принятый main остаётся на `53d13a6`.
+Точные процессы и состояние последней проверки — в
+`docs/engineering/CURRENT-HANDOFF.md`.

@@ -161,3 +161,17 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
 
 Ручная реклама и ручные обложки уже существуют. Полный MVP требует сквозного
 сценария Stage 3 для 1–2 каналов; процент готовности и календарный срок не оценены.
+
+## Runtime checkpoint при остановке владельцем
+
+Код сохранён коммитом `52609fa` в `feat/stage2b2-frame-evidence`.
+API успешно восстановлен после исправления contracts native import; independent
+review CLEAN. API session `26457`, PID `95151`, port 3001; root отдельно
+подтвердил health `{"status":"ok"}`. AI context включён, frame admission явно
+выключен. Profile/current prompt GET также проверены DevOps.
+Web session `57108`, port 3000, не останавливалась.
+Worker healthy: container
+`7d71b253002ca48ab9be822e4e72d964065c784128eea144473e3f93405e900a`.
+Его image собран до финального contracts import fix; worker использует tsx,
+API запускается native Node24. При следующем rebuild использовать текущий код.
+Новых frame extraction jobs в этой сессии не создавали.
