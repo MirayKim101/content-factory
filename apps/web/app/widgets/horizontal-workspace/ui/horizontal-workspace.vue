@@ -68,6 +68,21 @@ const reviewTarget = ref<{
   renderId: string;
   filename: string;
 }>();
+const creatorContextDialog = ref<{ canDiscard: () => boolean }>();
+function closeCreatorContext(): boolean {
+  if (!creatorContextTarget.value) return true;
+  if (creatorContextDialog.value && !creatorContextDialog.value.canDiscard())
+    return false;
+  creatorContextTarget.value = undefined;
+  return true;
+}
+function openCreatorContext(
+  target: NonNullable<typeof creatorContextTarget.value>,
+) {
+  if (closeCreatorContext()) creatorContextTarget.value = target;
+}
+onBeforeRouteLeave(() => closeCreatorContext());
+onBeforeRouteUpdate(() => closeCreatorContext());
 const creatorContextTarget = ref<{
   projectId: string;
   sourceId: string;
@@ -118,6 +133,8 @@ function clearConfirmation(id: string): void {
   ensureState(id).confirmation = undefined;
 }
 function removeSource(id: string): void {
+  if (creatorContextTarget.value?.projectId === id && !closeCreatorContext())
+    return;
   const next = ids.value.filter((item) => item !== id);
   if (editorProjectId.value === id) editorProjectId.value = undefined;
   void navigateTo({
@@ -332,7 +349,7 @@ watch(
     if (!next.includes(reviewTarget.value?.projectId ?? ""))
       reviewTarget.value = undefined;
     if (!next.includes(creatorContextTarget.value?.projectId ?? ""))
-      creatorContextTarget.value = undefined;
+      closeCreatorContext();
   },
   { immediate: true },
 );
@@ -367,7 +384,7 @@ watch(
         if (reviewTarget.value?.projectId === source.id)
           reviewTarget.value = undefined;
         if (creatorContextTarget.value?.projectId === source.id)
-          creatorContextTarget.value = undefined;
+          closeCreatorContext();
       }
     }
   },
@@ -557,13 +574,13 @@ watch(
                     )
                   "
                   @edit-creator-context="
-                    creatorContextTarget = {
+                    openCreatorContext({
                       projectId: row.id,
                       sourceId: row.query.data!.source.id,
                       sourceVersion: row.query.data!.source.sourceVersion,
                       jobId: $event,
                       filename: row.query.data!.source.originalFilename,
-                    }
+                    })
                   "
                 />
                 <EditorialExportCard :project-id="row.id" :cut-job-id="jobId" />
@@ -590,6 +607,7 @@ watch(
     />
     <CreatorContextDialog
       v-if="creatorContextTarget"
+      ref="creatorContextDialog"
       :key="`${creatorContextTarget.projectId}:${creatorContextTarget.sourceId}:${creatorContextTarget.sourceVersion}:${creatorContextTarget.jobId}`"
       :visible="true"
       v-bind="creatorContextTarget"

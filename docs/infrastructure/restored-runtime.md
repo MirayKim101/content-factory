@@ -18,7 +18,7 @@ docker compose --project-name content-factory-restored --env-file .env \
 
 | Ресурс        | Локальный адрес                    | Назначение                                        |
 | ------------- | ---------------------------------- | ------------------------------------------------- |
-| PostgreSQL    | `127.0.0.1:15432`                  | пустая база `content_factory_restored`            |
+| PostgreSQL    | `127.0.0.1:15432`                  | база `content_factory_restored`                   |
 | Redis         | `127.0.0.1:16379`                  | очередь `content-factory-restored-media-v1`       |
 | MinIO API     | `127.0.0.1:19000`                  | private bucket `content-factory-restored-sources` |
 | MinIO console | `127.0.0.1:19001`                  | только для локального оператора                   |
@@ -94,6 +94,25 @@ Overlay применяет Compose `!override` для `ports`; базовые `5
 вернуть `{"status":"ok"}`. Nuxt production output сам по себе не заменяет
 edge proxy: для local UI используется именно dev proxy из ADR-001.
 
+## Creator Context в проверенной local среде
+
+После приёмки Stage 2B-1 API использует `AI_CONTEXT_ENABLED=1` в локальном
+`.env`. Для Nuxt передай этот флаг явно: запуск из `apps/web` не читает корневой
+`.env` автоматически.
+
+```sh
+PATH="$PWD/tmp/runtime/bin:$PWD/tmp/runtime/node-v24.15.0-linux-x64/bin:$PATH" \
+COREPACK_HOME="$PWD/tmp/runtime/corepack" AI_CONTEXT_ENABLED=1 \
+pnpm --dir apps/web exec nuxt dev --port 3000 --host 127.0.0.1
+```
+
+Это включает только профили, private reference, контекст и prompt. Внешних
+AI-провайдеров и генерации нет. Изменение флага требует перезапуска API/web;
+отключение обоих флагов сохраняет данные и ручной Stage 2. MinIO provisioning
+разрешает только отдельный creator-reference namespace; первый API startup
+выполняет durable reference reconciliation. Evidence:
+`docs/engineering/CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md`.
+
 ## Проверки и evidence этого запуска
 
 - `config --quiet` прошла; итоговая конфигурация содержит только порты
@@ -112,9 +131,9 @@ edge proxy: для local UI используется именно dev proxy из
 
 При первой проверке AI context и editorial export были выключены. Затем
 manual export включён для synthetic Stage 2 smoke, см.
-[отчёт](../engineering/RESTORED-MANUAL-PIPELINE-SMOKE.md). AI context и external
-providers остаются выключены. Этот runtime не означает приёмку Stage 2B UI или
-production rollout.
+[отчёт](../engineering/RESTORED-MANUAL-PIPELINE-SMOKE.md). AI context затем
+включён для отдельной приёмки, описанной выше. External providers остаются
+выключены. Локальная приёмка не означает production rollout.
 
 ## Остановка и rollback
 

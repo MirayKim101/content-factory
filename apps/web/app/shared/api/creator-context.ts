@@ -13,6 +13,10 @@ export type SourceContext =
   components["schemas"]["SourceEditorialContextDetailResponseDto"];
 export type CutPrompt =
   components["schemas"]["CutEditorialPromptDetailResponseDto"];
+export type ReferenceAuthorizationInput =
+  components["schemas"]["UpdateCreatorReferenceAuthorizationDto"];
+export type DefaultReferenceInput =
+  components["schemas"]["SetDefaultCreatorReferenceDto"];
 export type ProfileInput =
   components["schemas"]["CreatorProfileRevisionInputDto"];
 export type SourceContextInput =
@@ -250,10 +254,21 @@ export function createCreatorContextApi(
         referenceSchema,
       );
     },
+    getAuthorization: (profileId: string, assetId: string) =>
+      request(
+        `/creator-profiles/${encodeURIComponent(profileId)}/reference-assets/${encodeURIComponent(assetId)}/authorization`,
+        {},
+        z.object({
+          assetId: uuid,
+          creatorProfileId: uuid,
+          current: authSchema,
+          history: z.array(authSchema),
+        }),
+      ),
     updateAuthorization: (
       profileId: string,
       assetId: string,
-      body: Record<string, unknown>,
+      body: ReferenceAuthorizationInput,
       key: string,
     ) =>
       request(
@@ -266,11 +281,7 @@ export function createCreatorContextApi(
           history: z.array(authSchema),
         }),
       ),
-    setDefault: (
-      profileId: string,
-      body: Record<string, unknown>,
-      key: string,
-    ) =>
+    setDefault: (profileId: string, body: DefaultReferenceInput, key: string) =>
       request(
         `/creator-profiles/${encodeURIComponent(profileId)}/default-reference`,
         json("PUT", body, key),

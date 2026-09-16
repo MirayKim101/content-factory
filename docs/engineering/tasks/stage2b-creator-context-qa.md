@@ -1,8 +1,10 @@
 # Stage 2B-1 — Creator Context Workspace: independent QA acceptance
 
-Статус: **план проверок, не выполнен**. Этот файл не является evidence
-выполнения. Проверки ниже выполняет независимый reviewer после завершения
-frontend diff; implementer не засчитывает их как self-review.
+Статус: **проверки завершены 2026-09-16, independent review CLEAN**.
+Ниже сохранён протокол проверок. Результаты и границы evidence:
+[review](../CREATOR-CONTEXT-UI-REVIEW.md) и
+[browser acceptance](../CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md).
+Implementer не являлся единственным reviewer.
 
 ## Scope and oracle
 
@@ -24,7 +26,7 @@ review.
 the transferred controller annotations and generated artifacts were checked:
 all five PUT operations below declare their bodies and path parameters, and
 both OpenAPI drift commands pass. The former findings below are retained as
-context for the still-unexecuted QA plan. This structural check does not grant
+context for the original QA plan. This structural check does not grant
 frontend acceptance.
 
 **Original finding:** frozen generated contract could not type the required UI mutations.

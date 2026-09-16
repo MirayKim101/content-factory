@@ -16,11 +16,13 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 ## Текущий этап
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
-- Stage 2B-1 backend foundation принят ранее. Его UI перенесён в состоянии WIP;
-  две ошибки типов исправлены, но frontend acceptance не выполнен.
-- Stage 2B-2…2B-6 и Stage 3 остаются впереди. AI generation/provider calls,
-  Twitch, vertical и publishing при этом merge не добавлялись.
-- `AI_CONTEXT_ENABLED` не включать до отдельной приёмки UI.
+- Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,
+  полный браузерный сценарий и проверку ручного fallback. Evidence:
+  `CREATOR-CONTEXT-UI-REVIEW.md`, `CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md`.
+- Stage 2B-2…2B-6 и Stage 3 остаются впереди. Следующий срез — sparse-frame
+  evidence точного отрезка через отдельное фоновое задание media-worker.
+- `AI_CONTEXT_ENABLED=1` включён в restored API и dev UI. Это только профили,
+  private reference, контекст и prompt; внешних AI calls и генерации нет.
 
 ## Проверено и не проверено
 
@@ -47,7 +49,7 @@ Legacy PostgreSQL/Redis/MinIO и volumes сохранены. Старые API/we
 verified dump — `tmp/recovery/before-mac-baseline-switch-20260909T144250Z.dump`.
 Никаких Mac migrations к старой базе не применять, migration checksums не менять.
 
-API unit 123, worker unit 84, Creator Context API integration 2 и worker lease
+API unit 128, worker unit 84, Creator Context API integration 2 и worker lease
 integration 5 прошли. Интеграционные тесты выполнялись в отдельной одноразовой
 `cf_acceptance_20260916`, не в рабочей restored базе. Независимый worker/runtime
 review CLEAN. См. `RESTORED-WORKER-VERIFICATION.md`.
@@ -55,8 +57,18 @@ review CLEAN. См. `RESTORED-WORKER-VERIFICATION.md`.
 Manual assembly/approval/export flags включены только в новой local среде.
 Ручной Stage 2 smoke дал видео с рекламой/баннером/CTA, обложку и ZIP с exact
 revision. Его evidence: `RESTORED-MANUAL-PIPELINE-SMOKE.md`.
-Creator Context UI сейчас проходит исправления и приёмку; `AI_CONTEXT_ENABLED=0`
-до отдельного controlled browser rollout. Stage 2B-2 не начинать до CLEAN UI.
+Creator Context UI принят независимо: 192 frontend tests, typecheck/lint/build,
+OpenAPI drift и отдельные повторные проверки изменённых случаев. Полный live
+сценарий create → private reload → upload → clear → default → context/prompt →
+stale → explicit rebind → revoke → MANUAL ZIP прошёл без JS errors. ZIP сохранил
+точную контрольную сумму. Dialog проверен обычными кликами при 1440×900 и
+1280×720. MinIO allow/deny и ambiguous/terminal upload retry приняты отдельно;
+backend/policy commit `b55bd5c` уже в origin/main. Старый failed reference очищен
+startup reconciler без прямой правки DB. Данные synthetic fixtures сохранены.
+
+Реальный SIGKILL/lease-expiry worker smoke также независимо воспроизведён:
+вторая попытка завершилась READY, ровно один authoritative artifact, совпавшие
+checksum и длительность. Evidence: `RESTORED-WORKER-RESTART-SMOKE.md`.
 
 Временный `ContentFactory-merge` удалён 2026-09-16 штатной командой
 `git worktree remove` после проверки чистого дерева и совпадения HEAD с main
@@ -72,11 +84,11 @@ Seanova, Seanova-new и DockerServer в любом регистре, содер�
 root `package-lock.json` сохранены вне Git.
 
 С 2026-09-16 владелец поручил продолжать автономно до остатка **30% недельного
-лимита** (70% использовано). Последний начальный замер: 6% использовано.
+лимита** (70% использовано). Последний замер 2026-09-16 03:06 UTC: 25% использовано, 75% осталось.
 Периодически проверять актуальную квоту; перед остановкой сохранить commit,
 проверки, состояние сервисов и следующие действия. Старый waiver тестов касался
 только merge; новые срезы проходят применимые проверки.
 
 Полный доступ filesystem/network и Docker подтверждён 2026-09-16; это не
-отменяет запрет внешних каталогов и их ресурсов. Изолированный rollout завершён. Текущая задача: завершение и приёмка
-Creator Context UI, затем следующие срезы по MVP roadmap.
+отменяет запрет внешних каталогов и их ресурсов. Изолированный rollout завершён. Текущая задача: контракт и реализация
+Stage 2B-2 sparse-frame evidence по ADR-008 и MVP roadmap.

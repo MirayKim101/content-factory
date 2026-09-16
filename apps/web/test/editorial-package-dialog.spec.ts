@@ -363,4 +363,38 @@ describe("EditorialPackageDialog", () => {
     ).toBe("A title");
     vi.useRealTimers();
   });
+  it.each(["manual-editorial-v1", "legacy-manual-editorial-v1"])(
+    "shows independent MANUAL badges and %s basis without adding provenance to manual writes",
+    async (basisVersion) => {
+      const value = pack(ids.projectA, ids.jobA, "A title");
+      const withProvenance = {
+        ...value,
+        revision: {
+          ...value.revision,
+          provenance: {
+            metadata: { mode: "MANUAL", basisVersion },
+            thumbnail: { mode: "MANUAL", basisVersion },
+          },
+        },
+      };
+      mocks.listPackages.mockResolvedValue([withProvenance]);
+      mocks.savePackage.mockResolvedValue(withProvenance);
+      const wrapper = mountDialog();
+      await flushPromises();
+      const badges = wrapper.findAll(".provenance span");
+      expect(badges).toHaveLength(2);
+      for (const badge of badges) {
+        expect(badge.text()).toContain("MANUAL");
+        expect(badge.attributes("title")).toBe(basisVersion);
+      }
+      await wrapper.find("form").trigger("submit");
+      await flushPromises();
+      expect(mocks.savePackage).toHaveBeenCalled();
+      expect(JSON.stringify(mocks.savePackage.mock.calls[0])).not.toContain(
+        '"provenance"',
+      );
+      expect(wrapper.find(".provenance").text()).not.toContain("AI_ASSISTED");
+      wrapper.unmount();
+    },
+  );
 });

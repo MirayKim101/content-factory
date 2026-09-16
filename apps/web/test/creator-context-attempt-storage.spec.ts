@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   CreatorOperationStorageError,
@@ -7,6 +7,10 @@ import {
 } from "~/features/edit-creator-context/model/attempt-storage";
 
 describe("creator context operation identity", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
   beforeEach(() => {
     sessionStorage.clear();
     vi.stubGlobal("crypto", {
@@ -52,7 +56,7 @@ describe("creator context operation identity", () => {
   });
 
   it("fails closed when browser storage cannot persist a retry identity", () => {
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    vi.spyOn(sessionStorage, "setItem").mockImplementation(() => {
       throw new DOMException("blocked");
     });
     expect(() =>

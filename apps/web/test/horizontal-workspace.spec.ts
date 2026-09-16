@@ -42,6 +42,8 @@ const projectA = "00000000-0000-4000-8000-000000000101";
 const projectB = "00000000-0000-4000-8000-000000000102";
 const projectC = "00000000-0000-4000-8000-000000000103";
 const projectD = "00000000-0000-4000-8000-000000000104";
+const discardCreator = vi.fn(() => true);
+let creatorRouteGuard: () => boolean;
 let latestRoute: { query: { projectIds: string }; fullPath: string };
 
 function project(id: string) {
@@ -103,10 +105,17 @@ function mountWorkspace(
           props: ["jobId"],
           template: `<article class="pipeline-job-card">
             {{ jobId }}
+            <button class="open-context" @click="$emit('editCreatorContext', jobId)">Контекст</button>
             <button class="open-editorial" @click="$emit('editEditorial', jobId)">Редактор</button>
             <button class="open-assembly" @click="$emit('editAssembly', { jobId, durationMs: 1000 })">Монтаж</button>
           </article>`,
         },
+        CreatorContextDialog: {
+          props: ["visible"],
+          methods: { canDiscard: () => discardCreator() },
+          template: '<section v-if="visible" class="creator-target" />',
+        },
+        EditorialExportCard: true,
         EditorialPackageDialog: {
           props: ["visible"],
           template: '<section v-if="visible" class="editorial-target" />',
@@ -160,6 +169,11 @@ function launchButton(wrapper: ReturnType<typeof mount>) {
 
 describe("HorizontalWorkspace cut confirmation", () => {
   beforeEach(() => {
+    vi.stubGlobal("onBeforeRouteLeave", vi.fn());
+    vi.stubGlobal("onBeforeRouteUpdate", (guard: () => boolean) => {
+      creatorRouteGuard = guard;
+    });
+    discardCreator.mockReturnValue(true);
     mocks.createCuts.mockReset();
     mocks.getProject.mockImplementation((id: string) =>
       Promise.resolve(project(id)),
@@ -241,6 +255,33 @@ describe("HorizontalWorkspace cut confirmation", () => {
     queryClient.setQueryData(["project", projectC], thirdProject);
     await flushPromises();
     expect(wrapper.find(".assembly-target").exists()).toBe(false);
+  });
+
+  it("requires a discard decision before removing a dirty creator-context target", async () => {
+    mocks.listProjectJobs.mockResolvedValue({
+      items: [{ id: "00000000-0000-4000-8000-000000000201" }],
+    });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const wrapper = mountWorkspace([projectC], client);
+    await flushPromises();
+    await wrapper.find(".open-context").trigger("click");
+    expect(wrapper.find(".creator-target").exists()).toBe(true);
+    discardCreator.mockReturnValue(false);
+    expect(creatorRouteGuard()).toBe(false);
+    const changed = project(projectC);
+    changed.source.sourceVersion = 2;
+    changed.source.authorization.sourceVersion = 2;
+    client.setQueryData(["project", projectC], changed);
+    await flushPromises();
+    expect(wrapper.find(".creator-target").exists()).toBe(true);
+    discardCreator.mockReturnValue(true);
+    expect(creatorRouteGuard()).toBe(true);
+    await flushPromises();
+    expect(wrapper.find(".creator-target").exists()).toBe(false);
+    wrapper.unmount();
+    client.clear();
   });
 
   it("closes editorial and assembly dialogs when their project leaves the route", async () => {

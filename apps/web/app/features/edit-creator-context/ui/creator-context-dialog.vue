@@ -5,7 +5,14 @@ import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
-import { computed, reactive, ref, watch } from "vue";
+import {
+  computed,
+  reactive,
+  ref,
+  watch,
+  onBeforeUnmount,
+  onMounted,
+} from "vue";
 import {
   promptFormSchema,
   sourceContextFormSchema,
@@ -20,7 +27,6 @@ import {
   type CutPromptInput,
   type SourceContextInput,
 } from "~/shared/api/creator-context";
-
 const props = defineProps<{
   visible: boolean;
   projectId: string;
@@ -39,7 +45,7 @@ const identity = computed(
     `${props.projectId}:${props.sourceId}:${props.sourceVersion}:${props.jobId}`,
 );
 const loaded = ref("");
-const dirty = ref(false);
+let alive = true;
 const error = ref<string>();
 const success = ref<string>();
 const sourceForm = reactive({
@@ -61,11 +67,26 @@ const promptForm = reactive({
   cta: "",
   restrictionsText: "",
 });
+const promptBinding = reactive({
+  sourceContextId: "",
+  sourceContextRevision: 0,
+});
+const sourceBaseline = ref(JSON.stringify(sourceForm));
+const promptSnapshot = () =>
+  JSON.stringify({ ...promptForm, ...promptBinding });
+const promptBaseline = ref(promptSnapshot());
+const sourceDirty = computed(
+  () => JSON.stringify(sourceForm) !== sourceBaseline.value,
+);
+const promptDirty = computed(() => promptSnapshot() !== promptBaseline.value);
+const dirty = computed(() => sourceDirty.value || promptDirty.value);
+const sourceRevision = ref(0),
+  promptRevision = ref(0);
 const profiles = useQuery({
   queryKey: ["creator-profiles"],
   queryFn: api.listProfiles,
   enabled: computed(() => props.visible && enabled.value),
-  retry: 1,
+  retry: false,
 });
 const context = useQuery({
   queryKey: computed(() => [
@@ -85,291 +106,461 @@ const prompt = useQuery({
   enabled: computed(() => props.visible && enabled.value),
   retry: false,
 });
-function load() {
+const absent = (cause: unknown) =>
+  cause instanceof CreatorContextApiError && cause.status === 404;
+const readError = computed(
+  () =>
+    (context.error.value && !absent(context.error.value)) ||
+    (prompt.error.value && !absent(prompt.error.value)) ||
+    profiles.error.value,
+);
+function hydrateSource() {
   const c = context.data.value?.revision.editableRevision;
-  sourceForm.creatorProfileId = c?.creatorProfileId ?? "";
-  sourceForm.creatorProfileRevision = c?.creatorProfileRevision ?? 0;
-  sourceForm.sourceTitle = c?.sourceTitle ?? props.filename;
-  sourceForm.gameOrTopic = c?.gameOrTopic ?? "";
-  sourceForm.audience = c?.audience ?? "";
-  sourceForm.editorialGoal = c?.editorialGoal ?? "";
-  sourceForm.language = c?.language ?? "";
-  sourceForm.defaultCta = c?.defaultCta ?? "";
-  sourceForm.restrictionsText = c?.restrictions.join("\n") ?? "";
-  sourceForm.operatorNotes = c?.operatorNotes ?? "";
+  Object.assign(sourceForm, {
+    creatorProfileId: c?.creatorProfileId ?? "",
+    creatorProfileRevision: c?.creatorProfileRevision ?? 0,
+    sourceTitle: c?.sourceTitle ?? props.filename,
+    gameOrTopic: c?.gameOrTopic ?? "",
+    audience: c?.audience ?? "",
+    editorialGoal: c?.editorialGoal ?? "",
+    language: c?.language ?? "",
+    defaultCta: c?.defaultCta ?? "",
+    restrictionsText: c?.restrictions.join("\n") ?? "",
+    operatorNotes: c?.operatorNotes ?? "",
+  });
+  sourceRevision.value = context.data.value?.currentRevision ?? 0;
+  sourceBaseline.value = JSON.stringify(sourceForm);
+}
+function hydratePrompt() {
   const p = prompt.data.value?.revision.editableRevision;
-  promptForm.whatHappens = p?.whatHappens ?? "";
-  promptForm.desiredAngle = p?.desiredAngle ?? "";
-  promptForm.tone = p?.tone ?? "";
-  promptForm.cta = p?.cta ?? "";
-  promptForm.restrictionsText = p?.restrictions.join("\n") ?? "";
-  dirty.value = false;
-  loaded.value = identity.value;
+  Object.assign(promptForm, {
+    whatHappens: p?.whatHappens ?? "",
+    desiredAngle: p?.desiredAngle ?? "",
+    tone: p?.tone ?? "",
+    cta: p?.cta ?? "",
+    restrictionsText: p?.restrictions.join("\n") ?? "",
+  });
+  promptBinding.sourceContextId =
+    p?.sourceContextId ?? context.data.value?.id ?? "";
+  promptBinding.sourceContextRevision =
+    p?.sourceContextRevision ?? context.data.value?.currentRevision ?? 0;
+  promptRevision.value = prompt.data.value?.currentRevision ?? 0;
+  promptBaseline.value = promptSnapshot();
 }
 watch(
-  [() => context.data.value, () => prompt.data.value, identity],
+  [
+    () => context.data.value,
+    () => prompt.data.value,
+    () => context.isFetching.value,
+    () => prompt.isFetching.value,
+    identity,
+    () => props.visible,
+  ],
   () => {
     if (
-      props.visible &&
-      loaded.value !== identity.value &&
-      !context.isFetching.value &&
-      !prompt.isFetching.value
+      !props.visible ||
+      context.isFetching.value ||
+      prompt.isFetching.value ||
+      readError.value
     )
-      load();
+      return;
+    if (loaded.value && loaded.value !== identity.value && dirty.value) {
+      error.value =
+        "Источник изменился. Черновик прежнего источника сохранён; загрузите новую версию явно.";
+      return;
+    }
+    if (!sourceDirty.value) hydrateSource();
+    if (!promptDirty.value) hydratePrompt();
+    loaded.value = identity.value;
   },
   { immediate: true },
 );
-watch(
-  () => sourceForm.creatorProfileId,
-  (id) => {
-    const profile = profiles.data.value?.find((item) => item.id === id);
-    if (profile && !context.data.value)
-      sourceForm.creatorProfileRevision = profile.currentRevision;
-    dirty.value = true;
-  },
-);
+function chooseProfile() {
+  const selected = profiles.data.value?.find(
+    (item) => item.id === sourceForm.creatorProfileId,
+  );
+  if (selected) sourceForm.creatorProfileRevision = selected.currentRevision;
+}
+function bindPrompt() {
+  const source = context.data.value;
+  if (!source) return;
+  promptBinding.sourceContextId = source.id;
+  promptBinding.sourceContextRevision = source.currentRevision;
+}
 function sourcePayload():
   (SourceContextInput & { expectedRevision: number }) | undefined {
-  const value = sourceContextFormSchema.safeParse(sourceForm);
-  if (!value.success) {
-    error.value = value.error.issues[0]?.message ?? "Проверьте source context.";
+  const result = sourceContextFormSchema.safeParse(sourceForm);
+  if (!result.success) {
+    error.value = result.error.issues[0]?.message;
     return;
   }
+  const { restrictionsText, ...rest } = result.data;
   return {
-    creatorProfileId: value.data.creatorProfileId,
-    creatorProfileRevision: value.data.creatorProfileRevision,
-    sourceTitle: value.data.sourceTitle,
-    gameOrTopic: value.data.gameOrTopic,
-    audience: value.data.audience,
-    editorialGoal: value.data.editorialGoal,
-    language: value.data.language,
-    defaultCta: value.data.defaultCta,
-    restrictions: value.data.restrictionsText,
-    operatorNotes: value.data.operatorNotes,
-    expectedRevision: context.data.value?.currentRevision ?? 0,
+    ...rest,
+    restrictions: restrictionsText,
+    expectedRevision: sourceRevision.value,
   };
 }
 function promptPayload():
   (CutPromptInput & { expectedRevision: number }) | undefined {
-  const source = context.data.value;
-  if (!source) {
-    error.value = "Сначала сохраните exact source context.";
+  if (!promptBinding.sourceContextId) {
+    error.value =
+      "Сначала сохраните контекст исходника и свяжите с ним инструкцию.";
     return;
   }
-  const value = promptFormSchema.safeParse(promptForm);
-  if (!value.success) {
-    error.value = value.error.issues[0]?.message ?? "Проверьте cut prompt.";
+  const result = promptFormSchema.safeParse(promptForm);
+  if (!result.success) {
+    error.value = result.error.issues[0]?.message;
     return;
   }
+  const { restrictionsText, ...rest } = result.data;
   return {
-    sourceContextId: source.id,
-    sourceContextRevision: source.currentRevision,
-    whatHappens: value.data.whatHappens,
-    desiredAngle: value.data.desiredAngle,
-    tone: value.data.tone,
-    cta: value.data.cta,
-    restrictions: value.data.restrictionsText,
-    expectedRevision: prompt.data.value?.currentRevision ?? 0,
+    ...rest,
+    ...promptBinding,
+    restrictions: restrictionsText,
+    expectedRevision: promptRevision.value,
   };
 }
+function report(cause: unknown) {
+  const e = cause instanceof Error ? cause : new Error("Не удалось сохранить.");
+  error.value =
+    e instanceof CreatorContextApiError && e.status === 409
+      ? "Контекст изменился. Черновик сохранён; загрузите актуальную версию явно, перезапись запрещена."
+      : e.message;
+  success.value = undefined;
+}
+type Target = {
+  identity: string;
+  projectId: string;
+  sourceId: string;
+  sourceVersion: number;
+  jobId: string;
+  key: string;
+  target: string;
+  snapshot: string;
+};
+type SourceRequest = Target & {
+  body: NonNullable<ReturnType<typeof sourcePayload>>;
+};
+type PromptRequest = Target & {
+  body: NonNullable<ReturnType<typeof promptPayload>>;
+};
+const current = (r: Target) =>
+  alive &&
+  props.visible &&
+  r.identity === identity.value &&
+  loaded.value === identity.value;
 const saveContext = useMutation({
-  mutationFn: (body: NonNullable<ReturnType<typeof sourcePayload>>) =>
+  mutationFn: (r: SourceRequest) =>
     api.saveSourceContext(
-      props.projectId,
-      props.sourceId,
-      props.sourceVersion,
-      body,
-      creatorOperationKey("source-context", identity.value, body),
+      r.projectId,
+      r.sourceId,
+      r.sourceVersion,
+      r.body,
+      r.key,
     ),
-  onSuccess: (value) => {
-    if (loaded.value !== identity.value) return;
-    clearCreatorOperationKey("source-context", identity.value);
+  onSuccess: (value, r) => {
+    clearCreatorOperationKey("source-context", r.target, r.key);
+    void client.cancelQueries({
+      queryKey: ["source-context", r.projectId, r.sourceId, r.sourceVersion],
+      exact: true,
+    });
     client.setQueryData(
-      ["source-context", props.projectId, props.sourceId, props.sourceVersion],
+      ["source-context", r.projectId, r.sourceId, r.sourceVersion],
       value,
     );
-    success.value = `Source context revision ${value.currentRevision} сохранён.`;
-    dirty.value = false;
+    void client.invalidateQueries({
+      queryKey: ["cut-prompt", r.jobId, r.sourceVersion],
+    });
+    if (!current(r)) return;
+    sourceRevision.value = value.currentRevision;
+    sourceBaseline.value = r.snapshot;
+    error.value = undefined;
+    success.value = `Контекст исходника: версия ${value.currentRevision} сохранена.`;
   },
-  onError: (cause) => {
-    const e = cause as CreatorContextApiError;
-    error.value =
-      e.status === 409
-        ? "Контекст изменился на сервере. Загрузите server revision: overwrite запрещён."
-        : e.code === "AI_CONTEXT_DISABLED"
-          ? "Creator context отключён. Ручной поток не затронут."
-          : e.message;
+  onError: (cause, r) => {
+    if (current(r)) report(cause);
   },
 });
 const savePrompt = useMutation({
-  mutationFn: (body: NonNullable<ReturnType<typeof promptPayload>>) =>
-    api.saveCutPrompt(
-      props.jobId,
-      body,
-      creatorOperationKey("cut-prompt", identity.value, body),
-    ),
-  onSuccess: (value) => {
-    if (loaded.value !== identity.value) return;
-    clearCreatorOperationKey("cut-prompt", identity.value);
-    client.setQueryData(
-      ["cut-prompt", props.jobId, props.sourceVersion],
-      value,
-    );
-    success.value = `Cut prompt revision ${value.currentRevision} сохранён.`;
-    dirty.value = false;
+  mutationFn: (r: PromptRequest) => api.saveCutPrompt(r.jobId, r.body, r.key),
+  onSuccess: (value, r) => {
+    clearCreatorOperationKey("cut-prompt", r.target, r.key);
+    void client.cancelQueries({
+      queryKey: ["cut-prompt", r.jobId, r.sourceVersion],
+      exact: true,
+    });
+    client.setQueryData(["cut-prompt", r.jobId, r.sourceVersion], value);
+    if (!current(r)) return;
+    promptRevision.value = value.currentRevision;
+    promptBaseline.value = r.snapshot;
+    error.value = undefined;
+    success.value = `Инструкция к нарезке: версия ${value.currentRevision} сохранена.`;
   },
-  onError: (cause) => {
-    const e = cause as CreatorContextApiError;
-    error.value =
-      e.status === 409
-        ? "Upstream context или prompt изменились. Загрузите server revision."
-        : e.message;
+  onError: (cause, r) => {
+    if (current(r)) report(cause);
   },
 });
-function close(value: boolean) {
+function submit(kind: "source-context" | "cut-prompt") {
   if (
-    !value &&
-    dirty.value &&
-    !confirm("Несохранённые изменения будут потеряны. Закрыть?")
+    loaded.value !== identity.value ||
+    readError.value ||
+    saveContext.isPending.value ||
+    savePrompt.isPending.value
   )
     return;
-  emit("update:visible", value);
+  const target =
+    kind === "source-context"
+      ? `${props.projectId}:${props.sourceId}:${props.sourceVersion}`
+      : props.jobId;
+  const common = {
+    identity: identity.value,
+    projectId: props.projectId,
+    sourceId: props.sourceId,
+    sourceVersion: props.sourceVersion,
+    jobId: props.jobId,
+    target,
+  };
+  try {
+    if (kind === "source-context") {
+      const body = sourcePayload();
+      if (body)
+        saveContext.mutate({
+          ...common,
+          body,
+          key: creatorOperationKey(kind, target, body),
+          snapshot: JSON.stringify(sourceForm),
+        });
+    } else {
+      const body = promptPayload();
+      if (body)
+        savePrompt.mutate({
+          ...common,
+          body,
+          key: creatorOperationKey(kind, target, body),
+          snapshot: promptSnapshot(),
+        });
+    }
+  } catch (cause) {
+    report(cause);
+  }
 }
+function canDiscard() {
+  return (
+    !dirty.value ||
+    confirm("Несохранённые изменения будут потеряны. Продолжить?")
+  );
+}
+function close(value: boolean) {
+  if (value || canDiscard()) emit("update:visible", value);
+}
+async function reload() {
+  if (!canDiscard()) return;
+  const target = identity.value;
+  const results = await Promise.all([
+    context.refetch(),
+    prompt.refetch(),
+    profiles.refetch(),
+  ]);
+  if (!alive || target !== identity.value) return;
+  const failure = results.find(
+    (result) => result.error && !absent(result.error),
+  );
+  if (failure?.error) {
+    report(failure.error);
+    return;
+  }
+  hydrateSource();
+  hydratePrompt();
+  loaded.value = identity.value;
+  error.value = undefined;
+  success.value = undefined;
+}
+function beforeUnload(event: BeforeUnloadEvent) {
+  if (dirty.value) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+}
+onMounted(() => window.addEventListener("beforeunload", beforeUnload));
+onBeforeUnmount(() => {
+  alive = false;
+  window.removeEventListener("beforeunload", beforeUnload);
+});
+defineExpose({ canDiscard });
 </script>
 <template>
   <Dialog
     :visible="visible && enabled"
     modal
+    block-scroll
     :draggable="false"
     :header="`Контекст · ${filename}`"
+    :close-button-props="{ 'aria-label': 'Закрыть контекст' }"
     :style="{ width: 'min(62rem, calc(100vw - 2rem))' }"
+    :pt="{
+      root: { class: 'creator-context-dialog-root' },
+      mask: { class: 'creator-context-dialog-mask' },
+      header: { class: 'creator-context-dialog-header' },
+      title: { class: 'creator-context-dialog-title' },
+      pcCloseButton: { root: { class: 'creator-context-dialog-close' } },
+      content: { class: 'creator-context-dialog-body' },
+    }"
     @update:visible="close"
     ><p>
-      Exact source version: {{ sourceVersion }}. Новая upstream revision не
-      перепривязывает этот cut prompt автоматически.
+      Версия исходника: {{ sourceVersion }}. Новая версия профиля или контекста
+      не меняет сохранённую инструкцию автоматически.
     </p>
     <p v-if="context.isLoading.value || prompt.isLoading.value" role="status">
       Восстанавливаем сохранённый контекст…
     </p>
+    <p v-else-if="readError" role="alert">
+      Не удалось загрузить контекст. Ручной редакционный поток остаётся
+      доступен.<Button label="Повторить загрузку" @click="reload" />
+    </p>
     <template v-else
       ><section>
-        <h3>Source context</h3>
+        <h3>Контекст исходника</h3>
         <p
           v-if="context.data.value?.revision.status === 'STALE'"
           class="warning"
         >
-          Source context устарел: создайте следующую revision с актуальным
-          профилем.
+          Контекст устарел: сохраните новую версию с актуальным профилем.
         </p>
         <p v-if="context.data.value?.revision.blockers.length" class="warning">
-          Blockers: {{ context.data.value.revision.blockers.join(", ") }}
+          Причины: {{ context.data.value.revision.blockers.join(", ") }}
         </p>
         <label
           >Профиль<Select
             v-model="sourceForm.creatorProfileId"
             :options="profiles.data.value ?? []"
             option-label="canonicalDisplayName"
-            option-value="id" /></label
+            option-value="id"
+            placeholder="Выберите профиль"
+            aria-label="Профиль"
+            :pt="{
+              root: { class: 'creator-context-select' },
+              label: { class: 'creator-context-select-label' },
+              dropdown: { class: 'creator-context-select-dropdown' },
+              overlay: { class: 'creator-context-select-overlay' },
+              listContainer: { class: 'creator-context-select-list-container' },
+              option: { class: 'creator-context-select-option' },
+            }"
+            @change="chooseProfile" /></label
         ><label
-          >Revision профиля<input
+          >Версия профиля<input
+            class="creator-context-field"
             v-model.number="sourceForm.creatorProfileRevision"
             type="number"
             min="1"
-            step="1"
-            @input="dirty = true" /></label
+            step="1" /></label
         ><label
           >Название исходника<InputText
-            v-model="sourceForm.sourceTitle"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="sourceForm.sourceTitle" /></label
         ><label
           >Игра или тема<InputText
-            v-model="sourceForm.gameOrTopic"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="sourceForm.gameOrTopic" /></label
         ><label
           >Аудитория<Textarea
-            v-model="sourceForm.audience"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="sourceForm.audience" /></label
         ><label
           >Редакционная цель<Textarea
-            v-model="sourceForm.editorialGoal"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="sourceForm.editorialGoal" /></label
         ><label
           >Язык<InputText
-            v-model="sourceForm.language"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="sourceForm.language" /></label
         ><label
-          >CTA по умолчанию<Textarea
-            v-model="sourceForm.defaultCta"
-            @input="dirty = true" /></label
+          >Призыв к действию по умолчанию<Textarea
+            class="creator-context-field"
+            v-model="sourceForm.defaultCta" /></label
         ><label
           >Ограничения, одна на строку<Textarea
-            v-model="sourceForm.restrictionsText"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="sourceForm.restrictionsText" /></label
         ><label
-          >Private notes<Textarea
-            v-model="sourceForm.operatorNotes"
-            @input="dirty = true" /></label
+          >Личные заметки<Textarea
+            class="creator-context-field"
+            v-model="sourceForm.operatorNotes" /></label
         ><Button
-          label="Сохранить source context revision"
+          label="Сохранить контекст исходника"
           :loading="saveContext.isPending.value"
-          @click="
-            () => {
-              const value = sourcePayload();
-              if (value) saveContext.mutate(value);
-            }
+          :disabled="
+            saveContext.isPending.value ||
+            savePrompt.isPending.value ||
+            loaded !== identity
           "
+          @click="submit('source-context')"
         />
       </section>
       <section>
-        <h3>Prompt готовой нарезки</h3>
+        <h3>Инструкция к готовой нарезке</h3>
+        <p>
+          Связанная версия контекста:
+          {{ promptBinding.sourceContextRevision || "не выбрана" }}. Текущая:
+          {{ context.data.value?.currentRevision ?? "не создана" }}.
+        </p>
+        <Button
+          v-if="
+            context.data.value &&
+            (promptBinding.sourceContextId !== context.data.value.id ||
+              promptBinding.sourceContextRevision !==
+                context.data.value.currentRevision)
+          "
+          label="Связать с текущей версией контекста"
+          @click="bindPrompt"
+        />
         <p
           v-if="prompt.data.value?.revision.status === 'STALE'"
           class="warning"
         >
-          Prompt устарел из-за upstream revision. Создайте следующую revision.
+          Инструкция устарела после изменения контекста. Свяжите её с актуальной
+          версией.
         </p>
         <p v-if="prompt.data.value?.revision.blockers.length" class="warning">
-          Blockers: {{ prompt.data.value.revision.blockers.join(", ") }}
+          Причины: {{ prompt.data.value.revision.blockers.join(", ") }}
         </p>
         <label
           >Что происходит<Textarea
-            v-model="promptForm.whatHappens"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="promptForm.whatHappens" /></label
         ><label
-          >Желаемый угол<Textarea
-            v-model="promptForm.desiredAngle"
-            @input="dirty = true" /></label
+          >Желаемый акцент<Textarea
+            class="creator-context-field"
+            v-model="promptForm.desiredAngle" /></label
         ><label
           >Тон<InputText
-            v-model="promptForm.tone"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="promptForm.tone" /></label
         ><label
-          >CTA<Textarea v-model="promptForm.cta" @input="dirty = true" /></label
+          >Призыв к действию<Textarea
+            class="creator-context-field"
+            v-model="promptForm.cta" /></label
         ><label
           >Ограничения, одна на строку<Textarea
-            v-model="promptForm.restrictionsText"
-            @input="dirty = true" /></label
+            class="creator-context-field"
+            v-model="promptForm.restrictionsText" /></label
         ><Button
-          label="Сохранить cut prompt revision"
+          label="Сохранить инструкцию к нарезке"
           :loading="savePrompt.isPending.value"
-          @click="
-            () => {
-              const value = promptPayload();
-              if (value) savePrompt.mutate(value);
-            }
+          :disabled="
+            saveContext.isPending.value ||
+            savePrompt.isPending.value ||
+            loaded !== identity
           "
+          @click="submit('cut-prompt')"
         /></section
     ></template>
     <p v-if="error" class="error" role="alert">
       {{ error }}
       <Button
-        label="Загрузить server revision"
+        label="Загрузить актуальную версию"
         severity="secondary"
-        @click="
-          context.refetch();
-          prompt.refetch();
-          loaded = '';
-        "
+        @click="reload"
       />
     </p>
     <p v-if="success" role="status">{{ success }}</p></Dialog
@@ -390,5 +581,131 @@ label {
 }
 .warning {
   color: #7c4a03;
+}
+</style>
+
+<style>
+/* PrimeVue is unstyled and teleports overlays to body; use the existing
+   editorial-dialog pass-through pattern with component-specific global classes. */
+.creator-context-dialog-mask {
+  z-index: 1200;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.45);
+}
+.creator-context-dialog-root {
+  position: relative;
+  z-index: 1201;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 2rem);
+  overflow: hidden;
+  border: 1px solid #d9e0d8;
+  border-radius: 0.875rem;
+  background: #fff;
+  color: #152018;
+  box-shadow: 0 24px 80px rgb(15 23 42 / 0.3);
+}
+.creator-context-dialog-header {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #d9e0d8;
+  background: #fff;
+}
+.creator-context-dialog-title {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.creator-context-dialog-close {
+  display: inline-grid;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.creator-context-dialog-close:focus-visible,
+.creator-context-dialog-close:hover {
+  background: #edf2ee;
+  color: #183c2b;
+}
+.creator-context-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1rem;
+  background: #fff;
+}
+.creator-context-field,
+.creator-context-select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #9aa89f;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #152018;
+}
+textarea.creator-context-field {
+  min-height: 5rem;
+  resize: vertical;
+}
+.creator-context-field:focus,
+.creator-context-select:focus-within {
+  outline: 3px solid rgb(35 77 53 / 0.24);
+  outline-offset: 1px;
+  border-color: #234d35;
+}
+.creator-context-select {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+}
+.creator-context-select-label {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+}
+.creator-context-select-dropdown {
+  display: grid;
+  width: 2.5rem;
+  min-height: 2.5rem;
+  place-items: center;
+  border-left: 1px solid #c4cec7;
+}
+.creator-context-select-overlay {
+  z-index: 1300;
+  border: 1px solid #9aa89f;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #152018;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.2);
+}
+.creator-context-select-list-container {
+  max-height: 14rem;
+  overflow: auto;
+}
+.creator-context-select-option {
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+}
+.creator-context-select-option:hover,
+.creator-context-select-option[aria-selected="true"],
+.creator-context-select-option[data-p-focused="true"] {
+  background: #edf2ee;
 }
 </style>

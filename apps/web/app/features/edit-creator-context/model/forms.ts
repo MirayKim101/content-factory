@@ -9,13 +9,35 @@ const list = (limit: number) =>
         .split("\n")
         .map((item) => item.trim())
         .filter(Boolean),
+    )
+    .refine(
+      (items) => items.every((item) => item.length <= limit),
+      `Каждая строка: не более ${limit} символов.`,
     );
 const required = (max: number) => z.string().trim().min(1).max(max);
 
 export const profileFormSchema = z
   .object({
     canonicalDisplayName: required(200),
-    officialUrl: z.string().trim().url().max(2048),
+    officialUrl: z
+      .string()
+      .trim()
+      .url()
+      .max(2048)
+      .refine((value) => {
+        try {
+          const url = new URL(value);
+          return (
+            url.protocol === "https:" &&
+            !url.username &&
+            !url.password &&
+            !url.search &&
+            !url.hash
+          );
+        } catch {
+          return false;
+        }
+      }, "Укажите HTTPS URL без credentials, query и fragment."),
     primaryLanguage: required(35),
     topicsText: list(100),
     editorialNotes: z.string().max(5000),
