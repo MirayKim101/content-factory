@@ -169,15 +169,18 @@ closed when replicas disagree about configured slot capacity.
 Occupied/configured counts come from this PostgreSQL pool.
 
 Lease expiry alone never proves an old FFmpeg child exited and never permits slot
-reuse. V1 gives frame work a finite absolute deadline (local default two hours)
-and launches every FFmpeg child through the already-present OS `timeout` watchdog,
-not only a Node event-loop timer. The watchdog receives the remaining absolute
-budget, sends TERM at the deadline and KILL no later than 10 seconds later. An
-expired slot is reclaimable only after either lease-fenced `executionStoppedAt`
-is recorded, or PostgreSQL time is later than `workDeadlineAt` plus a 30-second
-termination safety grace. A frozen/paused container consumes no running CPU; a
-live partitioned owner is still bounded by the independent watchdog. Missing
-watchdog capability fails worker startup.
+reuse. V1 gives frame work a bounded configurable absolute deadline with a local
+default of five minutes (`300_000` ms) and launches every FFmpeg child through
+the already-present OS `timeout` watchdog, not only a Node event-loop timer. The
+watchdog receives the remaining absolute budget, sends TERM at the deadline and
+KILL no later than 10 seconds later. An expired slot is reclaimable only after
+either lease-fenced `executionStoppedAt` is recorded, or PostgreSQL time is later
+than `workDeadlineAt` plus a 30-second termination safety grace. Runtime recovery
+tests may use a shorter validated budget such as 60 seconds. A frozen/paused
+container consumes no running CPU; a live partitioned owner is still bounded by
+the independent watchdog. Missing watchdog capability fails worker startup.
+Timeout is a visible controlled terminal outcome; delivery replay cannot silently
+extend the absolute deadline or create an endless retry loop.
 
 Finite local scratch is reserved before the successful database claim and is
 attached to that attempt during the claim transaction. Input reservation uses the

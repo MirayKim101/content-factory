@@ -19,8 +19,10 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,
   полный браузерный сценарий и проверку ручного fallback. Evidence:
   `CREATOR-CONTEXT-UI-REVIEW.md`, `CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md`.
-- Stage 2B-2…2B-6 и Stage 3 остаются впереди. Следующий срез — sparse-frame
-  evidence точного отрезка через отдельное фоновое задание media-worker.
+- Stage 2B-2…2B-6 и Stage 3 остаются впереди. Stage 2B-2 начат: утверждён контракт sparse-frame
+  evidence и ведётся реализация с закрытым admission. Это ещё не принятый срез.
+  Контракт: `tasks/stage2b-sparse-frame-evidence.md`; independent approval:
+  `SPARSE-FRAME-CONTRACT-REVIEW.md`.
 - `AI_CONTEXT_ENABLED=1` включён в restored API и dev UI. Это только профили,
   private reference, контекст и prompt; внешних AI calls и генерации нет.
 
@@ -84,7 +86,7 @@ Seanova, Seanova-new и DockerServer в любом регистре, содер�
 root `package-lock.json` сохранены вне Git.
 
 С 2026-09-16 владелец поручил продолжать автономно до остатка **30% недельного
-лимита** (70% использовано). Последний замер 2026-09-16 03:06 UTC: 25% использовано, 75% осталось.
+лимита** (70% использовано). Последний замер 2026-09-16 03:18 UTC: 30% использовано, 70% осталось.
 Периодически проверять актуальную квоту; перед остановкой сохранить commit,
 проверки, состояние сервисов и следующие действия. Старый waiver тестов касался
 только merge; новые срезы проходят применимые проверки.
@@ -92,3 +94,18 @@ root `package-lock.json` сохранены вне Git.
 Полный доступ filesystem/network и Docker подтверждён 2026-09-16; это не
 отменяет запрет внешних каталогов и их ресурсов. Изолированный rollout завершён. Текущая задача: контракт и реализация
 Stage 2B-2 sparse-frame evidence по ADR-008 и MVP roadmap.
+
+## Stage 2B-2 в работе
+
+Один implementation owner меняет API/schema/worker, затем UI после OpenAPI
+freeze. DevOps отдельно владеет узкой MinIO frame policy и её regression test.
+Runtime migration, frame flag и новая policy пока не применены. Независимый
+reviewer проверяет FFmpeg recipe и затем реальный diff. Deadline frame job
+по умолчанию 300 секунд; истечение lease само по себе не освобождает slot.
+
+Перед будущей миграцией сделан backup
+`tmp/recovery/content-factory-restored-pre-stage2b2-20260916T031258Z.dump`,
+проверенный двумя полноценными restore в disposable DB. Подробности:
+`SPARSE-FRAME-ROLLOUT-PREP.md`. Обе temporary restore DB удалены после проверки;
+рабочая база не была restore target. Утверждённая предыдущая версия UI сохранена
+в origin/main (`d266ff8`).

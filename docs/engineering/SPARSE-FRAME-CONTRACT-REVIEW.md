@@ -37,9 +37,11 @@ deployment-topology decision beyond the accepted ADRs, so no new ADR is needed.
    same lease identity as the claimed job/attempt. Claim and renewal are atomic.
    Lease expiry alone cannot reclaim a slot: reuse requires a fenced transition
    that prevents more children and records whole-process-group exit, or the
-   immutable absolute work deadline plus an OS-watchdog kill interval and safety
-   grace. BullMQ concurrency remains delivery coordination. Local scratch admission
-   occurs before attempt consumption and becomes attempt-owned at claim.
+   immutable absolute work deadline (local default five minutes) plus an
+   OS-watchdog kill interval and safety grace. Timeout is a visible controlled
+   terminal outcome. BullMQ concurrency remains delivery coordination. Local
+   scratch admission occurs before attempt consumption and becomes attempt-owned
+   at claim.
 5. **Cleanup is per output and winner-aware.** PREPARED rows exist before upload;
    all three outputs become accepted in the result transaction or none do.
    Finalization and cleanup reservation serialize on the same rows. An ambiguous
