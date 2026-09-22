@@ -160,7 +160,11 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
    main/origin/main остаются на `53d13a6`.
 4. Далее четыре среза: 2B-3 transcript/AI-worker; 2B-4 research/text;
    2B-5 AI thumbnails; 2B-6 manual/AI/mixed approval/export и экономика.
-5. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и
+5. Stage 2B-3 foundation checkpoint добавлен в `TRANSCRIPT-FOUNDATION-REVIEW.md`:
+   provider-neutral local/manual adapter, normalized segments and idempotent
+   repository port are covered by focused tests. REST, PostgreSQL, private
+   object storage and independently runnable ai-worker remain the next slice.
+6. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и
    scheduled publishing, analytics и восстановление без повторной публикации.
 
 Ручная реклама и ручные обложки уже существуют. Полный MVP требует сквозного

@@ -20,6 +20,7 @@
   },
   "imports": {
     "#frame-evidence": "./src/frame-evidence.ts",
-    "#frame-policy": "./src/frame-policy.ts"
+    "#frame-policy": "./src/frame-policy.ts",
+    "#transcript": "./src/transcript.ts"
   }
 }
