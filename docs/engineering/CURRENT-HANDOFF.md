@@ -19,8 +19,9 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,
   полный браузерный сценарий и проверку ручного fallback. Evidence:
   `CREATOR-CONTEXT-UI-REVIEW.md`, `CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md`.
-- Stage 2B-2 реализован и прошёл независимые проверки кода; live acceptance ещё не выполнен.
-  Stage 2B-3…2B-6 и Stage 3 остаются впереди. Frame admission закрыт. Это ещё не принятый срез.
+- Stage 2B-2 реализован и прошёл независимые проверки кода и restored-runtime
+  live acceptance. Stage 2B-3…2B-6 и Stage 3 остаются впереди. Это принятый
+  технический срез кадров; production admission остаётся feature-flagged.
   Контракт: `tasks/stage2b-sparse-frame-evidence.md`; independent approval:
   `SPARSE-FRAME-CONTRACT-REVIEW.md`.
 - `AI_CONTEXT_ENABLED=1` включён в restored API и dev UI. Это только профили,
@@ -121,7 +122,12 @@ Persistence checkpoint также принят независимо, финал�
 см. `SPARSE-FRAME-WORKER-REVIEW.md` и `SPARSE-FRAME-MIGRATION-PROOF.md`.
 API suite: 138 PASS, worker suite: 114 PASS; full web suite: 211 PASS до
 финальных UI fixes, после них независимые 45 focused tests/typecheck/lint PASS.
-Live frame acceptance ещё не выполнен; Stage 2B-2 остаётся незавершённым.
+Live frame acceptance выполнен на подготовленном 28-секундном cut: один
+idempotent POST/replay, READY с тремя JPEG, GET/HEAD/Range 206/416, checksum,
+private headers и manual ZIP checksum до/после. Evidence:
+`tmp/restored-runtime/frames-acceptance/state/evidence.json` (ignored, mode
+0600). Stage 2B-2 принят в bounded local scope; Redis-loss and deadline
+recovery remain separate follow-up checks.
 PostgreSQL integration checks использовали disposable DB.
 
 При восстановлении исчезнувшего worker достижение неизменяемого
@@ -147,13 +153,11 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
 ## Следующий запуск и расстояние до MVP
 
 1. Сначала проверить admission-OFF runtime checkpoint ниже и актуальную квоту.
-2. Завершить только live acceptance Stage 2B-2: реальные три кадра, replay одного
-   request key, private GET/HEAD/Range, браузер/reload, контролируемые ошибки,
-   worker restart/deadline, потеря Redis delivery, отсутствие дубликатов и ручной ZIP.
-   Подготовленные, но ещё не выполненные harness: `tmp/restored-runtime/frames-acceptance/`
-   и `tmp/frame-ui/live.cjs`. Включать admission только в рамках этой приёмки.
-3. После независимого acceptance можно объединять feature branch в main. Сейчас
-   main/origin/main остаются на `53d13a6`, feature checkpoint не означает готовность среза.
+2. Выполнить оставшиеся bounded recovery checks Stage 2B-2: worker restart/deadline,
+   Redis delivery loss, duplicate prevention и браузер/reload. Основной runtime
+   acceptance уже PASS; admission сейчас включён только в restored local runtime.
+3. После этих recovery checks можно объединять feature branch в main. Сейчас
+   main/origin/main остаются на `53d13a6`.
 4. Далее четыре среза: 2B-3 transcript/AI-worker; 2B-4 research/text;
    2B-5 AI thumbnails; 2B-6 manual/AI/mixed approval/export и экономика.
 5. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и
