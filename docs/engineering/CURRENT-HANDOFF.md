@@ -88,7 +88,7 @@ root `package-lock.json` сохранены вне Git.
 
 С 2026-09-16 владелец поручил продолжать автономно до остатка **30% недельного
 лимита** (70% использовано). Владелец затем попросил остановиться раньше для перехода к другому проекту.
-Последний замер 2026-09-16 04:43 UTC: 59% использовано, 41% осталось.
+Последний замер 2026-09-22 13:43 UTC: 13% использовано, 87% осталось.
 Периодически проверять актуальную квоту; перед остановкой сохранить commit,
 проверки, состояние сервисов и следующие действия. Старый waiver тестов касался
 только merge; новые срезы проходят применимые проверки.
@@ -178,21 +178,22 @@ worker/runtime образа. Сохранены только `content-factory-re
 
 ## Runtime checkpoint при остановке владельцем
 
-Код сохранён коммитом `52609fa` в `feat/stage2b2-frame-evidence`.
+Код и acceptance evidence сохранены коммитами `b0b00f1`, `94c1573`, `c4e7f4f`
+и `47e50d3` в `feat/stage2b2-frame-evidence`.
 API успешно восстановлен после исправления contracts native import; independent
 review CLEAN. API session `26457`, PID `95151`, port 3001; root отдельно
-подтвердил health `{"status":"ok"}`. AI context включён, frame admission явно
-выключен. Profile/current prompt GET также проверены DevOps.
+подтвердил health `{"status":"ok"}`. AI context и frame admission включены
+только в restored local runtime для acceptance. Profile/current prompt GET также
+проверены DevOps.
 Web session `57108`, port 3000, не останавливалась.
 Worker healthy: container
 `7d71b253002ca48ab9be822e4e72d964065c784128eea144473e3f93405e900a`.
-Его image собран до финального contracts import fix; worker использует tsx,
-API запускается native Node24. При следующем rebuild использовать текущий код.
-Новых frame extraction jobs в этой сессии не создавали.
+Worker rebuilt from current frame code; API запускается native Node24. Новых
+frame extraction jobs после принятого acceptance не создавали.
 
-GitHub push при завершении: три bounded попытки HTTPS (HTTP/2 и HTTP/1.1)
-закончились сетевым timeout (exit 124). Remote feature checkpoint не подтверждён.
-Локальные commits сохранены; первым Git-действием следующей сессии выполнить
+Последующие push после `b0b00f1` несколько раз завершались сетевым timeout;
+remote сейчас подтверждён только до `b0b00f1`. Локальные commits сохранены;
+первым Git-действием следующей сессии выполнить bounded
 `git push -u origin feat/stage2b2-frame-evidence` и сверить remote SHA.
 
 Финальная проверка DevOps: manual export
@@ -200,6 +201,6 @@ GitHub push при завершении: три bounded попытки HTTPS (HT
 `14cb7a16d87687f917545e4eb99af6f1d62218590ab080b9d27a0b4c5f25e34a`
 совпадает с принятым Stage 2. Exact frame POST вернул контролируемый
 `503 EDITORIAL_FRAMES_DISABLED`, intent не создан. Evidence:
-`tmp/recovery/frame-admission-off-runtime-checkpoint-20260916.json`.
-Перед включением frames пересобрать worker из текущего commit, затем выполнить
-отложенные live checks. Все агенты закончили текущие задачи.
+`tmp/restored-runtime/frames-acceptance/state/evidence.json` (ignored, mode
+0600). Перед следующим recovery check сохранить current manual ZIP checksum;
+все агенты закончили текущие задачи.
