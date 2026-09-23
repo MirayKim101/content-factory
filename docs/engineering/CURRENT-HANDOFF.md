@@ -1,6 +1,6 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-16. Остановка по просьбе владельца на сохранённом checkpoint; новые задачи не начинать без продолжения сессии.
+Обновлено: 2026-09-23. Продолжение сессии; защищённые каталоги и их ресурсы не затрагивались.
 
 ## Главный результат
 
@@ -26,6 +26,10 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   `SPARSE-FRAME-CONTRACT-REVIEW.md`.
 - `AI_CONTEXT_ENABLED=1` включён в restored API и dev UI. Это только профили,
   private reference, контекст и prompt; внешних AI calls и генерации нет.
+- Stage 2B-3 persistence checkpoint зафиксирован в `f998fa4`, stale-attempt
+  fencing исправлен в `b103277`. REST/OpenAPI, private artifact delivery и
+  независимый ai-worker пока не подключены; этот код не следует считать
+  принятым runtime MVP.
 
 ## Проверено и не проверено
 
@@ -160,10 +164,10 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
    main/origin/main остаются на `53d13a6`.
 4. Далее четыре среза: 2B-3 transcript/AI-worker; 2B-4 research/text;
    2B-5 AI thumbnails; 2B-6 manual/AI/mixed approval/export и экономика.
-5. Stage 2B-3 foundation checkpoint добавлен в `TRANSCRIPT-FOUNDATION-REVIEW.md`:
-   provider-neutral local/manual adapter, normalized segments and idempotent
-   repository port are covered by focused tests. REST, PostgreSQL, private
-   object storage and independently runnable ai-worker remain the next slice.
+5. Stage 2B-3 foundation и PostgreSQL persistence checkpoint добавлены в
+   `TRANSCRIPT-FOUNDATION-REVIEW.md` и `tasks/stage2b-transcript-evidence.md`.
+   Focused local adapter tests проходят 7/7. REST, private object storage и
+   independently runnable ai-worker остаются отдельным следующим срезом.
 6. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и
    scheduled publishing, analytics и восстановление без повторной публикации.
 
