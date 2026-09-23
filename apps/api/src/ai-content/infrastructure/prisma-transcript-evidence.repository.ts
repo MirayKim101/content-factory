@@ -267,7 +267,8 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
         !attempt ||
         attempt.leaseToken !== input.claim.leaseToken ||
         attempt.state !== "PROCESSING" ||
-        attempt.workDeadlineAt < now
+        attempt.workDeadlineAt < now ||
+        attempt.leaseExpiresAt < now
       )
         return false;
       await this.requireCurrent(tx, row);
@@ -298,10 +299,16 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
     retryable: boolean;
   }): Promise<void> {
     await this.serializable(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "TranscriptEvidenceIntent" WHERE "id" = ${input.claim.intentId}::uuid FOR UPDATE`;
       const attempt = await tx.transcriptEvidenceAttempt.findUnique({
         where: { id: input.claim.attemptId },
       });
       if (!attempt || attempt.leaseToken !== input.claim.leaseToken) return;
+      const row = await tx.transcriptEvidenceIntent.findUnique({
+        where: { id: input.claim.intentId },
+      });
+      if (!row || row.state !== "PROCESSING" || attempt.state !== "PROCESSING")
+        return;
       const now = new Date();
       await tx.transcriptEvidenceAttempt.update({
         where: { id: attempt.id },
@@ -312,10 +319,6 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
           failureMessage: input.message,
         },
       });
-      const row = await tx.transcriptEvidenceIntent.findUnique({
-        where: { id: input.claim.intentId },
-      });
-      if (!row || row.state === "READY") return;
       const retry = input.retryable && row.attemptCount <= row.retryBudget;
       await tx.transcriptEvidenceIntent.update({
         where: { id: row.id },
