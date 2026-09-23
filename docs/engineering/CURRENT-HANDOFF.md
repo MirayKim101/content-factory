@@ -1,6 +1,6 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-23. Продолжение сессии; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-09-24. Продолжение сессии; защищённые каталоги и их ресурсы не затрагивались.
 
 ## Главный результат
 
@@ -26,10 +26,15 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   `SPARSE-FRAME-CONTRACT-REVIEW.md`.
 - `AI_CONTEXT_ENABLED=1` включён в restored API и dev UI. Это только профили,
   private reference, контекст и prompt; внешних AI calls и генерации нет.
-- Stage 2B-3 persistence checkpoint зафиксирован в `f998fa4`, stale-attempt
-  fencing исправлен в `b103277`. REST/OpenAPI, private artifact delivery и
-  независимый ai-worker пока не подключены; этот код не следует считать
-  принятым runtime MVP.
+- Stage 2B-3 transcript foundation теперь имеет REST/OpenAPI, private
+  content delivery с GET/HEAD/Range, отдельный `ai-transcript-v1` worker и
+  restored-runtime smoke. Worker fenced по lease/deadline и повторно проверяет
+  текущие source authorization, cut lineage, context/profile/prompt revisions
+  перед READY. Media worker больше не потребляет AI-очередь.
+- Stage 2B-4 имеет provider-neutral local cited research endpoint и typed web
+  client; UI сохраняет ручной путь, пока transcript intent не связан с
+  editorial dialog. Durable apply/edit revision и внешние research providers
+  остаются следующим bounded slice.
 
 ## Проверено и не проверено
 
@@ -164,11 +169,16 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
    main/origin/main остаются на `53d13a6`.
 4. Далее четыре среза: 2B-3 transcript/AI-worker; 2B-4 research/text;
    2B-5 AI thumbnails; 2B-6 manual/AI/mixed approval/export и экономика.
-5. Stage 2B-3 foundation и PostgreSQL persistence checkpoint добавлены в
-   `TRANSCRIPT-FOUNDATION-REVIEW.md` и `tasks/stage2b-transcript-evidence.md`.
-   Focused local adapter tests проходят 7/7. REST, private object storage и
-   independently runnable ai-worker остаются отдельным следующим срезом.
-6. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и
+5. Stage 2B-3 REST/runtime checkpoint зафиксирован текущими commits
+   `af8f7a5`, `459fbf6`, `9e5b568`, `673104d`, `ae5fea1`; worker suite 117/117,
+   API focused transcript/research checks и restored AI/media worker logs
+   подтверждены. Нужен отдельный disposable-db smoke с реальным READY intent.
+6. Stage 2B-4 следующий bounded slice: связать transcript intent с UI,
+   сохранить research snapshot/suggestion revision и добавить apply с
+   invalidation manual/AI/mixed approval.
+7. Затем Stage 2B-5/2B-6: thumbnail candidates и единая проверка
+   manual/AI/mixed approval/export и экономика.
+8. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и
    scheduled publishing, analytics и восстановление без повторной публикации.
 
 Ручная реклама и ручные обложки уже существуют. Полный MVP требует сквозного
