@@ -138,7 +138,9 @@ describe("PgTranscriptWorker fencing and retry boundaries", () => {
     expect(finalize.release).toHaveBeenCalledOnce();
     expect(calls(finalize).map(([text]) => text.trim())).toEqual([
       "BEGIN",
-      expect.stringContaining('WHERE i."id" = $1 AND a."id" = $2 FOR UPDATE'),
+      expect.stringContaining(
+        'WHERE i."id" = $1 AND a."id" = $2\n              AND a."attemptNumber" = i."attemptCount" FOR UPDATE',
+      ),
       "ROLLBACK",
     ]);
     expect(calls(finalize).some(([text]) => text.includes('INSERT INTO "TranscriptEvidenceArtifact"'))).toBe(false);
@@ -179,12 +181,14 @@ describe("PgTranscriptWorker fencing and retry boundaries", () => {
       `CASE WHEN "attemptCount" <= "retryBudget" THEN 'QUEUED' ELSE 'FAILED_FINAL' END`,
     );
     expect(failureUpdate?.[0]).toContain(
-      `WHERE "id" = $3 AND "state" = 'PROCESSING'`,
+      `WHERE "id" = $1 AND "leaseToken" = $2 AND "state" = 'PROCESSING'`,
     );
     expect(failureUpdate?.[1]).toEqual([
       expect.any(String),
+      expect.any(String),
       "TRANSCRIPT_DELIVERY_FAILED",
       intentId,
+      2,
     ]);
     expect(failed.release).toHaveBeenCalledOnce();
   });

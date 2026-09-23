@@ -59,6 +59,7 @@ export class PgTranscriptWorker {
           sourceContextRevisionNo: number;
           cutPromptRevisionId: string;
           cutPromptRevisionNo: number;
+          attemptNumber: number;
         }
       | undefined;
     try {
@@ -163,6 +164,7 @@ export class PgTranscriptWorker {
         sourceContextRevisionNo: row.sourceContextRevisionNo,
         cutPromptRevisionId: row.cutPromptRevisionId,
         cutPromptRevisionNo: row.cutPromptRevisionNo,
+        attemptNumber,
       };
     } catch (error) {
       await client.query("ROLLBACK").catch(() => undefined);
@@ -211,11 +213,15 @@ export class PgTranscriptWorker {
           state: string;
           leaseToken: string;
           workDeadlineAt: Date;
+          attemptNumber: number;
+          attemptCount: number;
         }>(
           `SELECT i."state", a."leaseToken", a."workDeadlineAt"
+                  , a."attemptNumber", i."attemptCount"
              FROM "TranscriptEvidenceIntent" i
              JOIN "TranscriptEvidenceAttempt" a ON a."intentId" = i."id"
-            WHERE i."id" = $1 AND a."id" = $2 FOR UPDATE`,
+            WHERE i."id" = $1 AND a."id" = $2
+              AND a."attemptNumber" = i."attemptCount" FOR UPDATE`,
           [intentId, claim.attemptId],
         );
         const currentRow = current.rows[0];
@@ -253,7 +259,22 @@ export class PgTranscriptWorker {
           [intentId],
         );
         if (context.rowCount !== 1) {
-          await finalize.query("ROLLBACK");
+          await finalize.query(
+            `UPDATE "TranscriptEvidenceAttempt"
+                SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
+                    "failureCode" = 'TRANSCRIPT_CONTEXT_STALE',
+                    "failureMessage" = 'Контекст или разрешение источника изменились.'
+              WHERE "id" = $1 AND "leaseToken" = $2
+                AND "state" = 'PROCESSING'
+                AND "attemptNumber" = (SELECT "attemptCount" FROM "TranscriptEvidenceIntent" WHERE "id" = $3);
+             UPDATE "TranscriptEvidenceIntent"
+                SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
+                    "failureCode" = 'TRANSCRIPT_CONTEXT_STALE',
+                    "failureMessage" = 'Контекст или разрешение источника изменились.'
+              WHERE "id" = $3 AND "state" = 'PROCESSING' AND "attemptCount" = $4`,
+            [claim.attemptId, claim.leaseToken, intentId, claim.attemptNumber],
+          );
+          await finalize.query("COMMIT");
           return;
         }
         await finalize.query(
@@ -287,14 +308,22 @@ export class PgTranscriptWorker {
       const failed = await this.pool.connect();
       await failed.query(
         `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
-           "failureCode" = 'TRANSCRIPT_DELIVERY_FAILED', "failureMessage" = $2 WHERE "id" = $1 AND "state" = 'PROCESSING';
+           "failureCode" = 'TRANSCRIPT_DELIVERY_FAILED', "failureMessage" = $3
+         WHERE "id" = $1 AND "leaseToken" = $2 AND "state" = 'PROCESSING'
+           AND "attemptNumber" = (SELECT "attemptCount" FROM "TranscriptEvidenceIntent" WHERE "id" = $4);
          UPDATE "TranscriptEvidenceIntent" SET "state" = CASE WHEN "attemptCount" <= "retryBudget" THEN 'QUEUED' ELSE 'FAILED_FINAL' END,
            "finishedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE now() END,
            "queuedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN now() ELSE "queuedAt" END,
            "failureCode" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'TRANSCRIPT_DELIVERY_FAILED' END,
            "failureMessage" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'Transcript delivery failed.' END
-         WHERE "id" = $3 AND "state" = 'PROCESSING'`,
-        [claim.attemptId, "TRANSCRIPT_DELIVERY_FAILED", intentId],
+         WHERE "id" = $4 AND "state" = 'PROCESSING' AND "attemptCount" = $5`,
+        [
+          claim.attemptId,
+          claim.leaseToken,
+          "TRANSCRIPT_DELIVERY_FAILED",
+          intentId,
+          claim.attemptNumber,
+        ],
       );
       failed.release();
       throw error;
