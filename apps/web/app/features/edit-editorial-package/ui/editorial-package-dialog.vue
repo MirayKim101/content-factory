@@ -20,7 +20,7 @@ import {
   type EditorialOperationAttempt,
   type EditorialSaveAttempt,
 } from "~/features/edit-editorial-package/model/save-identity";
-import ResearchTextManualFallback from "~/features/research-text-suggestions/ui/research-text-manual-fallback.vue";
+import ResearchTextManualFallback from "~/widgets/editorial-package/ui/research-text-manual-fallback.vue";
 import {
   createEditorialContentApi,
   EditorialApiError,
