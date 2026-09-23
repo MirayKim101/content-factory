@@ -29,6 +29,10 @@ import {
   TranscriptContextRejectedError,
 } from "../application/transcript-evidence-repository.port.js";
 import {
+  TRANSCRIPT_EVIDENCE_DISPATCH,
+  type TranscriptEvidenceDispatch,
+} from "../application/transcript-evidence-dispatch.port.js";
+import {
   CreateTranscriptEvidenceDto,
   TranscriptEvidenceDto,
   TranscriptEvidenceErrorResponseDto,
@@ -44,6 +48,8 @@ export class TranscriptEvidenceController {
   constructor(
     @Inject(TRANSCRIPT_EVIDENCE_REPOSITORY)
     private readonly repository: TranscriptEvidenceRepository,
+    @Inject(TRANSCRIPT_EVIDENCE_DISPATCH)
+    private readonly dispatch: TranscriptEvidenceDispatch,
   ) {}
 
   @Post("pipeline-jobs/:cutJobId/transcript-evidence")
@@ -92,6 +98,10 @@ export class TranscriptEvidenceController {
       });
       const detail = await this.repository.detail(id);
       if (!detail) throw new NotFoundException();
+      await this.dispatch.dispatch({
+        schemaVersion: "transcript-job-v1",
+        intentId: id,
+      });
       return detail;
     } catch (error) {
       throw mapTranscriptError(error);

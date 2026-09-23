@@ -27,6 +27,12 @@ import { FRAME_EVIDENCE_REPOSITORY } from "./application/frame-evidence-reposito
 import { TRANSCRIPT_EVIDENCE_REPOSITORY } from "./application/transcript-evidence-repository.port.js";
 import { PrismaTranscriptEvidenceRepository } from "./infrastructure/prisma-transcript-evidence.repository.js";
 import { TranscriptEvidenceController } from "./presentation/transcript-evidence.controller.js";
+import {
+  TRANSCRIPT_QUEUE,
+  BullMqTranscriptDispatch,
+  createTranscriptQueue,
+} from "./infrastructure/bullmq-transcript-dispatch.js";
+import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-dispatch.port.js";
 
 @Module({
   imports: [ProjectsModule, MediaPipelineModule],
@@ -39,6 +45,15 @@ import { TranscriptEvidenceController } from "./presentation/transcript-evidence
     CreatorContextService,
     PrismaFrameEvidenceRepository,
     PrismaTranscriptEvidenceRepository,
+    BullMqTranscriptDispatch,
+    {
+      provide: TRANSCRIPT_QUEUE,
+      useFactory: createTranscriptQueue,
+    },
+    {
+      provide: TRANSCRIPT_EVIDENCE_DISPATCH,
+      useExisting: BullMqTranscriptDispatch,
+    },
     {
       provide: FRAME_EVIDENCE_REPOSITORY,
       useExisting: PrismaFrameEvidenceRepository,
