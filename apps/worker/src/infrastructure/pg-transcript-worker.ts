@@ -46,6 +46,19 @@ export class PgTranscriptWorker {
           workDeadlineAt: Date;
           fixture: { language: string; segments: TranscriptSegment[] };
           durationMs: number;
+          sourceVersion: number;
+          sourceSha256: string;
+          sourceAuthorizationRevision: number;
+          cutPipelineJobId: string;
+          cutResultArtifactId: string;
+          cutResultSha256: string;
+          cutResultSizeBytes: string;
+          creatorProfileRevisionId: string;
+          creatorProfileRevisionNo: number;
+          sourceContextRevisionId: string;
+          sourceContextRevisionNo: number;
+          cutPromptRevisionId: string;
+          cutPromptRevisionNo: number;
         }
       | undefined;
     try {
@@ -56,12 +69,31 @@ export class PgTranscriptWorker {
         fixture: { language: string; segments: TranscriptSegment[] };
         cutStartMs: number;
         cutEndMs: number;
+        sourceVersion: number;
+        sourceSha256: string;
+        sourceAuthorizationRevision: number;
+        cutPipelineJobId: string;
+        cutResultArtifactId: string;
+        cutResultSha256: string;
+        cutResultSizeBytes: string;
+        creatorProfileRevisionId: string;
+        creatorProfileRevisionNo: number;
+        sourceContextRevisionId: string;
+        sourceContextRevisionNo: number;
+        cutPromptRevisionId: string;
+        cutPromptRevisionNo: number;
         attemptCount: number;
         retryBudget: number;
         attemptState: string | null;
         leaseExpiresAt: Date;
       }>(
-        `SELECT i."id", i."state", i."fixture", i."cutStartMs", i."cutEndMs", i."attemptCount", i."retryBudget",
+        `SELECT i."id", i."state", i."fixture", i."cutStartMs", i."cutEndMs",
+                i."sourceVersion", i."sourceSha256", i."sourceAuthorizationRevision",
+                i."cutPipelineJobId", i."cutResultArtifactId", i."cutResultSha256", i."cutResultSizeBytes"::text,
+                i."creatorProfileRevisionId", i."creatorProfileRevisionNo",
+                i."sourceContextRevisionId", i."sourceContextRevisionNo",
+                i."cutPromptRevisionId", i."cutPromptRevisionNo",
+                i."attemptCount", i."retryBudget",
                 a."state" AS "attemptState", a."leaseExpiresAt"
            FROM "TranscriptEvidenceIntent" i
            LEFT JOIN LATERAL (
@@ -118,6 +150,19 @@ export class PgTranscriptWorker {
         workDeadlineAt: new Date(Date.now() + 120_000),
         fixture: row.fixture,
         durationMs: row.cutEndMs - row.cutStartMs,
+        sourceVersion: row.sourceVersion,
+        sourceSha256: row.sourceSha256,
+        sourceAuthorizationRevision: row.sourceAuthorizationRevision,
+        cutPipelineJobId: row.cutPipelineJobId,
+        cutResultArtifactId: row.cutResultArtifactId,
+        cutResultSha256: row.cutResultSha256,
+        cutResultSizeBytes: row.cutResultSizeBytes,
+        creatorProfileRevisionId: row.creatorProfileRevisionId,
+        creatorProfileRevisionNo: row.creatorProfileRevisionNo,
+        sourceContextRevisionId: row.sourceContextRevisionId,
+        sourceContextRevisionNo: row.sourceContextRevisionNo,
+        cutPromptRevisionId: row.cutPromptRevisionId,
+        cutPromptRevisionNo: row.cutPromptRevisionNo,
       };
     } catch (error) {
       await client.query("ROLLBACK").catch(() => undefined);
@@ -180,6 +225,34 @@ export class PgTranscriptWorker {
           currentRow.leaseToken !== claim.leaseToken ||
           currentRow.workDeadlineAt <= new Date()
         ) {
+          await finalize.query("ROLLBACK");
+          return;
+        }
+        const context = await finalize.query(
+          `SELECT 1
+             FROM "TranscriptEvidenceIntent" i
+             JOIN "PipelineJob" j ON j."id" = i."cutPipelineJobId"
+             JOIN "VideoSource" s ON s."id" = i."sourceId"
+             JOIN "SourceAuthorization" auth ON auth."sourceId" = i."sourceId" AND auth."sourceVersion" = i."sourceVersion"
+             JOIN "MediaArtifact" m ON m."id" = i."cutResultArtifactId"
+             JOIN "CutEditorialPromptRevision" pr ON pr."id" = i."cutPromptRevisionId"
+             JOIN "CutEditorialPrompt" p ON p."id" = pr."promptId"
+             JOIN "SourceEditorialContextRevision" cr ON cr."id" = i."sourceContextRevisionId"
+             JOIN "SourceEditorialContext" c ON c."id" = cr."contextId"
+             JOIN "CreatorProfileRevision" cpr ON cpr."id" = i."creatorProfileRevisionId"
+             JOIN "CreatorProfile" cp ON cp."id" = cpr."creatorProfileId"
+            WHERE i."id" = $1
+              AND s."sourceVersion" = i."sourceVersion" AND s."sha256" = i."sourceSha256"
+              AND auth."revision" = i."sourceAuthorizationRevision" AND auth."status" = 'CLEARED'
+              AND j."id" = i."cutPipelineJobId" AND j."projectId" = i."projectId" AND j."sourceId" = i."sourceId" AND j."sourceVersion" = i."sourceVersion"
+              AND m."id" = i."cutResultArtifactId" AND m."sha256" = i."cutResultSha256" AND m."sizeBytes" = i."cutResultSizeBytes" AND m."pipelineJobId" = j."id"
+              AND pr."revision" = i."cutPromptRevisionNo" AND pr."sourceContextRevisionId" = cr."id"
+              AND p."cutPipelineJobId" = j."id" AND p."currentRevision" = pr."revision"
+              AND cr."revision" = i."sourceContextRevisionNo" AND c."currentRevision" = cr."revision"
+              AND cpr."revision" = i."creatorProfileRevisionNo" AND cp."currentRevision" = cpr."revision"`,
+          [intentId],
+        );
+        if (context.rowCount !== 1) {
           await finalize.query("ROLLBACK");
           return;
         }
