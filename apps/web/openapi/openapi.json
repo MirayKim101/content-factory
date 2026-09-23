@@ -1059,6 +1059,32 @@
         "required": ["name", "file"],
         "type": "object"
       },
+      "CreateTranscriptEvidenceDto": {
+        "properties": {
+          "cutPromptRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "fixture": {
+            "$ref": "#/components/schemas/LocalTranscriptFixtureDto"
+          },
+          "language": {
+            "example": "ru",
+            "type": "string"
+          },
+          "sourceContextRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceContextRevisionId",
+          "cutPromptRevisionId",
+          "language",
+          "fixture"
+        ],
+        "type": "object"
+      },
       "CreatorDefaultReferenceResponseDto": {
         "properties": {
           "assetId": {
@@ -3301,6 +3327,23 @@
         "required": ["usable", "blocker", "externalProviderTransferAllowed"],
         "type": "object"
       },
+      "LocalTranscriptFixtureDto": {
+        "properties": {
+          "language": {
+            "example": "ru",
+            "type": "string"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/TranscriptSegmentDto"
+            },
+            "maxItems": 10000,
+            "type": "array"
+          }
+        },
+        "required": ["language", "segments"],
+        "type": "object"
+      },
       "MontageAssetDto": {
         "properties": {
           "contentType": {
@@ -4331,6 +4374,246 @@
           }
         },
         "required": ["file"],
+        "type": "object"
+      },
+      "TranscriptArtifactDto": {
+        "properties": {
+          "adapterVersion": {
+            "type": "string"
+          },
+          "contentType": {
+            "enum": ["application/json"],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/TranscriptSegmentDto"
+            },
+            "type": "array"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "contentType",
+          "sizeBytes",
+          "sha256",
+          "adapterVersion",
+          "language",
+          "segments"
+        ],
+        "type": "object"
+      },
+      "TranscriptEvidenceDto": {
+        "properties": {
+          "adapterVersion": {
+            "type": "string"
+          },
+          "artifact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranscriptArtifactDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "contractVersion": {
+            "enum": ["editorial-transcript-v1"],
+            "type": "string"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranscriptFailureDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "input": {
+            "$ref": "#/components/schemas/TranscriptInputCaptureDto"
+          },
+          "language": {
+            "type": "string"
+          },
+          "state": {
+            "enum": ["QUEUED", "PROCESSING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "contractVersion",
+          "adapterVersion",
+          "language",
+          "input",
+          "artifact",
+          "failure"
+        ],
+        "type": "object"
+      },
+      "TranscriptEvidenceErrorDetailDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "TranscriptEvidenceErrorResponseDto": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/TranscriptEvidenceErrorDetailDto"
+          }
+        },
+        "required": ["error"],
+        "type": "object"
+      },
+      "TranscriptFailureDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "TranscriptInputCaptureDto": {
+        "properties": {
+          "creatorProfileRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "creatorProfileRevisionNo": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "cutEndMs": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutPromptRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutPromptRevisionNo": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "cutResultArtifactId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "cutResultSha256": {
+            "type": "string"
+          },
+          "cutResultSizeBytes": {
+            "type": "string"
+          },
+          "cutStartMs": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceAuthorizationRevision": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "sourceContextRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceContextRevisionNo": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceSha256": {
+            "type": "string"
+          },
+          "sourceVersion": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "sourceId",
+          "sourceVersion",
+          "sourceSha256",
+          "sourceAuthorizationRevision",
+          "cutPipelineJobId",
+          "cutResultArtifactId",
+          "cutResultSha256",
+          "cutResultSizeBytes",
+          "cutStartMs",
+          "cutEndMs",
+          "creatorProfileRevisionId",
+          "creatorProfileRevisionNo",
+          "sourceContextRevisionId",
+          "sourceContextRevisionNo",
+          "cutPromptRevisionId",
+          "cutPromptRevisionNo"
+        ],
+        "type": "object"
+      },
+      "TranscriptSegmentDto": {
+        "properties": {
+          "endMs": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "ordinal": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "startMs": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "text": {
+            "maxLength": 20000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["ordinal", "startMs", "endMs", "text"],
         "type": "object"
       },
       "UpdateCreatorProfileDto": {
@@ -6281,6 +6564,75 @@
           }
         },
         "tags": ["frame-evidence"]
+      }
+    },
+    "/api/v1/pipeline-jobs/{cutJobId}/transcript-evidence": {
+      "post": {
+        "operationId": "TranscriptEvidenceController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 200,
+              "minLength": 8,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTranscriptEvidenceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["transcript-evidence"]
       }
     },
     "/api/v1/pipeline-jobs/{id}": {
@@ -8443,6 +8795,65 @@
           }
         },
         "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/transcript-evidence/{intentId}": {
+      "get": {
+        "operationId": "TranscriptEvidenceController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["transcript-evidence"]
       }
     }
   },

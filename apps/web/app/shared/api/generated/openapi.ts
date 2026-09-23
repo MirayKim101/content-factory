@@ -376,6 +376,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/pipeline-jobs/{cutJobId}/transcript-evidence": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["TranscriptEvidenceController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/pipeline-jobs/{id}": {
     parameters: {
       query?: never;
@@ -785,6 +801,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/transcript-evidence/{intentId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["TranscriptEvidenceController_detail"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1104,6 +1136,15 @@ export interface components {
        * @enum {string}
        */
       rightsConfirmed?: "true";
+    };
+    CreateTranscriptEvidenceDto: {
+      /** Format: uuid */
+      cutPromptRevisionId: string;
+      fixture: components["schemas"]["LocalTranscriptFixtureDto"];
+      /** @example ru */
+      language: string;
+      /** Format: uuid */
+      sourceContextRevisionId: string;
     };
     CreatorDefaultReferenceResponseDto: {
       /** Format: uuid */
@@ -1779,6 +1820,11 @@ export interface components {
       externalProviderTransferAllowed: boolean;
       usable: boolean;
     };
+    LocalTranscriptFixtureDto: {
+      /** @example ru */
+      language: string;
+      segments: components["schemas"]["TranscriptSegmentDto"][];
+    };
     MontageAssetDto: {
       /** @enum {string} */
       contentType: "video/mp4" | "image/jpeg" | "image/png" | "image/webp";
@@ -2096,6 +2142,73 @@ export interface components {
     ThumbnailUploadDto: {
       /** Format: binary */
       file: string;
+    };
+    TranscriptArtifactDto: {
+      adapterVersion: string;
+      /** @enum {string} */
+      contentType: "application/json";
+      /** Format: uuid */
+      id: string;
+      language: string;
+      segments: components["schemas"]["TranscriptSegmentDto"][];
+      sha256: string;
+      sizeBytes: number;
+    };
+    TranscriptEvidenceDto: {
+      adapterVersion: string;
+      artifact: components["schemas"]["TranscriptArtifactDto"] | null;
+      /** @enum {string} */
+      contractVersion: "editorial-transcript-v1";
+      failure: components["schemas"]["TranscriptFailureDto"] | null;
+      /** Format: uuid */
+      id: string;
+      input: components["schemas"]["TranscriptInputCaptureDto"];
+      language: string;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "READY" | "FAILED_FINAL";
+    };
+    TranscriptEvidenceErrorDetailDto: {
+      code: string;
+      message: string;
+    };
+    TranscriptEvidenceErrorResponseDto: {
+      error: components["schemas"]["TranscriptEvidenceErrorDetailDto"];
+    };
+    TranscriptFailureDto: {
+      code: string;
+      message: string;
+    };
+    TranscriptInputCaptureDto: {
+      /** Format: uuid */
+      creatorProfileRevisionId: string;
+      creatorProfileRevisionNo: number;
+      cutEndMs: number;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** Format: uuid */
+      cutPromptRevisionId: string;
+      cutPromptRevisionNo: number;
+      /** Format: uuid */
+      cutResultArtifactId: string;
+      cutResultSha256: string;
+      cutResultSizeBytes: string;
+      cutStartMs: number;
+      /** Format: uuid */
+      projectId: string;
+      sourceAuthorizationRevision: number;
+      /** Format: uuid */
+      sourceContextRevisionId: string;
+      sourceContextRevisionNo: number;
+      /** Format: uuid */
+      sourceId: string;
+      sourceSha256: string;
+      sourceVersion: number;
+    };
+    TranscriptSegmentDto: {
+      endMs: number;
+      ordinal: number;
+      startMs: number;
+      text: string;
     };
     UpdateCreatorProfileDto: {
       canonicalDisplayName: string;
@@ -3388,6 +3501,49 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["FrameEvidenceErrorResponseDto"];
+        };
+      };
+    };
+  };
+  TranscriptEvidenceController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        cutJobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateTranscriptEvidenceDto"];
+      };
+    };
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
         };
       };
     };
@@ -4856,6 +5012,51 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  TranscriptEvidenceController_detail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        intentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
         };
       };
     };
