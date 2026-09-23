@@ -1059,6 +1059,24 @@
         "required": ["name", "file"],
         "type": "object"
       },
+      "CreateResearchSuggestionDto": {
+        "properties": {
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchCitationDto"
+            },
+            "type": "array"
+          },
+          "query": {
+            "type": "string"
+          },
+          "sourceTitle": {
+            "type": "string"
+          }
+        },
+        "required": ["query", "sourceTitle", "citations"],
+        "type": "object"
+      },
       "CreateTranscriptEvidenceDto": {
         "properties": {
           "cutPromptRevisionId": {
@@ -3949,6 +3967,29 @@
           "operatorNotes",
           "expectedRevision"
         ],
+        "type": "object"
+      },
+      "ResearchCitationDto": {
+        "properties": {
+          "excerpt": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "retrievedAt": {
+            "example": "2026-09-23T00:00:00.000Z",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "example": "https://example.com/source",
+            "type": "string"
+          }
+        },
+        "required": ["url", "title", "publisher", "retrievedAt", "excerpt"],
         "type": "object"
       },
       "RightsResponseDto": {
@@ -8916,6 +8957,38 @@
           }
         },
         "tags": ["transcript-evidence"]
+      }
+    },
+    "/api/v1/transcript-evidence/{intentId}/research-suggestions": {
+      "post": {
+        "operationId": "ResearchController_suggest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResearchSuggestionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Deterministic cited local suggestion."
+          }
+        },
+        "tags": ["research-text"]
       }
     }
   },

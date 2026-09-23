@@ -833,6 +833,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/transcript-evidence/{intentId}/research-suggestions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["ResearchController_suggest"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1152,6 +1168,11 @@ export interface components {
        * @enum {string}
        */
       rightsConfirmed?: "true";
+    };
+    CreateResearchSuggestionDto: {
+      citations: components["schemas"]["ResearchCitationDto"][];
+      query: string;
+      sourceTitle: string;
     };
     CreateTranscriptEvidenceDto: {
       /** Format: uuid */
@@ -2020,6 +2041,15 @@ export interface components {
       operatorNotes: string;
       restrictions: string[];
       sourceTitle: string;
+    };
+    ResearchCitationDto: {
+      excerpt: string;
+      publisher: string;
+      /** @example 2026-09-23T00:00:00.000Z */
+      retrievedAt: string;
+      title: string;
+      /** @example https://example.com/source */
+      url: string;
     };
     RightsResponseDto: {
       /** Format: date-time */
@@ -5140,6 +5170,30 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
         };
+      };
+    };
+  };
+  ResearchController_suggest: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        intentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateResearchSuggestionDto"];
+      };
+    };
+    responses: {
+      /** @description Deterministic cited local suggestion. */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

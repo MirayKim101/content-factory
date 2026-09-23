@@ -27,6 +27,7 @@ import { FRAME_EVIDENCE_REPOSITORY } from "./application/frame-evidence-reposito
 import { TRANSCRIPT_EVIDENCE_REPOSITORY } from "./application/transcript-evidence-repository.port.js";
 import { PrismaTranscriptEvidenceRepository } from "./infrastructure/prisma-transcript-evidence.repository.js";
 import { TranscriptEvidenceController } from "./presentation/transcript-evidence.controller.js";
+import { ResearchController } from "./research/research.controller.js";
 import {
   TRANSCRIPT_QUEUE,
   BullMqTranscriptDispatch,
@@ -40,6 +41,7 @@ import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-
     CreatorContextController,
     FrameEvidenceController,
     TranscriptEvidenceController,
+    ResearchController,
   ],
   providers: [
     CreatorContextService,
