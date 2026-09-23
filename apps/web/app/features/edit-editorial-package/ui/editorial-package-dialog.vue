@@ -20,6 +20,7 @@ import {
   type EditorialOperationAttempt,
   type EditorialSaveAttempt,
 } from "~/features/edit-editorial-package/model/save-identity";
+import ResearchTextManualFallback from "~/features/research-text-suggestions/ui/research-text-manual-fallback.vue";
 import {
   createEditorialContentApi,
   EditorialApiError,
@@ -406,6 +407,7 @@ function reloadServerRevision(): void {
         </p>
         <form @submit.prevent="requestSave">
           <fieldset class="form-fields" :disabled="save.isPending.value">
+            <ResearchTextManualFallback />
             <label
               >Заголовок<InputText
                 v-model="form.title"
