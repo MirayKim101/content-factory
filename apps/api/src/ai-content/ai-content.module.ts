@@ -26,10 +26,15 @@ import { PrismaFrameEvidenceRepository } from "./infrastructure/prisma-frame-evi
 import { FRAME_EVIDENCE_REPOSITORY } from "./application/frame-evidence-repository.port.js";
 import { TRANSCRIPT_EVIDENCE_REPOSITORY } from "./application/transcript-evidence-repository.port.js";
 import { PrismaTranscriptEvidenceRepository } from "./infrastructure/prisma-transcript-evidence.repository.js";
+import { TranscriptEvidenceController } from "./presentation/transcript-evidence.controller.js";
 
 @Module({
   imports: [ProjectsModule, MediaPipelineModule],
-  controllers: [CreatorContextController, FrameEvidenceController],
+  controllers: [
+    CreatorContextController,
+    FrameEvidenceController,
+    TranscriptEvidenceController,
+  ],
   providers: [
     CreatorContextService,
     PrismaFrameEvidenceRepository,

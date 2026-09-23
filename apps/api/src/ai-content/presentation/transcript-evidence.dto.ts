@@ -53,7 +53,8 @@ export class TranscriptArtifactDto {
   @ApiProperty({ type: String }) sha256!: string;
   @ApiProperty({ type: String }) adapterVersion!: string;
   @ApiProperty({ type: String }) language!: string;
-  @ApiProperty({ type: [TranscriptSegmentDto] }) segments!: TranscriptSegmentDto[];
+  @ApiProperty({ type: [TranscriptSegmentDto] })
+  segments!: TranscriptSegmentDto[];
 }
 
 export class TranscriptFailureDto {
@@ -72,7 +73,8 @@ export class TranscriptEvidenceDto {
   contractVersion!: string;
   @ApiProperty({ type: String }) adapterVersion!: string;
   @ApiProperty({ type: String }) language!: string;
-  @ApiProperty({ type: TranscriptInputCaptureDto }) input!: TranscriptInputCaptureDto;
+  @ApiProperty({ type: TranscriptInputCaptureDto })
+  input!: TranscriptInputCaptureDto;
   @ApiProperty({ type: TranscriptArtifactDto, nullable: true })
   artifact!: TranscriptArtifactDto | null;
   @ApiProperty({ type: TranscriptFailureDto, nullable: true })
