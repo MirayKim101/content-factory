@@ -19,6 +19,7 @@ import { StreamingZip64PackageExporter } from "./infrastructure/streaming-zip64-
 import { ExportScratchReconciler } from "./infrastructure/export-scratch-reconciler.js";
 import { MediaScratchReconciler } from "./infrastructure/media-scratch-reconciler.js";
 import { verifyWorkerRollbackCompatibility } from "./rollback-compatibility.js";
+import { PgTranscriptWorker } from "./infrastructure/pg-transcript-worker.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -35,6 +36,11 @@ if (process.argv.includes("--verify-admission-off-rollback")) {
 
 async function startWorker(): Promise<void> {
   const config = workerConfig();
+  const transcriptWorker = new PgTranscriptWorker({
+    databaseUrl: config.databaseUrl,
+    bucket: config.storage.bucket,
+    storage: config.storage,
+  });
   await mkdir(config.scratchDirectory, { recursive: true });
   await mkdir(config.sourceCacheDirectory, { recursive: true });
   await chmod(config.scratchDirectory, 0o700);
@@ -185,6 +191,20 @@ async function startWorker(): Promise<void> {
       autorun: false,
     },
   );
+  const transcriptQueueWorker = new Worker(
+    "ai-transcript-v1",
+    async (delivery) => {
+      const intentId = (delivery.data as { intentId?: unknown }).intentId;
+      if (typeof intentId !== "string")
+        throw new Error("TRANSCRIPT_JOB_INVALID");
+      await transcriptWorker.process(intentId);
+    },
+    {
+      connection: { ...config.redis, maxRetriesPerRequest: null },
+      concurrency: 1,
+      autorun: false,
+    },
+  );
 
   worker.on("completed", (job) => {
     console.log(
@@ -233,6 +253,8 @@ async function startWorker(): Promise<void> {
         JSON.stringify({ event: "media_worker_stopping", workerId, signal }),
       );
       await worker.close().catch(() => undefined);
+      await transcriptQueueWorker.close().catch(() => undefined);
+      await transcriptWorker.close().catch(() => undefined);
       await processFrameJob.reconcile().catch(() => undefined);
       await Promise.allSettled([
         sourceCache.close(),
@@ -250,6 +272,7 @@ async function startWorker(): Promise<void> {
   }
 
   await worker.waitUntilReady();
+  await transcriptQueueWorker.waitUntilReady();
   void worker.run().then(
     () => (closing ? undefined : shutdown("WORKER_RUN_STOPPED", 1)),
     async (error: unknown) => {
@@ -263,6 +286,16 @@ async function startWorker(): Promise<void> {
       await shutdown("WORKER_RUN_FAILED", 1);
     },
   );
+  void transcriptQueueWorker
+    .run()
+    .catch((error) =>
+      console.error(
+        JSON.stringify({
+          event: "transcript_worker_stopped",
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
+    );
   try {
     await writeFile(readinessFile, `${process.pid}\n`, {
       encoding: "utf8",
