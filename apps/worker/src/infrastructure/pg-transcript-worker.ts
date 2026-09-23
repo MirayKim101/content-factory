@@ -42,6 +42,8 @@ export class PgTranscriptWorker {
     let claim:
       | {
           attemptId: string;
+          leaseToken: string;
+          workDeadlineAt: Date;
           fixture: { language: string; segments: TranscriptSegment[] };
           durationMs: number;
         }
@@ -56,13 +58,25 @@ export class PgTranscriptWorker {
         cutEndMs: number;
         attemptCount: number;
         retryBudget: number;
+        attemptState: string | null;
+        leaseExpiresAt: Date;
       }>(
-        `SELECT "id", "state", "fixture", "cutStartMs", "cutEndMs", "attemptCount", "retryBudget"
-         FROM "TranscriptEvidenceIntent" WHERE "id" = $1 FOR UPDATE`,
+        `SELECT i."id", i."state", i."fixture", i."cutStartMs", i."cutEndMs", i."attemptCount", i."retryBudget",
+                a."state" AS "attemptState", a."leaseExpiresAt"
+           FROM "TranscriptEvidenceIntent" i
+           LEFT JOIN LATERAL (
+             SELECT "state", "leaseExpiresAt" FROM "TranscriptEvidenceAttempt"
+              WHERE "intentId" = i."id" ORDER BY "attemptNumber" DESC LIMIT 1
+           ) a ON TRUE
+          WHERE i."id" = $1 FOR UPDATE OF i`,
         [intentId],
       );
       const row = intent.rows[0];
       if (!row || row.state === "READY" || row.state === "FAILED_FINAL") {
+        await client.query("ROLLBACK");
+        return;
+      }
+      if (row.state === "PROCESSING" && row.leaseExpiresAt > new Date()) {
         await client.query("ROLLBACK");
         return;
       }
@@ -77,6 +91,7 @@ export class PgTranscriptWorker {
         return;
       }
       const attemptId = randomUUID();
+      const leaseToken = randomUUID();
       const attemptNumber = row.attemptCount + 1;
       await client.query(
         `INSERT INTO "TranscriptEvidenceAttempt"
@@ -87,7 +102,7 @@ export class PgTranscriptWorker {
           intentId,
           attemptNumber,
           `ai-worker-${process.pid}`,
-          randomUUID(),
+          leaseToken,
         ],
       );
       await client.query(
@@ -99,6 +114,8 @@ export class PgTranscriptWorker {
       await client.query("COMMIT");
       claim = {
         attemptId,
+        leaseToken,
+        workDeadlineAt: new Date(Date.now() + 120_000),
         fixture: row.fixture,
         durationMs: row.cutEndMs - row.cutStartMs,
       };
@@ -111,6 +128,13 @@ export class PgTranscriptWorker {
     if (!claim) return;
 
     try {
+      if (!/^[a-zA-Z]{2,16}(?:-[a-zA-Z]{2,16})?$/.test(claim.fixture.language))
+        throw new Error("TRANSCRIPT_LANGUAGE_INVALID");
+      if (
+        Buffer.byteLength(JSON.stringify(claim.fixture), "utf8") >
+        2 * 1024 * 1024
+      )
+        throw new Error("TRANSCRIPT_FIXTURE_TOO_LARGE");
       const segments = claim.fixture.segments.map((segment) => ({
         ...segment,
         text: segment.text.trim(),
@@ -136,41 +160,68 @@ export class PgTranscriptWorker {
         }),
       );
       const finalize = await this.pool.connect();
-      await finalize.query("BEGIN");
-      await finalize.query(
-        `INSERT INTO "TranscriptEvidenceArtifact"
+      try {
+        await finalize.query("BEGIN");
+        const current = await finalize.query<{
+          state: string;
+          leaseToken: string;
+          workDeadlineAt: Date;
+        }>(
+          `SELECT i."state", a."leaseToken", a."workDeadlineAt"
+             FROM "TranscriptEvidenceIntent" i
+             JOIN "TranscriptEvidenceAttempt" a ON a."intentId" = i."id"
+            WHERE i."id" = $1 AND a."id" = $2 FOR UPDATE`,
+          [intentId, claim.attemptId],
+        );
+        const currentRow = current.rows[0];
+        if (
+          !currentRow ||
+          currentRow.state !== "PROCESSING" ||
+          currentRow.leaseToken !== claim.leaseToken ||
+          currentRow.workDeadlineAt <= new Date()
+        ) {
+          await finalize.query("ROLLBACK");
+          return;
+        }
+        await finalize.query(
+          `INSERT INTO "TranscriptEvidenceArtifact"
           ("id", "intentId", "objectKey", "contentType", "sizeBytes", "sha256", "adapterVersion", "language", "segments")
          VALUES ($1, $2, $3, 'application/json', $4, $5, $6, $7, $8::jsonb)`,
-        [
-          artifactId,
-          intentId,
-          objectKey,
-          bytes.length,
-          sha256,
-          LOCAL_TRANSCRIPT_ADAPTER_VERSION,
-          claim.fixture.language,
-          JSON.stringify(segments),
-        ],
-      );
-      await finalize.query(
-        `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'READY', "finishedAt" = now() WHERE "id" = $1;
+          [
+            artifactId,
+            intentId,
+            objectKey,
+            bytes.length,
+            sha256,
+            LOCAL_TRANSCRIPT_ADAPTER_VERSION,
+            claim.fixture.language,
+            JSON.stringify(segments),
+          ],
+        );
+        await finalize.query(
+          `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'READY', "finishedAt" = now() WHERE "id" = $1;
          UPDATE "TranscriptEvidenceIntent" SET "state" = 'READY', "finishedAt" = now() WHERE "id" = $2`,
-        [claim.attemptId, intentId],
-      );
-      await finalize.query("COMMIT");
-      finalize.release();
+          [claim.attemptId, intentId],
+        );
+        await finalize.query("COMMIT");
+      } catch (error) {
+        await finalize.query("ROLLBACK").catch(() => undefined);
+        throw error;
+      } finally {
+        finalize.release();
+      }
     } catch (error) {
       const failed = await this.pool.connect();
       await failed.query(
         `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
-           "failureCode" = 'TRANSCRIPT_DELIVERY_FAILED', "failureMessage" = $2 WHERE "id" = $1;
-         UPDATE "TranscriptEvidenceIntent" SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
-           "failureCode" = 'TRANSCRIPT_DELIVERY_FAILED', "failureMessage" = $2 WHERE "id" = $3`,
-        [
-          claim.attemptId,
-          error instanceof Error ? error.message : "unknown",
-          intentId,
-        ],
+           "failureCode" = 'TRANSCRIPT_DELIVERY_FAILED', "failureMessage" = $2 WHERE "id" = $1 AND "state" = 'PROCESSING';
+         UPDATE "TranscriptEvidenceIntent" SET "state" = CASE WHEN "attemptCount" <= "retryBudget" THEN 'QUEUED' ELSE 'FAILED_FINAL' END,
+           "finishedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE now() END,
+           "queuedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN now() ELSE "queuedAt" END,
+           "failureCode" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'TRANSCRIPT_DELIVERY_FAILED' END,
+           "failureMessage" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'Transcript delivery failed.' END
+         WHERE "id" = $3 AND "state" = 'PROCESSING'`,
+        [claim.attemptId, "TRANSCRIPT_DELIVERY_FAILED", intentId],
       );
       failed.release();
       throw error;

@@ -31,7 +31,53 @@ if (process.argv.includes("--verify-admission-off-rollback")) {
     scratchDirectory: rollbackConfig.scratchDirectory,
   });
 } else {
-  await startWorker();
+  await (process.env.WORKER_ROLE === "ai" ? startAiWorker() : startWorker());
+}
+
+async function startAiWorker(): Promise<void> {
+  const config = workerConfig();
+  const transcriptWorker = new PgTranscriptWorker({
+    databaseUrl: config.databaseUrl,
+    bucket: config.storage.bucket,
+    storage: config.storage,
+  });
+  const workerId = `ai-worker-${randomUUID()}`;
+  const queue = new Worker(
+    "ai-transcript-v1",
+    async (delivery) => {
+      const intentId = (delivery.data as { intentId?: unknown }).intentId;
+      if (typeof intentId !== "string")
+        throw new Error("TRANSCRIPT_JOB_INVALID");
+      await transcriptWorker.process(intentId);
+    },
+    {
+      connection: { ...config.redis, maxRetriesPerRequest: null },
+      concurrency: 1,
+    },
+  );
+  queue.on("error", (error) =>
+    console.error(
+      JSON.stringify({
+        event: "ai_worker_error",
+        workerId,
+        error: error.message,
+      }),
+    ),
+  );
+  for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.once(signal, async () => {
+      await queue.close().catch(() => undefined);
+      await transcriptWorker.close().catch(() => undefined);
+    });
+  }
+  await queue.waitUntilReady();
+  console.log(
+    JSON.stringify({
+      event: "ai_worker_started",
+      workerId,
+      queue: "ai-transcript-v1",
+    }),
+  );
 }
 
 async function startWorker(): Promise<void> {
@@ -286,16 +332,14 @@ async function startWorker(): Promise<void> {
       await shutdown("WORKER_RUN_FAILED", 1);
     },
   );
-  void transcriptQueueWorker
-    .run()
-    .catch((error) =>
-      console.error(
-        JSON.stringify({
-          event: "transcript_worker_stopped",
-          error: error instanceof Error ? error.message : "unknown",
-        }),
-      ),
-    );
+  void transcriptQueueWorker.run().catch((error) =>
+    console.error(
+      JSON.stringify({
+        event: "transcript_worker_stopped",
+        error: error instanceof Error ? error.message : "unknown",
+      }),
+    ),
+  );
   try {
     await writeFile(readinessFile, `${process.pid}\n`, {
       encoding: "utf8",
