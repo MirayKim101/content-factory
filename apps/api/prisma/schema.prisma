@@ -155,6 +155,20 @@ enum AiContentOperationType {
   PUT_SOURCE_EDITORIAL_CONTEXT
   PUT_CUT_EDITORIAL_PROMPT
   CREATE_FRAME_EVIDENCE
+  CREATE_TRANSCRIPT_EVIDENCE
+}
+
+enum TranscriptIntentState {
+  QUEUED
+  PROCESSING
+  READY
+  FAILED_FINAL
+}
+
+enum TranscriptAttemptState {
+  PROCESSING
+  READY
+  FAILED_FINAL
 }
 
 enum EditorialComponentType {
@@ -240,41 +254,42 @@ model SourceAuthorization {
 }
 
 model MediaArtifact {
-  frameEvidenceInputs   FrameEvidenceIntent[]
-  id                    String                 @id @db.Uuid
-  projectId             String                 @db.Uuid
-  project               Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sourceId              String                 @db.Uuid
-  source                VideoSource            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  role                  MediaArtifactRole
-  status                MediaArtifactStatus    @default(PENDING)
-  objectKey             String                 @unique
-  storageEtag           String?
-  storageVersion        String?
-  cleanupStatus         ArtifactCleanupStatus  @default(NOT_REQUIRED)
-  cleanupAttemptCount   Int                    @default(0)
-  cleanupLastErrorCode  String?
-  cleanupRequestedAt    DateTime?
-  cleanupCompletedAt    DateTime?
-  sizeBytes             BigInt
-  sha256                String
-  contentType           String
-  lineageSourceId       String                 @db.Uuid
-  lineageSourceVersion  Int
-  recipeVersion         String
-  pipelineJobId         String?                @unique @db.Uuid
-  pipelineJob           PipelineJob?           @relation("PipelineJobResult", fields: [pipelineJobId], references: [id], onDelete: SetNull)
-  ffmpegVersion         String?
-  outputFilename        String?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  editorialPackage      EditorialPackage?
-  assemblyRecipe        AssemblyRecipe?
-  assemblyRenderInputs  AssemblyRenderIntent[]
-  assemblyRenderResult  AssemblyRenderResult?
-  editorialApprovals    EditorialApproval[]
-  editorialExportResult EditorialExportResult?
-  cutEditorialPrompt    CutEditorialPrompt?
+  frameEvidenceInputs      FrameEvidenceIntent[]
+  transcriptEvidenceInputs TranscriptEvidenceIntent[]
+  id                       String                     @id @db.Uuid
+  projectId                String                     @db.Uuid
+  project                  Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId                 String                     @db.Uuid
+  source                   VideoSource                @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  role                     MediaArtifactRole
+  status                   MediaArtifactStatus        @default(PENDING)
+  objectKey                String                     @unique
+  storageEtag              String?
+  storageVersion           String?
+  cleanupStatus            ArtifactCleanupStatus      @default(NOT_REQUIRED)
+  cleanupAttemptCount      Int                        @default(0)
+  cleanupLastErrorCode     String?
+  cleanupRequestedAt       DateTime?
+  cleanupCompletedAt       DateTime?
+  sizeBytes                BigInt
+  sha256                   String
+  contentType              String
+  lineageSourceId          String                     @db.Uuid
+  lineageSourceVersion     Int
+  recipeVersion            String
+  pipelineJobId            String?                    @unique @db.Uuid
+  pipelineJob              PipelineJob?               @relation("PipelineJobResult", fields: [pipelineJobId], references: [id], onDelete: SetNull)
+  ffmpegVersion            String?
+  outputFilename           String?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  editorialPackage         EditorialPackage?
+  assemblyRecipe           AssemblyRecipe?
+  assemblyRenderInputs     AssemblyRenderIntent[]
+  assemblyRenderResult     AssemblyRenderResult?
+  editorialApprovals       EditorialApproval[]
+  editorialExportResult    EditorialExportResult?
+  cutEditorialPrompt       CutEditorialPrompt?
 
   @@unique([id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "MediaArtifact_id_projectId_lineage_pipelineJob_key")
   @@index([status, createdAt])
@@ -294,60 +309,61 @@ model CutRequest {
 }
 
 model PipelineJob {
-  frameEvidenceJob        FrameEvidenceIntent?   @relation("FrameEvidenceJob")
-  frameEvidenceInputs     FrameEvidenceIntent[]  @relation("FrameEvidenceCut")
-  id                      String                 @id @db.Uuid
-  projectId               String                 @db.Uuid
-  project                 Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sourceId                String                 @db.Uuid
-  source                  VideoSource            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  sourceVersion           Int
-  cutRequestId            String?                @db.Uuid
-  cutRequest              CutRequest?            @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
-  type                    PipelineJobType
-  state                   PipelineJobState       @default(QUEUED)
-  payloadVersion          Int                    @default(1)
-  idempotencyKey          String                 @unique
-  revision                Int                    @default(1)
-  priority                Int                    @default(0)
-  retryBudget             Int                    @default(2)
-  attemptCount            Int                    @default(0)
-  processedMs             Int?
-  totalMs                 Int?
-  leaseOwner              String?
-  leaseToken              String?                @unique
-  leaseExpiresAt          DateTime?
-  heartbeatAt             DateTime?
-  failureCode             String?
-  failureMessage          String?
-  failureRetryable        Boolean?
-  recipeVersion           String
-  queuedAt                DateTime               @default(now())
-  startedAt               DateTime?
-  finishedAt              DateTime?
-  createdAt               DateTime               @default(now())
-  updatedAt               DateTime               @updatedAt
-  segment                 CutSegment?
-  attempts                JobAttempt[]
-  resultArtifact          MediaArtifact?         @relation("PipelineJobResult")
-  editorialPackage        EditorialPackage?
-  assemblyRecipe          AssemblyRecipe?
-  montageAssetId          String?                @unique @db.Uuid
-  montageAsset            MontageAsset?          @relation(fields: [montageAssetId], references: [id], onDelete: Restrict)
-  assemblyRenderIntentId  String?                @unique @db.Uuid
-  assemblyRenderIntent    AssemblyRenderIntent?  @relation("AssemblyRenderJob", fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_assembly_intent")
-  assemblyRenderInputs    AssemblyRenderIntent[] @relation("AssemblyRenderCutJob")
-  editorialApprovals      EditorialApproval[]
-  editorialExportIntentId String?                @unique @db.Uuid
-  editorialExportIntent   EditorialExportIntent? @relation("EditorialExportJob", fields: [editorialExportIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_editorial_export_intent")
-  editorialExportResult   EditorialExportResult?
-  cutEditorialPrompt      CutEditorialPrompt?
-  nextAttemptAt           DateTime?
-  admissionReason         String?
-  progressAttemptNumber   Int?
-  progressPhase           AssemblyProgressPhase?
-  progressBasisPoints     Int?
-  progressUpdatedAt       DateTime?
+  frameEvidenceJob         FrameEvidenceIntent?       @relation("FrameEvidenceJob")
+  frameEvidenceInputs      FrameEvidenceIntent[]      @relation("FrameEvidenceCut")
+  transcriptEvidenceInputs TranscriptEvidenceIntent[]
+  id                       String                     @id @db.Uuid
+  projectId                String                     @db.Uuid
+  project                  Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceId                 String                     @db.Uuid
+  source                   VideoSource                @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceVersion            Int
+  cutRequestId             String?                    @db.Uuid
+  cutRequest               CutRequest?                @relation(fields: [cutRequestId], references: [id], onDelete: Cascade)
+  type                     PipelineJobType
+  state                    PipelineJobState           @default(QUEUED)
+  payloadVersion           Int                        @default(1)
+  idempotencyKey           String                     @unique
+  revision                 Int                        @default(1)
+  priority                 Int                        @default(0)
+  retryBudget              Int                        @default(2)
+  attemptCount             Int                        @default(0)
+  processedMs              Int?
+  totalMs                  Int?
+  leaseOwner               String?
+  leaseToken               String?                    @unique
+  leaseExpiresAt           DateTime?
+  heartbeatAt              DateTime?
+  failureCode              String?
+  failureMessage           String?
+  failureRetryable         Boolean?
+  recipeVersion            String
+  queuedAt                 DateTime                   @default(now())
+  startedAt                DateTime?
+  finishedAt               DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  segment                  CutSegment?
+  attempts                 JobAttempt[]
+  resultArtifact           MediaArtifact?             @relation("PipelineJobResult")
+  editorialPackage         EditorialPackage?
+  assemblyRecipe           AssemblyRecipe?
+  montageAssetId           String?                    @unique @db.Uuid
+  montageAsset             MontageAsset?              @relation(fields: [montageAssetId], references: [id], onDelete: Restrict)
+  assemblyRenderIntentId   String?                    @unique @db.Uuid
+  assemblyRenderIntent     AssemblyRenderIntent?      @relation("AssemblyRenderJob", fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_assembly_intent")
+  assemblyRenderInputs     AssemblyRenderIntent[]     @relation("AssemblyRenderCutJob")
+  editorialApprovals       EditorialApproval[]
+  editorialExportIntentId  String?                    @unique @db.Uuid
+  editorialExportIntent    EditorialExportIntent?     @relation("EditorialExportJob", fields: [editorialExportIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_editorial_export_intent")
+  editorialExportResult    EditorialExportResult?
+  cutEditorialPrompt       CutEditorialPrompt?
+  nextAttemptAt            DateTime?
+  admissionReason          String?
+  progressAttemptNumber    Int?
+  progressPhase            AssemblyProgressPhase?
+  progressBasisPoints      Int?
+  progressUpdatedAt        DateTime?
 
   @@unique([id, projectId, sourceId, sourceVersion])
   @@unique([assemblyRenderIntentId, projectId, sourceId, sourceVersion], map: "PipelineJob_assembly_intent_lineage_key")
@@ -890,6 +906,7 @@ model CreatorProfileOfficialUrlIdentity {
 
 model CreatorProfileRevision {
   frameEvidenceIntents                    FrameEvidenceIntent[]
+  transcriptEvidenceIntents               TranscriptEvidenceIntent[]
   id                                      String                                 @id @db.Uuid
   creatorProfileId                        String                                 @db.Uuid
   creatorProfile                          CreatorProfile                         @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
@@ -987,29 +1004,30 @@ model SourceEditorialContext {
 }
 
 model SourceEditorialContextRevision {
-  frameEvidenceIntents     FrameEvidenceIntent[]
-  id                       String                       @id @db.Uuid
-  contextId                String                       @db.Uuid
-  context                  SourceEditorialContext       @relation(fields: [contextId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "SourceEditorialContextRevision_exact_context")
-  revision                 Int
-  projectId                String                       @db.Uuid
-  sourceId                 String                       @db.Uuid
-  sourceVersion            Int
-  creatorProfileId         String                       @db.Uuid
-  creatorProfile           CreatorProfile               @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
-  creatorProfileRevisionId String                       @db.Uuid
-  creatorProfileRevisionNo Int
-  creatorProfileRevision   CreatorProfileRevision       @relation(fields: [creatorProfileRevisionId, creatorProfileId, creatorProfileRevisionNo], references: [id, creatorProfileId, revision], onDelete: Restrict, map: "SourceEditorialContextRevision_exact_profile_revision")
-  sourceTitle              String
-  gameOrTopic              String
-  audience                 String
-  editorialGoal            String
-  language                 String
-  defaultCta               String
-  restrictions             Json
-  operatorNotes            String
-  createdAt                DateTime                     @default(now())
-  cutPrompts               CutEditorialPromptRevision[]
+  frameEvidenceIntents      FrameEvidenceIntent[]
+  transcriptEvidenceIntents TranscriptEvidenceIntent[]
+  id                        String                       @id @db.Uuid
+  contextId                 String                       @db.Uuid
+  context                   SourceEditorialContext       @relation(fields: [contextId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "SourceEditorialContextRevision_exact_context")
+  revision                  Int
+  projectId                 String                       @db.Uuid
+  sourceId                  String                       @db.Uuid
+  sourceVersion             Int
+  creatorProfileId          String                       @db.Uuid
+  creatorProfile            CreatorProfile               @relation(fields: [creatorProfileId], references: [id], onDelete: Restrict)
+  creatorProfileRevisionId  String                       @db.Uuid
+  creatorProfileRevisionNo  Int
+  creatorProfileRevision    CreatorProfileRevision       @relation(fields: [creatorProfileRevisionId, creatorProfileId, creatorProfileRevisionNo], references: [id, creatorProfileId, revision], onDelete: Restrict, map: "SourceEditorialContextRevision_exact_profile_revision")
+  sourceTitle               String
+  gameOrTopic               String
+  audience                  String
+  editorialGoal             String
+  language                  String
+  defaultCta                String
+  restrictions              Json
+  operatorNotes             String
+  createdAt                 DateTime                     @default(now())
+  cutPrompts                CutEditorialPromptRevision[]
 
   @@unique([contextId, revision], map: "SourceEditorialContextRevision_context_revision_key")
   @@unique([id, contextId, revision], map: "SourceEditorialContextRevision_exact_identity_key")
@@ -1043,24 +1061,25 @@ model CutEditorialPrompt {
 }
 
 model CutEditorialPromptRevision {
-  frameEvidenceIntents    FrameEvidenceIntent[]
-  id                      String                         @id @db.Uuid
-  promptId                String                         @db.Uuid
-  prompt                  CutEditorialPrompt             @relation(fields: [promptId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPromptRevision_exact_prompt")
-  revision                Int
-  projectId               String                         @db.Uuid
-  sourceId                String                         @db.Uuid
-  sourceVersion           Int
-  sourceContextId         String                         @db.Uuid
-  sourceContextRevisionId String                         @db.Uuid
-  sourceContextRevisionNo Int
-  sourceContextRevision   SourceEditorialContextRevision @relation(fields: [sourceContextRevisionId, sourceContextId, sourceContextRevisionNo, projectId, sourceId, sourceVersion], references: [id, contextId, revision, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPromptRevision_exact_source_context")
-  whatHappens             String
-  desiredAngle            String
-  tone                    String
-  cta                     String
-  restrictions            Json
-  createdAt               DateTime                       @default(now())
+  frameEvidenceIntents      FrameEvidenceIntent[]
+  transcriptEvidenceIntents TranscriptEvidenceIntent[]
+  id                        String                         @id @db.Uuid
+  promptId                  String                         @db.Uuid
+  prompt                    CutEditorialPrompt             @relation(fields: [promptId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPromptRevision_exact_prompt")
+  revision                  Int
+  projectId                 String                         @db.Uuid
+  sourceId                  String                         @db.Uuid
+  sourceVersion             Int
+  sourceContextId           String                         @db.Uuid
+  sourceContextRevisionId   String                         @db.Uuid
+  sourceContextRevisionNo   Int
+  sourceContextRevision     SourceEditorialContextRevision @relation(fields: [sourceContextRevisionId, sourceContextId, sourceContextRevisionNo, projectId, sourceId, sourceVersion], references: [id, contextId, revision, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "CutEditorialPromptRevision_exact_source_context")
+  whatHappens               String
+  desiredAngle              String
+  tone                      String
+  cta                       String
+  restrictions              Json
+  createdAt                 DateTime                       @default(now())
 
   @@unique([promptId, revision], map: "CutEditorialPromptRevision_prompt_revision_key")
   @@unique([id, promptId, revision], map: "CutEditorialPromptRevision_exact_identity_key")
@@ -1266,4 +1285,87 @@ model FrameEvidenceFrame {
 
   @@unique([intentId, ordinal])
   @@unique([outputId, attemptId, intentId, ordinal])
+}
+
+/// Immutable exact cut/context capture and durable state for one transcript request.
+model TranscriptEvidenceIntent {
+  id                          String                         @id @db.Uuid
+  idempotencyKey              String                         @unique
+  requestFingerprint          String
+  projectId                   String                         @db.Uuid
+  sourceId                    String                         @db.Uuid
+  sourceVersion               Int
+  sourceSha256                String
+  sourceAuthorizationRevision Int
+  cutPipelineJobId            String                         @db.Uuid
+  cutPipelineJob              PipelineJob                    @relation(fields: [cutPipelineJobId], references: [id], onDelete: Restrict)
+  cutResultArtifactId         String                         @db.Uuid
+  cutResultArtifact           MediaArtifact                  @relation(fields: [cutResultArtifactId], references: [id], onDelete: Restrict)
+  cutResultSha256             String
+  cutResultSizeBytes          BigInt
+  cutStartMs                  Int
+  cutEndMs                    Int
+  creatorProfileRevisionId    String                         @db.Uuid
+  creatorProfileRevisionNo    Int
+  creatorProfileRevision      CreatorProfileRevision         @relation(fields: [creatorProfileRevisionId], references: [id], onDelete: Restrict)
+  sourceContextRevisionId     String                         @db.Uuid
+  sourceContextRevisionNo     Int
+  sourceContextRevision       SourceEditorialContextRevision @relation(fields: [sourceContextRevisionId], references: [id], onDelete: Restrict)
+  cutPromptRevisionId         String                         @db.Uuid
+  cutPromptRevisionNo         Int
+  cutPromptRevision           CutEditorialPromptRevision     @relation(fields: [cutPromptRevisionId], references: [id], onDelete: Restrict)
+  contractVersion             String
+  adapterVersion              String
+  language                    String
+  fixture                     Json
+  state                       TranscriptIntentState          @default(QUEUED)
+  attemptCount                Int                            @default(0)
+  retryBudget                 Int                            @default(1)
+  failureCode                 String?
+  failureMessage              String?
+  queuedAt                    DateTime                       @default(now())
+  startedAt                   DateTime?
+  finishedAt                  DateTime?
+  createdAt                   DateTime                       @default(now())
+  updatedAt                   DateTime                       @updatedAt
+  attempts                    TranscriptEvidenceAttempt[]
+  artifact                    TranscriptEvidenceArtifact?
+
+  @@index([cutPipelineJobId, createdAt, id])
+  @@index([state, queuedAt])
+}
+
+/// Fenced worker attempt. An expired lease may be reclaimed until retryBudget is exhausted.
+model TranscriptEvidenceAttempt {
+  id             String                   @id @db.Uuid
+  intentId       String                   @db.Uuid
+  intent         TranscriptEvidenceIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptNumber  Int
+  state          TranscriptAttemptState   @default(PROCESSING)
+  workerId       String
+  leaseToken     String                   @unique
+  leaseExpiresAt DateTime
+  workDeadlineAt DateTime
+  startedAt      DateTime                 @default(now())
+  finishedAt     DateTime?
+  failureCode    String?
+  failureMessage String?
+
+  @@unique([intentId, attemptNumber])
+  @@index([state, leaseExpiresAt])
+}
+
+/// Private immutable transcript bytes and normalized timestamp metadata.
+model TranscriptEvidenceArtifact {
+  id             String                   @id @db.Uuid
+  intentId       String                   @unique @db.Uuid
+  intent         TranscriptEvidenceIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  objectKey      String                   @unique
+  contentType    String
+  sizeBytes      BigInt
+  sha256         String
+  adapterVersion String
+  language       String
+  segments       Json
+  createdAt      DateTime                 @default(now())
 }

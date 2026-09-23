@@ -219,10 +219,30 @@ export const AiContentOperationType = {
   SET_DEFAULT_CREATOR_REFERENCE: 'SET_DEFAULT_CREATOR_REFERENCE',
   PUT_SOURCE_EDITORIAL_CONTEXT: 'PUT_SOURCE_EDITORIAL_CONTEXT',
   PUT_CUT_EDITORIAL_PROMPT: 'PUT_CUT_EDITORIAL_PROMPT',
-  CREATE_FRAME_EVIDENCE: 'CREATE_FRAME_EVIDENCE'
+  CREATE_FRAME_EVIDENCE: 'CREATE_FRAME_EVIDENCE',
+  CREATE_TRANSCRIPT_EVIDENCE: 'CREATE_TRANSCRIPT_EVIDENCE'
 } as const
 
 export type AiContentOperationType = (typeof AiContentOperationType)[keyof typeof AiContentOperationType]
+
+
+export const TranscriptIntentState = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type TranscriptIntentState = (typeof TranscriptIntentState)[keyof typeof TranscriptIntentState]
+
+
+export const TranscriptAttemptState = {
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type TranscriptAttemptState = (typeof TranscriptAttemptState)[keyof typeof TranscriptAttemptState]
 
 
 export const EditorialComponentType = {

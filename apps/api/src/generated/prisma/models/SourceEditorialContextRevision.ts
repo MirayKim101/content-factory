@@ -325,6 +325,7 @@ export type SourceEditorialContextRevisionWhereInput = {
   operatorNotes?: Prisma.StringFilter<"SourceEditorialContextRevision"> | string
   createdAt?: Prisma.DateTimeFilter<"SourceEditorialContextRevision"> | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentListRelationFilter
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentListRelationFilter
   context?: Prisma.XOR<Prisma.SourceEditorialContextScalarRelationFilter, Prisma.SourceEditorialContextWhereInput>
   creatorProfile?: Prisma.XOR<Prisma.CreatorProfileScalarRelationFilter, Prisma.CreatorProfileWhereInput>
   creatorProfileRevision?: Prisma.XOR<Prisma.CreatorProfileRevisionScalarRelationFilter, Prisma.CreatorProfileRevisionWhereInput>
@@ -351,6 +352,7 @@ export type SourceEditorialContextRevisionOrderByWithRelationInput = {
   operatorNotes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentOrderByRelationAggregateInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentOrderByRelationAggregateInput
   context?: Prisma.SourceEditorialContextOrderByWithRelationInput
   creatorProfile?: Prisma.CreatorProfileOrderByWithRelationInput
   creatorProfileRevision?: Prisma.CreatorProfileRevisionOrderByWithRelationInput
@@ -384,6 +386,7 @@ export type SourceEditorialContextRevisionWhereUniqueInput = Prisma.AtLeast<{
   operatorNotes?: Prisma.StringFilter<"SourceEditorialContextRevision"> | string
   createdAt?: Prisma.DateTimeFilter<"SourceEditorialContextRevision"> | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentListRelationFilter
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentListRelationFilter
   context?: Prisma.XOR<Prisma.SourceEditorialContextScalarRelationFilter, Prisma.SourceEditorialContextWhereInput>
   creatorProfile?: Prisma.XOR<Prisma.CreatorProfileScalarRelationFilter, Prisma.CreatorProfileWhereInput>
   creatorProfileRevision?: Prisma.XOR<Prisma.CreatorProfileRevisionScalarRelationFilter, Prisma.CreatorProfileRevisionWhereInput>
@@ -453,6 +456,7 @@ export type SourceEditorialContextRevisionCreateInput = {
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
   context: Prisma.SourceEditorialContextCreateNestedOneWithoutRevisionsInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutSourceContextsInput
   creatorProfileRevision: Prisma.CreatorProfileRevisionCreateNestedOneWithoutSourceContextsInput
@@ -479,6 +483,7 @@ export type SourceEditorialContextRevisionUncheckedCreateInput = {
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutSourceContextRevisionInput
 }
 
@@ -495,6 +500,7 @@ export type SourceEditorialContextRevisionUpdateInput = {
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
   context?: Prisma.SourceEditorialContextUpdateOneRequiredWithoutRevisionsNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutSourceContextsNestedInput
   creatorProfileRevision?: Prisma.CreatorProfileRevisionUpdateOneRequiredWithoutSourceContextsNestedInput
@@ -521,6 +527,7 @@ export type SourceEditorialContextRevisionUncheckedUpdateInput = {
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
 }
 
@@ -854,6 +861,20 @@ export type SourceEditorialContextRevisionUpdateOneRequiredWithoutFrameEvidenceI
   update?: Prisma.XOR<Prisma.XOR<Prisma.SourceEditorialContextRevisionUpdateToOneWithWhereWithoutFrameEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUpdateWithoutFrameEvidenceIntentsInput>, Prisma.SourceEditorialContextRevisionUncheckedUpdateWithoutFrameEvidenceIntentsInput>
 }
 
+export type SourceEditorialContextRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput = {
+  create?: Prisma.XOR<Prisma.SourceEditorialContextRevisionCreateWithoutTranscriptEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUncheckedCreateWithoutTranscriptEvidenceIntentsInput>
+  connectOrCreate?: Prisma.SourceEditorialContextRevisionCreateOrConnectWithoutTranscriptEvidenceIntentsInput
+  connect?: Prisma.SourceEditorialContextRevisionWhereUniqueInput
+}
+
+export type SourceEditorialContextRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.SourceEditorialContextRevisionCreateWithoutTranscriptEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUncheckedCreateWithoutTranscriptEvidenceIntentsInput>
+  connectOrCreate?: Prisma.SourceEditorialContextRevisionCreateOrConnectWithoutTranscriptEvidenceIntentsInput
+  upsert?: Prisma.SourceEditorialContextRevisionUpsertWithoutTranscriptEvidenceIntentsInput
+  connect?: Prisma.SourceEditorialContextRevisionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SourceEditorialContextRevisionUpdateToOneWithWhereWithoutTranscriptEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUpdateWithoutTranscriptEvidenceIntentsInput>, Prisma.SourceEditorialContextRevisionUncheckedUpdateWithoutTranscriptEvidenceIntentsInput>
+}
+
 export type SourceEditorialContextRevisionCreateWithoutCreatorProfileInput = {
   id: string
   revision: number
@@ -867,6 +888,7 @@ export type SourceEditorialContextRevisionCreateWithoutCreatorProfileInput = {
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
   context: Prisma.SourceEditorialContextCreateNestedOneWithoutRevisionsInput
   creatorProfileRevision: Prisma.CreatorProfileRevisionCreateNestedOneWithoutSourceContextsInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutSourceContextRevisionInput
@@ -891,6 +913,7 @@ export type SourceEditorialContextRevisionUncheckedCreateWithoutCreatorProfileIn
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutSourceContextRevisionInput
 }
 
@@ -957,6 +980,7 @@ export type SourceEditorialContextRevisionCreateWithoutCreatorProfileRevisionInp
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
   context: Prisma.SourceEditorialContextCreateNestedOneWithoutRevisionsInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutSourceContextsInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutSourceContextRevisionInput
@@ -979,6 +1003,7 @@ export type SourceEditorialContextRevisionUncheckedCreateWithoutCreatorProfileRe
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutSourceContextRevisionInput
 }
 
@@ -1021,6 +1046,7 @@ export type SourceEditorialContextRevisionCreateWithoutContextInput = {
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutSourceContextsInput
   creatorProfileRevision: Prisma.CreatorProfileRevisionCreateNestedOneWithoutSourceContextsInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutSourceContextRevisionInput
@@ -1042,6 +1068,7 @@ export type SourceEditorialContextRevisionUncheckedCreateWithoutContextInput = {
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutSourceContextRevisionInput
 }
 
@@ -1084,6 +1111,7 @@ export type SourceEditorialContextRevisionCreateWithoutCutPromptsInput = {
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
   context: Prisma.SourceEditorialContextCreateNestedOneWithoutRevisionsInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutSourceContextsInput
   creatorProfileRevision: Prisma.CreatorProfileRevisionCreateNestedOneWithoutSourceContextsInput
@@ -1109,6 +1137,7 @@ export type SourceEditorialContextRevisionUncheckedCreateWithoutCutPromptsInput 
   operatorNotes: string
   createdAt?: Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
 }
 
 export type SourceEditorialContextRevisionCreateOrConnectWithoutCutPromptsInput = {
@@ -1140,6 +1169,7 @@ export type SourceEditorialContextRevisionUpdateWithoutCutPromptsInput = {
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
   context?: Prisma.SourceEditorialContextUpdateOneRequiredWithoutRevisionsNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutSourceContextsNestedInput
   creatorProfileRevision?: Prisma.CreatorProfileRevisionUpdateOneRequiredWithoutSourceContextsNestedInput
@@ -1165,6 +1195,7 @@ export type SourceEditorialContextRevisionUncheckedUpdateWithoutCutPromptsInput 
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
 }
 
 export type SourceEditorialContextRevisionCreateWithoutFrameEvidenceIntentsInput = {
@@ -1179,6 +1210,7 @@ export type SourceEditorialContextRevisionCreateWithoutFrameEvidenceIntentsInput
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   operatorNotes: string
   createdAt?: Date | string
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
   context: Prisma.SourceEditorialContextCreateNestedOneWithoutRevisionsInput
   creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutSourceContextsInput
   creatorProfileRevision: Prisma.CreatorProfileRevisionCreateNestedOneWithoutSourceContextsInput
@@ -1204,6 +1236,7 @@ export type SourceEditorialContextRevisionUncheckedCreateWithoutFrameEvidenceInt
   restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
   operatorNotes: string
   createdAt?: Date | string
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutSourceContextRevisionInput
 }
 
@@ -1235,6 +1268,7 @@ export type SourceEditorialContextRevisionUpdateWithoutFrameEvidenceIntentsInput
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
   context?: Prisma.SourceEditorialContextUpdateOneRequiredWithoutRevisionsNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutSourceContextsNestedInput
   creatorProfileRevision?: Prisma.CreatorProfileRevisionUpdateOneRequiredWithoutSourceContextsNestedInput
@@ -1260,6 +1294,107 @@ export type SourceEditorialContextRevisionUncheckedUpdateWithoutFrameEvidenceInt
   restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
+  cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
+}
+
+export type SourceEditorialContextRevisionCreateWithoutTranscriptEvidenceIntentsInput = {
+  id: string
+  revision: number
+  sourceTitle: string
+  gameOrTopic: string
+  audience: string
+  editorialGoal: string
+  language: string
+  defaultCta: string
+  restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  operatorNotes: string
+  createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutSourceContextRevisionInput
+  context: Prisma.SourceEditorialContextCreateNestedOneWithoutRevisionsInput
+  creatorProfile: Prisma.CreatorProfileCreateNestedOneWithoutSourceContextsInput
+  creatorProfileRevision: Prisma.CreatorProfileRevisionCreateNestedOneWithoutSourceContextsInput
+  cutPrompts?: Prisma.CutEditorialPromptRevisionCreateNestedManyWithoutSourceContextRevisionInput
+}
+
+export type SourceEditorialContextRevisionUncheckedCreateWithoutTranscriptEvidenceIntentsInput = {
+  id: string
+  contextId: string
+  revision: number
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  creatorProfileId: string
+  creatorProfileRevisionId: string
+  creatorProfileRevisionNo: number
+  sourceTitle: string
+  gameOrTopic: string
+  audience: string
+  editorialGoal: string
+  language: string
+  defaultCta: string
+  restrictions: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  operatorNotes: string
+  createdAt?: Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutSourceContextRevisionInput
+  cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedCreateNestedManyWithoutSourceContextRevisionInput
+}
+
+export type SourceEditorialContextRevisionCreateOrConnectWithoutTranscriptEvidenceIntentsInput = {
+  where: Prisma.SourceEditorialContextRevisionWhereUniqueInput
+  create: Prisma.XOR<Prisma.SourceEditorialContextRevisionCreateWithoutTranscriptEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUncheckedCreateWithoutTranscriptEvidenceIntentsInput>
+}
+
+export type SourceEditorialContextRevisionUpsertWithoutTranscriptEvidenceIntentsInput = {
+  update: Prisma.XOR<Prisma.SourceEditorialContextRevisionUpdateWithoutTranscriptEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUncheckedUpdateWithoutTranscriptEvidenceIntentsInput>
+  create: Prisma.XOR<Prisma.SourceEditorialContextRevisionCreateWithoutTranscriptEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUncheckedCreateWithoutTranscriptEvidenceIntentsInput>
+  where?: Prisma.SourceEditorialContextRevisionWhereInput
+}
+
+export type SourceEditorialContextRevisionUpdateToOneWithWhereWithoutTranscriptEvidenceIntentsInput = {
+  where?: Prisma.SourceEditorialContextRevisionWhereInput
+  data: Prisma.XOR<Prisma.SourceEditorialContextRevisionUpdateWithoutTranscriptEvidenceIntentsInput, Prisma.SourceEditorialContextRevisionUncheckedUpdateWithoutTranscriptEvidenceIntentsInput>
+}
+
+export type SourceEditorialContextRevisionUpdateWithoutTranscriptEvidenceIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  gameOrTopic?: Prisma.StringFieldUpdateOperationsInput | string
+  audience?: Prisma.StringFieldUpdateOperationsInput | string
+  editorialGoal?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultCta?: Prisma.StringFieldUpdateOperationsInput | string
+  restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
+  context?: Prisma.SourceEditorialContextUpdateOneRequiredWithoutRevisionsNestedInput
+  creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutSourceContextsNestedInput
+  creatorProfileRevision?: Prisma.CreatorProfileRevisionUpdateOneRequiredWithoutSourceContextsNestedInput
+  cutPrompts?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutSourceContextRevisionNestedInput
+}
+
+export type SourceEditorialContextRevisionUncheckedUpdateWithoutTranscriptEvidenceIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  contextId?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  gameOrTopic?: Prisma.StringFieldUpdateOperationsInput | string
+  audience?: Prisma.StringFieldUpdateOperationsInput | string
+  editorialGoal?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultCta?: Prisma.StringFieldUpdateOperationsInput | string
+  restrictions?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
 }
 
@@ -1296,6 +1431,7 @@ export type SourceEditorialContextRevisionUpdateWithoutCreatorProfileInput = {
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
   context?: Prisma.SourceEditorialContextUpdateOneRequiredWithoutRevisionsNestedInput
   creatorProfileRevision?: Prisma.CreatorProfileRevisionUpdateOneRequiredWithoutSourceContextsNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutSourceContextRevisionNestedInput
@@ -1320,6 +1456,7 @@ export type SourceEditorialContextRevisionUncheckedUpdateWithoutCreatorProfileIn
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
 }
 
@@ -1374,6 +1511,7 @@ export type SourceEditorialContextRevisionUpdateWithoutCreatorProfileRevisionInp
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
   context?: Prisma.SourceEditorialContextUpdateOneRequiredWithoutRevisionsNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutSourceContextsNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutSourceContextRevisionNestedInput
@@ -1396,6 +1534,7 @@ export type SourceEditorialContextRevisionUncheckedUpdateWithoutCreatorProfileRe
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
 }
 
@@ -1447,6 +1586,7 @@ export type SourceEditorialContextRevisionUpdateWithoutContextInput = {
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutSourceContextRevisionNestedInput
   creatorProfile?: Prisma.CreatorProfileUpdateOneRequiredWithoutSourceContextsNestedInput
   creatorProfileRevision?: Prisma.CreatorProfileRevisionUpdateOneRequiredWithoutSourceContextsNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUpdateManyWithoutSourceContextRevisionNestedInput
@@ -1468,6 +1608,7 @@ export type SourceEditorialContextRevisionUncheckedUpdateWithoutContextInput = {
   operatorNotes?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceIntents?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
+  transcriptEvidenceIntents?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
   cutPrompts?: Prisma.CutEditorialPromptRevisionUncheckedUpdateManyWithoutSourceContextRevisionNestedInput
 }
 
@@ -1495,11 +1636,13 @@ export type SourceEditorialContextRevisionUncheckedUpdateManyWithoutContextInput
 
 export type SourceEditorialContextRevisionCountOutputType = {
   frameEvidenceIntents: number
+  transcriptEvidenceIntents: number
   cutPrompts: number
 }
 
 export type SourceEditorialContextRevisionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   frameEvidenceIntents?: boolean | SourceEditorialContextRevisionCountOutputTypeCountFrameEvidenceIntentsArgs
+  transcriptEvidenceIntents?: boolean | SourceEditorialContextRevisionCountOutputTypeCountTranscriptEvidenceIntentsArgs
   cutPrompts?: boolean | SourceEditorialContextRevisionCountOutputTypeCountCutPromptsArgs
 }
 
@@ -1518,6 +1661,13 @@ export type SourceEditorialContextRevisionCountOutputTypeDefaultArgs<ExtArgs ext
  */
 export type SourceEditorialContextRevisionCountOutputTypeCountFrameEvidenceIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.FrameEvidenceIntentWhereInput
+}
+
+/**
+ * SourceEditorialContextRevisionCountOutputType without action
+ */
+export type SourceEditorialContextRevisionCountOutputTypeCountTranscriptEvidenceIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TranscriptEvidenceIntentWhereInput
 }
 
 /**
@@ -1548,6 +1698,7 @@ export type SourceEditorialContextRevisionSelect<ExtArgs extends runtime.Types.E
   operatorNotes?: boolean
   createdAt?: boolean
   frameEvidenceIntents?: boolean | Prisma.SourceEditorialContextRevision$frameEvidenceIntentsArgs<ExtArgs>
+  transcriptEvidenceIntents?: boolean | Prisma.SourceEditorialContextRevision$transcriptEvidenceIntentsArgs<ExtArgs>
   context?: boolean | Prisma.SourceEditorialContextDefaultArgs<ExtArgs>
   creatorProfile?: boolean | Prisma.CreatorProfileDefaultArgs<ExtArgs>
   creatorProfileRevision?: boolean | Prisma.CreatorProfileRevisionDefaultArgs<ExtArgs>
@@ -1627,6 +1778,7 @@ export type SourceEditorialContextRevisionSelectScalar = {
 export type SourceEditorialContextRevisionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "contextId" | "revision" | "projectId" | "sourceId" | "sourceVersion" | "creatorProfileId" | "creatorProfileRevisionId" | "creatorProfileRevisionNo" | "sourceTitle" | "gameOrTopic" | "audience" | "editorialGoal" | "language" | "defaultCta" | "restrictions" | "operatorNotes" | "createdAt", ExtArgs["result"]["sourceEditorialContextRevision"]>
 export type SourceEditorialContextRevisionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   frameEvidenceIntents?: boolean | Prisma.SourceEditorialContextRevision$frameEvidenceIntentsArgs<ExtArgs>
+  transcriptEvidenceIntents?: boolean | Prisma.SourceEditorialContextRevision$transcriptEvidenceIntentsArgs<ExtArgs>
   context?: boolean | Prisma.SourceEditorialContextDefaultArgs<ExtArgs>
   creatorProfile?: boolean | Prisma.CreatorProfileDefaultArgs<ExtArgs>
   creatorProfileRevision?: boolean | Prisma.CreatorProfileRevisionDefaultArgs<ExtArgs>
@@ -1648,6 +1800,7 @@ export type $SourceEditorialContextRevisionPayload<ExtArgs extends runtime.Types
   name: "SourceEditorialContextRevision"
   objects: {
     frameEvidenceIntents: Prisma.$FrameEvidenceIntentPayload<ExtArgs>[]
+    transcriptEvidenceIntents: Prisma.$TranscriptEvidenceIntentPayload<ExtArgs>[]
     context: Prisma.$SourceEditorialContextPayload<ExtArgs>
     creatorProfile: Prisma.$CreatorProfilePayload<ExtArgs>
     creatorProfileRevision: Prisma.$CreatorProfileRevisionPayload<ExtArgs>
@@ -2067,6 +2220,7 @@ readonly fields: SourceEditorialContextRevisionFieldRefs;
 export interface Prisma__SourceEditorialContextRevisionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   frameEvidenceIntents<T extends Prisma.SourceEditorialContextRevision$frameEvidenceIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourceEditorialContextRevision$frameEvidenceIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FrameEvidenceIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  transcriptEvidenceIntents<T extends Prisma.SourceEditorialContextRevision$transcriptEvidenceIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourceEditorialContextRevision$transcriptEvidenceIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TranscriptEvidenceIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   context<T extends Prisma.SourceEditorialContextDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SourceEditorialContextDefaultArgs<ExtArgs>>): Prisma.Prisma__SourceEditorialContextClient<runtime.Types.Result.GetResult<Prisma.$SourceEditorialContextPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   creatorProfile<T extends Prisma.CreatorProfileDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreatorProfileDefaultArgs<ExtArgs>>): Prisma.Prisma__CreatorProfileClient<runtime.Types.Result.GetResult<Prisma.$CreatorProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   creatorProfileRevision<T extends Prisma.CreatorProfileRevisionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CreatorProfileRevisionDefaultArgs<ExtArgs>>): Prisma.Prisma__CreatorProfileRevisionClient<runtime.Types.Result.GetResult<Prisma.$CreatorProfileRevisionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
@@ -2540,6 +2694,30 @@ export type SourceEditorialContextRevision$frameEvidenceIntentsArgs<ExtArgs exte
   take?: number
   skip?: number
   distinct?: Prisma.FrameEvidenceIntentScalarFieldEnum | Prisma.FrameEvidenceIntentScalarFieldEnum[]
+}
+
+/**
+ * SourceEditorialContextRevision.transcriptEvidenceIntents
+ */
+export type SourceEditorialContextRevision$transcriptEvidenceIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TranscriptEvidenceIntent
+   */
+  select?: Prisma.TranscriptEvidenceIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TranscriptEvidenceIntent
+   */
+  omit?: Prisma.TranscriptEvidenceIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TranscriptEvidenceIntentInclude<ExtArgs> | null
+  where?: Prisma.TranscriptEvidenceIntentWhereInput
+  orderBy?: Prisma.TranscriptEvidenceIntentOrderByWithRelationInput | Prisma.TranscriptEvidenceIntentOrderByWithRelationInput[]
+  cursor?: Prisma.TranscriptEvidenceIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TranscriptEvidenceIntentScalarFieldEnum | Prisma.TranscriptEvidenceIntentScalarFieldEnum[]
 }
 
 /**

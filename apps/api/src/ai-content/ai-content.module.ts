@@ -24,6 +24,8 @@ import { CreatorContextController } from "./presentation/creator-context.control
 import { FrameEvidenceController } from "./presentation/frame-evidence.controller.js";
 import { PrismaFrameEvidenceRepository } from "./infrastructure/prisma-frame-evidence.repository.js";
 import { FRAME_EVIDENCE_REPOSITORY } from "./application/frame-evidence-repository.port.js";
+import { TRANSCRIPT_EVIDENCE_REPOSITORY } from "./application/transcript-evidence-repository.port.js";
+import { PrismaTranscriptEvidenceRepository } from "./infrastructure/prisma-transcript-evidence.repository.js";
 
 @Module({
   imports: [ProjectsModule, MediaPipelineModule],
@@ -31,9 +33,14 @@ import { FRAME_EVIDENCE_REPOSITORY } from "./application/frame-evidence-reposito
   providers: [
     CreatorContextService,
     PrismaFrameEvidenceRepository,
+    PrismaTranscriptEvidenceRepository,
     {
       provide: FRAME_EVIDENCE_REPOSITORY,
       useExisting: PrismaFrameEvidenceRepository,
+    },
+    {
+      provide: TRANSCRIPT_EVIDENCE_REPOSITORY,
+      useExisting: PrismaTranscriptEvidenceRepository,
     },
     ResolveAiEditorialContext,
     ReconcileCreatorReferences,

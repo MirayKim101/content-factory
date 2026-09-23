@@ -95,7 +95,10 @@ export const ModelName = {
   FrameEvidenceAttempt: 'FrameEvidenceAttempt',
   FrameEvidenceAttemptOutput: 'FrameEvidenceAttemptOutput',
   FrameEvidenceResult: 'FrameEvidenceResult',
-  FrameEvidenceFrame: 'FrameEvidenceFrame'
+  FrameEvidenceFrame: 'FrameEvidenceFrame',
+  TranscriptEvidenceIntent: 'TranscriptEvidenceIntent',
+  TranscriptEvidenceAttempt: 'TranscriptEvidenceAttempt',
+  TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -990,6 +993,80 @@ export const FrameEvidenceFrameScalarFieldEnum = {
 } as const
 
 export type FrameEvidenceFrameScalarFieldEnum = (typeof FrameEvidenceFrameScalarFieldEnum)[keyof typeof FrameEvidenceFrameScalarFieldEnum]
+
+
+export const TranscriptEvidenceIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  sourceSha256: 'sourceSha256',
+  sourceAuthorizationRevision: 'sourceAuthorizationRevision',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutStartMs: 'cutStartMs',
+  cutEndMs: 'cutEndMs',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  creatorProfileRevisionNo: 'creatorProfileRevisionNo',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  sourceContextRevisionNo: 'sourceContextRevisionNo',
+  cutPromptRevisionId: 'cutPromptRevisionId',
+  cutPromptRevisionNo: 'cutPromptRevisionNo',
+  contractVersion: 'contractVersion',
+  adapterVersion: 'adapterVersion',
+  language: 'language',
+  fixture: 'fixture',
+  state: 'state',
+  attemptCount: 'attemptCount',
+  retryBudget: 'retryBudget',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TranscriptEvidenceIntentScalarFieldEnum = (typeof TranscriptEvidenceIntentScalarFieldEnum)[keyof typeof TranscriptEvidenceIntentScalarFieldEnum]
+
+
+export const TranscriptEvidenceAttemptScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  workerId: 'workerId',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  workDeadlineAt: 'workDeadlineAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage'
+} as const
+
+export type TranscriptEvidenceAttemptScalarFieldEnum = (typeof TranscriptEvidenceAttemptScalarFieldEnum)[keyof typeof TranscriptEvidenceAttemptScalarFieldEnum]
+
+
+export const TranscriptEvidenceArtifactScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  objectKey: 'objectKey',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  adapterVersion: 'adapterVersion',
+  language: 'language',
+  segments: 'segments',
+  createdAt: 'createdAt'
+} as const
+
+export type TranscriptEvidenceArtifactScalarFieldEnum = (typeof TranscriptEvidenceArtifactScalarFieldEnum)[keyof typeof TranscriptEvidenceArtifactScalarFieldEnum]
 
 
 export const SortOrder = {

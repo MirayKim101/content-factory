@@ -377,6 +377,7 @@ export type MediaArtifactWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentListRelationFilter
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentListRelationFilter
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
   pipelineJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
@@ -415,6 +416,7 @@ export type MediaArtifactOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentOrderByRelationAggregateInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentOrderByRelationAggregateInput
   project?: Prisma.ProjectOrderByWithRelationInput
   source?: Prisma.VideoSourceOrderByWithRelationInput
   pipelineJob?: Prisma.PipelineJobOrderByWithRelationInput
@@ -457,6 +459,7 @@ export type MediaArtifactWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"MediaArtifact"> | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentListRelationFilter
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentListRelationFilter
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   source?: Prisma.XOR<Prisma.VideoSourceScalarRelationFilter, Prisma.VideoSourceWhereInput>
   pipelineJob?: Prisma.XOR<Prisma.PipelineJobNullableScalarRelationFilter, Prisma.PipelineJobWhereInput> | null
@@ -554,6 +557,7 @@ export type MediaArtifactCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -592,6 +596,7 @@ export type MediaArtifactUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -624,6 +629,7 @@ export type MediaArtifactUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -662,6 +668,7 @@ export type MediaArtifactUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -1110,6 +1117,20 @@ export type MediaArtifactUpdateOneRequiredWithoutFrameEvidenceInputsNestedInput 
   update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutFrameEvidenceInputsInput, Prisma.MediaArtifactUpdateWithoutFrameEvidenceInputsInput>, Prisma.MediaArtifactUncheckedUpdateWithoutFrameEvidenceInputsInput>
 }
 
+export type MediaArtifactCreateNestedOneWithoutTranscriptEvidenceInputsInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutTranscriptEvidenceInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutTranscriptEvidenceInputsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutTranscriptEvidenceInputsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+}
+
+export type MediaArtifactUpdateOneRequiredWithoutTranscriptEvidenceInputsNestedInput = {
+  create?: Prisma.XOR<Prisma.MediaArtifactCreateWithoutTranscriptEvidenceInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutTranscriptEvidenceInputsInput>
+  connectOrCreate?: Prisma.MediaArtifactCreateOrConnectWithoutTranscriptEvidenceInputsInput
+  upsert?: Prisma.MediaArtifactUpsertWithoutTranscriptEvidenceInputsInput
+  connect?: Prisma.MediaArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MediaArtifactUpdateToOneWithWhereWithoutTranscriptEvidenceInputsInput, Prisma.MediaArtifactUpdateWithoutTranscriptEvidenceInputsInput>, Prisma.MediaArtifactUncheckedUpdateWithoutTranscriptEvidenceInputsInput>
+}
+
 export type MediaArtifactCreateWithoutProjectInput = {
   id: string
   role: $Enums.MediaArtifactRole
@@ -1133,6 +1154,7 @@ export type MediaArtifactCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
@@ -1169,6 +1191,7 @@ export type MediaArtifactUncheckedCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -1257,6 +1280,7 @@ export type MediaArtifactCreateWithoutSourceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
@@ -1293,6 +1317,7 @@ export type MediaArtifactUncheckedCreateWithoutSourceInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -1351,6 +1376,7 @@ export type MediaArtifactCreateWithoutPipelineJobInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
@@ -1387,6 +1413,7 @@ export type MediaArtifactUncheckedCreateWithoutPipelineJobInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -1435,6 +1462,7 @@ export type MediaArtifactUpdateWithoutPipelineJobInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
@@ -1471,6 +1499,7 @@ export type MediaArtifactUncheckedUpdateWithoutPipelineJobInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -1503,6 +1532,7 @@ export type MediaArtifactCreateWithoutAssemblyRecipeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -1540,6 +1570,7 @@ export type MediaArtifactUncheckedCreateWithoutAssemblyRecipeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
@@ -1587,6 +1618,7 @@ export type MediaArtifactUpdateWithoutAssemblyRecipeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -1624,6 +1656,7 @@ export type MediaArtifactUncheckedUpdateWithoutAssemblyRecipeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
@@ -1655,6 +1688,7 @@ export type MediaArtifactCreateWithoutAssemblyRenderInputsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -1692,6 +1726,7 @@ export type MediaArtifactUncheckedCreateWithoutAssemblyRenderInputsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
@@ -1739,6 +1774,7 @@ export type MediaArtifactUpdateWithoutAssemblyRenderInputsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -1776,6 +1812,7 @@ export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderInputsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
@@ -1807,6 +1844,7 @@ export type MediaArtifactCreateWithoutAssemblyRenderResultInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -1844,6 +1882,7 @@ export type MediaArtifactUncheckedCreateWithoutAssemblyRenderResultInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -1891,6 +1930,7 @@ export type MediaArtifactUpdateWithoutAssemblyRenderResultInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -1928,6 +1968,7 @@ export type MediaArtifactUncheckedUpdateWithoutAssemblyRenderResultInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -1959,6 +2000,7 @@ export type MediaArtifactCreateWithoutEditorialPackageInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -1996,6 +2038,7 @@ export type MediaArtifactUncheckedCreateWithoutEditorialPackageInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
@@ -2043,6 +2086,7 @@ export type MediaArtifactUpdateWithoutEditorialPackageInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -2080,6 +2124,7 @@ export type MediaArtifactUncheckedUpdateWithoutEditorialPackageInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
@@ -2111,6 +2156,7 @@ export type MediaArtifactCreateWithoutEditorialApprovalsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -2148,6 +2194,7 @@ export type MediaArtifactUncheckedCreateWithoutEditorialApprovalsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -2195,6 +2242,7 @@ export type MediaArtifactUpdateWithoutEditorialApprovalsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -2232,6 +2280,7 @@ export type MediaArtifactUncheckedUpdateWithoutEditorialApprovalsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -2263,6 +2312,7 @@ export type MediaArtifactCreateWithoutEditorialExportResultInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -2300,6 +2350,7 @@ export type MediaArtifactUncheckedCreateWithoutEditorialExportResultInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -2347,6 +2398,7 @@ export type MediaArtifactUpdateWithoutEditorialExportResultInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -2384,6 +2436,7 @@ export type MediaArtifactUncheckedUpdateWithoutEditorialExportResultInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -2415,6 +2468,7 @@ export type MediaArtifactCreateWithoutCutEditorialPromptInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -2452,6 +2506,7 @@ export type MediaArtifactUncheckedCreateWithoutCutEditorialPromptInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -2499,6 +2554,7 @@ export type MediaArtifactUpdateWithoutCutEditorialPromptInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -2536,6 +2592,7 @@ export type MediaArtifactUncheckedUpdateWithoutCutEditorialPromptInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -2566,6 +2623,7 @@ export type MediaArtifactCreateWithoutFrameEvidenceInputsInput = {
   outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
   project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
   source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
   pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
@@ -2603,6 +2661,7 @@ export type MediaArtifactUncheckedCreateWithoutFrameEvidenceInputsInput = {
   outputFilename?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
   editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
@@ -2650,6 +2709,7 @@ export type MediaArtifactUpdateWithoutFrameEvidenceInputsInput = {
   outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
@@ -2687,6 +2747,163 @@ export type MediaArtifactUncheckedUpdateWithoutFrameEvidenceInputsInput = {
   outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactCreateWithoutTranscriptEvidenceInputsInput = {
+  id: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutResultArtifactInput
+  project: Prisma.ProjectCreateNestedOneWithoutArtifactsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutArtifactsInput
+  pipelineJob?: Prisma.PipelineJobCreateNestedOneWithoutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactUncheckedCreateWithoutTranscriptEvidenceInputsInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  role: $Enums.MediaArtifactRole
+  status?: $Enums.MediaArtifactStatus
+  objectKey: string
+  storageEtag?: string | null
+  storageVersion?: string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupRequestedAt?: Date | string | null
+  cleanupCompletedAt?: Date | string | null
+  sizeBytes: bigint | number
+  sha256: string
+  contentType: string
+  lineageSourceId: string
+  lineageSourceVersion: number
+  recipeVersion: string
+  pipelineJobId?: string | null
+  ffmpegVersion?: string | null
+  outputFilename?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutCutResultArtifactInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutResultArtifactInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUncheckedCreateNestedOneWithoutArtifactInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutRenderArtifactInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutArtifactInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutResultArtifactInput
+}
+
+export type MediaArtifactCreateOrConnectWithoutTranscriptEvidenceInputsInput = {
+  where: Prisma.MediaArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutTranscriptEvidenceInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutTranscriptEvidenceInputsInput>
+}
+
+export type MediaArtifactUpsertWithoutTranscriptEvidenceInputsInput = {
+  update: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutTranscriptEvidenceInputsInput, Prisma.MediaArtifactUncheckedUpdateWithoutTranscriptEvidenceInputsInput>
+  create: Prisma.XOR<Prisma.MediaArtifactCreateWithoutTranscriptEvidenceInputsInput, Prisma.MediaArtifactUncheckedCreateWithoutTranscriptEvidenceInputsInput>
+  where?: Prisma.MediaArtifactWhereInput
+}
+
+export type MediaArtifactUpdateToOneWithWhereWithoutTranscriptEvidenceInputsInput = {
+  where?: Prisma.MediaArtifactWhereInput
+  data: Prisma.XOR<Prisma.MediaArtifactUpdateWithoutTranscriptEvidenceInputsInput, Prisma.MediaArtifactUncheckedUpdateWithoutTranscriptEvidenceInputsInput>
+}
+
+export type MediaArtifactUpdateWithoutTranscriptEvidenceInputsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutCutResultArtifactNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutResultArtifactNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneWithoutArtifactNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutRenderArtifactNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutArtifactNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutResultArtifactNestedInput
+}
+
+export type MediaArtifactUncheckedUpdateWithoutTranscriptEvidenceInputsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMediaArtifactRoleFieldUpdateOperationsInput | $Enums.MediaArtifactRole
+  status?: Prisma.EnumMediaArtifactStatusFieldUpdateOperationsInput | $Enums.MediaArtifactStatus
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  lineageSourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ffmpegVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outputFilename?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -2745,6 +2962,7 @@ export type MediaArtifactUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
@@ -2781,6 +2999,7 @@ export type MediaArtifactUncheckedUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -2865,6 +3084,7 @@ export type MediaArtifactUpdateWithoutSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutResultArtifactNestedInput
   project?: Prisma.ProjectUpdateOneRequiredWithoutArtifactsNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneWithoutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutCutResultArtifactNestedInput
@@ -2901,6 +3121,7 @@ export type MediaArtifactUncheckedUpdateWithoutSourceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
   editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutCutResultArtifactNestedInput
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutResultArtifactNestedInput
@@ -2943,12 +3164,14 @@ export type MediaArtifactUncheckedUpdateManyWithoutSourceInput = {
 
 export type MediaArtifactCountOutputType = {
   frameEvidenceInputs: number
+  transcriptEvidenceInputs: number
   assemblyRenderInputs: number
   editorialApprovals: number
 }
 
 export type MediaArtifactCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   frameEvidenceInputs?: boolean | MediaArtifactCountOutputTypeCountFrameEvidenceInputsArgs
+  transcriptEvidenceInputs?: boolean | MediaArtifactCountOutputTypeCountTranscriptEvidenceInputsArgs
   assemblyRenderInputs?: boolean | MediaArtifactCountOutputTypeCountAssemblyRenderInputsArgs
   editorialApprovals?: boolean | MediaArtifactCountOutputTypeCountEditorialApprovalsArgs
 }
@@ -2968,6 +3191,13 @@ export type MediaArtifactCountOutputTypeDefaultArgs<ExtArgs extends runtime.Type
  */
 export type MediaArtifactCountOutputTypeCountFrameEvidenceInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.FrameEvidenceIntentWhereInput
+}
+
+/**
+ * MediaArtifactCountOutputType without action
+ */
+export type MediaArtifactCountOutputTypeCountTranscriptEvidenceInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TranscriptEvidenceIntentWhereInput
 }
 
 /**
@@ -3011,6 +3241,7 @@ export type MediaArtifactSelect<ExtArgs extends runtime.Types.Extensions.Interna
   createdAt?: boolean
   updatedAt?: boolean
   frameEvidenceInputs?: boolean | Prisma.MediaArtifact$frameEvidenceInputsArgs<ExtArgs>
+  transcriptEvidenceInputs?: boolean | Prisma.MediaArtifact$transcriptEvidenceInputsArgs<ExtArgs>
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
   pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
@@ -3114,6 +3345,7 @@ export type MediaArtifactSelectScalar = {
 export type MediaArtifactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "role" | "status" | "objectKey" | "storageEtag" | "storageVersion" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupRequestedAt" | "cleanupCompletedAt" | "sizeBytes" | "sha256" | "contentType" | "lineageSourceId" | "lineageSourceVersion" | "recipeVersion" | "pipelineJobId" | "ffmpegVersion" | "outputFilename" | "createdAt" | "updatedAt", ExtArgs["result"]["mediaArtifact"]>
 export type MediaArtifactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   frameEvidenceInputs?: boolean | Prisma.MediaArtifact$frameEvidenceInputsArgs<ExtArgs>
+  transcriptEvidenceInputs?: boolean | Prisma.MediaArtifact$transcriptEvidenceInputsArgs<ExtArgs>
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
   pipelineJob?: boolean | Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>
@@ -3141,6 +3373,7 @@ export type $MediaArtifactPayload<ExtArgs extends runtime.Types.Extensions.Inter
   name: "MediaArtifact"
   objects: {
     frameEvidenceInputs: Prisma.$FrameEvidenceIntentPayload<ExtArgs>[]
+    transcriptEvidenceInputs: Prisma.$TranscriptEvidenceIntentPayload<ExtArgs>[]
     project: Prisma.$ProjectPayload<ExtArgs>
     source: Prisma.$VideoSourcePayload<ExtArgs>
     pipelineJob: Prisma.$PipelineJobPayload<ExtArgs> | null
@@ -3572,6 +3805,7 @@ readonly fields: MediaArtifactFieldRefs;
 export interface Prisma__MediaArtifactClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   frameEvidenceInputs<T extends Prisma.MediaArtifact$frameEvidenceInputsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$frameEvidenceInputsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FrameEvidenceIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  transcriptEvidenceInputs<T extends Prisma.MediaArtifact$transcriptEvidenceInputsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$transcriptEvidenceInputsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TranscriptEvidenceIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   source<T extends Prisma.VideoSourceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSourceDefaultArgs<ExtArgs>>): Prisma.Prisma__VideoSourceClient<runtime.Types.Result.GetResult<Prisma.$VideoSourcePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   pipelineJob<T extends Prisma.MediaArtifact$pipelineJobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifact$pipelineJobArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -4057,6 +4291,30 @@ export type MediaArtifact$frameEvidenceInputsArgs<ExtArgs extends runtime.Types.
   take?: number
   skip?: number
   distinct?: Prisma.FrameEvidenceIntentScalarFieldEnum | Prisma.FrameEvidenceIntentScalarFieldEnum[]
+}
+
+/**
+ * MediaArtifact.transcriptEvidenceInputs
+ */
+export type MediaArtifact$transcriptEvidenceInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TranscriptEvidenceIntent
+   */
+  select?: Prisma.TranscriptEvidenceIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TranscriptEvidenceIntent
+   */
+  omit?: Prisma.TranscriptEvidenceIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TranscriptEvidenceIntentInclude<ExtArgs> | null
+  where?: Prisma.TranscriptEvidenceIntentWhereInput
+  orderBy?: Prisma.TranscriptEvidenceIntentOrderByWithRelationInput | Prisma.TranscriptEvidenceIntentOrderByWithRelationInput[]
+  cursor?: Prisma.TranscriptEvidenceIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TranscriptEvidenceIntentScalarFieldEnum | Prisma.TranscriptEvidenceIntentScalarFieldEnum[]
 }
 
 /**

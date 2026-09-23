@@ -266,3 +266,18 @@ export type FrameEvidenceResult = Prisma.FrameEvidenceResultModel
  * One accepted frame bound to the winning attempt output and ordinal.
  */
 export type FrameEvidenceFrame = Prisma.FrameEvidenceFrameModel
+/**
+ * Model TranscriptEvidenceIntent
+ * Immutable exact cut/context capture and durable state for one transcript request.
+ */
+export type TranscriptEvidenceIntent = Prisma.TranscriptEvidenceIntentModel
+/**
+ * Model TranscriptEvidenceAttempt
+ * Fenced worker attempt. An expired lease may be reclaimed until retryBudget is exhausted.
+ */
+export type TranscriptEvidenceAttempt = Prisma.TranscriptEvidenceAttemptModel
+/**
+ * Model TranscriptEvidenceArtifact
+ * Private immutable transcript bytes and normalized timestamp metadata.
+ */
+export type TranscriptEvidenceArtifact = Prisma.TranscriptEvidenceArtifactModel

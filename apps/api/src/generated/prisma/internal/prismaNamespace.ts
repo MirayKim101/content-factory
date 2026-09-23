@@ -441,7 +441,10 @@ export const ModelName = {
   FrameEvidenceAttempt: 'FrameEvidenceAttempt',
   FrameEvidenceAttemptOutput: 'FrameEvidenceAttemptOutput',
   FrameEvidenceResult: 'FrameEvidenceResult',
-  FrameEvidenceFrame: 'FrameEvidenceFrame'
+  FrameEvidenceFrame: 'FrameEvidenceFrame',
+  TranscriptEvidenceIntent: 'TranscriptEvidenceIntent',
+  TranscriptEvidenceAttempt: 'TranscriptEvidenceAttempt',
+  TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -457,7 +460,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3791,6 +3794,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TranscriptEvidenceIntent: {
+      payload: Prisma.$TranscriptEvidenceIntentPayload<ExtArgs>
+      fields: Prisma.TranscriptEvidenceIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TranscriptEvidenceIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TranscriptEvidenceIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.TranscriptEvidenceIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TranscriptEvidenceIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>
+        }
+        findMany: {
+          args: Prisma.TranscriptEvidenceIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>[]
+        }
+        create: {
+          args: Prisma.TranscriptEvidenceIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>
+        }
+        createMany: {
+          args: Prisma.TranscriptEvidenceIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TranscriptEvidenceIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.TranscriptEvidenceIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>
+        }
+        update: {
+          args: Prisma.TranscriptEvidenceIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.TranscriptEvidenceIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TranscriptEvidenceIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TranscriptEvidenceIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.TranscriptEvidenceIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.TranscriptEvidenceIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTranscriptEvidenceIntent>
+        }
+        groupBy: {
+          args: Prisma.TranscriptEvidenceIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TranscriptEvidenceIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TranscriptEvidenceIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TranscriptEvidenceIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    TranscriptEvidenceAttempt: {
+      payload: Prisma.$TranscriptEvidenceAttemptPayload<ExtArgs>
+      fields: Prisma.TranscriptEvidenceAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TranscriptEvidenceAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TranscriptEvidenceAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.TranscriptEvidenceAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TranscriptEvidenceAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.TranscriptEvidenceAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.TranscriptEvidenceAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.TranscriptEvidenceAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TranscriptEvidenceAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.TranscriptEvidenceAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>
+        }
+        update: {
+          args: Prisma.TranscriptEvidenceAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.TranscriptEvidenceAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TranscriptEvidenceAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TranscriptEvidenceAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.TranscriptEvidenceAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.TranscriptEvidenceAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTranscriptEvidenceAttempt>
+        }
+        groupBy: {
+          args: Prisma.TranscriptEvidenceAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TranscriptEvidenceAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TranscriptEvidenceAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TranscriptEvidenceAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
+    TranscriptEvidenceArtifact: {
+      payload: Prisma.$TranscriptEvidenceArtifactPayload<ExtArgs>
+      fields: Prisma.TranscriptEvidenceArtifactFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TranscriptEvidenceArtifactFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TranscriptEvidenceArtifactFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>
+        }
+        findFirst: {
+          args: Prisma.TranscriptEvidenceArtifactFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TranscriptEvidenceArtifactFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>
+        }
+        findMany: {
+          args: Prisma.TranscriptEvidenceArtifactFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>[]
+        }
+        create: {
+          args: Prisma.TranscriptEvidenceArtifactCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>
+        }
+        createMany: {
+          args: Prisma.TranscriptEvidenceArtifactCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TranscriptEvidenceArtifactCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>[]
+        }
+        delete: {
+          args: Prisma.TranscriptEvidenceArtifactDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>
+        }
+        update: {
+          args: Prisma.TranscriptEvidenceArtifactUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>
+        }
+        deleteMany: {
+          args: Prisma.TranscriptEvidenceArtifactDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TranscriptEvidenceArtifactUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TranscriptEvidenceArtifactUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>[]
+        }
+        upsert: {
+          args: Prisma.TranscriptEvidenceArtifactUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TranscriptEvidenceArtifactPayload>
+        }
+        aggregate: {
+          args: Prisma.TranscriptEvidenceArtifactAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTranscriptEvidenceArtifact>
+        }
+        groupBy: {
+          args: Prisma.TranscriptEvidenceArtifactGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TranscriptEvidenceArtifactGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TranscriptEvidenceArtifactCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TranscriptEvidenceArtifactCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4708,6 +4933,80 @@ export const FrameEvidenceFrameScalarFieldEnum = {
 export type FrameEvidenceFrameScalarFieldEnum = (typeof FrameEvidenceFrameScalarFieldEnum)[keyof typeof FrameEvidenceFrameScalarFieldEnum]
 
 
+export const TranscriptEvidenceIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  sourceSha256: 'sourceSha256',
+  sourceAuthorizationRevision: 'sourceAuthorizationRevision',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutStartMs: 'cutStartMs',
+  cutEndMs: 'cutEndMs',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  creatorProfileRevisionNo: 'creatorProfileRevisionNo',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  sourceContextRevisionNo: 'sourceContextRevisionNo',
+  cutPromptRevisionId: 'cutPromptRevisionId',
+  cutPromptRevisionNo: 'cutPromptRevisionNo',
+  contractVersion: 'contractVersion',
+  adapterVersion: 'adapterVersion',
+  language: 'language',
+  fixture: 'fixture',
+  state: 'state',
+  attemptCount: 'attemptCount',
+  retryBudget: 'retryBudget',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TranscriptEvidenceIntentScalarFieldEnum = (typeof TranscriptEvidenceIntentScalarFieldEnum)[keyof typeof TranscriptEvidenceIntentScalarFieldEnum]
+
+
+export const TranscriptEvidenceAttemptScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  workerId: 'workerId',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  workDeadlineAt: 'workDeadlineAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage'
+} as const
+
+export type TranscriptEvidenceAttemptScalarFieldEnum = (typeof TranscriptEvidenceAttemptScalarFieldEnum)[keyof typeof TranscriptEvidenceAttemptScalarFieldEnum]
+
+
+export const TranscriptEvidenceArtifactScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  objectKey: 'objectKey',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  adapterVersion: 'adapterVersion',
+  language: 'language',
+  segments: 'segments',
+  createdAt: 'createdAt'
+} as const
+
+export type TranscriptEvidenceArtifactScalarFieldEnum = (typeof TranscriptEvidenceArtifactScalarFieldEnum)[keyof typeof TranscriptEvidenceArtifactScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -5188,6 +5487,34 @@ export type EnumEditorialProvenanceModeFieldRefInput<$PrismaModel> = FieldRefInp
 export type ListEnumEditorialProvenanceModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorialProvenanceMode[]'>
     
 
+
+/**
+ * Reference to a field of type 'TranscriptIntentState'
+ */
+export type EnumTranscriptIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptIntentState'>
+
+
+
+/**
+ * Reference to a field of type 'TranscriptIntentState[]'
+ */
+export type ListEnumTranscriptIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptIntentState[]'>
+
+
+
+/**
+ * Reference to a field of type 'TranscriptAttemptState'
+ */
+export type EnumTranscriptAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptAttemptState'>
+
+
+
+/**
+ * Reference to a field of type 'TranscriptAttemptState[]'
+ */
+export type ListEnumTranscriptAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptAttemptState[]'>
+
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -5384,6 +5711,9 @@ export type GlobalOmitConfig = {
   frameEvidenceAttemptOutput?: Prisma.FrameEvidenceAttemptOutputOmit
   frameEvidenceResult?: Prisma.FrameEvidenceResultOmit
   frameEvidenceFrame?: Prisma.FrameEvidenceFrameOmit
+  transcriptEvidenceIntent?: Prisma.TranscriptEvidenceIntentOmit
+  transcriptEvidenceAttempt?: Prisma.TranscriptEvidenceAttemptOmit
+  transcriptEvidenceArtifact?: Prisma.TranscriptEvidenceArtifactOmit
 }
 
 /* Types for Logging */
@@ -5446,4 +5776,3 @@ export type PrismaAction =
  * `PrismaClient` proxy available in interactive transactions.
  */
 export type TransactionClient = Omit<DefaultPrismaClient, runtime.ITXClientDenyList>
-

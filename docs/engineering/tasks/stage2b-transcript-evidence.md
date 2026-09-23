@@ -1,6 +1,6 @@
 # Stage 2B-3 — transcript evidence and local AI-worker foundation
 
-Status: foundation checkpoint; REST/worker wiring pending
+Status: persistence checkpoint; REST/worker wiring and live acceptance pending
 
 This slice adds a provider-neutral transcript evidence boundary after the
 accepted sparse-frame slice. It keeps the existing manual editorial path
@@ -13,7 +13,8 @@ available when no transcript adapter is configured.
 2. PostgreSQL owns the intent, immutable input capture, attempt state, segment
    metadata, checksums, adapter version and controlled terminal failure.
 3. Transcript work is delivered asynchronously to an independently runnable
-   `ai-worker` queue. HTTP never performs transcription.
+   `ai-worker` queue. HTTP never performs transcription. **Pending:** queue
+   dispatch and worker integration.
 4. The first adapter is a deterministic local/manual adapter. It accepts a
    bounded operator transcript fixture for local acceptance and never calls an
    external provider or requires credentials.
@@ -27,6 +28,11 @@ available when no transcript adapter is configured.
 7. A large-slice acceptance test covers create, async delivery, replay, READY
    detail, segment ordering, private content checksum/range and manual ZIP
    checksum preservation.
+
+Current checkpoint: PostgreSQL schema, immutable capture, idempotency registry,
+lease/attempt state machine and authorization-aware repository are implemented;
+the HTTP/OpenAPI surface, private object delivery, worker queue and live
+acceptance remain to be wired.
 
 Out of scope: external speech provider selection, automatic highlight
 detection, factual research, text/image generation and Stage 3 publication.
