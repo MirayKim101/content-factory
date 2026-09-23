@@ -3,6 +3,7 @@ export * from "#frame-evidence";
 export * from "#frame-policy";
 export * from "#transcript";
 export * from "#research";
+export * from "#thumbnail";
 export const MEDIA_JOB_SCHEMA_VERSION = 1 as const;
 
 export const MONTAGE_PROBE_RECIPE_VERSION = "montage-asset-probe-v1" as const;

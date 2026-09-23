@@ -22,6 +22,7 @@
     "#frame-evidence": "./src/frame-evidence.ts",
     "#frame-policy": "./src/frame-policy.ts",
     "#transcript": "./src/transcript.ts",
-    "#research": "./src/research.ts"
+    "#research": "./src/research.ts",
+    "#thumbnail": "./src/thumbnail.ts"
   }
 }
