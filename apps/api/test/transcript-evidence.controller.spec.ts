@@ -21,9 +21,11 @@ describe("TranscriptEvidenceController", () => {
       }),
     };
     const dispatch = { dispatch: vi.fn().mockResolvedValue(undefined) };
+    const storage = { readObject: vi.fn() };
     const controller = new TranscriptEvidenceController(
       repository as never,
       dispatch,
+      storage as never,
     );
     const result = await controller.create(cutJobId, "transcript-test-1", {
       sourceContextRevisionId: contextId,
@@ -39,9 +41,11 @@ describe("TranscriptEvidenceController", () => {
 
   it("rejects malformed idempotency keys before persistence", async () => {
     const repository = { create: vi.fn(), detail: vi.fn() };
-    const controller = new TranscriptEvidenceController(repository as never, {
-      dispatch: vi.fn(),
-    });
+    const controller = new TranscriptEvidenceController(
+      repository as never,
+      { dispatch: vi.fn() },
+      { readObject: vi.fn() } as never,
+    );
     await expect(
       controller.create(cutJobId, "bad", {} as never),
     ).rejects.toMatchObject({ response: { code: "IDEMPOTENCY_KEY_INVALID" } });

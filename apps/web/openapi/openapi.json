@@ -8855,6 +8855,68 @@
         },
         "tags": ["transcript-evidence"]
       }
+    },
+    "/api/v1/transcript-evidence/{intentId}/content": {
+      "get": {
+        "operationId": "TranscriptEvidenceController_getContent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["transcript-evidence"]
+      },
+      "head": {
+        "operationId": "TranscriptEvidenceController_headContent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["transcript-evidence"]
+      }
     }
   },
   "servers": [],

@@ -11,7 +11,10 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Head,
+  Res,
 } from "@nestjs/common";
+import type { ServerResponse } from "node:http";
 import {
   ApiAcceptedResponse,
   ApiBody,
@@ -37,6 +40,11 @@ import {
   TranscriptEvidenceDto,
   TranscriptEvidenceErrorResponseDto,
 } from "./transcript-evidence.dto.js";
+import {
+  CREATOR_CONTEXT_STORAGE,
+  type CreatorContextStorage,
+} from "../application/creator-context-storage.port.js";
+import { ObjectRangeNotSatisfiableError } from "../../projects/application/object-storage.port.js";
 
 const uuid = new ParseUUIDPipe({ version: "4" });
 
@@ -50,6 +58,8 @@ export class TranscriptEvidenceController {
     private readonly repository: TranscriptEvidenceRepository,
     @Inject(TRANSCRIPT_EVIDENCE_DISPATCH)
     private readonly dispatch: TranscriptEvidenceDispatch,
+    @Inject(CREATOR_CONTEXT_STORAGE)
+    private readonly storage: CreatorContextStorage,
   ) {}
 
   @Post("pipeline-jobs/:cutJobId/transcript-evidence")
@@ -116,6 +126,67 @@ export class TranscriptEvidenceController {
     const value = await this.repository.detail(intentId);
     if (!value) throw new NotFoundException({ code: "TRANSCRIPT_NOT_FOUND" });
     return value;
+  }
+
+  @Head("transcript-evidence/:intentId/content")
+  async headContent(
+    @Param("intentId", uuid) intentId: string,
+    @Headers("range") range: string | undefined,
+    @Res() response: ServerResponse,
+  ): Promise<void> {
+    await this.streamContent(intentId, range, response, true);
+  }
+
+  @Get("transcript-evidence/:intentId/content")
+  async getContent(
+    @Param("intentId", uuid) intentId: string,
+    @Headers("range") range: string | undefined,
+    @Res() response: ServerResponse,
+  ): Promise<void> {
+    await this.streamContent(intentId, range, response, false);
+  }
+
+  private async streamContent(
+    intentId: string,
+    range: string | undefined,
+    response: ServerResponse,
+    head: boolean,
+  ): Promise<void> {
+    const found = await this.repository.content(intentId);
+    if (!found)
+      throw new NotFoundException({ code: "TRANSCRIPT_CONTENT_NOT_FOUND" });
+    if (range && !/^bytes=(\d*)-(\d*)$/.test(range))
+      throw new BadRequestException({ code: "RANGE_INVALID" });
+    let stored;
+    try {
+      stored = await this.storage.readObject(found.objectKey, range);
+    } catch (error) {
+      if (error instanceof ObjectRangeNotSatisfiableError) {
+        response.statusCode = 416;
+        response.setHeader("Content-Range", `bytes */${found.sizeBytes}`);
+        response.end();
+        return;
+      }
+      throw error;
+    }
+    if (!stored)
+      throw new NotFoundException({ code: "TRANSCRIPT_CONTENT_NOT_FOUND" });
+    response.statusCode = stored.contentRange ? 206 : 200;
+    response.setHeader("Content-Type", "application/json");
+    response.setHeader("Content-Length", String(stored.contentLength));
+    response.setHeader("Accept-Ranges", "bytes");
+    response.setHeader("Cache-Control", "private, no-store");
+    response.setHeader("ETag", `"${found.sha256}"`);
+    if (stored.contentRange)
+      response.setHeader("Content-Range", stored.contentRange);
+    if (head) {
+      stored.body.destroy();
+      response.end();
+      return;
+    }
+    stored.body.on("error", () => response.destroy());
+    response.once("close", () => stored.body.destroy());
+    stored.body.pipe(response);
   }
 }
 
