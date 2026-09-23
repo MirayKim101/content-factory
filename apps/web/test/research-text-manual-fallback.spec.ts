@@ -1,7 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
-import ResearchTextManualFallback from "~/features/research-text-suggestions/ui/research-text-manual-fallback.vue";
+import ResearchTextManualFallback from "~/widgets/editorial-package/ui/research-text-manual-fallback.vue";
 
 describe("ResearchTextManualFallback", () => {
   it("keeps the manual metadata path explicit until the research OpenAPI contract exists", () => {
