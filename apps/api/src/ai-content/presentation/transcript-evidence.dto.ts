@@ -1,23 +1,61 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsInt,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from "class-validator";
 
 export class TranscriptSegmentDto {
-  @ApiProperty({ type: Number, minimum: 0 }) ordinal!: number;
-  @ApiProperty({ type: Number, minimum: 0 }) startMs!: number;
-  @ApiProperty({ type: Number, minimum: 1 }) endMs!: number;
-  @ApiProperty({ type: String, minLength: 1, maxLength: 20_000 }) text!: string;
+  @IsInt()
+  @Min(0)
+  @ApiProperty({ type: Number, minimum: 0 })
+  ordinal!: number;
+  @IsInt()
+  @Min(0)
+  @ApiProperty({ type: Number, minimum: 0 })
+  startMs!: number;
+  @IsInt()
+  @Min(1)
+  @ApiProperty({ type: Number, minimum: 1 })
+  endMs!: number;
+  @IsString()
+  @MaxLength(20_000)
+  @ApiProperty({ type: String, minLength: 1, maxLength: 20_000 })
+  text!: string;
 }
 
 export class LocalTranscriptFixtureDto {
-  @ApiProperty({ type: String, example: "ru" }) language!: string;
+  @IsString()
+  @MaxLength(16)
+  @ApiProperty({ type: String, example: "ru" })
+  language!: string;
+  @IsArray()
+  @ArrayMaxSize(10_000)
+  @ValidateNested({ each: true })
+  @Type(() => TranscriptSegmentDto)
   @ApiProperty({ type: [TranscriptSegmentDto], maxItems: 10_000 })
   segments!: TranscriptSegmentDto[];
 }
 
 export class CreateTranscriptEvidenceDto {
+  @IsUUID("4")
   @ApiProperty({ type: String, format: "uuid" })
   sourceContextRevisionId!: string;
-  @ApiProperty({ type: String, format: "uuid" }) cutPromptRevisionId!: string;
-  @ApiProperty({ type: String, example: "ru" }) language!: string;
+  @IsUUID("4")
+  @ApiProperty({ type: String, format: "uuid" })
+  cutPromptRevisionId!: string;
+  @IsString()
+  @MaxLength(16)
+  @ApiProperty({ type: String, example: "ru" })
+  language!: string;
+  @ValidateNested()
+  @Type(() => LocalTranscriptFixtureDto)
   @ApiProperty({ type: LocalTranscriptFixtureDto })
   fixture!: LocalTranscriptFixtureDto;
 }
