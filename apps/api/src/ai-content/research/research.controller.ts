@@ -20,6 +20,7 @@ import {
 } from "../application/transcript-evidence-repository.port.js";
 import { LocalResearchAdapter } from "./local-research-adapter.js";
 import { CreateResearchSuggestionDto } from "./research.dto.js";
+import { ResearchSuggestionResponseDto } from "./research-response.dto.js";
 
 @ApiTags("research-text")
 @Controller("api/v1")
@@ -34,7 +35,10 @@ export class ResearchController {
   @Post("transcript-evidence/:intentId/research-suggestions")
   @ApiParam({ name: "intentId", format: "uuid", type: String })
   @ApiBody({ type: CreateResearchSuggestionDto })
-  @ApiAcceptedResponse({ description: "Deterministic cited local suggestion." })
+  @ApiAcceptedResponse({
+    description: "Deterministic cited local suggestion.",
+    type: ResearchSuggestionResponseDto,
+  })
   async suggest(
     @Param("intentId", new ParseUUIDPipe({ version: "4" })) intentId: string,
     @Body() body: CreateResearchSuggestionDto,

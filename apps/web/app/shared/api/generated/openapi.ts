@@ -2051,6 +2051,37 @@ export interface components {
       /** @example https://example.com/source */
       url: string;
     };
+    ResearchCitationResponseDto: {
+      excerpt: string;
+      publisher: string;
+      /** Format: date-time */
+      retrievedAt: string;
+      title: string;
+      url: string;
+    };
+    ResearchSnapshotResponseDto: {
+      adapterVersion: string;
+      citations: components["schemas"]["ResearchCitationResponseDto"][];
+      /** @enum {string} */
+      contractVersion: "editorial-research-v1";
+      /** @enum {string} */
+      freshness: "CURRENT" | "STALE";
+      query: string;
+    };
+    ResearchSuggestionResponseDto: {
+      /** Format: uuid */
+      intentId: string;
+      snapshot: components["schemas"]["ResearchSnapshotResponseDto"];
+      suggestion: components["schemas"]["ResearchTextSuggestionResponseDto"];
+    };
+    ResearchTextSuggestionResponseDto: {
+      basisVersion: string;
+      description: string;
+      /** @enum {string} */
+      mode: "AI_ASSISTED" | "MIXED";
+      tags: string[];
+      title: string;
+    };
     RightsResponseDto: {
       /** Format: date-time */
       confirmedAt: string;
@@ -5193,7 +5224,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": components["schemas"]["ResearchSuggestionResponseDto"];
+        };
       };
     };
   };

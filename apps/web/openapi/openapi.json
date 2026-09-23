@@ -3992,6 +3992,101 @@
         "required": ["url", "title", "publisher", "retrievedAt", "excerpt"],
         "type": "object"
       },
+      "ResearchCitationResponseDto": {
+        "properties": {
+          "excerpt": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "retrievedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["url", "title", "publisher", "retrievedAt", "excerpt"],
+        "type": "object"
+      },
+      "ResearchSnapshotResponseDto": {
+        "properties": {
+          "adapterVersion": {
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchCitationResponseDto"
+            },
+            "type": "array"
+          },
+          "contractVersion": {
+            "enum": ["editorial-research-v1"],
+            "type": "string"
+          },
+          "freshness": {
+            "enum": ["CURRENT", "STALE"],
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "contractVersion",
+          "adapterVersion",
+          "query",
+          "freshness",
+          "citations"
+        ],
+        "type": "object"
+      },
+      "ResearchSuggestionResponseDto": {
+        "properties": {
+          "intentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ResearchSnapshotResponseDto"
+          },
+          "suggestion": {
+            "$ref": "#/components/schemas/ResearchTextSuggestionResponseDto"
+          }
+        },
+        "required": ["intentId", "snapshot", "suggestion"],
+        "type": "object"
+      },
+      "ResearchTextSuggestionResponseDto": {
+        "properties": {
+          "basisVersion": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mode": {
+            "enum": ["AI_ASSISTED", "MIXED"],
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": ["title", "description", "tags", "basisVersion", "mode"],
+        "type": "object"
+      },
       "RightsResponseDto": {
         "properties": {
           "confirmedAt": {
@@ -8985,6 +9080,13 @@
         },
         "responses": {
           "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchSuggestionResponseDto"
+                }
+              }
+            },
             "description": "Deterministic cited local suggestion."
           }
         },
