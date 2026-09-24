@@ -11,16 +11,23 @@ describe("LocalResearchAdapter", () => {
       freshness: "CURRENT" as const,
       citations: [
         {
+          id: "citation-1",
           url: "https://example.com",
           title: "Source",
           publisher: "Example",
-          retrievedAt: "2026-09-23T00:00:00.000Z",
+          accessedAt: "2026-09-23T00:00:00.000Z",
           excerpt: "Evidence",
+          checksum: "a".repeat(64),
         },
       ],
     };
-    const result = new LocalResearchAdapter().suggest({ snapshot, sourceTitle: "Stream" });
-    expect(result.mode).toBe("AI_ASSISTED");
+    const result = new LocalResearchAdapter().suggest({
+      snapshot,
+      sourceTitle: "Stream",
+      suggestionId: "suggestion-1",
+    });
+    expect(result.id).toBe("suggestion-1");
+    expect(result.citationIds).toEqual(["citation-1"]);
     expect(result.basisVersion).toContain(RESEARCH_CONTRACT_VERSION);
     expect(result.tags).toEqual(["Example"]);
   });

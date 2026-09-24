@@ -5,7 +5,7 @@ import {
 } from "@content-factory/contracts";
 
 describe("research contract", () => {
-  it("accepts cited http snapshots and rejects non-web citations", () => {
+  it("accepts cited HTTPS snapshots and rejects non-HTTPS citations", () => {
     const snapshot = {
       contractVersion: RESEARCH_CONTRACT_VERSION,
       adapterVersion: "local-manual-research-v1",
@@ -13,11 +13,13 @@ describe("research contract", () => {
       freshness: "CURRENT" as const,
       citations: [
         {
+          id: "citation-1",
           url: "https://example.com/source",
           title: "Source",
           publisher: "Example",
-          retrievedAt: "2026-09-23T00:00:00.000Z",
+          accessedAt: "2026-09-23T00:00:00.000Z",
           excerpt: "A bounded source excerpt.",
+          checksum: "a".repeat(64),
         },
       ],
     };
@@ -26,6 +28,12 @@ describe("research contract", () => {
       validateResearchSnapshot({
         ...snapshot,
         citations: [{ ...snapshot.citations[0], url: "file:///secret" }],
+      }),
+    ).toThrow("RESEARCH_CITATION_INVALID");
+    expect(() =>
+      validateResearchSnapshot({
+        ...snapshot,
+        citations: [{ ...snapshot.citations[0], url: "http://example.com" }],
       }),
     ).toThrow("RESEARCH_CITATION_INVALID");
   });

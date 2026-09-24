@@ -3,19 +3,28 @@ import { z } from "zod";
 import { parseApiBasePath } from "~/shared/config/api-config";
 
 const citationSchema = z.object({
-  url: z.url(),
+  id: z.uuid(),
+  url: z.url().refine((value) => value.startsWith("https://")),
   title: z.string(),
   publisher: z.string(),
-  retrievedAt: z.iso.datetime(),
+  publishedAt: z.iso.datetime().nullable(),
+  accessedAt: z.iso.datetime(),
   excerpt: z.string(),
+  checksum: z.string().regex(/^[a-f0-9]{64}$/),
 });
 
+const citationInputSchema = citationSchema.omit({ id: true, checksum: true });
+
 const suggestionSchema = z.object({
+  id: z.uuid(),
   title: z.string(),
   description: z.string(),
   tags: z.array(z.string()),
   basisVersion: z.string(),
-  mode: z.enum(["AI_ASSISTED", "MIXED"]),
+  citationIds: z.array(z.uuid()),
+  claims: z.array(
+    z.object({ text: z.string(), citationIds: z.array(z.uuid()) }),
+  ),
 });
 
 const responseSchema = z.object({
@@ -30,7 +39,7 @@ const responseSchema = z.object({
   suggestion: suggestionSchema,
 });
 
-export type ResearchCitation = z.infer<typeof citationSchema>;
+export type ResearchCitation = z.infer<typeof citationInputSchema>;
 export type ResearchSuggestionResponse = z.infer<typeof responseSchema>;
 
 export function createResearchTextApi(

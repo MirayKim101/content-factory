@@ -1,13 +1,17 @@
 /** Provider-neutral cited research and editable text suggestion boundary. */
 export const RESEARCH_CONTRACT_VERSION = "editorial-research-v1" as const;
-export const LOCAL_RESEARCH_ADAPTER_VERSION = "local-manual-research-v1" as const;
+export const LOCAL_RESEARCH_ADAPTER_VERSION =
+  "local-manual-research-v1" as const;
 
 export type ResearchCitation = Readonly<{
+  id: string;
   url: string;
   title: string;
   publisher: string;
-  retrievedAt: string;
+  publishedAt?: string | null;
+  accessedAt: string;
   excerpt: string;
+  checksum: string;
 }>;
 
 export type ResearchSnapshot = Readonly<{
@@ -19,11 +23,13 @@ export type ResearchSnapshot = Readonly<{
 }>;
 
 export type TextSuggestion = Readonly<{
+  id: string;
   title: string;
   description: string;
   tags: readonly string[];
   basisVersion: string;
-  mode: "AI_ASSISTED" | "MIXED";
+  citationIds: readonly string[];
+  claims: readonly Readonly<{ text: string; citationIds: readonly string[] }>[];
 }>;
 
 export function validateResearchSnapshot(snapshot: ResearchSnapshot): void {
@@ -41,11 +47,13 @@ export function validateResearchSnapshot(snapshot: ResearchSnapshot): void {
       throw new Error("RESEARCH_CITATION_INVALID");
     }
     if (
-      !/^https?:$/.test(url.protocol) ||
+      url.protocol !== "https:" ||
+      !citation.id ||
       !citation.title.trim() ||
       !citation.publisher.trim() ||
-      !citation.retrievedAt ||
-      !citation.excerpt.trim()
+      !citation.accessedAt ||
+      !citation.excerpt.trim() ||
+      !/^[a-f0-9]{64}$/.test(citation.checksum)
     )
       throw new Error("RESEARCH_CITATION_INVALID");
   }

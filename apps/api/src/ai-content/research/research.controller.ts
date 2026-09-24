@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Post,
 } from "@nestjs/common";
+import { createHash, randomUUID } from "node:crypto";
 import {
   ApiAcceptedResponse,
   ApiBody,
@@ -47,24 +48,29 @@ export class ResearchController {
     if (!evidence)
       throw new NotFoundException({ code: "TRANSCRIPT_NOT_FOUND" });
     try {
+      const snapshot = {
+        contractVersion: "editorial-research-v1" as const,
+        adapterVersion: "local-manual-research-v1",
+        query: body.query,
+        freshness: "CURRENT" as const,
+        citations: body.citations.map((citation) => ({
+          id: randomUUID(),
+          url: citation.url,
+          title: citation.title,
+          publisher: citation.publisher,
+          publishedAt: citation.publishedAt ?? null,
+          accessedAt: citation.accessedAt,
+          excerpt: citation.excerpt,
+          checksum: createHash("sha256").update(citation.excerpt).digest("hex"),
+        })),
+      };
       return {
         intentId,
-        snapshot: {
-          contractVersion: "editorial-research-v1",
-          adapterVersion: "local-manual-research-v1",
-          query: body.query,
-          freshness: "CURRENT" as const,
-          citations: body.citations,
-        },
+        snapshot,
         suggestion: this.adapter.suggest({
           sourceTitle: body.sourceTitle,
-          snapshot: {
-            contractVersion: "editorial-research-v1",
-            adapterVersion: "local-manual-research-v1",
-            query: body.query,
-            freshness: "CURRENT",
-            citations: body.citations,
-          },
+          snapshot,
+          suggestionId: randomUUID(),
         }),
       };
     } catch (error) {

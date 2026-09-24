@@ -2043,19 +2043,26 @@ export interface components {
       sourceTitle: string;
     };
     ResearchCitationDto: {
-      excerpt: string;
-      publisher: string;
       /** @example 2026-09-23T00:00:00.000Z */
-      retrievedAt: string;
+      accessedAt: string;
+      excerpt: string;
+      /** @example 2026-09-23T00:00:00.000Z */
+      publishedAt: string;
+      publisher: string;
       title: string;
       /** @example https://example.com/source */
       url: string;
     };
     ResearchCitationResponseDto: {
-      excerpt: string;
-      publisher: string;
       /** Format: date-time */
-      retrievedAt: string;
+      accessedAt: string;
+      checksum: string;
+      excerpt: string;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      publishedAt: string | null;
+      publisher: string;
       title: string;
       url: string;
     };
@@ -2076,9 +2083,11 @@ export interface components {
     };
     ResearchTextSuggestionResponseDto: {
       basisVersion: string;
+      citationIds: string[];
+      claims: Record<string, never>[];
       description: string;
-      /** @enum {string} */
-      mode: "AI_ASSISTED" | "MIXED";
+      /** Format: uuid */
+      id: string;
       tags: string[];
       title: string;
     };

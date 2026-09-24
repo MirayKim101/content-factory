@@ -15,13 +15,16 @@ describe("ResearchController", () => {
             url: "https://example.com/source",
             title: "Source",
             publisher: "Example",
-            retrievedAt: "2026-09-23T00:00:00.000Z",
+            accessedAt: "2026-09-23T00:00:00.000Z",
             excerpt: "Evidence",
           },
         ],
       },
     );
-    expect(result.suggestion.mode).toBe("AI_ASSISTED");
+    expect(result.suggestion.citationIds).toHaveLength(1);
+    expect(result.snapshot.citations[0]?.url).toBe(
+      "https://example.com/source",
+    );
     expect(result.snapshot.citations).toHaveLength(1);
     expect(repository.detail).toHaveBeenCalledOnce();
   });

@@ -3971,14 +3971,18 @@
       },
       "ResearchCitationDto": {
         "properties": {
+          "accessedAt": {
+            "example": "2026-09-23T00:00:00.000Z",
+            "type": "string"
+          },
           "excerpt": {
             "type": "string"
           },
-          "publisher": {
+          "publishedAt": {
+            "example": "2026-09-23T00:00:00.000Z",
             "type": "string"
           },
-          "retrievedAt": {
-            "example": "2026-09-23T00:00:00.000Z",
+          "publisher": {
             "type": "string"
           },
           "title": {
@@ -3989,19 +3993,39 @@
             "type": "string"
           }
         },
-        "required": ["url", "title", "publisher", "retrievedAt", "excerpt"],
+        "required": [
+          "url",
+          "title",
+          "publisher",
+          "publishedAt",
+          "accessedAt",
+          "excerpt"
+        ],
         "type": "object"
       },
       "ResearchCitationResponseDto": {
         "properties": {
+          "accessedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "checksum": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
           "excerpt": {
             "type": "string"
           },
-          "publisher": {
+          "id": {
+            "format": "uuid",
             "type": "string"
           },
-          "retrievedAt": {
+          "publishedAt": {
             "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "publisher": {
             "type": "string"
           },
           "title": {
@@ -4011,7 +4035,16 @@
             "type": "string"
           }
         },
-        "required": ["url", "title", "publisher", "retrievedAt", "excerpt"],
+        "required": [
+          "id",
+          "url",
+          "title",
+          "publisher",
+          "publishedAt",
+          "accessedAt",
+          "excerpt",
+          "checksum"
+        ],
         "type": "object"
       },
       "ResearchSnapshotResponseDto": {
@@ -4067,11 +4100,23 @@
           "basisVersion": {
             "type": "string"
           },
+          "citationIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "claims": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
           "description": {
             "type": "string"
           },
-          "mode": {
-            "enum": ["AI_ASSISTED", "MIXED"],
+          "id": {
+            "format": "uuid",
             "type": "string"
           },
           "tags": {
@@ -4084,7 +4129,15 @@
             "type": "string"
           }
         },
-        "required": ["title", "description", "tags", "basisVersion", "mode"],
+        "required": [
+          "id",
+          "title",
+          "description",
+          "tags",
+          "basisVersion",
+          "citationIds",
+          "claims"
+        ],
         "type": "object"
       },
       "RightsResponseDto": {

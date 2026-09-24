@@ -13,16 +13,21 @@ export class LocalResearchAdapter {
   suggest(input: {
     snapshot: ResearchSnapshot;
     sourceTitle: string;
+    suggestionId: string;
   }): TextSuggestion {
     validateResearchSnapshot(input.snapshot);
     const title = input.sourceTitle.trim();
     if (!title) throw new Error("RESEARCH_SOURCE_TITLE_REQUIRED");
     return {
+      id: input.suggestionId,
       title: title.slice(0, 120),
       description: `Ручная AI-заготовка по теме «${input.snapshot.query.slice(0, 180)}». Проверьте факты и отредактируйте перед экспортом.`,
-      tags: input.snapshot.citations.slice(0, 8).map((citation) => citation.publisher),
+      tags: input.snapshot.citations
+        .slice(0, 8)
+        .map((citation) => citation.publisher),
       basisVersion: `${RESEARCH_CONTRACT_VERSION}:${input.snapshot.adapterVersion}`,
-      mode: "AI_ASSISTED",
+      citationIds: input.snapshot.citations.map((citation) => citation.id),
+      claims: [],
     };
   }
 }
