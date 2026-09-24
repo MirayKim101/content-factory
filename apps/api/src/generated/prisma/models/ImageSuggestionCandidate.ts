@@ -339,6 +339,7 @@ export type ImageSuggestionCandidateWhereInput = {
   intent?: Prisma.XOR<Prisma.ImageSuggestionIntentScalarRelationFilter, Prisma.ImageSuggestionIntentWhereInput>
   attempt?: Prisma.XOR<Prisma.ImageSuggestionAttemptScalarRelationFilter, Prisma.ImageSuggestionAttemptWhereInput>
   componentProvenance?: Prisma.EditorialComponentProvenanceListRelationFilter
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
 }
 
 export type ImageSuggestionCandidateOrderByWithRelationInput = {
@@ -364,6 +365,7 @@ export type ImageSuggestionCandidateOrderByWithRelationInput = {
   intent?: Prisma.ImageSuggestionIntentOrderByWithRelationInput
   attempt?: Prisma.ImageSuggestionAttemptOrderByWithRelationInput
   componentProvenance?: Prisma.EditorialComponentProvenanceOrderByRelationAggregateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotOrderByRelationAggregateInput
 }
 
 export type ImageSuggestionCandidateWhereUniqueInput = Prisma.AtLeast<{
@@ -394,6 +396,7 @@ export type ImageSuggestionCandidateWhereUniqueInput = Prisma.AtLeast<{
   intent?: Prisma.XOR<Prisma.ImageSuggestionIntentScalarRelationFilter, Prisma.ImageSuggestionIntentWhereInput>
   attempt?: Prisma.XOR<Prisma.ImageSuggestionAttemptScalarRelationFilter, Prisma.ImageSuggestionAttemptWhereInput>
   componentProvenance?: Prisma.EditorialComponentProvenanceListRelationFilter
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
 }, "id" | "intentId" | "attemptId" | "objectKey" | "id_intentId" | "attemptId_intentId">
 
 export type ImageSuggestionCandidateOrderByWithAggregationInput = {
@@ -469,6 +472,7 @@ export type ImageSuggestionCandidateCreateInput = {
   intent: Prisma.ImageSuggestionIntentCreateNestedOneWithoutCandidateInput
   attempt: Prisma.ImageSuggestionAttemptCreateNestedOneWithoutCandidateInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutImageCandidateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateUncheckedCreateInput = {
@@ -492,6 +496,7 @@ export type ImageSuggestionCandidateUncheckedCreateInput = {
   costBasisVersion: string
   createdAt?: Date | string
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutImageCandidateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateUpdateInput = {
@@ -515,6 +520,7 @@ export type ImageSuggestionCandidateUpdateInput = {
   intent?: Prisma.ImageSuggestionIntentUpdateOneRequiredWithoutCandidateNestedInput
   attempt?: Prisma.ImageSuggestionAttemptUpdateOneRequiredWithoutCandidateNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutImageCandidateNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutImageCandidateNestedInput
 }
 
 export type ImageSuggestionCandidateUncheckedUpdateInput = {
@@ -538,6 +544,7 @@ export type ImageSuggestionCandidateUncheckedUpdateInput = {
   costBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutImageCandidateNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutImageCandidateNestedInput
 }
 
 export type ImageSuggestionCandidateCreateManyInput = {
@@ -697,6 +704,22 @@ export type ImageSuggestionCandidateSumOrderByAggregateInput = {
   directCostMicrousd?: Prisma.SortOrder
 }
 
+export type ImageSuggestionCandidateCreateNestedOneWithoutApprovalComponentSnapshotsInput = {
+  create?: Prisma.XOR<Prisma.ImageSuggestionCandidateCreateWithoutApprovalComponentSnapshotsInput, Prisma.ImageSuggestionCandidateUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  connectOrCreate?: Prisma.ImageSuggestionCandidateCreateOrConnectWithoutApprovalComponentSnapshotsInput
+  connect?: Prisma.ImageSuggestionCandidateWhereUniqueInput
+}
+
+export type ImageSuggestionCandidateUpdateOneWithoutApprovalComponentSnapshotsNestedInput = {
+  create?: Prisma.XOR<Prisma.ImageSuggestionCandidateCreateWithoutApprovalComponentSnapshotsInput, Prisma.ImageSuggestionCandidateUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  connectOrCreate?: Prisma.ImageSuggestionCandidateCreateOrConnectWithoutApprovalComponentSnapshotsInput
+  upsert?: Prisma.ImageSuggestionCandidateUpsertWithoutApprovalComponentSnapshotsInput
+  disconnect?: Prisma.ImageSuggestionCandidateWhereInput | boolean
+  delete?: Prisma.ImageSuggestionCandidateWhereInput | boolean
+  connect?: Prisma.ImageSuggestionCandidateWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ImageSuggestionCandidateUpdateToOneWithWhereWithoutApprovalComponentSnapshotsInput, Prisma.ImageSuggestionCandidateUpdateWithoutApprovalComponentSnapshotsInput>, Prisma.ImageSuggestionCandidateUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+}
+
 export type ImageSuggestionCandidateCreateNestedOneWithoutComponentProvenanceInput = {
   create?: Prisma.XOR<Prisma.ImageSuggestionCandidateCreateWithoutComponentProvenanceInput, Prisma.ImageSuggestionCandidateUncheckedCreateWithoutComponentProvenanceInput>
   connectOrCreate?: Prisma.ImageSuggestionCandidateCreateOrConnectWithoutComponentProvenanceInput
@@ -777,6 +800,114 @@ export type ImageSuggestionCandidateUncheckedUpdateOneWithoutAttemptNestedInput 
   update?: Prisma.XOR<Prisma.XOR<Prisma.ImageSuggestionCandidateUpdateToOneWithWhereWithoutAttemptInput, Prisma.ImageSuggestionCandidateUpdateWithoutAttemptInput>, Prisma.ImageSuggestionCandidateUncheckedUpdateWithoutAttemptInput>
 }
 
+export type ImageSuggestionCandidateCreateWithoutApprovalComponentSnapshotsInput = {
+  id: string
+  objectKey: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  width: number
+  height: number
+  storageEtag?: string | null
+  storageVersion?: string | null
+  contractVersion: string
+  adapterVersion: string
+  promptBasisVersion: string
+  likeness?: string
+  safetyDecision: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  directCostMicrousd?: bigint | number
+  costBasisVersion: string
+  createdAt?: Date | string
+  intent: Prisma.ImageSuggestionIntentCreateNestedOneWithoutCandidateInput
+  attempt: Prisma.ImageSuggestionAttemptCreateNestedOneWithoutCandidateInput
+  componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutImageCandidateInput
+}
+
+export type ImageSuggestionCandidateUncheckedCreateWithoutApprovalComponentSnapshotsInput = {
+  id: string
+  intentId: string
+  attemptId: string
+  objectKey: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  width: number
+  height: number
+  storageEtag?: string | null
+  storageVersion?: string | null
+  contractVersion: string
+  adapterVersion: string
+  promptBasisVersion: string
+  likeness?: string
+  safetyDecision: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  directCostMicrousd?: bigint | number
+  costBasisVersion: string
+  createdAt?: Date | string
+  componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutImageCandidateInput
+}
+
+export type ImageSuggestionCandidateCreateOrConnectWithoutApprovalComponentSnapshotsInput = {
+  where: Prisma.ImageSuggestionCandidateWhereUniqueInput
+  create: Prisma.XOR<Prisma.ImageSuggestionCandidateCreateWithoutApprovalComponentSnapshotsInput, Prisma.ImageSuggestionCandidateUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+}
+
+export type ImageSuggestionCandidateUpsertWithoutApprovalComponentSnapshotsInput = {
+  update: Prisma.XOR<Prisma.ImageSuggestionCandidateUpdateWithoutApprovalComponentSnapshotsInput, Prisma.ImageSuggestionCandidateUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+  create: Prisma.XOR<Prisma.ImageSuggestionCandidateCreateWithoutApprovalComponentSnapshotsInput, Prisma.ImageSuggestionCandidateUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  where?: Prisma.ImageSuggestionCandidateWhereInput
+}
+
+export type ImageSuggestionCandidateUpdateToOneWithWhereWithoutApprovalComponentSnapshotsInput = {
+  where?: Prisma.ImageSuggestionCandidateWhereInput
+  data: Prisma.XOR<Prisma.ImageSuggestionCandidateUpdateWithoutApprovalComponentSnapshotsInput, Prisma.ImageSuggestionCandidateUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+}
+
+export type ImageSuggestionCandidateUpdateWithoutApprovalComponentSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  promptBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  likeness?: Prisma.StringFieldUpdateOperationsInput | string
+  safetyDecision?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  directCostMicrousd?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  costBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  intent?: Prisma.ImageSuggestionIntentUpdateOneRequiredWithoutCandidateNestedInput
+  attempt?: Prisma.ImageSuggestionAttemptUpdateOneRequiredWithoutCandidateNestedInput
+  componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutImageCandidateNestedInput
+}
+
+export type ImageSuggestionCandidateUncheckedUpdateWithoutApprovalComponentSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  intentId?: Prisma.StringFieldUpdateOperationsInput | string
+  attemptId?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  storageEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  storageVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  promptBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  likeness?: Prisma.StringFieldUpdateOperationsInput | string
+  safetyDecision?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  directCostMicrousd?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  costBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutImageCandidateNestedInput
+}
+
 export type ImageSuggestionCandidateCreateWithoutComponentProvenanceInput = {
   id: string
   objectKey: string
@@ -797,6 +928,7 @@ export type ImageSuggestionCandidateCreateWithoutComponentProvenanceInput = {
   createdAt?: Date | string
   intent: Prisma.ImageSuggestionIntentCreateNestedOneWithoutCandidateInput
   attempt: Prisma.ImageSuggestionAttemptCreateNestedOneWithoutCandidateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateUncheckedCreateWithoutComponentProvenanceInput = {
@@ -819,6 +951,7 @@ export type ImageSuggestionCandidateUncheckedCreateWithoutComponentProvenanceInp
   directCostMicrousd?: bigint | number
   costBasisVersion: string
   createdAt?: Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateCreateOrConnectWithoutComponentProvenanceInput = {
@@ -857,6 +990,7 @@ export type ImageSuggestionCandidateUpdateWithoutComponentProvenanceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intent?: Prisma.ImageSuggestionIntentUpdateOneRequiredWithoutCandidateNestedInput
   attempt?: Prisma.ImageSuggestionAttemptUpdateOneRequiredWithoutCandidateNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutImageCandidateNestedInput
 }
 
 export type ImageSuggestionCandidateUncheckedUpdateWithoutComponentProvenanceInput = {
@@ -879,6 +1013,7 @@ export type ImageSuggestionCandidateUncheckedUpdateWithoutComponentProvenanceInp
   directCostMicrousd?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   costBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutImageCandidateNestedInput
 }
 
 export type ImageSuggestionCandidateCreateWithoutIntentInput = {
@@ -901,6 +1036,7 @@ export type ImageSuggestionCandidateCreateWithoutIntentInput = {
   createdAt?: Date | string
   attempt: Prisma.ImageSuggestionAttemptCreateNestedOneWithoutCandidateInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutImageCandidateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateUncheckedCreateWithoutIntentInput = {
@@ -923,6 +1059,7 @@ export type ImageSuggestionCandidateUncheckedCreateWithoutIntentInput = {
   costBasisVersion: string
   createdAt?: Date | string
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutImageCandidateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateCreateOrConnectWithoutIntentInput = {
@@ -961,6 +1098,7 @@ export type ImageSuggestionCandidateUpdateWithoutIntentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempt?: Prisma.ImageSuggestionAttemptUpdateOneRequiredWithoutCandidateNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutImageCandidateNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutImageCandidateNestedInput
 }
 
 export type ImageSuggestionCandidateUncheckedUpdateWithoutIntentInput = {
@@ -983,6 +1121,7 @@ export type ImageSuggestionCandidateUncheckedUpdateWithoutIntentInput = {
   costBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutImageCandidateNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutImageCandidateNestedInput
 }
 
 export type ImageSuggestionCandidateCreateWithoutAttemptInput = {
@@ -1005,6 +1144,7 @@ export type ImageSuggestionCandidateCreateWithoutAttemptInput = {
   createdAt?: Date | string
   intent: Prisma.ImageSuggestionIntentCreateNestedOneWithoutCandidateInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutImageCandidateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateUncheckedCreateWithoutAttemptInput = {
@@ -1026,6 +1166,7 @@ export type ImageSuggestionCandidateUncheckedCreateWithoutAttemptInput = {
   costBasisVersion: string
   createdAt?: Date | string
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutImageCandidateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutImageCandidateInput
 }
 
 export type ImageSuggestionCandidateCreateOrConnectWithoutAttemptInput = {
@@ -1064,6 +1205,7 @@ export type ImageSuggestionCandidateUpdateWithoutAttemptInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intent?: Prisma.ImageSuggestionIntentUpdateOneRequiredWithoutCandidateNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutImageCandidateNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutImageCandidateNestedInput
 }
 
 export type ImageSuggestionCandidateUncheckedUpdateWithoutAttemptInput = {
@@ -1085,6 +1227,7 @@ export type ImageSuggestionCandidateUncheckedUpdateWithoutAttemptInput = {
   costBasisVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutImageCandidateNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutImageCandidateNestedInput
 }
 
 
@@ -1094,10 +1237,12 @@ export type ImageSuggestionCandidateUncheckedUpdateWithoutAttemptInput = {
 
 export type ImageSuggestionCandidateCountOutputType = {
   componentProvenance: number
+  approvalComponentSnapshots: number
 }
 
 export type ImageSuggestionCandidateCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   componentProvenance?: boolean | ImageSuggestionCandidateCountOutputTypeCountComponentProvenanceArgs
+  approvalComponentSnapshots?: boolean | ImageSuggestionCandidateCountOutputTypeCountApprovalComponentSnapshotsArgs
 }
 
 /**
@@ -1115,6 +1260,13 @@ export type ImageSuggestionCandidateCountOutputTypeDefaultArgs<ExtArgs extends r
  */
 export type ImageSuggestionCandidateCountOutputTypeCountComponentProvenanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.EditorialComponentProvenanceWhereInput
+}
+
+/**
+ * ImageSuggestionCandidateCountOutputType without action
+ */
+export type ImageSuggestionCandidateCountOutputTypeCountApprovalComponentSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
 }
 
 
@@ -1141,6 +1293,7 @@ export type ImageSuggestionCandidateSelect<ExtArgs extends runtime.Types.Extensi
   intent?: boolean | Prisma.ImageSuggestionIntentDefaultArgs<ExtArgs>
   attempt?: boolean | Prisma.ImageSuggestionAttemptDefaultArgs<ExtArgs>
   componentProvenance?: boolean | Prisma.ImageSuggestionCandidate$componentProvenanceArgs<ExtArgs>
+  approvalComponentSnapshots?: boolean | Prisma.ImageSuggestionCandidate$approvalComponentSnapshotsArgs<ExtArgs>
   _count?: boolean | Prisma.ImageSuggestionCandidateCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["imageSuggestionCandidate"]>
 
@@ -1219,6 +1372,7 @@ export type ImageSuggestionCandidateInclude<ExtArgs extends runtime.Types.Extens
   intent?: boolean | Prisma.ImageSuggestionIntentDefaultArgs<ExtArgs>
   attempt?: boolean | Prisma.ImageSuggestionAttemptDefaultArgs<ExtArgs>
   componentProvenance?: boolean | Prisma.ImageSuggestionCandidate$componentProvenanceArgs<ExtArgs>
+  approvalComponentSnapshots?: boolean | Prisma.ImageSuggestionCandidate$approvalComponentSnapshotsArgs<ExtArgs>
   _count?: boolean | Prisma.ImageSuggestionCandidateCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ImageSuggestionCandidateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1236,6 +1390,7 @@ export type $ImageSuggestionCandidatePayload<ExtArgs extends runtime.Types.Exten
     intent: Prisma.$ImageSuggestionIntentPayload<ExtArgs>
     attempt: Prisma.$ImageSuggestionAttemptPayload<ExtArgs>
     componentProvenance: Prisma.$EditorialComponentProvenancePayload<ExtArgs>[]
+    approvalComponentSnapshots: Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1654,6 +1809,7 @@ export interface Prisma__ImageSuggestionCandidateClient<T, Null = never, ExtArgs
   intent<T extends Prisma.ImageSuggestionIntentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImageSuggestionIntentDefaultArgs<ExtArgs>>): Prisma.Prisma__ImageSuggestionIntentClient<runtime.Types.Result.GetResult<Prisma.$ImageSuggestionIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   attempt<T extends Prisma.ImageSuggestionAttemptDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImageSuggestionAttemptDefaultArgs<ExtArgs>>): Prisma.Prisma__ImageSuggestionAttemptClient<runtime.Types.Result.GetResult<Prisma.$ImageSuggestionAttemptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   componentProvenance<T extends Prisma.ImageSuggestionCandidate$componentProvenanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImageSuggestionCandidate$componentProvenanceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialComponentProvenancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  approvalComponentSnapshots<T extends Prisma.ImageSuggestionCandidate$approvalComponentSnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ImageSuggestionCandidate$approvalComponentSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2124,6 +2280,30 @@ export type ImageSuggestionCandidate$componentProvenanceArgs<ExtArgs extends run
   take?: number
   skip?: number
   distinct?: Prisma.EditorialComponentProvenanceScalarFieldEnum | Prisma.EditorialComponentProvenanceScalarFieldEnum[]
+}
+
+/**
+ * ImageSuggestionCandidate.approvalComponentSnapshots
+ */
+export type ImageSuggestionCandidate$approvalComponentSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApprovalComponentSnapshot
+   */
+  select?: Prisma.EditorialApprovalComponentSnapshotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApprovalComponentSnapshot
+   */
+  omit?: Prisma.EditorialApprovalComponentSnapshotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalComponentSnapshotInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
+  orderBy?: Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput | Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalComponentSnapshotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum | Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum[]
 }
 
 /**

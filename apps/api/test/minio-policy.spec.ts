@@ -30,7 +30,7 @@ describe("MinIO API least-privilege policy", () => {
       "s3:ListMultipartUploadParts",
       "s3:PutObject",
     ];
-    expect(policy.Statement).toHaveLength(5);
+    expect(policy.Statement).toHaveLength(6);
     const bucketStatements = policy.Statement.filter(
       (statement) =>
         statement.Resource.length === 1 &&
@@ -45,12 +45,14 @@ describe("MinIO API least-privilege policy", () => {
     const objectResources = objectStatements
       .flatMap(({ Resource }) => Resource)
       .sort();
-    expect(objectStatements).toHaveLength(4);
+    expect(objectStatements).toHaveLength(5);
     for (const statement of objectStatements)
       expect([...statement.Action].sort()).toEqual(expectedObjectActions);
     expect(objectResources).toEqual([
       "arn:aws:s3:::test-bucket/ai-content/creator-profiles/*/references/*",
       "arn:aws:s3:::test-bucket/ai-content/frame-evidence/*/attempts/*/frames/*",
+      "arn:aws:s3:::test-bucket/ai-content/image-suggestions/*/candidate.png",
+      "arn:aws:s3:::test-bucket/ai-content/transcripts/*/transcript.json",
       "arn:aws:s3:::test-bucket/editorial/*",
       "arn:aws:s3:::test-bucket/sources/*",
     ]);

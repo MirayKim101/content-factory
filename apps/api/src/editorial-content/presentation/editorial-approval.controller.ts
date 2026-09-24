@@ -106,8 +106,7 @@ export class EditorialApprovalController {
           renderId,
           editorialRevision: body.editorialRevision,
           candidateFingerprint: body.candidateFingerprint,
-          manualAttentionMs: body.manualAttentionMs,
-          attentionMeasurementVersion: body.attentionMeasurementVersion,
+          ...approvalRequest(body),
           idempotencyKey: requireIdempotencyKey(idempotencyKey),
         }),
       );
@@ -181,6 +180,40 @@ export class EditorialApprovalController {
       });
     throw error;
   }
+}
+
+function approvalRequest(body: CreateEditorialApprovalDto) {
+  const contract =
+    body.approvalContractVersion ?? "manual-horizontal-approval-v1";
+  if (contract === "human-horizontal-approval-v2") {
+    if (
+      !body.attention ||
+      body.manualAttentionMs !== undefined ||
+      body.attentionMeasurementVersion !== undefined ||
+      body.attention.preparationForegroundMs +
+        body.attention.finalReviewForegroundMs >
+        28_800_000
+    )
+      throw new BadRequestException({
+        code: "EDITORIAL_APPROVAL_ATTENTION_INVALID",
+        message: "A bounded operator-attention-v2 measurement is required.",
+      });
+    return { approvalContractVersion: contract, attention: body.attention };
+  }
+  if (
+    body.attention ||
+    body.manualAttentionMs === undefined ||
+    body.attentionMeasurementVersion !== "foreground-preview-v1"
+  )
+    throw new BadRequestException({
+      code: "EDITORIAL_APPROVAL_ATTENTION_INVALID",
+      message: "A foreground-preview-v1 measurement is required.",
+    });
+  return {
+    approvalContractVersion: contract,
+    manualAttentionMs: body.manualAttentionMs,
+    attentionMeasurementVersion: body.attentionMeasurementVersion,
+  };
 }
 
 function requireIdempotencyKey(value: string | undefined): string {

@@ -1026,6 +1026,16 @@
       },
       "CreateEditorialApprovalDto": {
         "properties": {
+          "approvalContractVersion": {
+            "enum": [
+              "manual-horizontal-approval-v1",
+              "human-horizontal-approval-v2"
+            ],
+            "type": "string"
+          },
+          "attention": {
+            "$ref": "#/components/schemas/OperatorAttentionV2Dto"
+          },
           "attentionMeasurementVersion": {
             "enum": ["foreground-preview-v1"],
             "type": "string"
@@ -1044,12 +1054,7 @@
             "type": "integer"
           }
         },
-        "required": [
-          "editorialRevision",
-          "candidateFingerprint",
-          "manualAttentionMs",
-          "attentionMeasurementVersion"
-        ],
+        "required": ["editorialRevision", "candidateFingerprint"],
         "type": "object"
       },
       "CreateFrameEvidenceDto": {
@@ -1847,7 +1852,7 @@
             "$ref": "#/components/schemas/ApprovalJobMetricsResponseDto"
           },
           "attentionMeasurementVersion": {
-            "enum": ["foreground-preview-v1"],
+            "enum": ["foreground-preview-v1", "operator-attention-v2"],
             "type": "string"
           },
           "costBasisVersion": {
@@ -1917,7 +1922,10 @@
       "EditorialApprovalResponseDto": {
         "properties": {
           "approvalContractVersion": {
-            "enum": ["manual-horizontal-approval-v1"],
+            "enum": [
+              "manual-horizontal-approval-v1",
+              "human-horizontal-approval-v2"
+            ],
             "type": "string"
           },
           "approvedAt": {
@@ -1940,6 +1948,12 @@
             "pattern": "^[a-f0-9]{64}$",
             "type": "string"
           },
+          "componentSnapshots": {
+            "items": {
+              "$ref": "#/components/schemas/EditorialComponentSummaryResponseDto"
+            },
+            "type": "array"
+          },
           "configurationFingerprint": {
             "pattern": "^[a-f0-9]{64}$",
             "type": "string"
@@ -1947,6 +1961,11 @@
           "cutPipelineJobId": {
             "format": "uuid",
             "type": "string"
+          },
+          "economicsV2": {
+            "additionalProperties": true,
+            "nullable": true,
+            "type": "object"
           },
           "editorialPackageId": {
             "format": "uuid",
@@ -2063,7 +2082,9 @@
           "approvedAt",
           "state",
           "staleReasons",
-          "metrics"
+          "metrics",
+          "componentSnapshots",
+          "economicsV2"
         ],
         "type": "object"
       },
@@ -2150,6 +2171,212 @@
           "height",
           "createdAt",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "EditorialCitationResponseDto": {
+        "properties": {
+          "accessedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "publishedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "title",
+          "publisher",
+          "publishedAt",
+          "accessedAt"
+        ],
+        "type": "object"
+      },
+      "EditorialComponentSummaryResponseDto": {
+        "properties": {
+          "basisVersion": {
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/EditorialCitationResponseDto"
+            },
+            "type": "array"
+          },
+          "component": {
+            "enum": ["METADATA", "THUMBNAIL"],
+            "type": "string"
+          },
+          "costBasisVersion": {
+            "type": "string"
+          },
+          "directCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "imageCandidateId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "imageIntentId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "imageSafetyDecision": {
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialImageSafetyDecisionResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "incompleteReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "likeness": {
+            "nullable": true,
+            "type": "string"
+          },
+          "mode": {
+            "enum": ["MANUAL", "AI_ASSISTED", "MIXED"],
+            "type": "string"
+          },
+          "provenanceId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "research": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialResearchFreshnessResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "researchIntentId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "snapshotFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "suggestionSetId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "transcriptArtifactId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "transcriptSha256": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "component",
+          "provenanceId",
+          "mode",
+          "basisVersion",
+          "researchIntentId",
+          "suggestionSetId",
+          "imageIntentId",
+          "imageCandidateId",
+          "transcriptArtifactId",
+          "transcriptSha256",
+          "citations",
+          "research",
+          "imageSafetyDecision",
+          "likeness",
+          "directCostMicrousd",
+          "costBasisVersion",
+          "incompleteReasons",
+          "snapshotFingerprint"
+        ],
+        "type": "object"
+      },
+      "EditorialEconomicsPreviewResponseDto": {
+        "properties": {
+          "combinedDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "currency": {
+            "enum": ["USD"],
+            "type": "string"
+          },
+          "evidenceDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "incompleteReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "metadataDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "processingMetrics": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalProcessingMetricsResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "thumbnailDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "unit": {
+            "enum": ["MICRO"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "processingMetrics",
+          "metadataDirectCostMicrousd",
+          "evidenceDirectCostMicrousd",
+          "thumbnailDirectCostMicrousd",
+          "combinedDirectCostMicrousd",
+          "currency",
+          "unit",
+          "incompleteReasons"
         ],
         "type": "object"
       },
@@ -2323,7 +2550,7 @@
             "type": "string"
           },
           "exportContractVersion": {
-            "enum": ["editorial-export-zip-v1"],
+            "enum": ["editorial-export-zip-v1", "editorial-export-zip-v2"],
             "type": "string"
           },
           "id": {
@@ -2425,6 +2652,33 @@
         "required": ["code", "message"],
         "type": "object"
       },
+      "EditorialImageSafetyDecisionResponseDto": {
+        "properties": {
+          "externalProviderUsed": {
+            "enum": [false],
+            "type": "boolean"
+          },
+          "realisticPersonRequested": {
+            "enum": [false],
+            "type": "boolean"
+          },
+          "referenceImageUsed": {
+            "enum": [false],
+            "type": "boolean"
+          },
+          "version": {
+            "enum": ["no-likeness-safety-v1"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "realisticPersonRequested",
+          "referenceImageUsed",
+          "externalProviderUsed"
+        ],
+        "type": "object"
+      },
       "EditorialPackageListResponseDto": {
         "properties": {
           "items": {
@@ -2479,6 +2733,36 @@
           "createdAt",
           "updatedAt"
         ],
+        "type": "object"
+      },
+      "EditorialResearchFreshnessResponseDto": {
+        "properties": {
+          "freshUntil": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "freshness": {
+            "enum": ["CURRENT", "EXPIRED"],
+            "type": "string"
+          },
+          "searchedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": ["searchedAt", "freshUntil", "freshness"],
+        "type": "object"
+      },
+      "EditorialReviewComponentsResponseDto": {
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/EditorialComponentSummaryResponseDto"
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/EditorialComponentSummaryResponseDto"
+          }
+        },
+        "required": ["metadata", "thumbnail"],
         "type": "object"
       },
       "EditorialReviewEditorialResponseDto": {
@@ -2617,6 +2901,9 @@
             "pattern": "^[a-f0-9]{64}$",
             "type": "string"
           },
+          "components": {
+            "$ref": "#/components/schemas/EditorialReviewComponentsResponseDto"
+          },
           "currentApproval": {
             "allOf": [
               {
@@ -2635,6 +2922,9 @@
             "nullable": true,
             "type": "string"
           },
+          "economicsPreview": {
+            "$ref": "#/components/schemas/EditorialEconomicsPreviewResponseDto"
+          },
           "editorial": {
             "allOf": [
               {
@@ -2643,6 +2933,9 @@
             ],
             "nullable": true,
             "type": "object"
+          },
+          "integratedReviewEnabled": {
+            "type": "boolean"
           },
           "latestApproval": {
             "allOf": [
@@ -2684,6 +2977,10 @@
             "nullable": true,
             "type": "object"
           },
+          "reviewContractVersion": {
+            "enum": ["editorial-review-candidate-v2"],
+            "type": "string"
+          },
           "sourceId": {
             "format": "uuid",
             "type": "string"
@@ -2691,9 +2988,15 @@
           "sourceVersion": {
             "minimum": 1,
             "type": "integer"
+          },
+          "workflowMode": {
+            "enum": ["MANUAL", "AI_ASSISTED", "MIXED"],
+            "type": "string"
           }
         },
         "required": [
+          "reviewContractVersion",
+          "integratedReviewEnabled",
           "projectId",
           "sourceId",
           "sourceVersion",
@@ -2706,6 +3009,9 @@
           "approvable",
           "blockers",
           "processingMetrics",
+          "workflowMode",
+          "components",
+          "economicsPreview",
           "currentApproval",
           "latestApproval"
         ],
@@ -3807,6 +4113,30 @@
           }
         },
         "required": ["kind", "file"],
+        "type": "object"
+      },
+      "OperatorAttentionV2Dto": {
+        "properties": {
+          "finalReviewForegroundMs": {
+            "maximum": 28800000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "preparationForegroundMs": {
+            "maximum": 28800000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "schemaVersion": {
+            "enum": ["operator-attention-v2"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "preparationForegroundMs",
+          "finalReviewForegroundMs"
+        ],
         "type": "object"
       },
       "PipelineJobResponseDto": {

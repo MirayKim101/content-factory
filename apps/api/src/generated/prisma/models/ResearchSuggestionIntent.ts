@@ -389,6 +389,7 @@ export type ResearchSuggestionIntentWhereInput = {
   attempts?: Prisma.ResearchSuggestionAttemptListRelationFilter
   suggestionSet?: Prisma.XOR<Prisma.ResearchSuggestionSetNullableScalarRelationFilter, Prisma.ResearchSuggestionSetWhereInput> | null
   componentProvenance?: Prisma.EditorialComponentProvenanceListRelationFilter
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
 }
 
 export type ResearchSuggestionIntentOrderByWithRelationInput = {
@@ -423,6 +424,7 @@ export type ResearchSuggestionIntentOrderByWithRelationInput = {
   attempts?: Prisma.ResearchSuggestionAttemptOrderByRelationAggregateInput
   suggestionSet?: Prisma.ResearchSuggestionSetOrderByWithRelationInput
   componentProvenance?: Prisma.EditorialComponentProvenanceOrderByRelationAggregateInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotOrderByRelationAggregateInput
 }
 
 export type ResearchSuggestionIntentWhereUniqueInput = Prisma.AtLeast<{
@@ -460,6 +462,7 @@ export type ResearchSuggestionIntentWhereUniqueInput = Prisma.AtLeast<{
   attempts?: Prisma.ResearchSuggestionAttemptListRelationFilter
   suggestionSet?: Prisma.XOR<Prisma.ResearchSuggestionSetNullableScalarRelationFilter, Prisma.ResearchSuggestionSetWhereInput> | null
   componentProvenance?: Prisma.EditorialComponentProvenanceListRelationFilter
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
 }, "id" | "idempotencyKey">
 
 export type ResearchSuggestionIntentOrderByWithAggregationInput = {
@@ -559,6 +562,7 @@ export type ResearchSuggestionIntentCreateInput = {
   attempts?: Prisma.ResearchSuggestionAttemptCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentUncheckedCreateInput = {
@@ -592,6 +596,7 @@ export type ResearchSuggestionIntentUncheckedCreateInput = {
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentUpdateInput = {
@@ -625,6 +630,7 @@ export type ResearchSuggestionIntentUpdateInput = {
   attempts?: Prisma.ResearchSuggestionAttemptUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentUncheckedUpdateInput = {
@@ -658,6 +664,7 @@ export type ResearchSuggestionIntentUncheckedUpdateInput = {
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentCreateManyInput = {
@@ -861,6 +868,22 @@ export type ResearchSuggestionIntentScalarRelationFilter = {
   isNot?: Prisma.ResearchSuggestionIntentWhereInput
 }
 
+export type ResearchSuggestionIntentCreateNestedOneWithoutApprovalComponentSnapshotsInput = {
+  create?: Prisma.XOR<Prisma.ResearchSuggestionIntentCreateWithoutApprovalComponentSnapshotsInput, Prisma.ResearchSuggestionIntentUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  connectOrCreate?: Prisma.ResearchSuggestionIntentCreateOrConnectWithoutApprovalComponentSnapshotsInput
+  connect?: Prisma.ResearchSuggestionIntentWhereUniqueInput
+}
+
+export type ResearchSuggestionIntentUpdateOneWithoutApprovalComponentSnapshotsNestedInput = {
+  create?: Prisma.XOR<Prisma.ResearchSuggestionIntentCreateWithoutApprovalComponentSnapshotsInput, Prisma.ResearchSuggestionIntentUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  connectOrCreate?: Prisma.ResearchSuggestionIntentCreateOrConnectWithoutApprovalComponentSnapshotsInput
+  upsert?: Prisma.ResearchSuggestionIntentUpsertWithoutApprovalComponentSnapshotsInput
+  disconnect?: Prisma.ResearchSuggestionIntentWhereInput | boolean
+  delete?: Prisma.ResearchSuggestionIntentWhereInput | boolean
+  connect?: Prisma.ResearchSuggestionIntentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ResearchSuggestionIntentUpdateToOneWithWhereWithoutApprovalComponentSnapshotsInput, Prisma.ResearchSuggestionIntentUpdateWithoutApprovalComponentSnapshotsInput>, Prisma.ResearchSuggestionIntentUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+}
+
 export type ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput = {
   create?: Prisma.XOR<Prisma.ResearchSuggestionIntentCreateWithoutComponentProvenanceInput, Prisma.ResearchSuggestionIntentUncheckedCreateWithoutComponentProvenanceInput>
   connectOrCreate?: Prisma.ResearchSuggestionIntentCreateOrConnectWithoutComponentProvenanceInput
@@ -965,6 +988,154 @@ export type ResearchSuggestionIntentUpdateOneRequiredWithoutSuggestionSetNestedI
   update?: Prisma.XOR<Prisma.XOR<Prisma.ResearchSuggestionIntentUpdateToOneWithWhereWithoutSuggestionSetInput, Prisma.ResearchSuggestionIntentUpdateWithoutSuggestionSetInput>, Prisma.ResearchSuggestionIntentUncheckedUpdateWithoutSuggestionSetInput>
 }
 
+export type ResearchSuggestionIntentCreateWithoutApprovalComponentSnapshotsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  cutPipelineJobId: string
+  cutResultArtifactId: string
+  creatorProfileRevisionId: string
+  sourceContextRevisionId: string
+  cutPromptRevisionId: string
+  contextPolicyFingerprint: string
+  transcriptArtifactId: string
+  transcriptSha256: string
+  query: string
+  contractVersion: string
+  adapterVersion: string
+  freshnessPolicyVersion: string
+  searchedAt: Date | string
+  freshUntil: Date | string
+  state?: $Enums.ResearchIntentState
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  transcriptIntent: Prisma.TranscriptEvidenceIntentCreateNestedOneWithoutResearchSuggestionsInput
+  citations?: Prisma.ResearchCitationCreateNestedManyWithoutIntentInput
+  attempts?: Prisma.ResearchSuggestionAttemptCreateNestedManyWithoutIntentInput
+  suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutIntentInput
+  componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput
+}
+
+export type ResearchSuggestionIntentUncheckedCreateWithoutApprovalComponentSnapshotsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  transcriptIntentId: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  cutPipelineJobId: string
+  cutResultArtifactId: string
+  creatorProfileRevisionId: string
+  sourceContextRevisionId: string
+  cutPromptRevisionId: string
+  contextPolicyFingerprint: string
+  transcriptArtifactId: string
+  transcriptSha256: string
+  query: string
+  contractVersion: string
+  adapterVersion: string
+  freshnessPolicyVersion: string
+  searchedAt: Date | string
+  freshUntil: Date | string
+  state?: $Enums.ResearchIntentState
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  citations?: Prisma.ResearchCitationUncheckedCreateNestedManyWithoutIntentInput
+  attempts?: Prisma.ResearchSuggestionAttemptUncheckedCreateNestedManyWithoutIntentInput
+  suggestionSet?: Prisma.ResearchSuggestionSetUncheckedCreateNestedOneWithoutIntentInput
+  componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutResearchIntentInput
+}
+
+export type ResearchSuggestionIntentCreateOrConnectWithoutApprovalComponentSnapshotsInput = {
+  where: Prisma.ResearchSuggestionIntentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ResearchSuggestionIntentCreateWithoutApprovalComponentSnapshotsInput, Prisma.ResearchSuggestionIntentUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+}
+
+export type ResearchSuggestionIntentUpsertWithoutApprovalComponentSnapshotsInput = {
+  update: Prisma.XOR<Prisma.ResearchSuggestionIntentUpdateWithoutApprovalComponentSnapshotsInput, Prisma.ResearchSuggestionIntentUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+  create: Prisma.XOR<Prisma.ResearchSuggestionIntentCreateWithoutApprovalComponentSnapshotsInput, Prisma.ResearchSuggestionIntentUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  where?: Prisma.ResearchSuggestionIntentWhereInput
+}
+
+export type ResearchSuggestionIntentUpdateToOneWithWhereWithoutApprovalComponentSnapshotsInput = {
+  where?: Prisma.ResearchSuggestionIntentWhereInput
+  data: Prisma.XOR<Prisma.ResearchSuggestionIntentUpdateWithoutApprovalComponentSnapshotsInput, Prisma.ResearchSuggestionIntentUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+}
+
+export type ResearchSuggestionIntentUpdateWithoutApprovalComponentSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  contextPolicyFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  transcriptArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  transcriptSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  query?: Prisma.StringFieldUpdateOperationsInput | string
+  contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  freshnessPolicyVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  searchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  freshUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  state?: Prisma.EnumResearchIntentStateFieldUpdateOperationsInput | $Enums.ResearchIntentState
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transcriptIntent?: Prisma.TranscriptEvidenceIntentUpdateOneRequiredWithoutResearchSuggestionsNestedInput
+  citations?: Prisma.ResearchCitationUpdateManyWithoutIntentNestedInput
+  attempts?: Prisma.ResearchSuggestionAttemptUpdateManyWithoutIntentNestedInput
+  suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutIntentNestedInput
+  componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutResearchIntentNestedInput
+}
+
+export type ResearchSuggestionIntentUncheckedUpdateWithoutApprovalComponentSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  transcriptIntentId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  contextPolicyFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  transcriptArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  transcriptSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  query?: Prisma.StringFieldUpdateOperationsInput | string
+  contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  freshnessPolicyVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  searchedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  freshUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  state?: Prisma.EnumResearchIntentStateFieldUpdateOperationsInput | $Enums.ResearchIntentState
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  citations?: Prisma.ResearchCitationUncheckedUpdateManyWithoutIntentNestedInput
+  attempts?: Prisma.ResearchSuggestionAttemptUncheckedUpdateManyWithoutIntentNestedInput
+  suggestionSet?: Prisma.ResearchSuggestionSetUncheckedUpdateOneWithoutIntentNestedInput
+  componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentNestedInput
+}
+
 export type ResearchSuggestionIntentCreateWithoutComponentProvenanceInput = {
   id: string
   idempotencyKey: string
@@ -995,6 +1166,7 @@ export type ResearchSuggestionIntentCreateWithoutComponentProvenanceInput = {
   citations?: Prisma.ResearchCitationCreateNestedManyWithoutIntentInput
   attempts?: Prisma.ResearchSuggestionAttemptCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentUncheckedCreateWithoutComponentProvenanceInput = {
@@ -1027,6 +1199,7 @@ export type ResearchSuggestionIntentUncheckedCreateWithoutComponentProvenanceInp
   citations?: Prisma.ResearchCitationUncheckedCreateNestedManyWithoutIntentInput
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedCreateNestedOneWithoutIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentCreateOrConnectWithoutComponentProvenanceInput = {
@@ -1075,6 +1248,7 @@ export type ResearchSuggestionIntentUpdateWithoutComponentProvenanceInput = {
   citations?: Prisma.ResearchCitationUpdateManyWithoutIntentNestedInput
   attempts?: Prisma.ResearchSuggestionAttemptUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentUncheckedUpdateWithoutComponentProvenanceInput = {
@@ -1107,6 +1281,7 @@ export type ResearchSuggestionIntentUncheckedUpdateWithoutComponentProvenanceInp
   citations?: Prisma.ResearchCitationUncheckedUpdateManyWithoutIntentNestedInput
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedUpdateOneWithoutIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentCreateWithoutTranscriptIntentInput = {
@@ -1139,6 +1314,7 @@ export type ResearchSuggestionIntentCreateWithoutTranscriptIntentInput = {
   attempts?: Prisma.ResearchSuggestionAttemptCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentUncheckedCreateWithoutTranscriptIntentInput = {
@@ -1171,6 +1347,7 @@ export type ResearchSuggestionIntentUncheckedCreateWithoutTranscriptIntentInput 
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentCreateOrConnectWithoutTranscriptIntentInput = {
@@ -1261,6 +1438,7 @@ export type ResearchSuggestionIntentCreateWithoutCitationsInput = {
   attempts?: Prisma.ResearchSuggestionAttemptCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentUncheckedCreateWithoutCitationsInput = {
@@ -1293,6 +1471,7 @@ export type ResearchSuggestionIntentUncheckedCreateWithoutCitationsInput = {
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentCreateOrConnectWithoutCitationsInput = {
@@ -1341,6 +1520,7 @@ export type ResearchSuggestionIntentUpdateWithoutCitationsInput = {
   attempts?: Prisma.ResearchSuggestionAttemptUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentUncheckedUpdateWithoutCitationsInput = {
@@ -1373,6 +1553,7 @@ export type ResearchSuggestionIntentUncheckedUpdateWithoutCitationsInput = {
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentCreateWithoutAttemptsInput = {
@@ -1405,6 +1586,7 @@ export type ResearchSuggestionIntentCreateWithoutAttemptsInput = {
   citations?: Prisma.ResearchCitationCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentUncheckedCreateWithoutAttemptsInput = {
@@ -1437,6 +1619,7 @@ export type ResearchSuggestionIntentUncheckedCreateWithoutAttemptsInput = {
   citations?: Prisma.ResearchCitationUncheckedCreateNestedManyWithoutIntentInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedCreateNestedOneWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentCreateOrConnectWithoutAttemptsInput = {
@@ -1485,6 +1668,7 @@ export type ResearchSuggestionIntentUpdateWithoutAttemptsInput = {
   citations?: Prisma.ResearchCitationUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentUncheckedUpdateWithoutAttemptsInput = {
@@ -1517,6 +1701,7 @@ export type ResearchSuggestionIntentUncheckedUpdateWithoutAttemptsInput = {
   citations?: Prisma.ResearchCitationUncheckedUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentCreateWithoutSuggestionSetInput = {
@@ -1549,6 +1734,7 @@ export type ResearchSuggestionIntentCreateWithoutSuggestionSetInput = {
   citations?: Prisma.ResearchCitationCreateNestedManyWithoutIntentInput
   attempts?: Prisma.ResearchSuggestionAttemptCreateNestedManyWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentUncheckedCreateWithoutSuggestionSetInput = {
@@ -1581,6 +1767,7 @@ export type ResearchSuggestionIntentUncheckedCreateWithoutSuggestionSetInput = {
   citations?: Prisma.ResearchCitationUncheckedCreateNestedManyWithoutIntentInput
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedCreateNestedManyWithoutIntentInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedCreateNestedManyWithoutResearchIntentInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutResearchIntentInput
 }
 
 export type ResearchSuggestionIntentCreateOrConnectWithoutSuggestionSetInput = {
@@ -1629,6 +1816,7 @@ export type ResearchSuggestionIntentUpdateWithoutSuggestionSetInput = {
   citations?: Prisma.ResearchCitationUpdateManyWithoutIntentNestedInput
   attempts?: Prisma.ResearchSuggestionAttemptUpdateManyWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentUncheckedUpdateWithoutSuggestionSetInput = {
@@ -1661,6 +1849,7 @@ export type ResearchSuggestionIntentUncheckedUpdateWithoutSuggestionSetInput = {
   citations?: Prisma.ResearchCitationUncheckedUpdateManyWithoutIntentNestedInput
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedUpdateManyWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentCreateManyTranscriptIntentInput = {
@@ -1721,6 +1910,7 @@ export type ResearchSuggestionIntentUpdateWithoutTranscriptIntentInput = {
   attempts?: Prisma.ResearchSuggestionAttemptUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentUncheckedUpdateWithoutTranscriptIntentInput = {
@@ -1753,6 +1943,7 @@ export type ResearchSuggestionIntentUncheckedUpdateWithoutTranscriptIntentInput 
   attempts?: Prisma.ResearchSuggestionAttemptUncheckedUpdateManyWithoutIntentNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUncheckedUpdateOneWithoutIntentNestedInput
   componentProvenance?: Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutResearchIntentNestedInput
 }
 
 export type ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentInput = {
@@ -1792,12 +1983,14 @@ export type ResearchSuggestionIntentCountOutputType = {
   citations: number
   attempts: number
   componentProvenance: number
+  approvalComponentSnapshots: number
 }
 
 export type ResearchSuggestionIntentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   citations?: boolean | ResearchSuggestionIntentCountOutputTypeCountCitationsArgs
   attempts?: boolean | ResearchSuggestionIntentCountOutputTypeCountAttemptsArgs
   componentProvenance?: boolean | ResearchSuggestionIntentCountOutputTypeCountComponentProvenanceArgs
+  approvalComponentSnapshots?: boolean | ResearchSuggestionIntentCountOutputTypeCountApprovalComponentSnapshotsArgs
 }
 
 /**
@@ -1829,6 +2022,13 @@ export type ResearchSuggestionIntentCountOutputTypeCountAttemptsArgs<ExtArgs ext
  */
 export type ResearchSuggestionIntentCountOutputTypeCountComponentProvenanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.EditorialComponentProvenanceWhereInput
+}
+
+/**
+ * ResearchSuggestionIntentCountOutputType without action
+ */
+export type ResearchSuggestionIntentCountOutputTypeCountApprovalComponentSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
 }
 
 
@@ -1864,6 +2064,7 @@ export type ResearchSuggestionIntentSelect<ExtArgs extends runtime.Types.Extensi
   attempts?: boolean | Prisma.ResearchSuggestionIntent$attemptsArgs<ExtArgs>
   suggestionSet?: boolean | Prisma.ResearchSuggestionIntent$suggestionSetArgs<ExtArgs>
   componentProvenance?: boolean | Prisma.ResearchSuggestionIntent$componentProvenanceArgs<ExtArgs>
+  approvalComponentSnapshots?: boolean | Prisma.ResearchSuggestionIntent$approvalComponentSnapshotsArgs<ExtArgs>
   _count?: boolean | Prisma.ResearchSuggestionIntentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["researchSuggestionIntent"]>
 
@@ -1963,6 +2164,7 @@ export type ResearchSuggestionIntentInclude<ExtArgs extends runtime.Types.Extens
   attempts?: boolean | Prisma.ResearchSuggestionIntent$attemptsArgs<ExtArgs>
   suggestionSet?: boolean | Prisma.ResearchSuggestionIntent$suggestionSetArgs<ExtArgs>
   componentProvenance?: boolean | Prisma.ResearchSuggestionIntent$componentProvenanceArgs<ExtArgs>
+  approvalComponentSnapshots?: boolean | Prisma.ResearchSuggestionIntent$approvalComponentSnapshotsArgs<ExtArgs>
   _count?: boolean | Prisma.ResearchSuggestionIntentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ResearchSuggestionIntentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1980,6 +2182,7 @@ export type $ResearchSuggestionIntentPayload<ExtArgs extends runtime.Types.Exten
     attempts: Prisma.$ResearchSuggestionAttemptPayload<ExtArgs>[]
     suggestionSet: Prisma.$ResearchSuggestionSetPayload<ExtArgs> | null
     componentProvenance: Prisma.$EditorialComponentProvenancePayload<ExtArgs>[]
+    approvalComponentSnapshots: Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2407,6 +2610,7 @@ export interface Prisma__ResearchSuggestionIntentClient<T, Null = never, ExtArgs
   attempts<T extends Prisma.ResearchSuggestionIntent$attemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ResearchSuggestionIntent$attemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResearchSuggestionAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   suggestionSet<T extends Prisma.ResearchSuggestionIntent$suggestionSetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ResearchSuggestionIntent$suggestionSetArgs<ExtArgs>>): Prisma.Prisma__ResearchSuggestionSetClient<runtime.Types.Result.GetResult<Prisma.$ResearchSuggestionSetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   componentProvenance<T extends Prisma.ResearchSuggestionIntent$componentProvenanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ResearchSuggestionIntent$componentProvenanceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialComponentProvenancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  approvalComponentSnapshots<T extends Prisma.ResearchSuggestionIntent$approvalComponentSnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ResearchSuggestionIntent$approvalComponentSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2951,6 +3155,30 @@ export type ResearchSuggestionIntent$componentProvenanceArgs<ExtArgs extends run
   take?: number
   skip?: number
   distinct?: Prisma.EditorialComponentProvenanceScalarFieldEnum | Prisma.EditorialComponentProvenanceScalarFieldEnum[]
+}
+
+/**
+ * ResearchSuggestionIntent.approvalComponentSnapshots
+ */
+export type ResearchSuggestionIntent$approvalComponentSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApprovalComponentSnapshot
+   */
+  select?: Prisma.EditorialApprovalComponentSnapshotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApprovalComponentSnapshot
+   */
+  omit?: Prisma.EditorialApprovalComponentSnapshotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalComponentSnapshotInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
+  orderBy?: Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput | Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalComponentSnapshotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum | Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum[]
 }
 
 /**

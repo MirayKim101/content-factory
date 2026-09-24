@@ -59,8 +59,9 @@ export interface AssemblyRenderPlan {
 export interface EditorialExportPlan {
   intentId: string;
   approvalId: string;
-  approvalContractVersion: "manual-horizontal-approval-v1";
-  exportContractVersion: "editorial-export-zip-v1";
+  approvalContractVersion:
+    "manual-horizontal-approval-v1" | "human-horizontal-approval-v2";
+  exportContractVersion: "editorial-export-zip-v1" | "editorial-export-zip-v2";
   candidateFingerprint: string;
   editorialPackageRevisionId: string;
   editorialRevision: number;
@@ -88,6 +89,12 @@ export interface EditorialExportPlan {
     title: string;
     description: string;
     tags: string[];
+  };
+  approvalSnapshot?: {
+    workflowMode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+    components: unknown[];
+    economics: unknown;
+    processingMetrics: unknown;
   };
 }
 

@@ -72,6 +72,8 @@ export const ModelName = {
   EditorialPackageRevision: 'EditorialPackageRevision',
   EditorialMutationRequest: 'EditorialMutationRequest',
   EditorialApproval: 'EditorialApproval',
+  EditorialApprovalComponentSnapshot: 'EditorialApprovalComponentSnapshot',
+  EditorialApprovalEconomicsV2: 'EditorialApprovalEconomicsV2',
   EditorialApprovalMetrics: 'EditorialApprovalMetrics',
   EditorialOperationRequest: 'EditorialOperationRequest',
   EditorialExportIntent: 'EditorialExportIntent',
@@ -556,6 +558,60 @@ export const EditorialApprovalScalarFieldEnum = {
 } as const
 
 export type EditorialApprovalScalarFieldEnum = (typeof EditorialApprovalScalarFieldEnum)[keyof typeof EditorialApprovalScalarFieldEnum]
+
+
+export const EditorialApprovalComponentSnapshotScalarFieldEnum = {
+  id: 'id',
+  approvalId: 'approvalId',
+  editorialPackageRevisionId: 'editorialPackageRevisionId',
+  component: 'component',
+  provenanceId: 'provenanceId',
+  mode: 'mode',
+  basisVersion: 'basisVersion',
+  researchIntentId: 'researchIntentId',
+  suggestionSetId: 'suggestionSetId',
+  imageIntentId: 'imageIntentId',
+  imageCandidateId: 'imageCandidateId',
+  transcriptArtifactId: 'transcriptArtifactId',
+  transcriptSha256: 'transcriptSha256',
+  citations: 'citations',
+  freshness: 'freshness',
+  imageSafetyDecision: 'imageSafetyDecision',
+  likeness: 'likeness',
+  directCostMicrousd: 'directCostMicrousd',
+  costBasisVersion: 'costBasisVersion',
+  incompleteReasons: 'incompleteReasons',
+  snapshotFingerprint: 'snapshotFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialApprovalComponentSnapshotScalarFieldEnum = (typeof EditorialApprovalComponentSnapshotScalarFieldEnum)[keyof typeof EditorialApprovalComponentSnapshotScalarFieldEnum]
+
+
+export const EditorialApprovalEconomicsV2ScalarFieldEnum = {
+  approvalId: 'approvalId',
+  schemaVersion: 'schemaVersion',
+  workflowMode: 'workflowMode',
+  attentionSchemaVersion: 'attentionSchemaVersion',
+  preparationForegroundMs: 'preparationForegroundMs',
+  finalReviewForegroundMs: 'finalReviewForegroundMs',
+  totalOperatorAttentionMs: 'totalOperatorAttentionMs',
+  metadataDirectCostMicrousd: 'metadataDirectCostMicrousd',
+  evidenceDirectCostMicrousd: 'evidenceDirectCostMicrousd',
+  thumbnailDirectCostMicrousd: 'thumbnailDirectCostMicrousd',
+  combinedDirectCostMicrousd: 'combinedDirectCostMicrousd',
+  currency: 'currency',
+  unit: 'unit',
+  metadataCostBasisVersion: 'metadataCostBasisVersion',
+  evidenceCostBasisVersion: 'evidenceCostBasisVersion',
+  thumbnailCostBasisVersion: 'thumbnailCostBasisVersion',
+  assistanceTiming: 'assistanceTiming',
+  incompleteReasons: 'incompleteReasons',
+  snapshotFingerprint: 'snapshotFingerprint',
+  createdAt: 'createdAt'
+} as const
+
+export type EditorialApprovalEconomicsV2ScalarFieldEnum = (typeof EditorialApprovalEconomicsV2ScalarFieldEnum)[keyof typeof EditorialApprovalEconomicsV2ScalarFieldEnum]
 
 
 export const EditorialApprovalMetricsScalarFieldEnum = {

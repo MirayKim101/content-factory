@@ -1248,10 +1248,14 @@ export interface components {
     };
     CreateEditorialApprovalDto: {
       /** @enum {string} */
-      attentionMeasurementVersion: "foreground-preview-v1";
+      approvalContractVersion?:
+        "manual-horizontal-approval-v1" | "human-horizontal-approval-v2";
+      attention?: components["schemas"]["OperatorAttentionV2Dto"];
+      /** @enum {string} */
+      attentionMeasurementVersion?: "foreground-preview-v1";
       candidateFingerprint: string;
       editorialRevision: number;
-      manualAttentionMs: number;
+      manualAttentionMs?: number;
     };
     CreateFrameEvidenceDto: {
       /** Format: uuid */
@@ -1504,7 +1508,8 @@ export interface components {
     EditorialApprovalMetricsResponseDto: {
       assembly: components["schemas"]["ApprovalJobMetricsResponseDto"];
       /** @enum {string} */
-      attentionMeasurementVersion: "foreground-preview-v1";
+      attentionMeasurementVersion:
+        "foreground-preview-v1" | "operator-attention-v2";
       /** @enum {string} */
       costBasisVersion: "local-direct-provider-cost-v1";
       /** @enum {string} */
@@ -1524,7 +1529,8 @@ export interface components {
     };
     EditorialApprovalResponseDto: {
       /** @enum {string} */
-      approvalContractVersion: "manual-horizontal-approval-v1";
+      approvalContractVersion:
+        "manual-horizontal-approval-v1" | "human-horizontal-approval-v2";
       /** Format: date-time */
       approvedAt: string;
       /** Format: uuid */
@@ -1534,9 +1540,13 @@ export interface components {
       /** Format: uuid */
       assemblyRenderResultId: string;
       candidateFingerprint: string;
+      componentSnapshots: components["schemas"]["EditorialComponentSummaryResponseDto"][];
       configurationFingerprint: string;
       /** Format: uuid */
       cutPipelineJobId: string;
+      economicsV2: {
+        [key: string]: unknown;
+      } | null;
       /** Format: uuid */
       editorialPackageId: string;
       /** Format: uuid */
@@ -1599,6 +1609,61 @@ export interface components {
       /** Format: int32 */
       width: number;
     };
+    EditorialCitationResponseDto: {
+      /** Format: date-time */
+      accessedAt: string;
+      /** Format: uuid */
+      id: string;
+      /** Format: date-time */
+      publishedAt: string | null;
+      publisher: string;
+      title: string;
+      /** Format: uri */
+      url: string;
+    };
+    EditorialComponentSummaryResponseDto: {
+      basisVersion: string;
+      citations: components["schemas"]["EditorialCitationResponseDto"][];
+      /** @enum {string} */
+      component: "METADATA" | "THUMBNAIL";
+      costBasisVersion: string;
+      directCostMicrousd: string;
+      /** Format: uuid */
+      imageCandidateId: string | null;
+      /** Format: uuid */
+      imageIntentId: string | null;
+      imageSafetyDecision:
+        components["schemas"]["EditorialImageSafetyDecisionResponseDto"] | null;
+      incompleteReasons: string[];
+      likeness: string | null;
+      /** @enum {string} */
+      mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+      /** Format: uuid */
+      provenanceId: string | null;
+      research:
+        components["schemas"]["EditorialResearchFreshnessResponseDto"] | null;
+      /** Format: uuid */
+      researchIntentId: string | null;
+      snapshotFingerprint: string;
+      /** Format: uuid */
+      suggestionSetId: string | null;
+      /** Format: uuid */
+      transcriptArtifactId: string | null;
+      transcriptSha256: string | null;
+    };
+    EditorialEconomicsPreviewResponseDto: {
+      combinedDirectCostMicrousd: string;
+      /** @enum {string} */
+      currency: "USD";
+      evidenceDirectCostMicrousd: string;
+      incompleteReasons: string[];
+      metadataDirectCostMicrousd: string;
+      processingMetrics:
+        components["schemas"]["ApprovalProcessingMetricsResponseDto"] | null;
+      thumbnailDirectCostMicrousd: string;
+      /** @enum {string} */
+      unit: "MICRO";
+    };
     EditorialExportFailureResponseDto: {
       code: string;
       message: string;
@@ -1650,7 +1715,8 @@ export interface components {
       /** Format: uuid */
       editorialPackageRevisionId: string;
       /** @enum {string} */
-      exportContractVersion: "editorial-export-zip-v1";
+      exportContractVersion:
+        "editorial-export-zip-v1" | "editorial-export-zip-v2";
       /** Format: uuid */
       id: string;
       job: components["schemas"]["EditorialExportJobResponseDto"];
@@ -1677,6 +1743,16 @@ export interface components {
       code: string;
       message: string;
     };
+    EditorialImageSafetyDecisionResponseDto: {
+      /** @enum {boolean} */
+      externalProviderUsed: false;
+      /** @enum {boolean} */
+      realisticPersonRequested: false;
+      /** @enum {boolean} */
+      referenceImageUsed: false;
+      /** @enum {string} */
+      version: "no-likeness-safety-v1";
+    };
     EditorialPackageListResponseDto: {
       items: components["schemas"]["EditorialPackageResponseDto"][];
     };
@@ -1694,6 +1770,18 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
       validation: components["schemas"]["EditorialValidationResponseDto"];
+    };
+    EditorialResearchFreshnessResponseDto: {
+      /** Format: date-time */
+      freshUntil: string;
+      /** @enum {string} */
+      freshness: "CURRENT" | "EXPIRED";
+      /** Format: date-time */
+      searchedAt: string;
+    };
+    EditorialReviewComponentsResponseDto: {
+      metadata: components["schemas"]["EditorialComponentSummaryResponseDto"];
+      thumbnail: components["schemas"]["EditorialComponentSummaryResponseDto"];
     };
     EditorialReviewEditorialResponseDto: {
       description: string;
@@ -1735,14 +1823,17 @@ export interface components {
       approvable: boolean;
       blockers: string[];
       candidateFingerprint: string | null;
+      components: components["schemas"]["EditorialReviewComponentsResponseDto"];
       currentApproval:
         components["schemas"]["EditorialApprovalResponseDto"] | null;
       /** Format: uuid */
       cutPipelineJobId: string;
       /** Format: uuid */
       cutResultArtifactId: string | null;
+      economicsPreview: components["schemas"]["EditorialEconomicsPreviewResponseDto"];
       editorial:
         components["schemas"]["EditorialReviewEditorialResponseDto"] | null;
+      integratedReviewEnabled: boolean;
       latestApproval:
         components["schemas"]["EditorialApprovalResponseDto"] | null;
       processingMetrics:
@@ -1751,9 +1842,13 @@ export interface components {
       projectId: string;
       recipe: components["schemas"]["EditorialReviewRecipeResponseDto"] | null;
       render: components["schemas"]["EditorialReviewRenderResponseDto"] | null;
+      /** @enum {string} */
+      reviewContractVersion: "editorial-review-candidate-v2";
       /** Format: uuid */
       sourceId: string;
       sourceVersion: number;
+      /** @enum {string} */
+      workflowMode: "MANUAL" | "AI_ASSISTED" | "MIXED";
     };
     EditorialReviewThumbnailResponseDto: {
       /** @enum {string} */
@@ -2090,6 +2185,12 @@ export interface components {
       file: string;
       /** @enum {string} */
       kind: "ADVERTISEMENT" | "INTRO" | "OUTRO" | "BANNER";
+    };
+    OperatorAttentionV2Dto: {
+      finalReviewForegroundMs: number;
+      preparationForegroundMs: number;
+      /** @enum {string} */
+      schemaVersion: "operator-attention-v2";
     };
     PipelineJobResponseDto: {
       attempt: number;

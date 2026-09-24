@@ -182,7 +182,12 @@
    ручной режим приняты после real PostgreSQL/MinIO smoke и CLEAN review;
    admission выключен по умолчанию.
 6. Этап 2B-6: единая проверка manual/AI/mixed, подтверждение, экспорт и
-   измерение затрат времени и стоимости.
+   измерение затрат времени и стоимости реализованы в рабочем дереве;
+   default-off flag, focused tests и полный 12-test disposable-PostgreSQL
+   worker harness на Node 24.15 прошли. Exact lineage/snapshot/economics
+   tampering и AI/MIXED admission через historical v1 закрыты fail-closed.
+   Срез ещё не принят до independent real-diff review и manual/assisted
+   object-storage E2E.
 7. Этап 3: Twitch, вертикальный pipeline, публикация и сбор статусов по
    отдельным acceptance criteria.
 

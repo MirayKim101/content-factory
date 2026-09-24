@@ -83,7 +83,7 @@ export class EditorialExportResponseDto {
   @ApiProperty({ type: String, format: "uuid" }) recipeRevisionId!: string;
   @ApiProperty({ type: String, format: "uuid" })
   assemblyRenderResultId!: string;
-  @ApiProperty({ enum: ["editorial-export-zip-v1"] })
+  @ApiProperty({ enum: ["editorial-export-zip-v1", "editorial-export-zip-v2"] })
   exportContractVersion!: string;
   @ApiProperty({ type: Boolean }) approvalCurrent!: boolean;
   @ApiProperty({ type: EditorialExportJobResponseDto })

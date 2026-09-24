@@ -7,6 +7,7 @@ const input = {
   renderId: "ef703380-656e-4f15-9c5e-f722c7bbe01b",
   editorialRevision: 3,
   candidateFingerprint: "a".repeat(64),
+  approvalContractVersion: "manual-horizontal-approval-v1" as const,
   manualAttentionMs: 245_000,
   attentionMeasurementVersion: "foreground-preview-v1" as const,
   idempotencyKey: "approval-request-1",
@@ -35,5 +36,30 @@ describe("CreateEditorialApproval", () => {
     const useCase = new CreateEditorialApproval(repository, false);
     expect(() => useCase.execute(input)).toThrow();
     expect(repository.create).not.toHaveBeenCalled();
+  });
+
+  it("keeps v2 admission independently default-off and forwards exact two-phase attention when enabled", async () => {
+    const repository = {
+      create: vi.fn(async () => ({ id: "approval-v2" }) as never),
+    } as unknown as EditorialApprovalRepository;
+    const request = {
+      renderId: input.renderId,
+      editorialRevision: 4,
+      candidateFingerprint: "b".repeat(64),
+      approvalContractVersion: "human-horizontal-approval-v2" as const,
+      attention: {
+        schemaVersion: "operator-attention-v2" as const,
+        preparationForegroundMs: 120_000,
+        finalReviewForegroundMs: 45_000,
+      },
+      idempotencyKey: "approval-request-v2",
+    };
+    expect(() =>
+      new CreateEditorialApproval(repository, true).execute(request),
+    ).toThrow();
+    await new CreateEditorialApproval(repository, true, true).execute(request);
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ attention: request.attention }),
+    );
   });
 });

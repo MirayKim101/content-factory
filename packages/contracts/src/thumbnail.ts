@@ -1,5 +1,48 @@
 /** Provider-neutral thumbnail candidate metadata. Raw bytes remain private. */
 export const THUMBNAIL_CONTRACT_VERSION = "editorial-thumbnail-v1" as const;
+export const LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION =
+  "local-no-likeness-png-v1" as const;
+export const LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION =
+  "local-abstract-thumbnail-prompt-v1" as const;
+export const NO_LIKENESS_SAFETY_DECISION_VERSION =
+  "no-likeness-safety-v1" as const;
+
+export type NoLikenessSafetyDecision = Readonly<{
+  version: typeof NO_LIKENESS_SAFETY_DECISION_VERSION;
+  realisticPersonRequested: false;
+  referenceImageUsed: false;
+  externalProviderUsed: false;
+}>;
+
+/** Exact public projection for the supported local no-likeness adapter. */
+export function projectNoLikenessSafetyDecision(
+  value: unknown,
+): NoLikenessSafetyDecision | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const row = value as Record<string, unknown>;
+  const keys = Object.keys(row).sort();
+  const expected = [
+    "externalProviderUsed",
+    "realisticPersonRequested",
+    "referenceImageUsed",
+    "version",
+  ];
+  if (
+    keys.length !== expected.length ||
+    keys.some((key, index) => key !== expected[index]) ||
+    row.version !== NO_LIKENESS_SAFETY_DECISION_VERSION ||
+    row.realisticPersonRequested !== false ||
+    row.referenceImageUsed !== false ||
+    row.externalProviderUsed !== false
+  )
+    return null;
+  return {
+    version: NO_LIKENESS_SAFETY_DECISION_VERSION,
+    realisticPersonRequested: false,
+    referenceImageUsed: false,
+    externalProviderUsed: false,
+  };
+}
 
 export type ThumbnailCandidate = Readonly<{
   id: string;

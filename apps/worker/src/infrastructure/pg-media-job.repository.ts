@@ -1,5 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
-import type { MontageProbeResultV1 } from "@content-factory/contracts";
+import {
+  projectNoLikenessSafetyDecision,
+  type MontageProbeResultV1,
+} from "@content-factory/contracts";
 
 import { Pool, type PoolClient } from "pg";
 
@@ -107,6 +110,152 @@ interface ExportClaimRow {
   title: string;
   description: string;
   tags: unknown;
+  approvalComponents: unknown;
+  approvalEconomics: unknown;
+  approvalProcessingMetrics: unknown;
+}
+
+function requireWorkflowMode(
+  value: unknown,
+): "MANUAL" | "AI_ASSISTED" | "MIXED" {
+  if (!value || typeof value !== "object")
+    throw new ControlledMediaError(
+      "EXPORT_APPROVAL_SNAPSHOT_INVALID",
+      "The v2 approval snapshot is incomplete.",
+      false,
+    );
+  const mode = (value as Record<string, unknown>).workflowMode;
+  if (mode !== "MANUAL" && mode !== "AI_ASSISTED" && mode !== "MIXED")
+    throw new ControlledMediaError(
+      "EXPORT_APPROVAL_SNAPSHOT_INVALID",
+      "The v2 approval workflow mode is invalid.",
+      false,
+    );
+  return mode;
+}
+
+function validV2SnapshotFingerprints(
+  components: unknown[],
+  economicsValue: unknown,
+): boolean {
+  if (!economicsValue || typeof economicsValue !== "object") return false;
+  const economics = economicsValue as Record<string, unknown>;
+  const byComponent = new Map<string, Record<string, unknown>>();
+  for (const value of components) {
+    if (!value || typeof value !== "object") return false;
+    const component = value as Record<string, unknown>;
+    if (
+      (component.component !== "METADATA" &&
+        component.component !== "THUMBNAIL") ||
+      byComponent.has(component.component)
+    )
+      return false;
+    const citations = Array.isArray(component.citations)
+      ? component.citations.map((citation) => {
+          if (!citation || typeof citation !== "object") return citation;
+          const row = citation as Record<string, unknown>;
+          return {
+            ...row,
+            publishedAt:
+              typeof row.publishedAt === "string"
+                ? new Date(row.publishedAt)
+                : null,
+            accessedAt:
+              typeof row.accessedAt === "string"
+                ? new Date(row.accessedAt)
+                : row.accessedAt,
+          };
+        })
+      : component.citations;
+    const freshness =
+      component.freshness && typeof component.freshness === "object"
+        ? {
+            ...(component.freshness as Record<string, unknown>),
+            searchedAt: new Date(
+              String(
+                (component.freshness as Record<string, unknown>).searchedAt,
+              ),
+            ),
+            freshUntil: new Date(
+              String(
+                (component.freshness as Record<string, unknown>).freshUntil,
+              ),
+            ),
+          }
+        : null;
+    const incompleteReasons = Array.isArray(component.incompleteReasons)
+      ? [...new Set(component.incompleteReasons)]
+      : component.incompleteReasons;
+    const publicSafetyDecision = projectNoLikenessSafetyDecision(
+      component.imageSafetyDecision,
+    );
+    if (
+      (component.component === "METADATA" &&
+        component.imageSafetyDecision != null) ||
+      (component.component === "THUMBNAIL" &&
+        component.mode === "MANUAL" &&
+        component.imageSafetyDecision != null) ||
+      (component.component === "THUMBNAIL" &&
+        component.mode === "AI_ASSISTED" && !publicSafetyDecision) ||
+      (component.component === "THUMBNAIL" &&
+        component.mode !== "MANUAL" &&
+        component.mode !== "AI_ASSISTED")
+    )
+      return false;
+    const expected = hashValues([
+      "editorial-approval-component-snapshot-v2",
+      String(component.component),
+      String(component.provenanceId ?? ""),
+      String(component.mode),
+      String(component.basisVersion),
+      String(component.researchIntentId ?? ""),
+      String(component.suggestionSetId ?? ""),
+      String(component.imageIntentId ?? ""),
+      String(component.imageCandidateId ?? ""),
+      String(component.transcriptArtifactId ?? ""),
+      String(component.transcriptSha256 ?? ""),
+      canonicalJson(citations),
+      canonicalJson(freshness),
+      canonicalJson(publicSafetyDecision),
+      String(component.likeness ?? ""),
+      String(component.directCostMicrousd),
+      String(component.costBasisVersion),
+      canonicalJson(incompleteReasons),
+    ]);
+    if (component.snapshotFingerprint !== expected) return false;
+    byComponent.set(component.component, component);
+  }
+  const metadata = byComponent.get("METADATA");
+  const thumbnail = byComponent.get("THUMBNAIL");
+  if (!metadata || !thumbnail) return false;
+  const expectedEconomics = hashValues([
+    "approval-economics-v2",
+    String(economics.workflowMode),
+    String(economics.preparationForegroundMs),
+    String(economics.finalReviewForegroundMs),
+    String(metadata.snapshotFingerprint),
+    String(thumbnail.snapshotFingerprint),
+    String(economics.metadataDirectCostMicrousd),
+    String(economics.evidenceDirectCostMicrousd),
+    String(economics.thumbnailDirectCostMicrousd),
+    String(economics.combinedDirectCostMicrousd),
+  ]);
+  return economics.snapshotFingerprint === expectedEconomics;
+}
+
+function canonicalJson(value: unknown): string {
+  if (value === undefined) return "null";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
+    .join(",")}}`;
+}
+
+function hashValues(values: string[]): string {
+  return createHash("sha256").update(values.join("\n"), "utf8").digest("hex");
 }
 
 export class PgMediaJobRepository implements MediaJobRepository {
@@ -966,7 +1115,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
            "sizeBytes","sha256","contentType","lineageSourceId","lineageSourceVersion","recipeVersion",
            "pipelineJobId","outputFilename","updatedAt")
          VALUES ($1,$2,$3,'EDITORIAL_EXPORT_PACKAGE','READY',$4,$5,$6,$7,$8,'application/zip',$3,$9,
-                 'editorial-export-zip-v1',$10,$11,now())
+                 $12,$10,$11,now())
          ON CONFLICT ("pipelineJobId") DO NOTHING`,
         [
           randomUUID(),
@@ -980,6 +1129,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
           job.sourceVersion,
           job.id,
           result.filename,
+          job.editorialExportPlan.exportContractVersion,
         ],
       );
       const artifact = await client.query<{
@@ -1009,7 +1159,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
         `INSERT INTO "EditorialExportResult"
           ("id","exportIntentId","pipelineJobId","artifactId","filename","archiveSizeBytes",
            "archiveSha256","manifest","exportContractVersion","completedAt")
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,'editorial-export-zip-v1',now())
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,now())
          ON CONFLICT ("exportIntentId") DO NOTHING`,
         [
           randomUUID(),
@@ -1020,6 +1170,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
           result.sizeBytes.toString(),
           result.sha256,
           JSON.stringify(result.manifest),
+          job.editorialExportPlan.exportContractVersion,
         ],
       );
       const accepted = await client.query<{
@@ -1397,7 +1548,54 @@ export class PgMediaJobRepository implements MediaJobRepository {
               video."sha256" AS "videoSha256", thumb."id" AS "thumbnailAssetId",
               thumb."objectKey" AS "thumbnailObjectKey", thumb."sizeBytes"::text AS "thumbnailSizeBytes",
               thumb."sha256" AS "thumbnailSha256", thumb."contentType" AS "thumbnailContentType",
-              thumb."originalFilename" AS "thumbnailOriginalFilename", pr."title", pr."description", pr."tags"
+              thumb."originalFilename" AS "thumbnailOriginalFilename", pr."title", pr."description", pr."tags",
+              (SELECT jsonb_agg(jsonb_build_object(
+                 'component', cs."component", 'mode', cs."mode", 'basisVersion', cs."basisVersion",
+                 'provenanceId', cs."provenanceId", 'researchIntentId', cs."researchIntentId",
+                 'suggestionSetId', cs."suggestionSetId", 'imageIntentId', cs."imageIntentId",
+                 'imageCandidateId', cs."imageCandidateId", 'transcriptArtifactId', cs."transcriptArtifactId",
+                 'transcriptSha256', cs."transcriptSha256", 'citations', cs."citations",
+                 'freshness', cs."freshness", 'imageSafetyDecision', cs."imageSafetyDecision",
+                 'likeness', cs."likeness", 'directCostMicrousd', cs."directCostMicrousd"::text,
+                 'costBasisVersion', cs."costBasisVersion", 'incompleteReasons', cs."incompleteReasons",
+                 'snapshotFingerprint', cs."snapshotFingerprint") ORDER BY cs."component")
+                 FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id") AS "approvalComponents",
+              (SELECT jsonb_build_object(
+                 'schemaVersion', ec."schemaVersion", 'workflowMode', ec."workflowMode",
+                 'attentionSchemaVersion', ec."attentionSchemaVersion",
+                 'preparationForegroundMs', ec."preparationForegroundMs",
+                 'finalReviewForegroundMs', ec."finalReviewForegroundMs",
+                 'totalOperatorAttentionMs', ec."totalOperatorAttentionMs",
+                 'metadataDirectCostMicrousd', ec."metadataDirectCostMicrousd"::text,
+                 'evidenceDirectCostMicrousd', ec."evidenceDirectCostMicrousd"::text,
+                 'thumbnailDirectCostMicrousd', ec."thumbnailDirectCostMicrousd"::text,
+                 'combinedDirectCostMicrousd', ec."combinedDirectCostMicrousd"::text,
+                 'currency', ec."currency", 'unit', ec."unit",
+                 'metadataCostBasisVersion', ec."metadataCostBasisVersion",
+                 'evidenceCostBasisVersion', ec."evidenceCostBasisVersion",
+                 'thumbnailCostBasisVersion', ec."thumbnailCostBasisVersion",
+                 'assistanceTiming', ec."assistanceTiming", 'incompleteReasons', ec."incompleteReasons",
+                 'snapshotFingerprint', ec."snapshotFingerprint")
+                 FROM "EditorialApprovalEconomicsV2" ec WHERE ec."approvalId"=a."id") AS "approvalEconomics",
+              (SELECT jsonb_build_object(
+                 'metricsSchemaVersion', am."metricsSchemaVersion",
+                 'timestampBasisVersion', am."timestampBasisVersion",
+                 'cut', jsonb_build_object(
+                   'initialQueueWaitMs', am."cutInitialQueueWaitMs", 'retryWaitMs', am."cutRetryWaitMs",
+                   'firstStartToFinishMs', am."cutFirstStartToFinishMs", 'activeAttemptMs', am."cutActiveAttemptMs",
+                   'attemptCount', am."cutAttemptCount", 'retryCount', am."cutRetryCount"),
+                 'assembly', jsonb_build_object(
+                   'initialQueueWaitMs', am."assemblyInitialQueueWaitMs", 'retryWaitMs', am."assemblyRetryWaitMs",
+                   'firstStartToFinishMs', am."assemblyFirstStartToFinishMs", 'activeAttemptMs', am."assemblyActiveAttemptMs",
+                   'attemptCount', am."assemblyAttemptCount", 'retryCount', am."assemblyRetryCount"),
+                 'cutToAssemblyReadyElapsedMs', am."cutToAssemblyReadyElapsedMs",
+                 'outputDurationMs', am."outputDurationMs", 'outputBytes', am."outputBytes"::text,
+                 'manualAttentionMs', am."manualAttentionMs",
+                 'attentionMeasurementVersion', am."attentionMeasurementVersion",
+                 'directProviderCostMinor', am."directProviderCostMinor"::text,
+                 'costCurrency', am."costCurrency", 'costBasisVersion', am."costBasisVersion",
+                 'incompleteReasons', am."incompleteReasons")
+                 FROM "EditorialApprovalMetrics" am WHERE am."approvalId"=a."id") AS "approvalProcessingMetrics"
          FROM "PipelineJob" j
          JOIN "EditorialExportIntent" e ON e."id"=j."editorialExportIntentId"
           AND e."projectId"=j."projectId" AND e."sourceId"=j."sourceId" AND e."sourceVersion"=j."sourceVersion"
@@ -1475,10 +1673,43 @@ export class PgMediaJobRepository implements MediaJobRepository {
           AND video."lineageSourceVersion"=a."sourceVersion" AND video."pipelineJobId"=render_job."id"
           AND video."sha256"=a."renderArtifactSha256" AND video."sizeBytes"=a."renderArtifactSizeBytes"
           AND video."contentType"='video/mp4' AND video."recipeVersion"='horizontal-render-v1'
-        WHERE j."id"=$1 AND j."type"='EXPORT_EDITORIAL_PACKAGE' AND j."payloadVersion"=1
-          AND j."recipeVersion"='editorial-export-zip-v1'
-          AND e."exportContractVersion"='editorial-export-zip-v1'
-          AND a."approvalContractVersion"='manual-horizontal-approval-v1'
+        WHERE j."id"=$1 AND j."type"='EXPORT_EDITORIAL_PACKAGE'
+          AND ((j."payloadVersion"=1 AND j."recipeVersion"='editorial-export-zip-v1'
+            AND e."exportContractVersion"='editorial-export-zip-v1'
+            AND a."approvalContractVersion"='manual-horizontal-approval-v1'
+            AND NOT EXISTS (SELECT 1 FROM "EditorialComponentProvenance" vp
+              WHERE vp."packageRevisionId"=a."editorialPackageRevisionId" AND vp."mode"<>'MANUAL'))
+            OR (j."payloadVersion"=2 AND j."recipeVersion"='editorial-export-zip-v2'
+            AND e."exportContractVersion"='editorial-export-zip-v2'
+            AND a."approvalContractVersion"='human-horizontal-approval-v2'
+            AND (SELECT count(*) FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id")=2
+            AND EXISTS (SELECT 1 FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id" AND cs."component"='METADATA')
+            AND EXISTS (SELECT 1 FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id" AND cs."component"='THUMBNAIL')
+            AND NOT EXISTS (
+              SELECT 1 FROM "EditorialApprovalComponentSnapshot" cs
+              JOIN "EditorialComponentProvenance" cp ON cp."id"=cs."provenanceId"
+              LEFT JOIN "ResearchSuggestionSet" rs ON rs."id"=cs."suggestionSetId" AND rs."intentId"=cs."researchIntentId"
+              LEFT JOIN "ImageSuggestionCandidate" ic ON ic."id"=cs."imageCandidateId" AND ic."intentId"=cs."imageIntentId"
+              WHERE cs."approvalId"=a."id" AND (
+                cs."editorialPackageRevisionId"<>a."editorialPackageRevisionId"
+                OR cp."packageRevisionId"<>a."editorialPackageRevisionId" OR cp."component"<>cs."component"
+                OR cp."mode"<>cs."mode" OR cp."basisVersion"<>cs."basisVersion"
+                OR cp."researchIntentId" IS DISTINCT FROM cs."researchIntentId"
+                OR cp."suggestionSetId" IS DISTINCT FROM cs."suggestionSetId"
+                OR cp."imageIntentId" IS DISTINCT FROM cs."imageIntentId"
+                OR cp."imageCandidateId" IS DISTINCT FROM cs."imageCandidateId"
+                OR (cs."component"='METADATA' AND cs."mode"<>'MANUAL' AND (rs."id" IS NULL OR rs."directCostMicrousd"<>cs."directCostMicrousd" OR rs."costBasisVersion"<>cs."costBasisVersion"))
+                OR (cs."component"='THUMBNAIL' AND cs."mode"<>'MANUAL' AND (ic."id" IS NULL OR ic."directCostMicrousd"<>cs."directCostMicrousd" OR ic."costBasisVersion"<>cs."costBasisVersion" OR ic."contractVersion"<>'editorial-thumbnail-v1' OR ic."adapterVersion"<>'local-no-likeness-png-v1' OR ic."promptBasisVersion"<>'local-abstract-thumbnail-prompt-v1' OR ic."likeness"<>'NONE' OR ic."safetyDecision" IS DISTINCT FROM cs."imageSafetyDecision"))))
+            AND EXISTS (
+              SELECT 1 FROM "EditorialApprovalEconomicsV2" ec
+              JOIN "EditorialApprovalComponentSnapshot" ms ON ms."approvalId"=ec."approvalId" AND ms."component"='METADATA'
+              JOIN "EditorialApprovalComponentSnapshot" ts ON ts."approvalId"=ec."approvalId" AND ts."component"='THUMBNAIL'
+              WHERE ec."approvalId"=a."id"
+                AND ec."metadataDirectCostMicrousd"=ms."directCostMicrousd"
+                AND ec."thumbnailDirectCostMicrousd"=ts."directCostMicrousd"
+                AND ec."combinedDirectCostMicrousd"=ec."metadataDirectCostMicrousd"+ec."evidenceDirectCostMicrousd"+ec."thumbnailDirectCostMicrousd"
+                AND ec."metadataCostBasisVersion"=ms."costBasisVersion"
+                AND ec."thumbnailCostBasisVersion"=ts."costBasisVersion")))
           AND a."renderContractVersion"='horizontal-render-v1'
           AND NOT EXISTS (
             SELECT 1 FROM "AssemblyRecipeAssetReference" ref
@@ -1500,7 +1731,22 @@ export class PgMediaJobRepository implements MediaJobRepository {
     );
     const row = selected.rows[0];
     const tags = row ? stringArray(row.tags) : null;
-    if (!row || !tags || tags.length === 0) {
+    if (
+      !row ||
+      !tags ||
+      tags.length === 0 ||
+      (row.exportContractVersion === "editorial-export-zip-v2" &&
+        (!Array.isArray(row.approvalComponents) ||
+          row.approvalComponents.length !== 2 ||
+          !row.approvalEconomics ||
+          typeof row.approvalEconomics !== "object" ||
+          !validV2SnapshotFingerprints(
+            row.approvalComponents,
+            row.approvalEconomics,
+          ) ||
+          !row.approvalProcessingMetrics ||
+          typeof row.approvalProcessingMetrics !== "object"))
+    ) {
       await client.query(
         `UPDATE "PipelineJob" SET "state"='FAILED_FINAL', "failureCode"='EXPORT_APPROVAL_STALE',
              "failureMessage"='The exact editorial approval is no longer current or authorized.',
@@ -1562,8 +1808,14 @@ export class PgMediaJobRepository implements MediaJobRepository {
       editorialExportPlan: {
         intentId: row.intentId,
         approvalId: row.approvalId,
-        approvalContractVersion: "manual-horizontal-approval-v1",
-        exportContractVersion: "editorial-export-zip-v1",
+        approvalContractVersion:
+          row.approvalContractVersion === "human-horizontal-approval-v2"
+            ? "human-horizontal-approval-v2"
+            : "manual-horizontal-approval-v1",
+        exportContractVersion:
+          row.exportContractVersion === "editorial-export-zip-v2"
+            ? "editorial-export-zip-v2"
+            : "editorial-export-zip-v1",
         candidateFingerprint: row.candidateFingerprint,
         editorialPackageRevisionId: row.editorialPackageRevisionId,
         editorialRevision: row.editorialRevision,
@@ -1592,6 +1844,16 @@ export class PgMediaJobRepository implements MediaJobRepository {
           description: row.description,
           tags,
         },
+        ...(row.exportContractVersion === "editorial-export-zip-v2"
+          ? {
+              approvalSnapshot: {
+                workflowMode: requireWorkflowMode(row.approvalEconomics),
+                components: row.approvalComponents as unknown[],
+                economics: row.approvalEconomics,
+                processingMetrics: row.approvalProcessingMetrics,
+              },
+            }
+          : {}),
       },
     };
   }
@@ -1692,8 +1954,40 @@ export class PgMediaJobRepository implements MediaJobRepository {
         WHERE e."id"=$1 AND e."projectId"=$3 AND e."sourceId"=$4 AND e."sourceVersion"=$5
           AND e."approvalId"=$6 AND e."approvalCandidateFingerprint"=$7
           AND e."editorialPackageRevisionId"=$8 AND e."recipeRevisionId"=$9
-          AND e."assemblyRenderResultId"=$10 AND e."exportContractVersion"='editorial-export-zip-v1'
-          AND a."approvalContractVersion"='manual-horizontal-approval-v1'
+          AND e."assemblyRenderResultId"=$10 AND e."exportContractVersion"=$11
+          AND a."approvalContractVersion"=$12
+          AND (($12='manual-horizontal-approval-v1' AND NOT EXISTS (
+            SELECT 1 FROM "EditorialComponentProvenance" vp
+            WHERE vp."packageRevisionId"=a."editorialPackageRevisionId" AND vp."mode"<>'MANUAL')) OR (
+            $12='human-horizontal-approval-v2'
+            AND (SELECT count(*) FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id")=2
+            AND EXISTS (SELECT 1 FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id" AND cs."component"='METADATA')
+            AND EXISTS (SELECT 1 FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id" AND cs."component"='THUMBNAIL')
+            AND NOT EXISTS (
+              SELECT 1 FROM "EditorialApprovalComponentSnapshot" cs
+              JOIN "EditorialComponentProvenance" cp ON cp."id"=cs."provenanceId"
+              LEFT JOIN "ResearchSuggestionSet" rs ON rs."id"=cs."suggestionSetId" AND rs."intentId"=cs."researchIntentId"
+              LEFT JOIN "ImageSuggestionCandidate" ic ON ic."id"=cs."imageCandidateId" AND ic."intentId"=cs."imageIntentId"
+              WHERE cs."approvalId"=a."id" AND (
+                cs."editorialPackageRevisionId"<>a."editorialPackageRevisionId"
+                OR cp."packageRevisionId"<>a."editorialPackageRevisionId" OR cp."component"<>cs."component"
+                OR cp."mode"<>cs."mode" OR cp."basisVersion"<>cs."basisVersion"
+                OR cp."researchIntentId" IS DISTINCT FROM cs."researchIntentId"
+                OR cp."suggestionSetId" IS DISTINCT FROM cs."suggestionSetId"
+                OR cp."imageIntentId" IS DISTINCT FROM cs."imageIntentId"
+                OR cp."imageCandidateId" IS DISTINCT FROM cs."imageCandidateId"
+                OR (cs."component"='METADATA' AND cs."mode"<>'MANUAL' AND (rs."id" IS NULL OR rs."directCostMicrousd"<>cs."directCostMicrousd" OR rs."costBasisVersion"<>cs."costBasisVersion"))
+                OR (cs."component"='THUMBNAIL' AND cs."mode"<>'MANUAL' AND (ic."id" IS NULL OR ic."directCostMicrousd"<>cs."directCostMicrousd" OR ic."costBasisVersion"<>cs."costBasisVersion" OR ic."contractVersion"<>'editorial-thumbnail-v1' OR ic."adapterVersion"<>'local-no-likeness-png-v1' OR ic."promptBasisVersion"<>'local-abstract-thumbnail-prompt-v1' OR ic."likeness"<>'NONE' OR ic."safetyDecision" IS DISTINCT FROM cs."imageSafetyDecision"))))
+            AND EXISTS (
+              SELECT 1 FROM "EditorialApprovalEconomicsV2" ec
+              JOIN "EditorialApprovalComponentSnapshot" ms ON ms."approvalId"=ec."approvalId" AND ms."component"='METADATA'
+              JOIN "EditorialApprovalComponentSnapshot" ts ON ts."approvalId"=ec."approvalId" AND ts."component"='THUMBNAIL'
+              WHERE ec."approvalId"=a."id"
+                AND ec."metadataDirectCostMicrousd"=ms."directCostMicrousd"
+                AND ec."thumbnailDirectCostMicrousd"=ts."directCostMicrousd"
+                AND ec."combinedDirectCostMicrousd"=ec."metadataDirectCostMicrousd"+ec."evidenceDirectCostMicrousd"+ec."thumbnailDirectCostMicrousd"
+                AND ec."metadataCostBasisVersion"=ms."costBasisVersion"
+                AND ec."thumbnailCostBasisVersion"=ts."costBasisVersion")))
           AND a."renderContractVersion"='horizontal-render-v1'
           AND NOT EXISTS (
             SELECT 1 FROM "AssemblyRecipeAssetReference" ref
@@ -1719,6 +2013,8 @@ export class PgMediaJobRepository implements MediaJobRepository {
         job.editorialExportPlan.editorialPackageRevisionId,
         job.editorialExportPlan.recipeRevisionId,
         job.editorialExportPlan.assemblyRenderResultId,
+        job.editorialExportPlan.exportContractVersion,
+        job.editorialExportPlan.approvalContractVersion,
       ],
     );
     if (current.rowCount !== 1)
@@ -1727,6 +2023,40 @@ export class PgMediaJobRepository implements MediaJobRepository {
         "The exact editorial approval is no longer current or authorized.",
         false,
       );
+    if (
+      job.editorialExportPlan.approvalContractVersion ===
+      "human-horizontal-approval-v2"
+    ) {
+      const snapshot = await client.query<{
+        components: unknown;
+        economics: unknown;
+      }>(
+        `SELECT
+           (SELECT jsonb_agg((to_jsonb(cs) - 'id' - 'approvalId' - 'createdAt') ||
+             jsonb_build_object('directCostMicrousd', cs."directCostMicrousd"::text)
+             ORDER BY cs."component")
+            FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id") AS components,
+           (SELECT (to_jsonb(ec) - 'approvalId' - 'createdAt') || jsonb_build_object(
+             'metadataDirectCostMicrousd', ec."metadataDirectCostMicrousd"::text,
+             'evidenceDirectCostMicrousd', ec."evidenceDirectCostMicrousd"::text,
+             'thumbnailDirectCostMicrousd', ec."thumbnailDirectCostMicrousd"::text,
+             'combinedDirectCostMicrousd', ec."combinedDirectCostMicrousd"::text)
+            FROM "EditorialApprovalEconomicsV2" ec WHERE ec."approvalId"=a."id") AS economics
+         FROM "EditorialApproval" a WHERE a."id"=$1`,
+        [job.editorialExportPlan.approvalId],
+      );
+      const exact = snapshot.rows[0];
+      if (
+        !exact ||
+        !Array.isArray(exact.components) ||
+        !validV2SnapshotFingerprints(exact.components, exact.economics)
+      )
+        throw new ControlledMediaError(
+          "EXPORT_APPROVAL_STALE",
+          "The exact v2 approval snapshot no longer matches its fingerprints.",
+          false,
+        );
+    }
   }
 
   private async finishReady(

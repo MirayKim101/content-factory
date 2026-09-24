@@ -32,6 +32,40 @@ const processingMetricsSchema = z.object({
   costBasisVersion: z.literal("local-direct-provider-cost-v1"),
   incompleteReasons: z.array(z.string()),
 });
+const citationSchema = z.object({
+  id: uuid,
+  url: z.url().startsWith("https://"),
+  title: z.string(),
+  publisher: z.string(),
+  publishedAt: z.iso.datetime().nullable(),
+  accessedAt: z.iso.datetime(),
+});
+const componentSummarySchema = z.object({
+  component: z.enum(["METADATA", "THUMBNAIL"]),
+  provenanceId: uuid.nullable(),
+  mode: z.enum(["MANUAL", "AI_ASSISTED", "MIXED"]),
+  basisVersion: z.string(),
+  researchIntentId: uuid.nullable(),
+  suggestionSetId: uuid.nullable(),
+  imageIntentId: uuid.nullable(),
+  imageCandidateId: uuid.nullable(),
+  transcriptArtifactId: uuid.nullable(),
+  transcriptSha256: z.string().nullable(),
+  citations: z.array(citationSchema).max(20),
+  research: z
+    .object({
+      searchedAt: z.iso.datetime(),
+      freshUntil: z.iso.datetime(),
+      freshness: z.enum(["CURRENT", "EXPIRED"]),
+    })
+    .nullable(),
+  imageSafetyDecision: z.record(z.string(), z.unknown()).nullable(),
+  likeness: z.string().nullable(),
+  directCostMicrousd: z.string().regex(/^\d+$/),
+  costBasisVersion: z.string(),
+  incompleteReasons: z.array(z.string()),
+  snapshotFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+});
 const approvalSchema: z.ZodType<EditorialApproval> = z.object({
   id: uuid,
   projectId: uuid,
@@ -56,17 +90,27 @@ const approvalSchema: z.ZodType<EditorialApproval> = z.object({
   renderArtifactSha256: z.string(),
   renderArtifactSizeBytes: z.string().regex(/^\d+$/),
   renderContractVersion: z.literal("horizontal-render-v1"),
-  approvalContractVersion: z.literal("manual-horizontal-approval-v1"),
+  approvalContractVersion: z.enum([
+    "manual-horizontal-approval-v1",
+    "human-horizontal-approval-v2",
+  ]),
   candidateFingerprint: z.string(),
   approvedAt: z.iso.datetime(),
   state: z.enum(["CURRENT", "STALE"]),
   staleReasons: z.array(z.string()),
   metrics: processingMetricsSchema.extend({
     manualAttentionMs: z.number().int().nonnegative(),
-    attentionMeasurementVersion: z.literal("foreground-preview-v1"),
+    attentionMeasurementVersion: z.enum([
+      "foreground-preview-v1",
+      "operator-attention-v2",
+    ]),
   }),
+  componentSnapshots: z.array(componentSummarySchema),
+  economicsV2: z.record(z.string(), z.unknown()).nullable(),
 });
 const reviewSchema: z.ZodType<EditorialReview> = z.object({
+  reviewContractVersion: z.literal("editorial-review-candidate-v2"),
+  integratedReviewEnabled: z.boolean(),
   projectId: uuid,
   sourceId: uuid,
   sourceVersion: z.number().int().positive(),
@@ -115,6 +159,21 @@ const reviewSchema: z.ZodType<EditorialReview> = z.object({
     })
     .nullable(),
   processingMetrics: processingMetricsSchema.nullable(),
+  workflowMode: z.enum(["MANUAL", "AI_ASSISTED", "MIXED"]),
+  components: z.object({
+    metadata: componentSummarySchema,
+    thumbnail: componentSummarySchema,
+  }),
+  economicsPreview: z.object({
+    processingMetrics: processingMetricsSchema.nullable(),
+    metadataDirectCostMicrousd: z.string().regex(/^\d+$/),
+    evidenceDirectCostMicrousd: z.string().regex(/^\d+$/),
+    thumbnailDirectCostMicrousd: z.string().regex(/^\d+$/),
+    combinedDirectCostMicrousd: z.string().regex(/^\d+$/),
+    currency: z.literal("USD"),
+    unit: z.literal("MICRO"),
+    incompleteReasons: z.array(z.string()),
+  }),
   currentApproval: approvalSchema.nullable(),
   latestApproval: approvalSchema.nullable(),
 });

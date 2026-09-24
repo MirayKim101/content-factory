@@ -1,4 +1,5 @@
 export const EDITORIAL_EXPORT_CONTRACT = "editorial-export-zip-v1" as const;
+export const EDITORIAL_EXPORT_CONTRACT_V2 = "editorial-export-zip-v2" as const;
 export const EDITORIAL_EXPORT_PROGRESS_SCHEMA =
   "editorial-export-progress-v1" as const;
 
@@ -25,7 +26,8 @@ export interface EditorialExportView {
   editorialPackageRevisionId: string;
   recipeRevisionId: string;
   assemblyRenderResultId: string;
-  exportContractVersion: typeof EDITORIAL_EXPORT_CONTRACT;
+  exportContractVersion:
+    typeof EDITORIAL_EXPORT_CONTRACT | typeof EDITORIAL_EXPORT_CONTRACT_V2;
   approvalCurrent: boolean;
   job: {
     id: string;

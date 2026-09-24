@@ -1,3 +1,5 @@
+import type { NoLikenessSafetyDecision } from "@content-factory/contracts";
+
 export const IMAGE_SUGGESTION_REPOSITORY = Symbol(
   "IMAGE_SUGGESTION_REPOSITORY",
 );
@@ -18,7 +20,7 @@ export type ImageSuggestionView = {
     width: number;
     height: number;
     likeness: "NONE";
-    safetyDecision: unknown;
+    safetyDecision: NoLikenessSafetyDecision;
     directCostMicrousd: string;
     costBasisVersion: string;
   };

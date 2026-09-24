@@ -2,6 +2,7 @@ import type {
   ApprovalProcessingMetrics,
   EditorialApprovalView,
   EditorialReviewView,
+  EditorialReviewComponentSummary,
 } from "../domain/editorial-approval.js";
 import type {
   ApprovalProcessingMetricsResponseDto,
@@ -22,6 +23,20 @@ export function editorialApprovalResponse(
       manualAttentionMs: value.metrics.manualAttentionMs,
       attentionMeasurementVersion: value.metrics.attentionMeasurementVersion,
     },
+    componentSnapshots: value.componentSnapshots.map(componentResponse),
+    economicsV2: value.economicsV2
+      ? {
+          ...value.economicsV2,
+          metadataDirectCostMicrousd:
+            value.economicsV2.metadataDirectCostMicrousd.toString(),
+          evidenceDirectCostMicrousd:
+            value.economicsV2.evidenceDirectCostMicrousd.toString(),
+          thumbnailDirectCostMicrousd:
+            value.economicsV2.thumbnailDirectCostMicrousd.toString(),
+          combinedDirectCostMicrousd:
+            value.economicsV2.combinedDirectCostMicrousd.toString(),
+        }
+      : null,
   };
 }
 
@@ -48,12 +63,50 @@ export function editorialReviewResponse(
     processingMetrics: value.processingMetrics
       ? processingMetricsResponse(value.processingMetrics)
       : null,
+    components: {
+      metadata: componentResponse(value.components.metadata),
+      thumbnail: componentResponse(value.components.thumbnail),
+    },
+    economicsPreview: {
+      ...value.economicsPreview,
+      processingMetrics: value.economicsPreview.processingMetrics
+        ? processingMetricsResponse(value.economicsPreview.processingMetrics)
+        : null,
+      metadataDirectCostMicrousd:
+        value.economicsPreview.metadataDirectCostMicrousd.toString(),
+      evidenceDirectCostMicrousd:
+        value.economicsPreview.evidenceDirectCostMicrousd.toString(),
+      thumbnailDirectCostMicrousd:
+        value.economicsPreview.thumbnailDirectCostMicrousd.toString(),
+      combinedDirectCostMicrousd:
+        value.economicsPreview.combinedDirectCostMicrousd.toString(),
+    },
     currentApproval: value.currentApproval
       ? editorialApprovalResponse(value.currentApproval)
       : null,
     latestApproval: value.latestApproval
       ? editorialApprovalResponse(value.latestApproval)
       : null,
+  };
+}
+
+function componentResponse(value: EditorialReviewComponentSummary) {
+  return {
+    ...value,
+    citations: value.citations.map((citation) => ({
+      ...citation,
+      publishedAt: citation.publishedAt?.toISOString() ?? null,
+      accessedAt: citation.accessedAt.toISOString(),
+    })),
+    research: value.research
+      ? {
+          ...value.research,
+          searchedAt: value.research.searchedAt.toISOString(),
+          freshUntil: value.research.freshUntil.toISOString(),
+        }
+      : null,
+    imageSafetyDecision: value.imageSafetyDecision,
+    directCostMicrousd: value.directCostMicrousd.toString(),
   };
 }
 

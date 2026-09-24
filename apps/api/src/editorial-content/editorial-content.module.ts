@@ -32,6 +32,7 @@ import { AssemblyRenderController } from "./presentation/assembly-render.control
 import {
   EDITORIAL_APPROVAL_ADMISSION_ENABLED,
   EDITORIAL_APPROVAL_REPOSITORY,
+  EDITORIAL_INTEGRATED_REVIEW_ENABLED,
 } from "./application/editorial-approval-repository.port.js";
 import { CreateEditorialApproval } from "./application/create-editorial-approval.js";
 import {
@@ -114,6 +115,10 @@ import { EDITORIAL_AI_THUMBNAIL_APPLIER } from "./application/editorial-ai-thumb
     {
       provide: EDITORIAL_APPROVAL_ADMISSION_ENABLED,
       useFactory: () => apiEnvironment().editorialApprovalEnabled,
+    },
+    {
+      provide: EDITORIAL_INTEGRATED_REVIEW_ENABLED,
+      useFactory: () => apiEnvironment().editorialIntegratedReviewEnabled,
     },
     CreateAssemblyRender,
     GetAssemblyRender,

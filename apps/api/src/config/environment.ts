@@ -168,6 +168,7 @@ export interface ApiEnvironment {
   mediaQueueDisabled: boolean;
   assemblyRenderEnabled: boolean;
   editorialApprovalEnabled: boolean;
+  editorialIntegratedReviewEnabled: boolean;
   editorialExportEnabled: boolean;
   aiContextEnabled: boolean;
   editorialFramesEnabled: boolean;
@@ -250,6 +251,8 @@ export function apiEnvironment(): ApiEnvironment {
       process.env.EDITORIAL_APPROVAL_ENABLED === "1" ||
       (process.env.EDITORIAL_APPROVAL_ENABLED === undefined &&
         authorization.deploymentProfile === "local"),
+    editorialIntegratedReviewEnabled:
+      process.env.EDITORIAL_INTEGRATED_REVIEW_ENABLED === "1",
     editorialExportEnabled: editorialExportAdmissionEnabled(process.env),
     aiContextEnabled: aiContextAdmissionEnabled(process.env),
     editorialFramesEnabled: process.env.EDITORIAL_FRAMES_ENABLED === "1",

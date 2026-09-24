@@ -44,6 +44,25 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   immutable thumbnail provenance прошли disposable PostgreSQL + ContentFactory
   MinIO smoke и независимый CLEAN review. Admission остаётся выключен по
   умолчанию; следующий срез — Stage 2B-6 integrated review/economics.
+- Stage 2B-6 integrated review/economics реализован в рабочем дереве:
+  additive exact snapshots, review/approval/export v2, v1 worker compatibility,
+  deterministic five-entry manifest v2, generated client и integrated UI.
+  Feature flag `EDITORIAL_INTEGRATED_REVIEW_ENABLED=0` по умолчанию; legacy
+  manual revisions без explicit provenance продолжают только v1 путь. Exact
+  component lineage/bytes, composite revision/provenance FKs, snapshot and
+  economics fingerprint recomputation are enforced; historical AI/MIXED v1 is
+  read-only and cannot enter a new export. Focused unit/UI/OpenAPI/ZIP checks
+  and the full 12-test disposable PostgreSQL worker harness pass on Node 24.15.
+  До
+  принятия остаются independent real-diff review и manual/assisted
+  object-storage E2E. Authority/evidence:
+  `tasks/stage2b-integrated-review-economics.md`.
+  Re-review hardening additionally preserves the exact historical v1
+  idempotency hash, snapshots only the declared citation subset in declared
+  order without private excerpts, and canonicalizes manifest v2 bytes. Real
+  repository manual/MIXED/AI_ASSISTED create/replay gates pass on disposable
+  PostgreSQL; the documented timing comparison is explicitly a scripted proxy,
+  not an efficiency claim.
 
 ## Проверено и не проверено
 

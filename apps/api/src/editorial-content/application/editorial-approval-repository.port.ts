@@ -9,6 +9,9 @@ export const EDITORIAL_APPROVAL_REPOSITORY = Symbol(
 export const EDITORIAL_APPROVAL_ADMISSION_ENABLED = Symbol(
   "EDITORIAL_APPROVAL_ADMISSION_ENABLED",
 );
+export const EDITORIAL_INTEGRATED_REVIEW_ENABLED = Symbol(
+  "EDITORIAL_INTEGRATED_REVIEW_ENABLED",
+);
 
 export interface EditorialApprovalRepository {
   getReview(cutPipelineJobId: string): Promise<EditorialReviewView | null>;
@@ -18,8 +21,15 @@ export interface EditorialApprovalRepository {
     renderId: string;
     editorialRevision: number;
     candidateFingerprint: string;
-    manualAttentionMs: number;
-    attentionMeasurementVersion: "foreground-preview-v1";
+    approvalContractVersion:
+      "manual-horizontal-approval-v1" | "human-horizontal-approval-v2";
+    manualAttentionMs?: number;
+    attentionMeasurementVersion?: "foreground-preview-v1";
+    attention?: {
+      schemaVersion: "operator-attention-v2";
+      preparationForegroundMs: number;
+      finalReviewForegroundMs: number;
+    };
     idempotencyKey: string;
   }): Promise<EditorialApprovalView>;
   listProject(input: {

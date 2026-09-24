@@ -253,6 +253,7 @@ export type TranscriptEvidenceArtifactWhereInput = {
   segments?: Prisma.JsonFilter<"TranscriptEvidenceArtifact">
   createdAt?: Prisma.DateTimeFilter<"TranscriptEvidenceArtifact"> | Date | string
   intent?: Prisma.XOR<Prisma.TranscriptEvidenceIntentScalarRelationFilter, Prisma.TranscriptEvidenceIntentWhereInput>
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
 }
 
 export type TranscriptEvidenceArtifactOrderByWithRelationInput = {
@@ -267,6 +268,7 @@ export type TranscriptEvidenceArtifactOrderByWithRelationInput = {
   segments?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   intent?: Prisma.TranscriptEvidenceIntentOrderByWithRelationInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotOrderByRelationAggregateInput
 }
 
 export type TranscriptEvidenceArtifactWhereUniqueInput = Prisma.AtLeast<{
@@ -284,6 +286,7 @@ export type TranscriptEvidenceArtifactWhereUniqueInput = Prisma.AtLeast<{
   segments?: Prisma.JsonFilter<"TranscriptEvidenceArtifact">
   createdAt?: Prisma.DateTimeFilter<"TranscriptEvidenceArtifact"> | Date | string
   intent?: Prisma.XOR<Prisma.TranscriptEvidenceIntentScalarRelationFilter, Prisma.TranscriptEvidenceIntentWhereInput>
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
 }, "id" | "intentId" | "objectKey">
 
 export type TranscriptEvidenceArtifactOrderByWithAggregationInput = {
@@ -331,6 +334,7 @@ export type TranscriptEvidenceArtifactCreateInput = {
   segments: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   intent: Prisma.TranscriptEvidenceIntentCreateNestedOneWithoutArtifactInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutTranscriptArtifactInput
 }
 
 export type TranscriptEvidenceArtifactUncheckedCreateInput = {
@@ -344,6 +348,7 @@ export type TranscriptEvidenceArtifactUncheckedCreateInput = {
   language: string
   segments: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutTranscriptArtifactInput
 }
 
 export type TranscriptEvidenceArtifactUpdateInput = {
@@ -357,6 +362,7 @@ export type TranscriptEvidenceArtifactUpdateInput = {
   segments?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intent?: Prisma.TranscriptEvidenceIntentUpdateOneRequiredWithoutArtifactNestedInput
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutTranscriptArtifactNestedInput
 }
 
 export type TranscriptEvidenceArtifactUncheckedUpdateInput = {
@@ -370,6 +376,7 @@ export type TranscriptEvidenceArtifactUncheckedUpdateInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   segments?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutTranscriptArtifactNestedInput
 }
 
 export type TranscriptEvidenceArtifactCreateManyInput = {
@@ -460,6 +467,22 @@ export type TranscriptEvidenceArtifactSumOrderByAggregateInput = {
   sizeBytes?: Prisma.SortOrder
 }
 
+export type TranscriptEvidenceArtifactCreateNestedOneWithoutApprovalComponentSnapshotsInput = {
+  create?: Prisma.XOR<Prisma.TranscriptEvidenceArtifactCreateWithoutApprovalComponentSnapshotsInput, Prisma.TranscriptEvidenceArtifactUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  connectOrCreate?: Prisma.TranscriptEvidenceArtifactCreateOrConnectWithoutApprovalComponentSnapshotsInput
+  connect?: Prisma.TranscriptEvidenceArtifactWhereUniqueInput
+}
+
+export type TranscriptEvidenceArtifactUpdateOneWithoutApprovalComponentSnapshotsNestedInput = {
+  create?: Prisma.XOR<Prisma.TranscriptEvidenceArtifactCreateWithoutApprovalComponentSnapshotsInput, Prisma.TranscriptEvidenceArtifactUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  connectOrCreate?: Prisma.TranscriptEvidenceArtifactCreateOrConnectWithoutApprovalComponentSnapshotsInput
+  upsert?: Prisma.TranscriptEvidenceArtifactUpsertWithoutApprovalComponentSnapshotsInput
+  disconnect?: Prisma.TranscriptEvidenceArtifactWhereInput | boolean
+  delete?: Prisma.TranscriptEvidenceArtifactWhereInput | boolean
+  connect?: Prisma.TranscriptEvidenceArtifactWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TranscriptEvidenceArtifactUpdateToOneWithWhereWithoutApprovalComponentSnapshotsInput, Prisma.TranscriptEvidenceArtifactUpdateWithoutApprovalComponentSnapshotsInput>, Prisma.TranscriptEvidenceArtifactUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+}
+
 export type TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput = {
   create?: Prisma.XOR<Prisma.TranscriptEvidenceArtifactCreateWithoutIntentInput, Prisma.TranscriptEvidenceArtifactUncheckedCreateWithoutIntentInput>
   connectOrCreate?: Prisma.TranscriptEvidenceArtifactCreateOrConnectWithoutIntentInput
@@ -492,6 +515,74 @@ export type TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.TranscriptEvidenceArtifactUpdateToOneWithWhereWithoutIntentInput, Prisma.TranscriptEvidenceArtifactUpdateWithoutIntentInput>, Prisma.TranscriptEvidenceArtifactUncheckedUpdateWithoutIntentInput>
 }
 
+export type TranscriptEvidenceArtifactCreateWithoutApprovalComponentSnapshotsInput = {
+  id: string
+  objectKey: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  adapterVersion: string
+  language: string
+  segments: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  intent: Prisma.TranscriptEvidenceIntentCreateNestedOneWithoutArtifactInput
+}
+
+export type TranscriptEvidenceArtifactUncheckedCreateWithoutApprovalComponentSnapshotsInput = {
+  id: string
+  intentId: string
+  objectKey: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  adapterVersion: string
+  language: string
+  segments: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+}
+
+export type TranscriptEvidenceArtifactCreateOrConnectWithoutApprovalComponentSnapshotsInput = {
+  where: Prisma.TranscriptEvidenceArtifactWhereUniqueInput
+  create: Prisma.XOR<Prisma.TranscriptEvidenceArtifactCreateWithoutApprovalComponentSnapshotsInput, Prisma.TranscriptEvidenceArtifactUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+}
+
+export type TranscriptEvidenceArtifactUpsertWithoutApprovalComponentSnapshotsInput = {
+  update: Prisma.XOR<Prisma.TranscriptEvidenceArtifactUpdateWithoutApprovalComponentSnapshotsInput, Prisma.TranscriptEvidenceArtifactUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+  create: Prisma.XOR<Prisma.TranscriptEvidenceArtifactCreateWithoutApprovalComponentSnapshotsInput, Prisma.TranscriptEvidenceArtifactUncheckedCreateWithoutApprovalComponentSnapshotsInput>
+  where?: Prisma.TranscriptEvidenceArtifactWhereInput
+}
+
+export type TranscriptEvidenceArtifactUpdateToOneWithWhereWithoutApprovalComponentSnapshotsInput = {
+  where?: Prisma.TranscriptEvidenceArtifactWhereInput
+  data: Prisma.XOR<Prisma.TranscriptEvidenceArtifactUpdateWithoutApprovalComponentSnapshotsInput, Prisma.TranscriptEvidenceArtifactUncheckedUpdateWithoutApprovalComponentSnapshotsInput>
+}
+
+export type TranscriptEvidenceArtifactUpdateWithoutApprovalComponentSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  segments?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  intent?: Prisma.TranscriptEvidenceIntentUpdateOneRequiredWithoutArtifactNestedInput
+}
+
+export type TranscriptEvidenceArtifactUncheckedUpdateWithoutApprovalComponentSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  intentId?: Prisma.StringFieldUpdateOperationsInput | string
+  objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  segments?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type TranscriptEvidenceArtifactCreateWithoutIntentInput = {
   id: string
   objectKey: string
@@ -502,6 +593,7 @@ export type TranscriptEvidenceArtifactCreateWithoutIntentInput = {
   language: string
   segments: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutTranscriptArtifactInput
 }
 
 export type TranscriptEvidenceArtifactUncheckedCreateWithoutIntentInput = {
@@ -514,6 +606,7 @@ export type TranscriptEvidenceArtifactUncheckedCreateWithoutIntentInput = {
   language: string
   segments: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutTranscriptArtifactInput
 }
 
 export type TranscriptEvidenceArtifactCreateOrConnectWithoutIntentInput = {
@@ -542,6 +635,7 @@ export type TranscriptEvidenceArtifactUpdateWithoutIntentInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   segments?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutTranscriptArtifactNestedInput
 }
 
 export type TranscriptEvidenceArtifactUncheckedUpdateWithoutIntentInput = {
@@ -554,8 +648,38 @@ export type TranscriptEvidenceArtifactUncheckedUpdateWithoutIntentInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   segments?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalComponentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutTranscriptArtifactNestedInput
 }
 
+
+/**
+ * Count Type TranscriptEvidenceArtifactCountOutputType
+ */
+
+export type TranscriptEvidenceArtifactCountOutputType = {
+  approvalComponentSnapshots: number
+}
+
+export type TranscriptEvidenceArtifactCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  approvalComponentSnapshots?: boolean | TranscriptEvidenceArtifactCountOutputTypeCountApprovalComponentSnapshotsArgs
+}
+
+/**
+ * TranscriptEvidenceArtifactCountOutputType without action
+ */
+export type TranscriptEvidenceArtifactCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TranscriptEvidenceArtifactCountOutputType
+   */
+  select?: Prisma.TranscriptEvidenceArtifactCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * TranscriptEvidenceArtifactCountOutputType without action
+ */
+export type TranscriptEvidenceArtifactCountOutputTypeCountApprovalComponentSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
+}
 
 
 export type TranscriptEvidenceArtifactSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -570,6 +694,8 @@ export type TranscriptEvidenceArtifactSelect<ExtArgs extends runtime.Types.Exten
   segments?: boolean
   createdAt?: boolean
   intent?: boolean | Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>
+  approvalComponentSnapshots?: boolean | Prisma.TranscriptEvidenceArtifact$approvalComponentSnapshotsArgs<ExtArgs>
+  _count?: boolean | Prisma.TranscriptEvidenceArtifactCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transcriptEvidenceArtifact"]>
 
 export type TranscriptEvidenceArtifactSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -616,6 +742,8 @@ export type TranscriptEvidenceArtifactSelectScalar = {
 export type TranscriptEvidenceArtifactOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "intentId" | "objectKey" | "contentType" | "sizeBytes" | "sha256" | "adapterVersion" | "language" | "segments" | "createdAt", ExtArgs["result"]["transcriptEvidenceArtifact"]>
 export type TranscriptEvidenceArtifactInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   intent?: boolean | Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>
+  approvalComponentSnapshots?: boolean | Prisma.TranscriptEvidenceArtifact$approvalComponentSnapshotsArgs<ExtArgs>
+  _count?: boolean | Prisma.TranscriptEvidenceArtifactCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TranscriptEvidenceArtifactIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   intent?: boolean | Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>
@@ -628,6 +756,7 @@ export type $TranscriptEvidenceArtifactPayload<ExtArgs extends runtime.Types.Ext
   name: "TranscriptEvidenceArtifact"
   objects: {
     intent: Prisma.$TranscriptEvidenceIntentPayload<ExtArgs>
+    approvalComponentSnapshots: Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1035,6 +1164,7 @@ readonly fields: TranscriptEvidenceArtifactFieldRefs;
 export interface Prisma__TranscriptEvidenceArtifactClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   intent<T extends Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>>): Prisma.Prisma__TranscriptEvidenceIntentClient<runtime.Types.Result.GetResult<Prisma.$TranscriptEvidenceIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  approvalComponentSnapshots<T extends Prisma.TranscriptEvidenceArtifact$approvalComponentSnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TranscriptEvidenceArtifact$approvalComponentSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1472,6 +1602,30 @@ export type TranscriptEvidenceArtifactDeleteManyArgs<ExtArgs extends runtime.Typ
    * Limit how many TranscriptEvidenceArtifacts to delete.
    */
   limit?: number
+}
+
+/**
+ * TranscriptEvidenceArtifact.approvalComponentSnapshots
+ */
+export type TranscriptEvidenceArtifact$approvalComponentSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApprovalComponentSnapshot
+   */
+  select?: Prisma.EditorialApprovalComponentSnapshotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApprovalComponentSnapshot
+   */
+  omit?: Prisma.EditorialApprovalComponentSnapshotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalComponentSnapshotInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
+  orderBy?: Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput | Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalComponentSnapshotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum | Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum[]
 }
 
 /**

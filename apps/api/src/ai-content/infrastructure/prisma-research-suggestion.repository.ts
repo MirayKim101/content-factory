@@ -23,6 +23,7 @@ import type {
   ResearchSuggestionRepository,
 } from "../application/research-suggestion-repository.port.js";
 import { ResearchSuggestionContextRejectedError } from "../application/research-suggestion-repository.port.js";
+import { normalizePublicCitationUrl } from "../research/public-citation-url.js";
 import { lockedFrameContext } from "./prisma-frame-context.js";
 
 const FRESHNESS_MS = 24 * 60 * 60 * 1_000;
@@ -521,15 +522,8 @@ function normalizeCitation(
   ordinal: number,
   accessedAt: Date,
 ) {
-  let url: URL;
-  try {
-    url = new URL(input.url);
-  } catch {
-    throw new ResearchSuggestionContextRejectedError(
-      "RESEARCH_CITATION_INVALID",
-    );
-  }
-  if (url.protocol !== "https:" || url.username || url.password || url.hash)
+  const url = normalizePublicCitationUrl(input.url);
+  if (!url)
     throw new ResearchSuggestionContextRejectedError(
       "RESEARCH_CITATION_INVALID",
     );
@@ -548,7 +542,7 @@ function normalizeCitation(
   return {
     id: randomUUID(),
     ordinal,
-    url: url.toString(),
+    url,
     title: title.slice(0, 500),
     publisher: publisher.slice(0, 300),
     publishedAt,

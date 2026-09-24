@@ -38,7 +38,11 @@ export class ImageCandidateResponseDto {
   @ApiProperty({ type: Number }) width!: number;
   @ApiProperty({ type: Number }) height!: number;
   @ApiProperty({ type: String, enum: ["NONE"] }) likeness!: string;
-  @ApiProperty({ type: ImageSuggestionSafetyDecisionDto }) safetyDecision!: ImageSuggestionSafetyDecisionDto;
+  @ApiProperty({
+    type: ImageSuggestionSafetyDecisionDto,
+    additionalProperties: false,
+  })
+  safetyDecision!: ImageSuggestionSafetyDecisionDto;
   @ApiProperty({ type: String }) directCostMicrousd!: string;
   @ApiProperty({ type: String }) costBasisVersion!: string;
 }

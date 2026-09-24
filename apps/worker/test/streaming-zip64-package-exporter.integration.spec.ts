@@ -57,23 +57,23 @@ describe("streaming ZIP64 editorial package", () => {
     expect(await readFile(secondPath)).toEqual(await readFile(firstPath));
     expect(second).toEqual(first);
 
-    const { stdout } = await execute("unzip", ["-Z1", firstPath]);
-    expect(stdout.trim().split("\n")).toEqual([
+    const entries = await readStoredZipEntries(firstPath);
+    expect([...entries.keys()]).toEqual([
       "video.mp4",
       "thumbnail.jpg",
       "metadata.txt",
       "metadata.json",
       "manifest.json",
     ]);
-    const extract = join(directory, "extract");
-    await execute("unzip", ["-qq", firstPath, "-d", extract]);
-    expect(await readFile(join(extract, "video.mp4"))).toEqual(video);
-    expect(await readFile(join(extract, "thumbnail.jpg"))).toEqual(thumbnail);
-    const metadataText = await readFile(join(extract, "metadata.txt"), "utf8");
+    expect(entries.get("video.mp4")).toEqual(video);
+    expect(entries.get("thumbnail.jpg")).toEqual(thumbnail);
+    const metadataText = entries.get("metadata.txt")?.toString("utf8");
     expect(metadataText).toBe(
       "TITLE\nТочный заголовок\n\nDESCRIPTION\nСтрока 1\nСтрока 2\n\nTAGS\nfirst\nвторой\n",
     );
-    const manifestBytes = await readFile(join(extract, "manifest.json"));
+    const manifestBytes = entries.get("manifest.json");
+    expect(manifestBytes).toBeDefined();
+    if (!manifestBytes) throw new Error("manifest.json was not written");
     expect(manifestBytes.at(-1)).toBe(10);
     const manifest = JSON.parse(manifestBytes.toString("utf8")) as {
       entries: Array<{ name: string; sizeBytes: string; sha256: string }>;
@@ -88,7 +88,9 @@ describe("streaming ZIP64 editorial package", () => {
       manifest.entries.some((value) => value.name === "manifest.json"),
     ).toBe(false);
     for (const entry of manifest.entries) {
-      const bytes = await readFile(join(extract, entry.name));
+      const bytes = entries.get(entry.name);
+      expect(bytes).toBeDefined();
+      if (!bytes) throw new Error(`${entry.name} was not written`);
       expect(entry.sizeBytes).toBe(String(bytes.length));
       expect(entry.sha256).toBe(sha256(bytes));
     }
@@ -110,6 +112,90 @@ describe("streaming ZIP64 editorial package", () => {
         onProgress: () => undefined,
       }),
     ).rejects.toMatchObject({ code: "EXPORT_INPUT_IDENTITY_MISMATCH" });
+  });
+
+  it("serializes the exact v2 approval snapshot deterministically without changing the five-entry contract", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "cf-export-v2-"));
+    directories.push(directory);
+    const video = Buffer.from("v2-video");
+    const thumbnail = Buffer.from("v2-thumbnail");
+    const videoPath = join(directory, "video.mp4");
+    const thumbnailPath = join(directory, "thumbnail.jpg");
+    await Promise.all([
+      writeFile(videoPath, video),
+      writeFile(thumbnailPath, thumbnail),
+    ]);
+    const plan = exportPlan(video, thumbnail);
+    plan.approvalContractVersion = "human-horizontal-approval-v2";
+    plan.exportContractVersion = "editorial-export-zip-v2";
+    plan.approvalSnapshot = {
+      workflowMode: "MIXED",
+      components: [
+        {
+          component: "METADATA",
+          mode: "AI_ASSISTED",
+          citations: [{ id: randomUUID(), url: "https://example.test/source" }],
+          directCostMicrousd: "0",
+        },
+        {
+          component: "THUMBNAIL",
+          mode: "MANUAL",
+          likeness: null,
+          directCostMicrousd: "0",
+        },
+      ],
+      economics: {
+        schemaVersion: "approval-economics-v2",
+        combinedDirectCostMicrousd: "0",
+      },
+      processingMetrics: {
+        metricsSchemaVersion: "approval-metrics-v1",
+        outputBytes: "8",
+      },
+    };
+    const outputPath = join(directory, "v2.zip");
+    const reorderedOutputPath = join(directory, "v2-reordered.zip");
+    const exporter = new StreamingZip64PackageExporter();
+    const openInput = async (key: string) =>
+      createReadStream(key === "video-key" ? videoPath : thumbnailPath);
+    const result = await exporter.export({
+      plan,
+      outputPath,
+      signal: new AbortController().signal,
+      openInput,
+      onProgress: () => undefined,
+    });
+    const reorderedResult = await exporter.export({
+      plan: reverseObjectInsertionOrder(plan) as EditorialExportPlan,
+      outputPath: reorderedOutputPath,
+      signal: new AbortController().signal,
+      openInput,
+      onProgress: () => undefined,
+    });
+    expect(result.manifest).toMatchObject({
+      manifestSchemaVersion: "editorial-export-manifest-v2",
+      exportContractVersion: "editorial-export-zip-v2",
+      approvalSnapshot: { workflowMode: "MIXED" },
+    });
+    const entries = await readStoredZipEntries(outputPath);
+    const metadataBytes = entries.get("metadata.json");
+    const manifestBytes = entries.get("manifest.json");
+    expect(metadataBytes).toBeDefined();
+    expect(manifestBytes).toBeDefined();
+    if (!metadataBytes || !manifestBytes)
+      throw new Error("v2 metadata or manifest was not written");
+    expect(JSON.parse(metadataBytes.toString("utf8"))).toMatchObject({
+      metadataSchemaVersion: "editorial-metadata-v2",
+      workflowMode: "MIXED",
+    });
+    expect(JSON.parse(manifestBytes.toString("utf8"))).toEqual(result.manifest);
+    const reorderedEntries = await readStoredZipEntries(reorderedOutputPath);
+    expect(reorderedEntries.get("manifest.json")).toEqual(manifestBytes);
+    expect(await readFile(reorderedOutputPath)).toEqual(
+      await readFile(outputPath),
+    );
+    expect(reorderedResult.manifest).toEqual(result.manifest);
+    expect(manifestBytes.at(-1)).toBe(10);
   });
 
   it.each(["size", "checksum"] as const)(
@@ -229,6 +315,17 @@ function sha256(value: Buffer): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
+function reverseObjectInsertionOrder(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(reverseObjectInsertionOrder);
+  if (!value || typeof value !== "object" || value instanceof Date)
+    return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .reverse()
+      .map(([key, item]) => [key, reverseObjectInsertionOrder(item)]),
+  );
+}
+
 function zeroSha256(size: bigint): string {
   const hash = createHash("sha256");
   const chunk = Buffer.alloc(8 * 1024 * 1024);
@@ -241,4 +338,42 @@ function zeroSha256(size: bigint): string {
     remaining -= BigInt(length);
   }
   return hash.digest("hex");
+}
+
+async function readStoredZipEntries(
+  path: string,
+): Promise<Map<string, Buffer>> {
+  const archive = await readFile(path);
+  const entries = new Map<string, Buffer>();
+  let offset = 0;
+  while (archive.readUInt32LE(offset) === 0x04034b50) {
+    const compressionMethod = archive.readUInt16LE(offset + 8);
+    if (compressionMethod !== 0)
+      throw new Error("test parser only supports stored ZIP entries");
+    const nameLength = archive.readUInt16LE(offset + 26);
+    const extraLength = archive.readUInt16LE(offset + 28);
+    const nameStart = offset + 30;
+    const extraStart = nameStart + nameLength;
+    const dataStart = extraStart + extraLength;
+    const name = archive.subarray(nameStart, extraStart).toString("utf8");
+    const size = readZip64UncompressedSize(
+      archive.subarray(extraStart, dataStart),
+    );
+    const dataEnd = dataStart + Number(size);
+    entries.set(name, archive.subarray(dataStart, dataEnd));
+    offset = dataEnd + 24;
+  }
+  return entries;
+}
+
+function readZip64UncompressedSize(extra: Buffer): bigint {
+  let offset = 0;
+  while (offset + 4 <= extra.length) {
+    const headerId = extra.readUInt16LE(offset);
+    const dataSize = extra.readUInt16LE(offset + 2);
+    if (headerId === 0x0001 && dataSize >= 16)
+      return extra.readBigUInt64LE(offset + 4);
+    offset += 4 + dataSize;
+  }
+  throw new Error("ZIP64 size extra field is missing");
 }

@@ -1,19 +1,33 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
+  LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
+  THUMBNAIL_CONTRACT_VERSION,
+  projectNoLikenessSafetyDecision,
+} from "@content-factory/contracts";
 
 import type { Prisma } from "../../generated/prisma/client.js";
 import { sourceAuthorizationRuntime } from "../../config/environment.js";
+import { normalizePublicCitationUrl } from "../../ai-content/research/public-citation-url.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import { isSourceAuthorizationCleared } from "../../projects/domain/source-authorization.js";
-import type { EditorialApprovalRepository } from "../application/editorial-approval-repository.port.js";
+import {
+  EDITORIAL_INTEGRATED_REVIEW_ENABLED,
+  type EditorialApprovalRepository,
+} from "../application/editorial-approval-repository.port.js";
 import {
   APPROVAL_COST_BASIS,
   APPROVAL_METRICS_SCHEMA,
   APPROVAL_TIMESTAMP_BASIS,
   ATTENTION_MEASUREMENT_VERSION,
+  APPROVAL_ECONOMICS_SCHEMA_V2,
   calculateApprovalProcessingMetrics,
   EDITORIAL_APPROVAL_CONTRACT,
+  EDITORIAL_APPROVAL_CONTRACT_V2,
+  EDITORIAL_REVIEW_CONTRACT_V2,
+  OPERATOR_ATTENTION_SCHEMA_V2,
   EditorialApprovalAuthorizationError,
   EditorialApprovalCandidateConflictError,
   EditorialApprovalCursorInvalidError,
@@ -24,6 +38,7 @@ import {
   type EditorialApprovalBlocker,
   type EditorialApprovalStaleReason,
   type EditorialApprovalView,
+  type EditorialReviewComponentSummary,
   type EditorialReviewView,
 } from "../domain/editorial-approval.js";
 import { HORIZONTAL_RENDER_CONTRACT } from "../domain/assembly-render.js";
@@ -36,9 +51,14 @@ import { montageRightsUsable } from "../domain/montage-asset.js";
 
 const approvalInclude = {
   metrics: true,
+  componentSnapshots: {
+    orderBy: { component: "asc" as const },
+    include: { provenance: true, suggestionSet: true, imageCandidate: true },
+  },
+  economicsV2: true,
   source: { include: { authorizations: true } },
   editorialPackage: { select: { currentRevision: true } },
-  editorialPackageRevision: true,
+  editorialPackageRevision: { include: { componentProvenance: true } },
   thumbnailAsset: true,
   assemblyRecipe: { select: { currentRevision: true } },
   recipeRevisionRecord: {
@@ -60,7 +80,24 @@ const cutInclude = {
   editorialPackage: {
     include: {
       revisions: {
-        include: { processingTemplateRevision: true, thumbnailAsset: true },
+        include: {
+          processingTemplateRevision: true,
+          thumbnailAsset: true,
+          componentProvenance: {
+            include: {
+              researchIntent: {
+                include: {
+                  citations: { orderBy: { ordinal: "asc" as const } },
+                  suggestionSet: true,
+                  transcriptIntent: { include: { artifact: true } },
+                },
+              },
+              suggestionSet: true,
+              imageIntent: { include: { candidate: true } },
+              imageCandidate: true,
+            },
+          },
+        },
         orderBy: { revision: "desc" as const },
       },
     },
@@ -95,7 +132,12 @@ type CutRow = Prisma.PipelineJobGetPayload<{ include: typeof cutInclude }>;
 
 @Injectable()
 export class PrismaEditorialApprovalRepository implements EditorialApprovalRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService)
+    private readonly prisma: PrismaService,
+    @Inject(EDITORIAL_INTEGRATED_REVIEW_ENABLED)
+    private readonly integratedReviewEnabled: boolean = false,
+  ) {}
 
   async getReview(
     cutPipelineJobId: string,
@@ -143,6 +185,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
             const approval = await this.findApproval(operation.approvalId, tx);
             if (!approval) throw new EditorialApprovalLineageInvalidError();
             const fingerprint = canonicalApprovalRequestFingerprint({
+              approvalContractVersion: input.approvalContractVersion,
               renderId: target.id,
               projectId: target.projectId,
               sourceId: target.sourceId,
@@ -158,6 +201,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
               candidateFingerprint: input.candidateFingerprint,
               manualAttentionMs: input.manualAttentionMs,
               attentionMeasurementVersion: input.attentionMeasurementVersion,
+              attention: input.attention,
             });
             if (operation.canonicalRequestFingerprint !== fingerprint) {
               throw new EditorialApprovalIdempotencyConflictError();
@@ -181,8 +225,15 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
           ) {
             throw new EditorialApprovalCandidateConflictError();
           }
+          if (
+            input.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT &&
+            review.workflowMode !== "MANUAL"
+          )
+            throw new EditorialApprovalCandidateConflictError();
+          const attention = approvalAttention(input);
 
           const requestFingerprint = canonicalApprovalRequestFingerprint({
+            approvalContractVersion: input.approvalContractVersion,
             renderId: input.renderId,
             projectId: review.projectId,
             sourceId: review.sourceId,
@@ -198,6 +249,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
             candidateFingerprint: input.candidateFingerprint,
             manualAttentionMs: input.manualAttentionMs,
             attentionMeasurementVersion: input.attentionMeasurementVersion,
+            attention: input.attention,
           });
 
           let approval = await tx.editorialApproval.findUnique({
@@ -206,7 +258,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
                 {
                   editorialPackageRevisionId: review.editorial.revisionId,
                   assemblyRenderResultId: review.render.resultId,
-                  approvalContractVersion: EDITORIAL_APPROVAL_CONTRACT,
+                  approvalContractVersion: input.approvalContractVersion,
                 },
             },
             include: approvalInclude,
@@ -215,9 +267,15 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
             if (
               approval.candidateFingerprint !== input.candidateFingerprint ||
               !approval.metrics ||
-              approval.metrics.manualAttentionMs !== input.manualAttentionMs ||
+              approval.metrics.manualAttentionMs !== attention.totalMs ||
               approval.metrics.attentionMeasurementVersion !==
-                input.attentionMeasurementVersion
+                attention.version ||
+              (input.approvalContractVersion ===
+                EDITORIAL_APPROVAL_CONTRACT_V2 &&
+                (approval.economicsV2?.preparationForegroundMs !==
+                  attention.preparationMs ||
+                  approval.economicsV2.finalReviewForegroundMs !==
+                    attention.finalReviewMs))
             ) {
               throw new EditorialApprovalCandidateConflictError();
             }
@@ -249,15 +307,19 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
                 renderArtifactSha256: review.render.artifactSha256,
                 renderArtifactSizeBytes: review.render.artifactSizeBytes,
                 renderContractVersion: review.render.renderContractVersion,
-                approvalContractVersion: EDITORIAL_APPROVAL_CONTRACT,
+                approvalContractVersion: input.approvalContractVersion,
                 candidateFingerprint: input.candidateFingerprint,
                 metrics: {
                   create: metricsCreate(
                     review.processingMetrics,
-                    input.manualAttentionMs,
-                    input.attentionMeasurementVersion,
+                    attention.totalMs,
+                    attention.version,
                   ),
                 },
+                ...(input.approvalContractVersion ===
+                EDITORIAL_APPROVAL_CONTRACT_V2
+                  ? v2ApprovalSnapshotCreate(review, attention)
+                  : {}),
               },
               include: approvalInclude,
             });
@@ -330,6 +392,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
       );
       if (!approval) throw new EditorialApprovalLineageInvalidError();
       const fingerprint = canonicalApprovalRequestFingerprint({
+        approvalContractVersion: input.approvalContractVersion,
         renderId: target.id,
         projectId: target.projectId,
         sourceId: target.sourceId,
@@ -345,6 +408,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
         candidateFingerprint: input.candidateFingerprint,
         manualAttentionMs: input.manualAttentionMs,
         attentionMeasurementVersion: input.attentionMeasurementVersion,
+        attention: input.attention,
       });
       if (operation.canonicalRequestFingerprint !== fingerprint)
         throw new EditorialApprovalIdempotencyConflictError();
@@ -508,6 +572,32 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
     ) {
       blockers.push("LINEAGE_INVALID");
     }
+
+    const metadataSummary = this.componentSummary(
+      packageRevision?.componentProvenance ?? [],
+      "METADATA",
+      cut,
+      thumbnail,
+    );
+    const thumbnailSummary = this.componentSummary(
+      packageRevision?.componentProvenance ?? [],
+      "THUMBNAIL",
+      cut,
+      thumbnail,
+    );
+    if (
+      metadataSummary.incompleteReasons.length > 0 ||
+      thumbnailSummary.incompleteReasons.length > 0
+    ) {
+      // Legacy revisions without explicit provenance remain approvable only
+      // through the v1 path while integrated-v2 admission is disabled.
+      if (this.integratedReviewEnabled)
+        blockers.push("EDITORIAL_PROFILE_UNSUPPORTED");
+    }
+    const workflowMode = workflowModeFor(
+      metadataSummary.mode,
+      thumbnailSummary.mode,
+    );
 
     const recipeRevision = cut.assemblyRecipe?.revisions.find(
       (revision) => revision.revision === cut.assemblyRecipe?.currentRevision,
@@ -678,7 +768,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
             contentUrl: `/api/v1/assembly-renders/${render.id}/content`,
           }
         : null;
-    const candidateFingerprint =
+    const v2CandidateFingerprint =
       editorial && recipe && renderView && cutArtifact
         ? candidateFingerprintFor({
             projectId: cut.projectId,
@@ -691,13 +781,36 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
             editorial,
             recipe,
             render: renderView,
+            metadataSnapshotFingerprint: metadataSummary.snapshotFingerprint,
+            thumbnailSnapshotFingerprint: thumbnailSummary.snapshotFingerprint,
+            workflowMode,
           })
         : null;
+    const legacyCandidateFingerprint =
+      editorial && recipe && renderView && cutArtifact
+        ? legacyCandidateFingerprintFor({
+            projectId: cut.projectId,
+            sourceId: cut.sourceId,
+            sourceVersion: cut.sourceVersion,
+            cutPipelineJobId: cut.id,
+            cutResultArtifactId: cutArtifact.id,
+            cutResultSha256: cutArtifact.sha256,
+            cutResultSizeBytes: cutArtifact.sizeBytes,
+            editorial,
+            recipe,
+            render: renderView,
+          })
+        : null;
+    const candidateFingerprint = this.integratedReviewEnabled
+      ? v2CandidateFingerprint
+      : legacyCandidateFingerprint;
 
     const approvals = cut.editorialApprovals.map((value) =>
       this.mapApproval(value),
     );
     return {
+      reviewContractVersion: EDITORIAL_REVIEW_CONTRACT_V2,
+      integratedReviewEnabled: this.integratedReviewEnabled,
       projectId: cut.projectId,
       sourceId: cut.sourceId,
       sourceVersion: cut.sourceVersion,
@@ -710,14 +823,234 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
       approvable: blockers.length === 0 && candidateFingerprint !== null,
       blockers: unique(blockers),
       processingMetrics,
+      workflowMode,
+      components: {
+        metadata: metadataSummary,
+        thumbnail: thumbnailSummary,
+      },
+      economicsPreview: {
+        processingMetrics,
+        metadataDirectCostMicrousd: metadataSummary.directCostMicrousd,
+        evidenceDirectCostMicrousd: 0n,
+        thumbnailDirectCostMicrousd: thumbnailSummary.directCostMicrousd,
+        combinedDirectCostMicrousd:
+          metadataSummary.directCostMicrousd +
+          thumbnailSummary.directCostMicrousd,
+        currency: "USD",
+        unit: "MICRO",
+        incompleteReasons: unique([
+          ...metadataSummary.incompleteReasons,
+          ...thumbnailSummary.incompleteReasons,
+        ]),
+      },
       currentApproval:
         approvals.find(
           (approval) =>
             approval.state === "CURRENT" &&
-            approval.candidateFingerprint === candidateFingerprint,
+            approval.candidateFingerprint ===
+              (approval.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT
+                ? legacyCandidateFingerprint
+                : v2CandidateFingerprint),
         ) ?? null,
       latestApproval: approvals[0] ?? null,
     };
+  }
+
+  private componentSummary(
+    rows: NonNullable<
+      CutRow["editorialPackage"]
+    >["revisions"][number]["componentProvenance"],
+    component: "METADATA" | "THUMBNAIL",
+    cut: CutRow,
+    selectedThumbnail:
+      | NonNullable<
+          CutRow["editorialPackage"]
+        >["revisions"][number]["thumbnailAsset"]
+      | null,
+  ): EditorialReviewComponentSummary {
+    const matching = rows.filter((row) => row.component === component);
+    const row = matching[0];
+    const incompleteReasons: string[] = [];
+    if (matching.length !== 1 || !row) {
+      incompleteReasons.push("COMPONENT_PROVENANCE_MISSING");
+      return manualComponentSummary(component, incompleteReasons);
+    }
+    if (row.mode === "MANUAL") {
+      if (
+        row.researchIntentId ||
+        row.suggestionSetId ||
+        row.imageIntentId ||
+        row.imageCandidateId
+      )
+        incompleteReasons.push("MANUAL_PROVENANCE_HAS_AI_LINEAGE");
+      return finalizeComponentSummary({
+        component,
+        provenanceId: row.id,
+        mode: "MANUAL",
+        basisVersion: row.basisVersion,
+        researchIntentId: null,
+        suggestionSetId: null,
+        imageIntentId: null,
+        imageCandidateId: null,
+        transcriptArtifactId: null,
+        transcriptSha256: null,
+        citations: [],
+        research: null,
+        imageSafetyDecision: null,
+        likeness: null,
+        directCostMicrousd: 0n,
+        costBasisVersion: row.basisVersion,
+        incompleteReasons,
+      });
+    }
+    if (component === "METADATA") {
+      const intent = row.researchIntent;
+      const suggestion = row.suggestionSet;
+      if (
+        !intent ||
+        !suggestion ||
+        intent.id !== row.researchIntentId ||
+        suggestion.id !== row.suggestionSetId ||
+        suggestion.intentId !== intent.id ||
+        intent.state !== "READY" ||
+        intent.projectId !== cut.projectId ||
+        intent.sourceId !== cut.sourceId ||
+        intent.sourceVersion !== cut.sourceVersion ||
+        intent.cutPipelineJobId !== cut.id ||
+        intent.cutResultArtifactId !== cut.resultArtifact?.id ||
+        intent.transcriptIntent.projectId !== cut.projectId ||
+        intent.transcriptIntent.sourceId !== cut.sourceId ||
+        intent.transcriptIntent.sourceVersion !== cut.sourceVersion ||
+        intent.transcriptIntent.cutPipelineJobId !== cut.id ||
+        intent.transcriptIntent.cutResultArtifactId !==
+          cut.resultArtifact?.id ||
+        intent.transcriptIntent.cutResultSha256 !==
+          cut.resultArtifact?.sha256 ||
+        intent.transcriptIntent.cutResultSizeBytes !==
+          cut.resultArtifact?.sizeBytes ||
+        intent.transcriptIntent.creatorProfileRevisionId !==
+          intent.creatorProfileRevisionId ||
+        intent.transcriptIntent.sourceContextRevisionId !==
+          intent.sourceContextRevisionId ||
+        intent.transcriptIntent.cutPromptRevisionId !==
+          intent.cutPromptRevisionId
+      )
+        incompleteReasons.push("METADATA_LINEAGE_INVALID");
+      const citations = selectSuggestionCitations(
+        (intent?.citations ?? []).map((citation) => ({
+          id: citation.id,
+          url: citation.url,
+          title: citation.title,
+          publisher: citation.publisher,
+          publishedAt: citation.publishedAt,
+          accessedAt: citation.accessedAt,
+        })),
+        suggestion?.citationIds,
+      );
+      if (!citations) {
+        incompleteReasons.push("CITATIONS_INVALID");
+        incompleteReasons.push("CITATION_LINEAGE_INVALID");
+      }
+      const transcript = intent?.transcriptIntent.artifact ?? null;
+      if (
+        !transcript ||
+        transcript.id !== intent?.transcriptArtifactId ||
+        transcript.intentId !== intent?.transcriptIntentId ||
+        intent?.transcriptIntent.id !== intent?.transcriptIntentId ||
+        transcript.sha256 !== intent?.transcriptSha256 ||
+        !isSha256(transcript.sha256)
+      )
+        incompleteReasons.push("TRANSCRIPT_LINEAGE_INVALID");
+      const freshness = intent
+        ? {
+            searchedAt: intent.searchedAt,
+            freshUntil: intent.freshUntil,
+            freshness:
+              intent.freshUntil.getTime() >= Date.now()
+                ? ("CURRENT" as const)
+                : ("EXPIRED" as const),
+          }
+        : null;
+      if (freshness?.freshness === "EXPIRED")
+        incompleteReasons.push("RESEARCH_EXPIRED");
+      return finalizeComponentSummary({
+        component,
+        provenanceId: row.id,
+        mode: row.mode,
+        basisVersion: row.basisVersion,
+        researchIntentId: intent?.id ?? null,
+        suggestionSetId: suggestion?.id ?? null,
+        imageIntentId: null,
+        imageCandidateId: null,
+        transcriptArtifactId: transcript?.id ?? null,
+        transcriptSha256: transcript?.sha256 ?? null,
+        citations: citations ?? [],
+        research: freshness,
+        imageSafetyDecision: null,
+        likeness: null,
+        directCostMicrousd: suggestion?.directCostMicrousd ?? 0n,
+        costBasisVersion:
+          suggestion?.costBasisVersion ?? "unknown-metadata-cost-basis",
+        incompleteReasons,
+      });
+    }
+    const intent = row.imageIntent;
+    const candidate = row.imageCandidate;
+    const publicSafetyDecision = projectNoLikenessSafetyDecision(
+      candidate?.safetyDecision,
+    );
+    if (
+      row.mode !== "AI_ASSISTED" ||
+      !intent ||
+      !candidate ||
+      intent.id !== row.imageIntentId ||
+      candidate.id !== row.imageCandidateId ||
+      candidate.intentId !== intent.id ||
+      intent.state !== "READY" ||
+      intent.projectId !== cut.projectId ||
+      intent.sourceId !== cut.sourceId ||
+      intent.sourceVersion !== cut.sourceVersion ||
+      intent.cutPipelineJobId !== cut.id ||
+      intent.cutResultArtifactId !== cut.resultArtifact?.id ||
+      intent.cutResultSha256 !== cut.resultArtifact?.sha256 ||
+      intent.cutResultSizeBytes !== cut.resultArtifact?.sizeBytes ||
+      !selectedThumbnail ||
+      selectedThumbnail.status !== "READY" ||
+      candidate.objectKey !== selectedThumbnail.objectKey ||
+      candidate.sha256 !== selectedThumbnail.sha256 ||
+      candidate.sizeBytes !== selectedThumbnail.sizeBytes ||
+      candidate.contentType !== selectedThumbnail.contentType ||
+      candidate.width !== selectedThumbnail.width ||
+      candidate.height !== selectedThumbnail.height ||
+      candidate.likeness !== "NONE" ||
+      candidate.contractVersion !== THUMBNAIL_CONTRACT_VERSION ||
+      candidate.adapterVersion !==
+        LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION ||
+      candidate.promptBasisVersion !==
+        LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
+      !publicSafetyDecision
+    )
+      incompleteReasons.push("THUMBNAIL_LINEAGE_INVALID");
+    return finalizeComponentSummary({
+      component,
+      provenanceId: row.id,
+      mode: row.mode,
+      basisVersion: row.basisVersion,
+      researchIntentId: null,
+      suggestionSetId: null,
+      imageIntentId: intent?.id ?? null,
+      imageCandidateId: candidate?.id ?? null,
+      transcriptArtifactId: null,
+      transcriptSha256: null,
+      citations: [],
+      research: null,
+      imageSafetyDecision: publicSafetyDecision,
+      likeness: candidate?.likeness ?? null,
+      directCostMicrousd: candidate?.directCostMicrousd ?? 0n,
+      costBasisVersion:
+        candidate?.costBasisVersion ?? "unknown-thumbnail-cost-basis",
+      incompleteReasons,
+    });
   }
 
   private mapApproval(row: ApprovalRow): EditorialApprovalView {
@@ -747,7 +1080,10 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
       renderArtifactSha256: row.renderArtifactSha256,
       renderArtifactSizeBytes: row.renderArtifactSizeBytes,
       renderContractVersion: row.renderContractVersion,
-      approvalContractVersion: EDITORIAL_APPROVAL_CONTRACT,
+      approvalContractVersion:
+        row.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT_V2
+          ? EDITORIAL_APPROVAL_CONTRACT_V2
+          : EDITORIAL_APPROVAL_CONTRACT,
       candidateFingerprint: row.candidateFingerprint,
       approvedAt: row.approvedAt,
       state: staleReasons.length === 0 ? "CURRENT" : "STALE",
@@ -781,7 +1117,11 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
         outputDurationMs: row.metrics.outputDurationMs,
         outputBytes: row.metrics.outputBytes,
         manualAttentionMs: row.metrics.manualAttentionMs,
-        attentionMeasurementVersion: ATTENTION_MEASUREMENT_VERSION,
+        attentionMeasurementVersion:
+          row.metrics.attentionMeasurementVersion ===
+          OPERATOR_ATTENTION_SCHEMA_V2
+            ? OPERATOR_ATTENTION_SCHEMA_V2
+            : ATTENTION_MEASUREMENT_VERSION,
         directProviderCostMinor: 0,
         costCurrency: "RUB",
         costBasisVersion: APPROVAL_COST_BASIS,
@@ -789,13 +1129,56 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
           row.metrics.incompleteReasons,
         ),
       },
+      componentSnapshots: row.componentSnapshots.map((snapshot) =>
+        mapPersistedComponentSnapshot(snapshot),
+      ),
+      economicsV2: row.economicsV2
+        ? {
+            schemaVersion: APPROVAL_ECONOMICS_SCHEMA_V2,
+            workflowMode: row.economicsV2.workflowMode,
+            attention: {
+              schemaVersion: OPERATOR_ATTENTION_SCHEMA_V2,
+              preparationForegroundMs: row.economicsV2.preparationForegroundMs,
+              finalReviewForegroundMs: row.economicsV2.finalReviewForegroundMs,
+              totalOperatorAttentionMs:
+                row.economicsV2.totalOperatorAttentionMs,
+            },
+            metadataDirectCostMicrousd:
+              row.economicsV2.metadataDirectCostMicrousd,
+            evidenceDirectCostMicrousd:
+              row.economicsV2.evidenceDirectCostMicrousd,
+            thumbnailDirectCostMicrousd:
+              row.economicsV2.thumbnailDirectCostMicrousd,
+            combinedDirectCostMicrousd:
+              row.economicsV2.combinedDirectCostMicrousd,
+            currency: "USD",
+            unit: "MICRO",
+            metadataCostBasisVersion: row.economicsV2.metadataCostBasisVersion,
+            evidenceCostBasisVersion: row.economicsV2.evidenceCostBasisVersion,
+            thumbnailCostBasisVersion:
+              row.economicsV2.thumbnailCostBasisVersion,
+            assistanceTiming: row.economicsV2.assistanceTiming,
+            incompleteReasons: stringArray(
+              row.economicsV2.incompleteReasons,
+            ) ?? ["ECONOMICS_INCOMPLETE_REASONS_INVALID"],
+            snapshotFingerprint: row.economicsV2.snapshotFingerprint,
+          }
+        : null,
     };
   }
 
   private staleReasons(row: ApprovalRow): EditorialApprovalStaleReason[] {
     const reasons: EditorialApprovalStaleReason[] = [];
-    if (row.approvalContractVersion !== EDITORIAL_APPROVAL_CONTRACT)
+    if (
+      row.approvalContractVersion !== EDITORIAL_APPROVAL_CONTRACT &&
+      row.approvalContractVersion !== EDITORIAL_APPROVAL_CONTRACT_V2
+    )
       reasons.push("APPROVAL_CONTRACT_UNSUPPORTED");
+    if (
+      row.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT_V2 &&
+      !v2SnapshotExact(row)
+    )
+      reasons.push("LINEAGE_INVALID");
     if (row.renderContractVersion !== HORIZONTAL_RENDER_CONTRACT)
       reasons.push("RENDER_CONTRACT_UNSUPPORTED");
     if (row.editorialPackage.currentRevision !== row.editorialRevision)
@@ -923,6 +1306,55 @@ function candidateFingerprintFor(input: {
   editorial: NonNullable<EditorialReviewView["editorial"]>;
   recipe: NonNullable<EditorialReviewView["recipe"]>;
   render: NonNullable<EditorialReviewView["render"]>;
+  metadataSnapshotFingerprint: string;
+  thumbnailSnapshotFingerprint: string;
+  workflowMode: string;
+}): string {
+  return hashFixed([
+    EDITORIAL_REVIEW_CONTRACT_V2,
+    input.projectId,
+    input.sourceId,
+    input.sourceVersion,
+    input.cutPipelineJobId,
+    input.cutResultArtifactId,
+    input.cutResultSha256,
+    input.cutResultSizeBytes,
+    input.editorial.packageId,
+    input.editorial.revisionId,
+    input.editorial.revision,
+    input.editorial.processingTemplateRevisionId,
+    input.editorial.thumbnail.id,
+    input.editorial.thumbnail.sha256,
+    input.editorial.thumbnail.sizeBytes,
+    input.editorial.thumbnail.contentType,
+    input.recipe.id,
+    input.recipe.revisionId,
+    input.recipe.revision,
+    input.recipe.configurationFingerprint,
+    input.render.id,
+    input.render.resultId,
+    input.render.artifactId,
+    input.render.artifactSha256,
+    input.render.artifactSizeBytes,
+    input.render.renderContractVersion,
+    input.metadataSnapshotFingerprint,
+    input.thumbnailSnapshotFingerprint,
+    input.workflowMode,
+    EDITORIAL_APPROVAL_CONTRACT_V2,
+  ]);
+}
+
+function legacyCandidateFingerprintFor(input: {
+  projectId: string;
+  sourceId: string;
+  sourceVersion: number;
+  cutPipelineJobId: string;
+  cutResultArtifactId: string;
+  cutResultSha256: string;
+  cutResultSizeBytes: bigint;
+  editorial: NonNullable<EditorialReviewView["editorial"]>;
+  recipe: NonNullable<EditorialReviewView["recipe"]>;
+  render: NonNullable<EditorialReviewView["render"]>;
 }): string {
   return hashFixed([
     "editorial-review-candidate-v1",
@@ -955,7 +1387,465 @@ function candidateFingerprintFor(input: {
   ]);
 }
 
-function canonicalApprovalRequestFingerprint(input: {
+function workflowModeFor(
+  metadata: "MANUAL" | "AI_ASSISTED" | "MIXED",
+  thumbnail: "MANUAL" | "AI_ASSISTED" | "MIXED",
+): "MANUAL" | "AI_ASSISTED" | "MIXED" {
+  if (metadata === "MANUAL" && thumbnail === "MANUAL") return "MANUAL";
+  if (metadata === "AI_ASSISTED" && thumbnail === "AI_ASSISTED")
+    return "AI_ASSISTED";
+  return "MIXED";
+}
+
+function manualComponentSummary(
+  component: "METADATA" | "THUMBNAIL",
+  incompleteReasons: string[],
+): EditorialReviewComponentSummary {
+  return finalizeComponentSummary({
+    component,
+    provenanceId: null,
+    mode: "MANUAL",
+    basisVersion: "legacy-manual-editorial-v1",
+    researchIntentId: null,
+    suggestionSetId: null,
+    imageIntentId: null,
+    imageCandidateId: null,
+    transcriptArtifactId: null,
+    transcriptSha256: null,
+    citations: [],
+    research: null,
+    imageSafetyDecision: null,
+    likeness: null,
+    directCostMicrousd: 0n,
+    costBasisVersion: "local-manual-direct-ai-cost-v1",
+    incompleteReasons,
+  });
+}
+
+function finalizeComponentSummary(
+  value: Omit<EditorialReviewComponentSummary, "snapshotFingerprint">,
+): EditorialReviewComponentSummary {
+  if (value.directCostMicrousd < 0n)
+    value.incompleteReasons.push("DIRECT_COST_INVALID");
+  const fingerprint = hashFixed([
+    "editorial-approval-component-snapshot-v2",
+    value.component,
+    value.provenanceId ?? "",
+    value.mode,
+    value.basisVersion,
+    value.researchIntentId ?? "",
+    value.suggestionSetId ?? "",
+    value.imageIntentId ?? "",
+    value.imageCandidateId ?? "",
+    value.transcriptArtifactId ?? "",
+    value.transcriptSha256 ?? "",
+    canonicalJson(value.citations),
+    canonicalJson(value.research),
+    canonicalJson(value.imageSafetyDecision),
+    value.likeness ?? "",
+    value.directCostMicrousd,
+    value.costBasisVersion,
+    canonicalJson(unique(value.incompleteReasons)),
+  ]);
+  return {
+    ...value,
+    incompleteReasons: unique(value.incompleteReasons),
+    snapshotFingerprint: fingerprint,
+  };
+}
+
+type SnapshotCitation = {
+  id: string;
+  url: string;
+  title: string;
+  publisher: string;
+  publishedAt: Date | null;
+  accessedAt: Date;
+};
+
+export function selectSuggestionCitations(
+  intentCitations: SnapshotCitation[],
+  suggestionCitationIds: unknown,
+): SnapshotCitation[] | null {
+  const ids = stringArray(suggestionCitationIds);
+  if (
+    intentCitations.length > 20 ||
+    !ids ||
+    new Set(ids).size !== ids.length ||
+    intentCitations.some((citation) => !validPublicCitation(citation))
+  )
+    return null;
+  const byId = new Map<string, SnapshotCitation>();
+  for (const citation of intentCitations) {
+    if (byId.has(citation.id)) return null;
+    byId.set(citation.id, citation);
+  }
+  const selected: SnapshotCitation[] = [];
+  for (const id of ids) {
+    const citation = byId.get(id);
+    if (!citation) return null;
+    selected.push(citation);
+  }
+  return selected;
+}
+
+function validPublicCitation(value: SnapshotCitation): boolean {
+  try {
+    const normalizedUrl = normalizePublicCitationUrl(value.url);
+    return (
+      /^[0-9a-f-]{36}$/i.test(value.id) &&
+      normalizedUrl === value.url &&
+      value.title.length > 0 &&
+      value.title.length <= 300 &&
+      value.publisher.length > 0 &&
+      value.publisher.length <= 200 &&
+      Number.isFinite(value.accessedAt.getTime()) &&
+      (value.publishedAt === null ||
+        Number.isFinite(value.publishedAt.getTime()))
+    );
+  } catch {
+    return false;
+  }
+}
+
+function canonicalJson(value: unknown): string {
+  if (value === undefined) return "null";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
+    .join(",")}}`;
+}
+
+function stringArray(value: unknown): string[] | null {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+    ? value
+    : null;
+}
+
+function approvalAttention(
+  input: Parameters<EditorialApprovalRepository["create"]>[0],
+): {
+  version: string;
+  preparationMs: number;
+  finalReviewMs: number;
+  totalMs: number;
+} {
+  if (input.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT_V2) {
+    if (
+      !input.attention ||
+      input.attention.schemaVersion !== OPERATOR_ATTENTION_SCHEMA_V2
+    )
+      throw new EditorialApprovalCandidateConflictError();
+    const total =
+      input.attention.preparationForegroundMs +
+      input.attention.finalReviewForegroundMs;
+    if (
+      !Number.isSafeInteger(total) ||
+      input.attention.preparationForegroundMs < 0 ||
+      input.attention.finalReviewForegroundMs < 0 ||
+      total > 28_800_000
+    )
+      throw new EditorialApprovalCandidateConflictError();
+    return {
+      // Approval metrics v1 remains byte-for-byte/semantically compatible;
+      // the v2 split and its schema version live in the economics snapshot.
+      version: ATTENTION_MEASUREMENT_VERSION,
+      preparationMs: input.attention.preparationForegroundMs,
+      finalReviewMs: input.attention.finalReviewForegroundMs,
+      totalMs: total,
+    };
+  }
+  if (
+    input.manualAttentionMs === undefined ||
+    input.attentionMeasurementVersion !== ATTENTION_MEASUREMENT_VERSION
+  )
+    throw new EditorialApprovalCandidateConflictError();
+  return {
+    version: ATTENTION_MEASUREMENT_VERSION,
+    preparationMs: 0,
+    finalReviewMs: input.manualAttentionMs,
+    totalMs: input.manualAttentionMs,
+  };
+}
+
+function v2ApprovalSnapshotCreate(
+  review: EditorialReviewView,
+  attention: ReturnType<typeof approvalAttention>,
+) {
+  const components = [review.components.metadata, review.components.thumbnail];
+  if (components.some((component) => !component.provenanceId))
+    throw new EditorialApprovalCandidateConflictError();
+  const economicsFingerprint = hashFixed([
+    APPROVAL_ECONOMICS_SCHEMA_V2,
+    review.workflowMode,
+    attention.preparationMs,
+    attention.finalReviewMs,
+    ...components.map((component) => component.snapshotFingerprint),
+    review.economicsPreview.metadataDirectCostMicrousd,
+    review.economicsPreview.evidenceDirectCostMicrousd,
+    review.economicsPreview.thumbnailDirectCostMicrousd,
+    review.economicsPreview.combinedDirectCostMicrousd,
+  ]);
+  return {
+    componentSnapshots: {
+      create: components.map((component) => ({
+        id: cryptoRandomUuid(),
+        component: component.component,
+        provenanceId: component.provenanceId!,
+        mode: component.mode,
+        basisVersion: component.basisVersion,
+        researchIntentId: component.researchIntentId,
+        suggestionSetId: component.suggestionSetId,
+        imageIntentId: component.imageIntentId,
+        imageCandidateId: component.imageCandidateId,
+        transcriptArtifactId: component.transcriptArtifactId,
+        transcriptSha256: component.transcriptSha256,
+        citations: component.citations.map((citation) => ({
+          ...citation,
+          publishedAt: citation.publishedAt?.toISOString() ?? null,
+          accessedAt: citation.accessedAt.toISOString(),
+        })),
+        freshness: component.research
+          ? {
+              ...component.research,
+              searchedAt: component.research.searchedAt.toISOString(),
+              freshUntil: component.research.freshUntil.toISOString(),
+            }
+          : undefined,
+        imageSafetyDecision: component.imageSafetyDecision ?? undefined,
+        likeness: component.likeness,
+        directCostMicrousd: component.directCostMicrousd,
+        costBasisVersion: component.costBasisVersion,
+        incompleteReasons: component.incompleteReasons,
+        snapshotFingerprint: component.snapshotFingerprint,
+      })),
+    },
+    economicsV2: {
+      create: {
+        schemaVersion: APPROVAL_ECONOMICS_SCHEMA_V2,
+        workflowMode: review.workflowMode,
+        attentionSchemaVersion: OPERATOR_ATTENTION_SCHEMA_V2,
+        preparationForegroundMs: attention.preparationMs,
+        finalReviewForegroundMs: attention.finalReviewMs,
+        totalOperatorAttentionMs: attention.totalMs,
+        metadataDirectCostMicrousd:
+          review.economicsPreview.metadataDirectCostMicrousd,
+        evidenceDirectCostMicrousd:
+          review.economicsPreview.evidenceDirectCostMicrousd,
+        thumbnailDirectCostMicrousd:
+          review.economicsPreview.thumbnailDirectCostMicrousd,
+        combinedDirectCostMicrousd:
+          review.economicsPreview.combinedDirectCostMicrousd,
+        currency: "USD",
+        unit: "MICRO",
+        metadataCostBasisVersion: review.components.metadata.costBasisVersion,
+        evidenceCostBasisVersion: "local-transcript-direct-ai-cost-v1",
+        thumbnailCostBasisVersion: review.components.thumbnail.costBasisVersion,
+        incompleteReasons: review.economicsPreview.incompleteReasons,
+        snapshotFingerprint: economicsFingerprint,
+      },
+    },
+  };
+}
+
+function mapPersistedComponentSnapshot(
+  row: ApprovalRow["componentSnapshots"][number],
+): EditorialReviewComponentSummary {
+  const citations = parseSnapshotCitations(row.citations);
+  const research = parseSnapshotFreshness(row.freshness);
+  const imageSafetyDecision = projectNoLikenessSafetyDecision(
+    row.imageSafetyDecision,
+  );
+  return {
+    component: row.component,
+    provenanceId: row.provenanceId,
+    mode: row.mode,
+    basisVersion: row.basisVersion,
+    researchIntentId: row.researchIntentId,
+    suggestionSetId: row.suggestionSetId,
+    imageIntentId: row.imageIntentId,
+    imageCandidateId: row.imageCandidateId,
+    transcriptArtifactId: row.transcriptArtifactId,
+    transcriptSha256: row.transcriptSha256,
+    citations,
+    research,
+    imageSafetyDecision,
+    likeness: row.likeness,
+    directCostMicrousd: row.directCostMicrousd,
+    costBasisVersion: row.costBasisVersion,
+    incompleteReasons: stringArray(row.incompleteReasons) ?? [
+      "SNAPSHOT_INVALID",
+    ],
+    snapshotFingerprint: row.snapshotFingerprint,
+  };
+}
+
+function v2SnapshotExact(row: ApprovalRow): boolean {
+  if (row.componentSnapshots.length !== 2 || !row.economicsV2) return false;
+  const metadata = row.componentSnapshots.find(
+    (value) => value.component === "METADATA",
+  );
+  const thumbnail = row.componentSnapshots.find(
+    (value) => value.component === "THUMBNAIL",
+  );
+  if (!metadata || !thumbnail) return false;
+  for (const snapshot of [metadata, thumbnail]) {
+    const provenance = snapshot.provenance;
+    if (
+      snapshot.editorialPackageRevisionId !== row.editorialPackageRevisionId ||
+      provenance.packageRevisionId !== row.editorialPackageRevisionId ||
+      snapshot.provenanceId !== provenance.id ||
+      snapshot.component !== provenance.component ||
+      snapshot.mode !== provenance.mode ||
+      snapshot.basisVersion !== provenance.basisVersion ||
+      snapshot.researchIntentId !== provenance.researchIntentId ||
+      snapshot.suggestionSetId !== provenance.suggestionSetId ||
+      snapshot.imageIntentId !== provenance.imageIntentId ||
+      snapshot.imageCandidateId !== provenance.imageCandidateId
+    )
+      return false;
+    const mapped = mapPersistedComponentSnapshot(snapshot);
+    if (
+      (snapshot.component === "METADATA" &&
+        snapshot.imageSafetyDecision !== null) ||
+      (snapshot.component === "THUMBNAIL" &&
+        snapshot.mode === "MANUAL" &&
+        snapshot.imageSafetyDecision !== null) ||
+      (snapshot.component === "THUMBNAIL" &&
+        snapshot.mode === "AI_ASSISTED" &&
+        (!mapped.imageSafetyDecision ||
+          snapshot.imageCandidate?.contractVersion !==
+            THUMBNAIL_CONTRACT_VERSION ||
+          snapshot.imageCandidate.adapterVersion !==
+            LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION ||
+          snapshot.imageCandidate.promptBasisVersion !==
+            LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
+          !projectNoLikenessSafetyDecision(
+            snapshot.imageCandidate.safetyDecision,
+          ) ||
+          canonicalJson(snapshot.imageCandidate.safetyDecision) !==
+            canonicalJson(mapped.imageSafetyDecision)))
+    )
+      return false;
+    const { snapshotFingerprint: _storedFingerprint, ...fingerprintInput } =
+      mapped;
+    if (
+      finalizeComponentSummary(fingerprintInput).snapshotFingerprint !==
+      snapshot.snapshotFingerprint
+    )
+      return false;
+  }
+  if (
+    metadata.directCostMicrousd !==
+      (metadata.suggestionSet?.directCostMicrousd ?? 0n) ||
+    metadata.costBasisVersion !==
+      (metadata.suggestionSet?.costBasisVersion ?? metadata.basisVersion) ||
+    thumbnail.directCostMicrousd !==
+      (thumbnail.imageCandidate?.directCostMicrousd ?? 0n) ||
+    thumbnail.costBasisVersion !==
+      (thumbnail.imageCandidate?.costBasisVersion ?? thumbnail.basisVersion)
+  )
+    return false;
+  const economics = row.economicsV2;
+  const workflow = workflowModeFor(metadata.mode, thumbnail.mode);
+  const expectedEconomicsFingerprint = hashFixed([
+    APPROVAL_ECONOMICS_SCHEMA_V2,
+    workflow,
+    economics.preparationForegroundMs,
+    economics.finalReviewForegroundMs,
+    metadata.snapshotFingerprint,
+    thumbnail.snapshotFingerprint,
+    metadata.directCostMicrousd,
+    economics.evidenceDirectCostMicrousd,
+    thumbnail.directCostMicrousd,
+    metadata.directCostMicrousd +
+      economics.evidenceDirectCostMicrousd +
+      thumbnail.directCostMicrousd,
+  ]);
+  return (
+    economics.workflowMode === workflow &&
+    economics.totalOperatorAttentionMs ===
+      economics.preparationForegroundMs + economics.finalReviewForegroundMs &&
+    economics.metadataDirectCostMicrousd === metadata.directCostMicrousd &&
+    economics.thumbnailDirectCostMicrousd === thumbnail.directCostMicrousd &&
+    economics.combinedDirectCostMicrousd ===
+      economics.metadataDirectCostMicrousd +
+        economics.evidenceDirectCostMicrousd +
+        economics.thumbnailDirectCostMicrousd &&
+    economics.metadataCostBasisVersion === metadata.costBasisVersion &&
+    economics.thumbnailCostBasisVersion === thumbnail.costBasisVersion &&
+    economics.snapshotFingerprint === expectedEconomicsFingerprint
+  );
+}
+
+function parseSnapshotCitations(
+  value: unknown,
+): EditorialReviewComponentSummary["citations"] {
+  if (!Array.isArray(value) || value.length > 20)
+    throw new EditorialApprovalLineageInvalidError();
+  return value.map((item) => {
+    if (!item || typeof item !== "object")
+      throw new EditorialApprovalLineageInvalidError();
+    const row = item as Record<string, unknown>;
+    if (
+      typeof row.id !== "string" ||
+      typeof row.url !== "string" ||
+      typeof row.title !== "string" ||
+      typeof row.publisher !== "string" ||
+      typeof row.accessedAt !== "string"
+    )
+      throw new EditorialApprovalLineageInvalidError();
+    const citation = {
+      id: row.id,
+      url: row.url,
+      title: row.title,
+      publisher: row.publisher,
+      publishedAt:
+        typeof row.publishedAt === "string" ? new Date(row.publishedAt) : null,
+      accessedAt: new Date(row.accessedAt),
+    };
+    if (!validPublicCitation(citation))
+      throw new EditorialApprovalLineageInvalidError();
+    return citation;
+  });
+}
+
+function parseSnapshotFreshness(
+  value: unknown,
+): EditorialReviewComponentSummary["research"] {
+  if (value === null) return null;
+  if (!value || typeof value !== "object")
+    throw new EditorialApprovalLineageInvalidError();
+  const row = value as Record<string, unknown>;
+  if (
+    typeof row.searchedAt !== "string" ||
+    typeof row.freshUntil !== "string" ||
+    (row.freshness !== "CURRENT" && row.freshness !== "EXPIRED")
+  )
+    throw new EditorialApprovalLineageInvalidError();
+  const result = {
+    searchedAt: new Date(row.searchedAt),
+    freshUntil: new Date(row.freshUntil),
+    freshness: row.freshness as "CURRENT" | "EXPIRED",
+  };
+  if (
+    !Number.isFinite(result.searchedAt.getTime()) ||
+    !Number.isFinite(result.freshUntil.getTime())
+  )
+    throw new EditorialApprovalLineageInvalidError();
+  return result;
+}
+
+function cryptoRandomUuid(): string {
+  return randomUUID();
+}
+
+export function canonicalApprovalRequestFingerprint(input: {
+  approvalContractVersion:
+    typeof EDITORIAL_APPROVAL_CONTRACT | typeof EDITORIAL_APPROVAL_CONTRACT_V2;
   renderId: string;
   projectId: string;
   sourceId: string;
@@ -969,12 +1859,17 @@ function canonicalApprovalRequestFingerprint(input: {
   thumbnailAssetId: string;
   editorialRevision: number;
   candidateFingerprint: string;
-  manualAttentionMs: number;
-  attentionMeasurementVersion: string;
+  manualAttentionMs?: number;
+  attentionMeasurementVersion?: string;
+  attention?: {
+    schemaVersion: string;
+    preparationForegroundMs: number;
+    finalReviewForegroundMs: number;
+  };
 }): string {
-  return hashFixed([
+  const tuple: Array<string | number | bigint> = [
     "CREATE_EDITORIAL_APPROVAL",
-    EDITORIAL_APPROVAL_CONTRACT,
+    input.approvalContractVersion,
     input.renderId,
     input.projectId,
     input.sourceId,
@@ -988,9 +1883,20 @@ function canonicalApprovalRequestFingerprint(input: {
     input.thumbnailAssetId,
     input.editorialRevision,
     input.candidateFingerprint,
-    input.manualAttentionMs,
-    input.attentionMeasurementVersion,
-  ]);
+  ];
+  if (input.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT) {
+    tuple.push(
+      input.manualAttentionMs ?? "",
+      input.attentionMeasurementVersion ?? "",
+    );
+  } else {
+    tuple.push(
+      input.attention?.schemaVersion ?? "",
+      input.attention?.preparationForegroundMs ?? "",
+      input.attention?.finalReviewForegroundMs ?? "",
+    );
+  }
+  return hashFixed(tuple);
 }
 
 function hashFixed(values: Array<string | number | bigint>): string {

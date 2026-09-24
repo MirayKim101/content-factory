@@ -1,16 +1,27 @@
 import { createHash } from "node:crypto";
 
 import { Injectable } from "@nestjs/common";
+import {
+  LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
+  LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
+  THUMBNAIL_CONTRACT_VERSION,
+  projectNoLikenessSafetyDecision,
+} from "@content-factory/contracts";
 
 import type { Prisma } from "../../generated/prisma/client.js";
 import { sourceAuthorizationRuntime } from "../../config/environment.js";
+import { normalizePublicCitationUrl } from "../../ai-content/research/public-citation-url.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import { isSourceAuthorizationCleared } from "../../projects/domain/source-authorization.js";
 import type { EditorialExportRepository } from "../application/editorial-export-repository.port.js";
 import { HORIZONTAL_RENDER_CONTRACT } from "../domain/assembly-render.js";
-import { EDITORIAL_APPROVAL_CONTRACT } from "../domain/editorial-approval.js";
+import {
+  EDITORIAL_APPROVAL_CONTRACT,
+  EDITORIAL_APPROVAL_CONTRACT_V2,
+} from "../domain/editorial-approval.js";
 import {
   EDITORIAL_EXPORT_CONTRACT,
+  EDITORIAL_EXPORT_CONTRACT_V2,
   EDITORIAL_EXPORT_PROGRESS_SCHEMA,
   EditorialExportApprovalStaleError,
   EditorialExportAuthorizationError,
@@ -23,10 +34,14 @@ import {
 import { montageRightsUsable } from "../domain/montage-asset.js";
 
 const approvalInclude = {
+  componentSnapshots: {
+    include: { provenance: true, suggestionSet: true, imageCandidate: true },
+  },
+  economicsV2: true,
   source: { include: { authorizations: true } },
   cutPipelineJob: { include: { resultArtifact: true } },
   editorialPackage: true,
-  editorialPackageRevision: true,
+  editorialPackageRevision: { include: { componentProvenance: true } },
   processingTemplateRevision: true,
   thumbnailAsset: true,
   assemblyRecipe: { select: { currentRevision: true } },
@@ -96,12 +111,15 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
 
           if (!this.approvalCurrent(approval))
             throw new EditorialExportApprovalStaleError();
+          const exportContractVersion = exportContractForApproval(
+            approval.approvalContractVersion,
+          );
 
           let row = await tx.editorialExportIntent.findUnique({
             where: {
               approvalId_exportContractVersion: {
                 approvalId: approval.id,
-                exportContractVersion: EDITORIAL_EXPORT_CONTRACT,
+                exportContractVersion,
               },
             },
             include: exportInclude,
@@ -119,7 +137,7 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
                 editorialPackageRevisionId: approval.editorialPackageRevisionId,
                 recipeRevisionId: approval.recipeRevisionId,
                 assemblyRenderResultId: approval.assemblyRenderResultId,
-                exportContractVersion: EDITORIAL_EXPORT_CONTRACT,
+                exportContractVersion,
               },
             });
             await tx.pipelineJob.create({
@@ -129,9 +147,16 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
                 sourceId: approval.sourceId,
                 sourceVersion: approval.sourceVersion,
                 type: "EXPORT_EDITORIAL_PACKAGE",
-                payloadVersion: 1,
-                idempotencyKey: dispatchKey(intent.id, approval.projectId),
-                recipeVersion: EDITORIAL_EXPORT_CONTRACT,
+                payloadVersion:
+                  exportContractVersion === EDITORIAL_EXPORT_CONTRACT_V2
+                    ? 2
+                    : 1,
+                idempotencyKey: dispatchKey(
+                  intent.id,
+                  approval.projectId,
+                  exportContractVersion,
+                ),
+                recipeVersion: exportContractVersion,
                 retryBudget: 2,
                 editorialExportIntentId: intent.id,
                 attempts: {
@@ -283,7 +308,7 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
       row.pipelineJob.editorialExportIntentId !== row.id ||
       !row.result ||
       row.result.pipelineJobId !== row.pipelineJob.id ||
-      row.result.exportContractVersion !== EDITORIAL_EXPORT_CONTRACT ||
+      row.result.exportContractVersion !== row.exportContractVersion ||
       row.result.archiveSha256 !== row.result.artifact.sha256 ||
       row.result.archiveSizeBytes !== row.result.artifact.sizeBytes ||
       row.result.artifact.status !== "READY" ||
@@ -345,7 +370,8 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
         row.approval.editorialPackageRevisionId ||
       row.recipeRevisionId !== row.approval.recipeRevisionId ||
       row.assemblyRenderResultId !== row.approval.assemblyRenderResultId ||
-      row.exportContractVersion !== EDITORIAL_EXPORT_CONTRACT
+      row.exportContractVersion !==
+        exportContractForApproval(row.approval.approvalContractVersion)
     ) {
       throw new EditorialExportLineageInvalidError();
     }
@@ -394,7 +420,10 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
       editorialPackageRevisionId: row.editorialPackageRevisionId,
       recipeRevisionId: row.recipeRevisionId,
       assemblyRenderResultId: row.assemblyRenderResultId,
-      exportContractVersion: EDITORIAL_EXPORT_CONTRACT,
+      exportContractVersion:
+        row.exportContractVersion === EDITORIAL_EXPORT_CONTRACT_V2
+          ? EDITORIAL_EXPORT_CONTRACT_V2
+          : EDITORIAL_EXPORT_CONTRACT,
       approvalCurrent: this.approvalCurrent(row.approval),
       job: {
         id: row.pipelineJob.id,
@@ -423,7 +452,7 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
     const render = row.assemblyRenderIntent;
     const tags = row.editorialPackageRevision.tags;
     return (
-      row.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT &&
+      approvalSnapshotCurrent(row) &&
       row.renderContractVersion === HORIZONTAL_RENDER_CONTRACT &&
       row.editorialPackage.currentRevision === row.editorialRevision &&
       row.assemblyRecipe.currentRevision === row.recipeRevision &&
@@ -591,6 +620,231 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
   }
 }
 
+function approvalSnapshotCurrent(row: ApprovalRow): boolean {
+  if (row.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT) {
+    return row.editorialPackageRevision.componentProvenance.every(
+      (value) => value.mode === "MANUAL",
+    );
+  }
+  if (row.approvalContractVersion !== EDITORIAL_APPROVAL_CONTRACT_V2)
+    return false;
+  const economics = row.economicsV2;
+  const metadata = row.componentSnapshots.find(
+    (value) => value.component === "METADATA",
+  );
+  const thumbnail = row.componentSnapshots.find(
+    (value) => value.component === "THUMBNAIL",
+  );
+  if (
+    row.componentSnapshots.length !== 2 ||
+    !metadata ||
+    !thumbnail ||
+    !economics
+  )
+    return false;
+  for (const snapshot of [metadata, thumbnail]) {
+    const provenance = snapshot.provenance;
+    if (
+      snapshot.editorialPackageRevisionId !== row.editorialPackageRevisionId ||
+      provenance.packageRevisionId !== row.editorialPackageRevisionId ||
+      snapshot.provenanceId !== provenance.id ||
+      snapshot.component !== provenance.component ||
+      snapshot.mode !== provenance.mode ||
+      snapshot.basisVersion !== provenance.basisVersion ||
+      snapshot.researchIntentId !== provenance.researchIntentId ||
+      snapshot.suggestionSetId !== provenance.suggestionSetId ||
+      snapshot.imageIntentId !== provenance.imageIntentId ||
+      snapshot.imageCandidateId !== provenance.imageCandidateId
+    )
+      return false;
+  }
+  const workflowMode =
+    metadata.mode === "MANUAL" && thumbnail.mode === "MANUAL"
+      ? "MANUAL"
+      : metadata.mode === "AI_ASSISTED" && thumbnail.mode === "AI_ASSISTED"
+        ? "AI_ASSISTED"
+        : "MIXED";
+  return (
+    metadata.directCostMicrousd ===
+      (metadata.suggestionSet?.directCostMicrousd ?? 0n) &&
+    metadata.costBasisVersion ===
+      (metadata.suggestionSet?.costBasisVersion ?? metadata.basisVersion) &&
+    thumbnail.directCostMicrousd ===
+      (thumbnail.imageCandidate?.directCostMicrousd ?? 0n) &&
+    thumbnail.costBasisVersion ===
+      (thumbnail.imageCandidate?.costBasisVersion ?? thumbnail.basisVersion) &&
+    economics.workflowMode === workflowMode &&
+    economics.totalOperatorAttentionMs ===
+      economics.preparationForegroundMs + economics.finalReviewForegroundMs &&
+    economics.metadataDirectCostMicrousd === metadata.directCostMicrousd &&
+    economics.thumbnailDirectCostMicrousd === thumbnail.directCostMicrousd &&
+    economics.combinedDirectCostMicrousd ===
+      economics.metadataDirectCostMicrousd +
+        economics.evidenceDirectCostMicrousd +
+        economics.thumbnailDirectCostMicrousd &&
+    economics.metadataCostBasisVersion === metadata.costBasisVersion &&
+    economics.thumbnailCostBasisVersion === thumbnail.costBasisVersion &&
+    validV2SnapshotFingerprints([metadata, thumbnail], economics)
+  );
+}
+
+function validV2SnapshotFingerprints(
+  components: ApprovalRow["componentSnapshots"],
+  economics: NonNullable<ApprovalRow["economicsV2"]>,
+): boolean {
+  const byComponent = new Map<
+    "METADATA" | "THUMBNAIL",
+    ApprovalRow["componentSnapshots"][number]
+  >();
+  for (const component of components) {
+    if (byComponent.has(component.component)) return false;
+    const citations = Array.isArray(component.citations)
+      ? component.citations.map((citation) => {
+          if (!citation || typeof citation !== "object") return citation;
+          const row = citation as Record<string, unknown>;
+          return {
+            ...row,
+            publishedAt:
+              typeof row.publishedAt === "string"
+                ? new Date(row.publishedAt)
+                : null,
+            accessedAt:
+              typeof row.accessedAt === "string"
+                ? new Date(row.accessedAt)
+                : row.accessedAt,
+          };
+        })
+      : component.citations;
+    if (
+      component.component === "METADATA" &&
+      (!Array.isArray(citations) ||
+        citations.some((citation) => !validPersistedPublicCitation(citation)))
+    )
+      return false;
+    const freshness =
+      component.freshness && typeof component.freshness === "object"
+        ? {
+            ...(component.freshness as Record<string, unknown>),
+            searchedAt: new Date(
+              String(
+                (component.freshness as Record<string, unknown>).searchedAt,
+              ),
+            ),
+            freshUntil: new Date(
+              String(
+                (component.freshness as Record<string, unknown>).freshUntil,
+              ),
+            ),
+          }
+        : null;
+    const incompleteReasons = Array.isArray(component.incompleteReasons)
+      ? [...new Set(component.incompleteReasons)]
+      : component.incompleteReasons;
+    const publicSafetyDecision = projectNoLikenessSafetyDecision(
+      component.imageSafetyDecision,
+    );
+    if (
+      (component.component === "METADATA" &&
+        component.imageSafetyDecision !== null) ||
+      (component.component === "THUMBNAIL" &&
+        component.mode === "MANUAL" &&
+        component.imageSafetyDecision !== null) ||
+      (component.component === "THUMBNAIL" &&
+        component.mode === "AI_ASSISTED" &&
+        (!publicSafetyDecision ||
+          component.imageCandidate?.contractVersion !==
+            THUMBNAIL_CONTRACT_VERSION ||
+          component.imageCandidate.adapterVersion !==
+            LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION ||
+          component.imageCandidate.promptBasisVersion !==
+            LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
+          !projectNoLikenessSafetyDecision(
+            component.imageCandidate.safetyDecision,
+          ) ||
+          canonicalJson(component.imageCandidate.safetyDecision) !==
+            canonicalJson(publicSafetyDecision)))
+    )
+      return false;
+    const expected = hashValues([
+      "editorial-approval-component-snapshot-v2",
+      component.component,
+      component.provenanceId,
+      component.mode,
+      component.basisVersion,
+      component.researchIntentId ?? "",
+      component.suggestionSetId ?? "",
+      component.imageIntentId ?? "",
+      component.imageCandidateId ?? "",
+      component.transcriptArtifactId ?? "",
+      component.transcriptSha256 ?? "",
+      canonicalJson(citations),
+      canonicalJson(freshness),
+      canonicalJson(publicSafetyDecision),
+      component.likeness ?? "",
+      component.directCostMicrousd.toString(),
+      component.costBasisVersion,
+      canonicalJson(incompleteReasons),
+    ]);
+    if (component.snapshotFingerprint !== expected) return false;
+    byComponent.set(component.component, component);
+  }
+  const metadata = byComponent.get("METADATA");
+  const thumbnail = byComponent.get("THUMBNAIL");
+  if (!metadata || !thumbnail) return false;
+  const expectedEconomics = hashValues([
+    "approval-economics-v2",
+    economics.workflowMode,
+    economics.preparationForegroundMs.toString(),
+    economics.finalReviewForegroundMs.toString(),
+    metadata.snapshotFingerprint,
+    thumbnail.snapshotFingerprint,
+    economics.metadataDirectCostMicrousd.toString(),
+    economics.evidenceDirectCostMicrousd.toString(),
+    economics.thumbnailDirectCostMicrousd.toString(),
+    economics.combinedDirectCostMicrousd.toString(),
+  ]);
+  return economics.snapshotFingerprint === expectedEconomics;
+}
+
+function validPersistedPublicCitation(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const citation = value as Record<string, unknown>;
+  return (
+    typeof citation.id === "string" &&
+    /^[0-9a-f-]{36}$/i.test(citation.id) &&
+    typeof citation.url === "string" &&
+    normalizePublicCitationUrl(citation.url) === citation.url &&
+    typeof citation.title === "string" &&
+    citation.title.length > 0 &&
+    citation.title.length <= 300 &&
+    typeof citation.publisher === "string" &&
+    citation.publisher.length > 0 &&
+    citation.publisher.length <= 200 &&
+    citation.accessedAt instanceof Date &&
+    Number.isFinite(citation.accessedAt.getTime()) &&
+    (citation.publishedAt === null ||
+      (citation.publishedAt instanceof Date &&
+        Number.isFinite(citation.publishedAt.getTime())))
+  );
+}
+
+function canonicalJson(value: unknown): string {
+  if (value === undefined) return "null";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
+    .join(",")}}`;
+}
+
+function hashValues(values: Array<string | number | bigint>): string {
+  return createHash("sha256")
+    .update(values.map(String).join("\n"), "utf8")
+    .digest("hex");
+}
+
 function errorCode(error: unknown): unknown {
   return typeof error === "object" && error !== null && "code" in error
     ? error.code
@@ -607,9 +861,10 @@ function driverCause(
 }
 
 function canonicalExportRequestFingerprint(row: ApprovalRow): string {
+  const contract = exportContractForApproval(row.approvalContractVersion);
   const tuple = [
     "CREATE_EDITORIAL_EXPORT",
-    EDITORIAL_EXPORT_CONTRACT,
+    contract,
     row.id,
     row.projectId,
     row.sourceId,
@@ -627,15 +882,21 @@ function canonicalExportRequestFingerprint(row: ApprovalRow): string {
     .digest("hex");
 }
 
-function dispatchKey(intentId: string, projectId: string): string {
+function dispatchKey(
+  intentId: string,
+  projectId: string,
+  contract: string,
+): string {
   return createHash("sha256")
     .update(
-      [
-        "DISPATCH_EDITORIAL_EXPORT",
-        EDITORIAL_EXPORT_CONTRACT,
-        intentId,
-        projectId,
-      ].join("|"),
+      ["DISPATCH_EDITORIAL_EXPORT", contract, intentId, projectId].join("|"),
     )
     .digest("hex");
+}
+
+function exportContractForApproval(value: string) {
+  if (value === EDITORIAL_APPROVAL_CONTRACT) return EDITORIAL_EXPORT_CONTRACT;
+  if (value === EDITORIAL_APPROVAL_CONTRACT_V2)
+    return EDITORIAL_EXPORT_CONTRACT_V2;
+  throw new EditorialExportLineageInvalidError();
 }

@@ -1,5 +1,13 @@
+import type { NoLikenessSafetyDecision } from "@content-factory/contracts";
+
 export const EDITORIAL_APPROVAL_CONTRACT =
   "manual-horizontal-approval-v1" as const;
+export const EDITORIAL_APPROVAL_CONTRACT_V2 =
+  "human-horizontal-approval-v2" as const;
+export const EDITORIAL_REVIEW_CONTRACT_V2 =
+  "editorial-review-candidate-v2" as const;
+export const APPROVAL_ECONOMICS_SCHEMA_V2 = "approval-economics-v2" as const;
+export const OPERATOR_ATTENTION_SCHEMA_V2 = "operator-attention-v2" as const;
 export const APPROVAL_METRICS_SCHEMA = "approval-metrics-v1" as const;
 export const APPROVAL_TIMESTAMP_BASIS = "persisted-job-attempt-v1" as const;
 export const ATTENTION_MEASUREMENT_VERSION = "foreground-preview-v1" as const;
@@ -91,7 +99,67 @@ export interface ApprovalProcessingMetrics {
 
 export interface EditorialApprovalMetrics extends ApprovalProcessingMetrics {
   manualAttentionMs: number;
-  attentionMeasurementVersion: typeof ATTENTION_MEASUREMENT_VERSION;
+  attentionMeasurementVersion:
+    typeof ATTENTION_MEASUREMENT_VERSION | typeof OPERATOR_ATTENTION_SCHEMA_V2;
+}
+
+export type EditorialWorkflowMode = "MANUAL" | "AI_ASSISTED" | "MIXED";
+
+export interface EditorialReviewCitation {
+  id: string;
+  url: string;
+  title: string;
+  publisher: string;
+  publishedAt: Date | null;
+  accessedAt: Date;
+}
+
+export interface EditorialReviewComponentSummary {
+  component: "METADATA" | "THUMBNAIL";
+  provenanceId: string | null;
+  mode: EditorialWorkflowMode;
+  basisVersion: string;
+  researchIntentId: string | null;
+  suggestionSetId: string | null;
+  imageIntentId: string | null;
+  imageCandidateId: string | null;
+  transcriptArtifactId: string | null;
+  transcriptSha256: string | null;
+  citations: EditorialReviewCitation[];
+  research: {
+    searchedAt: Date;
+    freshUntil: Date;
+    freshness: "CURRENT" | "EXPIRED";
+  } | null;
+  imageSafetyDecision: NoLikenessSafetyDecision | null;
+  likeness: string | null;
+  directCostMicrousd: bigint;
+  costBasisVersion: string;
+  incompleteReasons: string[];
+  snapshotFingerprint: string;
+}
+
+export interface EditorialApprovalEconomicsV2View {
+  schemaVersion: typeof APPROVAL_ECONOMICS_SCHEMA_V2;
+  workflowMode: EditorialWorkflowMode;
+  attention: {
+    schemaVersion: typeof OPERATOR_ATTENTION_SCHEMA_V2;
+    preparationForegroundMs: number;
+    finalReviewForegroundMs: number;
+    totalOperatorAttentionMs: number;
+  };
+  metadataDirectCostMicrousd: bigint;
+  evidenceDirectCostMicrousd: bigint;
+  thumbnailDirectCostMicrousd: bigint;
+  combinedDirectCostMicrousd: bigint;
+  currency: "USD";
+  unit: "MICRO";
+  metadataCostBasisVersion: string;
+  evidenceCostBasisVersion: string;
+  thumbnailCostBasisVersion: string;
+  assistanceTiming: unknown | null;
+  incompleteReasons: string[];
+  snapshotFingerprint: string;
 }
 
 export interface EditorialApprovalView {
@@ -118,15 +186,20 @@ export interface EditorialApprovalView {
   renderArtifactSha256: string;
   renderArtifactSizeBytes: bigint;
   renderContractVersion: string;
-  approvalContractVersion: typeof EDITORIAL_APPROVAL_CONTRACT;
+  approvalContractVersion:
+    typeof EDITORIAL_APPROVAL_CONTRACT | typeof EDITORIAL_APPROVAL_CONTRACT_V2;
   candidateFingerprint: string;
   approvedAt: Date;
   state: EditorialApprovalState;
   staleReasons: EditorialApprovalStaleReason[];
   metrics: EditorialApprovalMetrics;
+  componentSnapshots: EditorialReviewComponentSummary[];
+  economicsV2: EditorialApprovalEconomicsV2View | null;
 }
 
 export interface EditorialReviewView {
+  reviewContractVersion: typeof EDITORIAL_REVIEW_CONTRACT_V2;
+  integratedReviewEnabled: boolean;
   projectId: string;
   sourceId: string;
   sourceVersion: number;
@@ -169,6 +242,21 @@ export interface EditorialReviewView {
   approvable: boolean;
   blockers: EditorialApprovalBlocker[];
   processingMetrics: ApprovalProcessingMetrics | null;
+  workflowMode: EditorialWorkflowMode;
+  components: {
+    metadata: EditorialReviewComponentSummary;
+    thumbnail: EditorialReviewComponentSummary;
+  };
+  economicsPreview: {
+    processingMetrics: ApprovalProcessingMetrics | null;
+    metadataDirectCostMicrousd: bigint;
+    evidenceDirectCostMicrousd: bigint;
+    thumbnailDirectCostMicrousd: bigint;
+    combinedDirectCostMicrousd: bigint;
+    currency: "USD";
+    unit: "MICRO";
+    incompleteReasons: string[];
+  };
   currentApproval: EditorialApprovalView | null;
   latestApproval: EditorialApprovalView | null;
 }

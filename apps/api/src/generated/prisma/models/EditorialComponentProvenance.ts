@@ -227,6 +227,7 @@ export type EditorialComponentProvenanceWhereInput = {
   suggestionSet?: Prisma.XOR<Prisma.ResearchSuggestionSetNullableScalarRelationFilter, Prisma.ResearchSuggestionSetWhereInput> | null
   imageIntent?: Prisma.XOR<Prisma.ImageSuggestionIntentNullableScalarRelationFilter, Prisma.ImageSuggestionIntentWhereInput> | null
   imageCandidate?: Prisma.XOR<Prisma.ImageSuggestionCandidateNullableScalarRelationFilter, Prisma.ImageSuggestionCandidateWhereInput> | null
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
 }
 
 export type EditorialComponentProvenanceOrderByWithRelationInput = {
@@ -245,11 +246,13 @@ export type EditorialComponentProvenanceOrderByWithRelationInput = {
   suggestionSet?: Prisma.ResearchSuggestionSetOrderByWithRelationInput
   imageIntent?: Prisma.ImageSuggestionIntentOrderByWithRelationInput
   imageCandidate?: Prisma.ImageSuggestionCandidateOrderByWithRelationInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotOrderByRelationAggregateInput
 }
 
 export type EditorialComponentProvenanceWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   packageRevisionId_component?: Prisma.EditorialComponentProvenancePackageRevisionIdComponentCompoundUniqueInput
+  id_packageRevisionId_component?: Prisma.EditorialComponentProvenanceIdPackageRevisionIdComponentCompoundUniqueInput
   AND?: Prisma.EditorialComponentProvenanceWhereInput | Prisma.EditorialComponentProvenanceWhereInput[]
   OR?: Prisma.EditorialComponentProvenanceWhereInput[]
   NOT?: Prisma.EditorialComponentProvenanceWhereInput | Prisma.EditorialComponentProvenanceWhereInput[]
@@ -267,7 +270,8 @@ export type EditorialComponentProvenanceWhereUniqueInput = Prisma.AtLeast<{
   suggestionSet?: Prisma.XOR<Prisma.ResearchSuggestionSetNullableScalarRelationFilter, Prisma.ResearchSuggestionSetWhereInput> | null
   imageIntent?: Prisma.XOR<Prisma.ImageSuggestionIntentNullableScalarRelationFilter, Prisma.ImageSuggestionIntentWhereInput> | null
   imageCandidate?: Prisma.XOR<Prisma.ImageSuggestionCandidateNullableScalarRelationFilter, Prisma.ImageSuggestionCandidateWhereInput> | null
-}, "id" | "packageRevisionId_component">
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotListRelationFilter
+}, "id" | "packageRevisionId_component" | "id_packageRevisionId_component">
 
 export type EditorialComponentProvenanceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -312,6 +316,7 @@ export type EditorialComponentProvenanceCreateInput = {
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
   imageIntent?: Prisma.ImageSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
   imageCandidate?: Prisma.ImageSuggestionCandidateCreateNestedOneWithoutComponentProvenanceInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateInput = {
@@ -325,6 +330,7 @@ export type EditorialComponentProvenanceUncheckedCreateInput = {
   imageIntentId?: string | null
   imageCandidateId?: string | null
   createdAt?: Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceUpdateInput = {
@@ -338,6 +344,7 @@ export type EditorialComponentProvenanceUpdateInput = {
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
   imageIntent?: Prisma.ImageSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
   imageCandidate?: Prisma.ImageSuggestionCandidateUpdateOneWithoutComponentProvenanceNestedInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateInput = {
@@ -351,6 +358,7 @@ export type EditorialComponentProvenanceUncheckedUpdateInput = {
   imageIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageCandidateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceCreateManyInput = {
@@ -397,7 +405,18 @@ export type EditorialComponentProvenanceOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type EditorialComponentProvenanceScalarRelationFilter = {
+  is?: Prisma.EditorialComponentProvenanceWhereInput
+  isNot?: Prisma.EditorialComponentProvenanceWhereInput
+}
+
 export type EditorialComponentProvenancePackageRevisionIdComponentCompoundUniqueInput = {
+  packageRevisionId: string
+  component: $Enums.EditorialComponentType
+}
+
+export type EditorialComponentProvenanceIdPackageRevisionIdComponentCompoundUniqueInput = {
+  id: string
   packageRevisionId: string
   component: $Enums.EditorialComponentType
 }
@@ -483,12 +502,18 @@ export type EditorialComponentProvenanceUncheckedUpdateManyWithoutPackageRevisio
   deleteMany?: Prisma.EditorialComponentProvenanceScalarWhereInput | Prisma.EditorialComponentProvenanceScalarWhereInput[]
 }
 
-export type EnumEditorialComponentTypeFieldUpdateOperationsInput = {
-  set?: $Enums.EditorialComponentType
+export type EditorialComponentProvenanceCreateNestedOneWithoutApprovalSnapshotsInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutApprovalSnapshotsInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutApprovalSnapshotsInput>
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutApprovalSnapshotsInput
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput
 }
 
-export type EnumEditorialProvenanceModeFieldUpdateOperationsInput = {
-  set?: $Enums.EditorialProvenanceMode
+export type EditorialComponentProvenanceUpdateOneRequiredWithoutApprovalSnapshotsNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutApprovalSnapshotsInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutApprovalSnapshotsInput>
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutApprovalSnapshotsInput
+  upsert?: Prisma.EditorialComponentProvenanceUpsertWithoutApprovalSnapshotsInput
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateToOneWithWhereWithoutApprovalSnapshotsInput, Prisma.EditorialComponentProvenanceUpdateWithoutApprovalSnapshotsInput>, Prisma.EditorialComponentProvenanceUncheckedUpdateWithoutApprovalSnapshotsInput>
 }
 
 export type EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput = {
@@ -669,6 +694,7 @@ export type EditorialComponentProvenanceCreateWithoutPackageRevisionInput = {
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
   imageIntent?: Prisma.ImageSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
   imageCandidate?: Prisma.ImageSuggestionCandidateCreateNestedOneWithoutComponentProvenanceInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateWithoutPackageRevisionInput = {
@@ -681,6 +707,7 @@ export type EditorialComponentProvenanceUncheckedCreateWithoutPackageRevisionInp
   imageIntentId?: string | null
   imageCandidateId?: string | null
   createdAt?: Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceCreateOrConnectWithoutPackageRevisionInput = {
@@ -725,6 +752,74 @@ export type EditorialComponentProvenanceScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"EditorialComponentProvenance"> | Date | string
 }
 
+export type EditorialComponentProvenanceCreateWithoutApprovalSnapshotsInput = {
+  id: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  createdAt?: Date | string
+  packageRevision: Prisma.EditorialPackageRevisionCreateNestedOneWithoutComponentProvenanceInput
+  researchIntent?: Prisma.ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
+  suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
+  imageIntent?: Prisma.ImageSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
+  imageCandidate?: Prisma.ImageSuggestionCandidateCreateNestedOneWithoutComponentProvenanceInput
+}
+
+export type EditorialComponentProvenanceUncheckedCreateWithoutApprovalSnapshotsInput = {
+  id: string
+  packageRevisionId: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  researchIntentId?: string | null
+  suggestionSetId?: string | null
+  imageIntentId?: string | null
+  imageCandidateId?: string | null
+  createdAt?: Date | string
+}
+
+export type EditorialComponentProvenanceCreateOrConnectWithoutApprovalSnapshotsInput = {
+  where: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  create: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutApprovalSnapshotsInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutApprovalSnapshotsInput>
+}
+
+export type EditorialComponentProvenanceUpsertWithoutApprovalSnapshotsInput = {
+  update: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateWithoutApprovalSnapshotsInput, Prisma.EditorialComponentProvenanceUncheckedUpdateWithoutApprovalSnapshotsInput>
+  create: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutApprovalSnapshotsInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutApprovalSnapshotsInput>
+  where?: Prisma.EditorialComponentProvenanceWhereInput
+}
+
+export type EditorialComponentProvenanceUpdateToOneWithWhereWithoutApprovalSnapshotsInput = {
+  where?: Prisma.EditorialComponentProvenanceWhereInput
+  data: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateWithoutApprovalSnapshotsInput, Prisma.EditorialComponentProvenanceUncheckedUpdateWithoutApprovalSnapshotsInput>
+}
+
+export type EditorialComponentProvenanceUpdateWithoutApprovalSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  packageRevision?: Prisma.EditorialPackageRevisionUpdateOneRequiredWithoutComponentProvenanceNestedInput
+  researchIntent?: Prisma.ResearchSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
+  suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
+  imageIntent?: Prisma.ImageSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
+  imageCandidate?: Prisma.ImageSuggestionCandidateUpdateOneWithoutComponentProvenanceNestedInput
+}
+
+export type EditorialComponentProvenanceUncheckedUpdateWithoutApprovalSnapshotsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  packageRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageCandidateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type EditorialComponentProvenanceCreateWithoutResearchIntentInput = {
   id: string
   component: $Enums.EditorialComponentType
@@ -735,6 +830,7 @@ export type EditorialComponentProvenanceCreateWithoutResearchIntentInput = {
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
   imageIntent?: Prisma.ImageSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
   imageCandidate?: Prisma.ImageSuggestionCandidateCreateNestedOneWithoutComponentProvenanceInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput = {
@@ -747,6 +843,7 @@ export type EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInpu
   imageIntentId?: string | null
   imageCandidateId?: string | null
   createdAt?: Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput = {
@@ -785,6 +882,7 @@ export type EditorialComponentProvenanceCreateWithoutSuggestionSetInput = {
   researchIntent?: Prisma.ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
   imageIntent?: Prisma.ImageSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
   imageCandidate?: Prisma.ImageSuggestionCandidateCreateNestedOneWithoutComponentProvenanceInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput = {
@@ -797,6 +895,7 @@ export type EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput
   imageIntentId?: string | null
   imageCandidateId?: string | null
   createdAt?: Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput = {
@@ -835,6 +934,7 @@ export type EditorialComponentProvenanceCreateWithoutImageIntentInput = {
   researchIntent?: Prisma.ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
   imageCandidate?: Prisma.ImageSuggestionCandidateCreateNestedOneWithoutComponentProvenanceInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateWithoutImageIntentInput = {
@@ -847,6 +947,7 @@ export type EditorialComponentProvenanceUncheckedCreateWithoutImageIntentInput =
   suggestionSetId?: string | null
   imageCandidateId?: string | null
   createdAt?: Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceCreateOrConnectWithoutImageIntentInput = {
@@ -885,6 +986,7 @@ export type EditorialComponentProvenanceCreateWithoutImageCandidateInput = {
   researchIntent?: Prisma.ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
   suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
   imageIntent?: Prisma.ImageSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateWithoutImageCandidateInput = {
@@ -896,6 +998,7 @@ export type EditorialComponentProvenanceUncheckedCreateWithoutImageCandidateInpu
   researchIntentId?: string | null
   suggestionSetId?: string | null
   createdAt?: Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutProvenanceInput
 }
 
 export type EditorialComponentProvenanceCreateOrConnectWithoutImageCandidateInput = {
@@ -946,6 +1049,7 @@ export type EditorialComponentProvenanceUpdateWithoutPackageRevisionInput = {
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
   imageIntent?: Prisma.ImageSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
   imageCandidate?: Prisma.ImageSuggestionCandidateUpdateOneWithoutComponentProvenanceNestedInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateWithoutPackageRevisionInput = {
@@ -958,6 +1062,7 @@ export type EditorialComponentProvenanceUncheckedUpdateWithoutPackageRevisionInp
   imageIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageCandidateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateManyWithoutPackageRevisionInput = {
@@ -994,6 +1099,7 @@ export type EditorialComponentProvenanceUpdateWithoutResearchIntentInput = {
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
   imageIntent?: Prisma.ImageSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
   imageCandidate?: Prisma.ImageSuggestionCandidateUpdateOneWithoutComponentProvenanceNestedInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateWithoutResearchIntentInput = {
@@ -1006,6 +1112,7 @@ export type EditorialComponentProvenanceUncheckedUpdateWithoutResearchIntentInpu
   imageIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageCandidateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentInput = {
@@ -1042,6 +1149,7 @@ export type EditorialComponentProvenanceUpdateWithoutSuggestionSetInput = {
   researchIntent?: Prisma.ResearchSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
   imageIntent?: Prisma.ImageSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
   imageCandidate?: Prisma.ImageSuggestionCandidateUpdateOneWithoutComponentProvenanceNestedInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateWithoutSuggestionSetInput = {
@@ -1054,6 +1162,7 @@ export type EditorialComponentProvenanceUncheckedUpdateWithoutSuggestionSetInput
   imageIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageCandidateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateManyWithoutSuggestionSetInput = {
@@ -1090,6 +1199,7 @@ export type EditorialComponentProvenanceUpdateWithoutImageIntentInput = {
   researchIntent?: Prisma.ResearchSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
   imageCandidate?: Prisma.ImageSuggestionCandidateUpdateOneWithoutComponentProvenanceNestedInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateWithoutImageIntentInput = {
@@ -1102,6 +1212,7 @@ export type EditorialComponentProvenanceUncheckedUpdateWithoutImageIntentInput =
   suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageCandidateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateManyWithoutImageIntentInput = {
@@ -1137,6 +1248,7 @@ export type EditorialComponentProvenanceUpdateWithoutImageCandidateInput = {
   researchIntent?: Prisma.ResearchSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
   suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
   imageIntent?: Prisma.ImageSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateWithoutImageCandidateInput = {
@@ -1148,6 +1260,7 @@ export type EditorialComponentProvenanceUncheckedUpdateWithoutImageCandidateInpu
   researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approvalSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateManyWithoutImageCandidateInput = {
@@ -1161,6 +1274,35 @@ export type EditorialComponentProvenanceUncheckedUpdateManyWithoutImageCandidate
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type EditorialComponentProvenanceCountOutputType
+ */
+
+export type EditorialComponentProvenanceCountOutputType = {
+  approvalSnapshots: number
+}
+
+export type EditorialComponentProvenanceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  approvalSnapshots?: boolean | EditorialComponentProvenanceCountOutputTypeCountApprovalSnapshotsArgs
+}
+
+/**
+ * EditorialComponentProvenanceCountOutputType without action
+ */
+export type EditorialComponentProvenanceCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialComponentProvenanceCountOutputType
+   */
+  select?: Prisma.EditorialComponentProvenanceCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * EditorialComponentProvenanceCountOutputType without action
+ */
+export type EditorialComponentProvenanceCountOutputTypeCountApprovalSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
+}
 
 
 export type EditorialComponentProvenanceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1179,6 +1321,8 @@ export type EditorialComponentProvenanceSelect<ExtArgs extends runtime.Types.Ext
   suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
   imageIntent?: boolean | Prisma.EditorialComponentProvenance$imageIntentArgs<ExtArgs>
   imageCandidate?: boolean | Prisma.EditorialComponentProvenance$imageCandidateArgs<ExtArgs>
+  approvalSnapshots?: boolean | Prisma.EditorialComponentProvenance$approvalSnapshotsArgs<ExtArgs>
+  _count?: boolean | Prisma.EditorialComponentProvenanceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["editorialComponentProvenance"]>
 
 export type EditorialComponentProvenanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1237,6 +1381,8 @@ export type EditorialComponentProvenanceInclude<ExtArgs extends runtime.Types.Ex
   suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
   imageIntent?: boolean | Prisma.EditorialComponentProvenance$imageIntentArgs<ExtArgs>
   imageCandidate?: boolean | Prisma.EditorialComponentProvenance$imageCandidateArgs<ExtArgs>
+  approvalSnapshots?: boolean | Prisma.EditorialComponentProvenance$approvalSnapshotsArgs<ExtArgs>
+  _count?: boolean | Prisma.EditorialComponentProvenanceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EditorialComponentProvenanceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   packageRevision?: boolean | Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>
@@ -1261,6 +1407,7 @@ export type $EditorialComponentProvenancePayload<ExtArgs extends runtime.Types.E
     suggestionSet: Prisma.$ResearchSuggestionSetPayload<ExtArgs> | null
     imageIntent: Prisma.$ImageSuggestionIntentPayload<ExtArgs> | null
     imageCandidate: Prisma.$ImageSuggestionCandidatePayload<ExtArgs> | null
+    approvalSnapshots: Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1672,6 +1819,7 @@ export interface Prisma__EditorialComponentProvenanceClient<T, Null = never, Ext
   suggestionSet<T extends Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>>): Prisma.Prisma__ResearchSuggestionSetClient<runtime.Types.Result.GetResult<Prisma.$ResearchSuggestionSetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   imageIntent<T extends Prisma.EditorialComponentProvenance$imageIntentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialComponentProvenance$imageIntentArgs<ExtArgs>>): Prisma.Prisma__ImageSuggestionIntentClient<runtime.Types.Result.GetResult<Prisma.$ImageSuggestionIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   imageCandidate<T extends Prisma.EditorialComponentProvenance$imageCandidateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialComponentProvenance$imageCandidateArgs<ExtArgs>>): Prisma.Prisma__ImageSuggestionCandidateClient<runtime.Types.Result.GetResult<Prisma.$ImageSuggestionCandidatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  approvalSnapshots<T extends Prisma.EditorialComponentProvenance$approvalSnapshotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialComponentProvenance$approvalSnapshotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalComponentSnapshotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2185,6 +2333,30 @@ export type EditorialComponentProvenance$imageCandidateArgs<ExtArgs extends runt
    */
   include?: Prisma.ImageSuggestionCandidateInclude<ExtArgs> | null
   where?: Prisma.ImageSuggestionCandidateWhereInput
+}
+
+/**
+ * EditorialComponentProvenance.approvalSnapshots
+ */
+export type EditorialComponentProvenance$approvalSnapshotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApprovalComponentSnapshot
+   */
+  select?: Prisma.EditorialApprovalComponentSnapshotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApprovalComponentSnapshot
+   */
+  omit?: Prisma.EditorialApprovalComponentSnapshotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalComponentSnapshotInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalComponentSnapshotWhereInput
+  orderBy?: Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput | Prisma.EditorialApprovalComponentSnapshotOrderByWithRelationInput[]
+  cursor?: Prisma.EditorialApprovalComponentSnapshotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum | Prisma.EditorialApprovalComponentSnapshotScalarFieldEnum[]
 }
 
 /**

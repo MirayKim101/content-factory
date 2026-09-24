@@ -18,6 +18,7 @@ import {
 } from "~/features/export-editorial-package/model/export-attempt-storage";
 import {
   createEditorialApprovalsApi,
+  type CreateEditorialApproval,
   EditorialApprovalApiError,
   type EditorialReview,
 } from "~/shared/api/editorial-approvals";
@@ -42,7 +43,8 @@ const api = createEditorialApprovalsApi(config.public.apiBasePath);
 const exportsApi = createEditorialExportsApi(config.public.apiBasePath);
 const queryClient = useQueryClient();
 const checked = ref(false);
-const attentionMs = ref(0);
+const preparationForegroundMs = ref(0);
+const finalReviewForegroundMs = ref(0);
 const draftFingerprint = ref<string>();
 const draftJobId = ref<string>();
 const idempotencyKey = ref<string>();
@@ -51,6 +53,7 @@ const exportError = ref<string>();
 const now = ref(Date.now());
 let timer: ReturnType<typeof setInterval> | undefined;
 let foregroundStart: number | undefined;
+let foregroundPhase: "PREPARATION" | "FINAL_REVIEW" | undefined;
 
 const review = useQuery({
   queryKey: computed(() => ["editorial-review", props.projectId, props.jobId]),
@@ -77,8 +80,12 @@ const canApprove = computed(() =>
     candidate.value.render &&
     candidate.value.blockers.length === 0 &&
     candidate.value.processingMetrics &&
+    (candidate.value.integratedReviewEnabled ||
+      candidate.value.workflowMode === "MANUAL") &&
     !isCurrent.value &&
     checked.value &&
+    displayedAttention("PREPARATION") + displayedAttention("FINAL_REVIEW") <=
+      28_800_000 &&
     !review.isFetching.value &&
     !approval.isPending.value,
   ),
@@ -92,8 +99,12 @@ const canExport = computed(
 
 function addForegroundTime(): void {
   if (foregroundStart === undefined) return;
-  attentionMs.value += Math.max(0, Date.now() - foregroundStart);
+  const elapsed = Math.max(0, Date.now() - foregroundStart);
+  if (foregroundPhase === "FINAL_REVIEW")
+    finalReviewForegroundMs.value += elapsed;
+  else preparationForegroundMs.value += elapsed;
   foregroundStart = undefined;
+  foregroundPhase = undefined;
   persistDraft();
 }
 function isForeground(): boolean {
@@ -106,8 +117,10 @@ function syncTimer(): void {
     addForegroundTime();
     return;
   }
-  if (isForeground() && foregroundStart === undefined)
+  if (isForeground() && foregroundStart === undefined) {
     foregroundStart = Date.now();
+    foregroundPhase = checked.value ? "FINAL_REVIEW" : "PREPARATION";
+  }
   if (!isForeground()) addForegroundTime();
 }
 function onVisibilityChange(): void {
@@ -126,10 +139,12 @@ function stopTimer(): void {
   if (timer) clearInterval(timer);
   timer = undefined;
 }
-function displayedAttention(): number {
+function displayedAttention(phase: "PREPARATION" | "FINAL_REVIEW"): number {
   return (
-    attentionMs.value +
-    (foregroundStart === undefined
+    (phase === "PREPARATION"
+      ? preparationForegroundMs.value
+      : finalReviewForegroundMs.value) +
+    (foregroundStart === undefined || foregroundPhase !== phase
       ? 0
       : Math.max(0, now.value - foregroundStart))
   );
@@ -138,7 +153,8 @@ function persistDraft(): void {
   if (!draftFingerprint.value || !draftJobId.value) return;
   saveApprovalDraft(draftJobId.value, {
     candidateFingerprint: draftFingerprint.value,
-    manualAttentionMs: attentionMs.value,
+    preparationForegroundMs: preparationForegroundMs.value,
+    finalReviewForegroundMs: finalReviewForegroundMs.value,
     idempotencyKey: idempotencyKey.value,
   });
 }
@@ -149,12 +165,16 @@ function hydrateDraft(value: EditorialReview | undefined): void {
   const draft = loadApprovalDraft(props.jobId, fingerprint);
   draftFingerprint.value = fingerprint;
   draftJobId.value = props.jobId;
-  attentionMs.value = draft.manualAttentionMs;
+  preparationForegroundMs.value = draft.preparationForegroundMs;
+  finalReviewForegroundMs.value = draft.finalReviewForegroundMs;
   idempotencyKey.value = draft.idempotencyKey;
   checked.value = false;
   error.value = undefined;
   now.value = Date.now();
-  if (isForeground() && !idempotencyKey.value) foregroundStart = now.value;
+  if (isForeground() && !idempotencyKey.value) {
+    foregroundStart = now.value;
+    foregroundPhase = "PREPARATION";
+  }
 }
 function close(): void {
   stopTimer();
@@ -184,6 +204,16 @@ function formatBytes(value: string | undefined): string {
 function metric(value: number | null): string {
   return value === null ? "Нет достоверных данных" : formatDuration(value);
 }
+function formatMicrousd(value: string): string {
+  return `$${(Number(value) / 1_000_000).toFixed(6)} (${value} microUSD)`;
+}
+function modeLabel(value: "MANUAL" | "AI_ASSISTED" | "MIXED"): string {
+  return value === "MANUAL"
+    ? "Ручной"
+    : value === "AI_ASSISTED"
+      ? "AI без содержательных правок"
+      : "Смешанный";
+}
 function requestApproval(): void {
   const value = candidate.value;
   if (
@@ -196,19 +226,33 @@ function requestApproval(): void {
   addForegroundTime();
   const draft = approvalIdempotency({
     candidateFingerprint: value.candidateFingerprint,
-    manualAttentionMs: attentionMs.value,
+    preparationForegroundMs: preparationForegroundMs.value,
+    finalReviewForegroundMs: finalReviewForegroundMs.value,
     idempotencyKey: idempotencyKey.value,
   });
   idempotencyKey.value = draft.idempotencyKey;
   persistDraft();
   approval.mutate({
     renderId: value.render.id,
-    body: {
-      editorialRevision: value.editorial.revision,
-      candidateFingerprint: value.candidateFingerprint,
-      manualAttentionMs: draft.manualAttentionMs,
-      attentionMeasurementVersion: "foreground-preview-v1",
-    },
+    body: value.integratedReviewEnabled
+      ? {
+          approvalContractVersion: "human-horizontal-approval-v2",
+          editorialRevision: value.editorial.revision,
+          candidateFingerprint: value.candidateFingerprint,
+          attention: {
+            schemaVersion: "operator-attention-v2",
+            preparationForegroundMs: draft.preparationForegroundMs,
+            finalReviewForegroundMs: draft.finalReviewForegroundMs,
+          },
+        }
+      : {
+          approvalContractVersion: "manual-horizontal-approval-v1",
+          editorialRevision: value.editorial.revision,
+          candidateFingerprint: value.candidateFingerprint,
+          manualAttentionMs:
+            draft.preparationForegroundMs + draft.finalReviewForegroundMs,
+          attentionMeasurementVersion: "foreground-preview-v1",
+        },
     key: draft.idempotencyKey!,
     identity: `${props.projectId}:${props.jobId}:${props.renderId}:${value.candidateFingerprint}`,
   });
@@ -228,12 +272,7 @@ function requestExport(): void {
 const approval = useMutation({
   mutationFn: (request: {
     renderId: string;
-    body: {
-      editorialRevision: number;
-      candidateFingerprint: string;
-      manualAttentionMs: number;
-      attentionMeasurementVersion: "foreground-preview-v1";
-    };
+    body: CreateEditorialApproval;
     key: string;
     identity: string;
   }) => api.approve(request.renderId, request.body, request.key),
@@ -320,7 +359,8 @@ watch(
     stopTimer();
     draftFingerprint.value = undefined;
     draftJobId.value = undefined;
-    attentionMs.value = 0;
+    preparationForegroundMs.value = 0;
+    finalReviewForegroundMs.value = 0;
     idempotencyKey.value = undefined;
     checked.value = false;
     error.value = undefined;
@@ -328,6 +368,10 @@ watch(
   },
 );
 onBeforeUnmount(stopTimer);
+watch(checked, () => {
+  addForegroundTime();
+  syncTimer();
+});
 </script>
 
 <template>
@@ -435,6 +479,84 @@ onBeforeUnmount(stopTimer);
               </li>
             </ol>
           </section>
+          <section
+            class="component-review"
+            aria-label="Происхождение компонентов"
+          >
+            <h3>Происхождение и стоимость</h3>
+            <div class="metric-grid">
+              <article>
+                <strong
+                  >Metadata ·
+                  {{ modeLabel(candidate.components.metadata.mode) }}</strong
+                >
+                <p>
+                  {{
+                    formatMicrousd(
+                      candidate.components.metadata.directCostMicrousd,
+                    )
+                  }}
+                  ·
+                  {{ candidate.components.metadata.costBasisVersion }}
+                </p>
+                <p v-if="candidate.components.metadata.research">
+                  Research:
+                  {{ candidate.components.metadata.research.freshness }} · до
+                  {{
+                    new Date(
+                      candidate.components.metadata.research.freshUntil,
+                    ).toLocaleString()
+                  }}
+                </p>
+                <ul v-if="candidate.components.metadata.citations.length">
+                  <li
+                    v-for="citation in candidate.components.metadata.citations"
+                    :key="citation.id"
+                  >
+                    <a
+                      :href="citation.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ citation.title }} · {{ citation.publisher }}
+                    </a>
+                  </li>
+                </ul>
+                <p v-else>Фактические citations не использовались.</p>
+              </article>
+              <article>
+                <strong
+                  >Thumbnail ·
+                  {{ modeLabel(candidate.components.thumbnail.mode) }}</strong
+                >
+                <p>
+                  {{
+                    formatMicrousd(
+                      candidate.components.thumbnail.directCostMicrousd,
+                    )
+                  }}
+                  ·
+                  {{ candidate.components.thumbnail.costBasisVersion }}
+                </p>
+                <p>
+                  Likeness:
+                  {{
+                    candidate.components.thumbnail.likeness ?? "не применялся"
+                  }}. Safety decision сохранён сервером.
+                </p>
+              </article>
+            </div>
+            <p>
+              Итоговый режим:
+              <strong>{{ modeLabel(candidate.workflowMode) }}</strong> · AI
+              direct cost:
+              {{
+                formatMicrousd(
+                  candidate.economicsPreview.combinedDirectCostMicrousd,
+                )
+              }}. Электричество, оборудование и труд сюда не входят.
+            </p>
+          </section>
           <section class="revision">
             <h3>Зафиксированная версия</h3>
             <p>
@@ -488,9 +610,15 @@ onBeforeUnmount(stopTimer);
         </section>
         <section v-if="!isCurrent" class="approval-action">
           <p>
-            Время вашего видимого просмотра:
-            <strong>{{ formatDuration(displayedAttention()) }}</strong
-            >. При закрытии окна или переходе вкладки счётчик останавливается и
+            Подготовка:
+            <strong>{{
+              formatDuration(displayedAttention("PREPARATION"))
+            }}</strong>
+            · финальная проверка:
+            <strong>{{
+              formatDuration(displayedAttention("FINAL_REVIEW"))
+            }}</strong
+            >. При закрытии окна или переходе вкладки счётчики останавливаются и
             сохраняется локально для этой точной версии.
           </p>
           <p v-if="idempotencyKey" class="warning" role="status">

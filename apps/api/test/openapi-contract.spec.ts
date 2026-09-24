@@ -426,13 +426,14 @@ describe("authoritative OpenAPI export", () => {
       components: {
         schemas: {
           CreateEditorialApprovalDto: {
-            required: [
-              "editorialRevision",
-              "candidateFingerprint",
-              "manualAttentionMs",
-              "attentionMeasurementVersion",
-            ],
+            required: ["editorialRevision", "candidateFingerprint"],
             properties: {
+              approvalContractVersion: {
+                enum: [
+                  "manual-horizontal-approval-v1",
+                  "human-horizontal-approval-v2",
+                ],
+              },
               candidateFingerprint: { pattern: "^[a-f0-9]{64}$" },
               manualAttentionMs: {
                 type: "integer",
@@ -441,6 +442,9 @@ describe("authoritative OpenAPI export", () => {
               },
               attentionMeasurementVersion: {
                 enum: ["foreground-preview-v1"],
+              },
+              attention: {
+                $ref: "#/components/schemas/OperatorAttentionV2Dto",
               },
             },
           },

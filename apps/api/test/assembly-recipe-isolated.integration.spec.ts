@@ -44,8 +44,10 @@ import { AssemblyRenderController } from "../src/editorial-content/presentation/
 import {
   EDITORIAL_APPROVAL_ADMISSION_ENABLED,
   EDITORIAL_APPROVAL_REPOSITORY,
+  EDITORIAL_INTEGRATED_REVIEW_ENABLED,
 } from "../src/editorial-content/application/editorial-approval-repository.port.js";
 import { CreateEditorialApproval } from "../src/editorial-content/application/create-editorial-approval.js";
+import { EditorialApprovalCandidateConflictError } from "../src/editorial-content/domain/editorial-approval.js";
 import {
   GetEditorialReview,
   ListEditorialApprovals,
@@ -63,6 +65,7 @@ import {
   ListEditorialExports,
 } from "../src/editorial-content/application/editorial-export-queries.js";
 import { PrismaEditorialExportRepository } from "../src/editorial-content/infrastructure/prisma-editorial-export.repository.js";
+import { EditorialExportApprovalStaleError } from "../src/editorial-content/domain/editorial-export.js";
 import { EditorialExportController } from "../src/editorial-content/presentation/editorial-export.controller.js";
 import { HttpExceptionFilter } from "../src/http-exception.filter.js";
 import { JOB_DISPATCH } from "../src/media-pipeline/application/job-dispatch.port.js";
@@ -162,6 +165,7 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           { provide: JOB_DISPATCH, useValue: dispatch },
           { provide: ASSEMBLY_RENDER_ADMISSION_ENABLED, useValue: true },
           { provide: EDITORIAL_APPROVAL_ADMISSION_ENABLED, useValue: true },
+          { provide: EDITORIAL_INTEGRATED_REVIEW_ENABLED, useValue: false },
           { provide: EDITORIAL_EXPORT_ADMISSION_ENABLED, useValue: true },
           { provide: OBJECT_STORAGE, useValue: storage },
           PrismaAssemblyRecipeRepository,
@@ -202,7 +206,10 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         ],
       })
       class IsolatedModule {}
-      app = await NestFactory.create(IsolatedModule, { logger: false });
+      app = await NestFactory.create(IsolatedModule, {
+        abortOnError: false,
+        logger: false,
+      });
       app.useGlobalPipes(
         new ValidationPipe({
           transform: true,
@@ -660,6 +667,8 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
         .expect(200);
       expect(review.body).toMatchObject({
+        reviewContractVersion: "editorial-review-candidate-v2",
+        integratedReviewEnabled: false,
         projectId: candidate.cut.projectId,
         cutPipelineJobId: candidate.cut.jobId,
         approvable: true,
@@ -708,6 +717,8 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         .expect(201);
       expect(replay.body).toEqual(first.body);
       expect(first.body).toMatchObject({
+        approvalContractVersion: "manual-horizontal-approval-v1",
+        candidateFingerprint: review.body.candidateFingerprint,
         state: "CURRENT",
         staleReasons: [],
         metrics: {
@@ -1455,6 +1466,370 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         );
     });
 
+    it("keeps an AI-derived historical v1 approval readable but blocks new export admission", async () => {
+      const candidate = await readyApprovalCandidate();
+      const review = await request(app.getHttpServer())
+        .get(`/api/v1/pipeline-jobs/${candidate.cut.jobId}/editorial-review`)
+        .expect(200);
+      const approval = await request(app.getHttpServer())
+        .post(
+          `/api/v1/assembly-renders/${candidate.renderId}/editorial-approvals`,
+        )
+        .set("Idempotency-Key", randomUUID())
+        .send({
+          editorialRevision: 1,
+          candidateFingerprint: review.body.candidateFingerprint,
+          manualAttentionMs: 1_000,
+          attentionMeasurementVersion: "foreground-preview-v1",
+        })
+        .expect(201);
+      await prisma.editorialComponentProvenance.create({
+        data: {
+          id: randomUUID(),
+          packageRevisionId: approval.body.editorialPackageRevisionId,
+          component: "METADATA",
+          mode: "AI_ASSISTED",
+          basisVersion: "historical-ai-v1",
+        },
+      });
+      await request(app.getHttpServer())
+        .get(
+          `/api/v1/projects/${candidate.cut.projectId}/editorial-approvals?limit=10`,
+        )
+        .expect(200)
+        .expect(({ body }) =>
+          expect(body.items).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ id: approval.body.id }),
+            ]),
+          ),
+        );
+      await request(app.getHttpServer())
+        .post(`/api/v1/editorial-approvals/${approval.body.id}/exports`)
+        .set("Idempotency-Key", randomUUID())
+        .expect(409)
+        .expect(({ body }) =>
+          expect(body.error.code).toBe("EDITORIAL_APPROVAL_STALE"),
+        );
+    });
+
+    it("creates and replays an exact manual v2 approval through the real repository", async () => {
+      const candidate = await readyApprovalCandidate();
+      await prisma.editorialComponentProvenance.createMany({
+        data: ["METADATA", "THUMBNAIL"].map((component) => ({
+          id: randomUUID(),
+          packageRevisionId: candidate.editorialRevisionId,
+          component: component as "METADATA" | "THUMBNAIL",
+          mode: "MANUAL" as const,
+          basisVersion: "manual-editorial-v1",
+        })),
+      });
+      const repository = new PrismaEditorialApprovalRepository(prisma, true);
+      const review = await repository.getReview(candidate.cut.jobId);
+      expect(review).toMatchObject({
+        reviewContractVersion: "editorial-review-candidate-v2",
+        integratedReviewEnabled: true,
+        workflowMode: "MANUAL",
+        approvable: true,
+        components: {
+          metadata: { mode: "MANUAL" },
+          thumbnail: { mode: "MANUAL" },
+        },
+      });
+      if (!review?.candidateFingerprint)
+        throw new Error("v2 review was not built");
+      const idempotencyKey = randomUUID();
+      const input = {
+        approvalId: randomUUID(),
+        operationRequestId: randomUUID(),
+        renderId: candidate.renderId,
+        editorialRevision: 1,
+        candidateFingerprint: review.candidateFingerprint,
+        approvalContractVersion: "human-horizontal-approval-v2" as const,
+        attention: {
+          schemaVersion: "operator-attention-v2" as const,
+          preparationForegroundMs: 700,
+          finalReviewForegroundMs: 900,
+        },
+        idempotencyKey,
+      };
+      const created = await repository.create(input);
+      const replayed = await repository.create({
+        ...input,
+        approvalId: randomUUID(),
+        operationRequestId: randomUUID(),
+      });
+      expect(replayed.id).toBe(created.id);
+      expect(created).toMatchObject({
+        approvalContractVersion: "human-horizontal-approval-v2",
+        state: "CURRENT",
+        economicsV2: {
+          workflowMode: "MANUAL",
+          attention: {
+            preparationForegroundMs: 700,
+            finalReviewForegroundMs: 900,
+            totalOperatorAttentionMs: 1_600,
+          },
+        },
+      });
+      expect(created.componentSnapshots).toHaveLength(2);
+      expect(
+        JSON.stringify(created, (_key, value) =>
+          typeof value === "bigint" ? value.toString() : value,
+        ),
+      ).not.toContain("objectKey");
+
+      const other = await readyApprovalCandidate();
+      await prisma.editorialComponentProvenance.createMany({
+        data: ["METADATA", "THUMBNAIL"].map((component) => ({
+          id: randomUUID(),
+          packageRevisionId: other.editorialRevisionId,
+          component: component as "METADATA" | "THUMBNAIL",
+          mode: "MANUAL" as const,
+          basisVersion: "manual-editorial-v1",
+        })),
+      });
+      const otherReview = await repository.getReview(other.cut.jobId);
+      if (!otherReview?.candidateFingerprint)
+        throw new Error("cross-cut review was not built");
+      await expect(
+        repository.create({
+          ...input,
+          approvalId: randomUUID(),
+          operationRequestId: randomUUID(),
+          idempotencyKey: randomUUID(),
+          candidateFingerprint: otherReview.candidateFingerprint,
+        }),
+      ).rejects.toBeInstanceOf(EditorialApprovalCandidateConflictError);
+    });
+
+    it.each(["MIXED", "AI_ASSISTED"] as const)(
+      "creates and reloads an exact %s v2 approval without private research data",
+      async (workflow) => {
+        const candidate = await readyApprovalCandidate();
+        const assisted = await addAssistedProvenance(candidate, workflow);
+        const repository = new PrismaEditorialApprovalRepository(prisma, true);
+        const review = await repository.getReview(candidate.cut.jobId);
+        expect(review).toMatchObject({
+          reviewContractVersion: "editorial-review-candidate-v2",
+          integratedReviewEnabled: true,
+          workflowMode: workflow,
+          approvable: true,
+          components: {
+            metadata: {
+              mode: workflow,
+              directCostMicrousd: 11n,
+            },
+            thumbnail: {
+              mode: workflow === "AI_ASSISTED" ? "AI_ASSISTED" : "MANUAL",
+              directCostMicrousd: workflow === "AI_ASSISTED" ? 13n : 0n,
+            },
+          },
+        });
+        expect(
+          review?.components.metadata.citations.map(({ id }) => id),
+        ).toEqual([assisted.citationIds[1], assisted.citationIds[0]]);
+        const publicReview = JSON.stringify(review, (_key, value) =>
+          typeof value === "bigint" ? value.toString() : value,
+        );
+        expect(publicReview).not.toContain("private excerpt");
+        expect(publicReview).not.toContain("objectKey");
+        if (!review?.candidateFingerprint)
+          throw new Error("assisted review was not built");
+        const idempotencyKey = randomUUID();
+        const input = {
+          approvalId: randomUUID(),
+          operationRequestId: randomUUID(),
+          renderId: candidate.renderId,
+          editorialRevision: 1,
+          candidateFingerprint: review.candidateFingerprint,
+          approvalContractVersion: "human-horizontal-approval-v2" as const,
+          attention: {
+            schemaVersion: "operator-attention-v2" as const,
+            preparationForegroundMs: 800,
+            finalReviewForegroundMs: 1_200,
+          },
+          idempotencyKey,
+        };
+        const created = await repository.create(input);
+        const replay = await repository.create({
+          ...input,
+          approvalId: randomUUID(),
+          operationRequestId: randomUUID(),
+        });
+        expect(replay.id).toBe(created.id);
+        expect(created.state).toBe("CURRENT");
+        expect(created.economicsV2).toMatchObject({
+          workflowMode: workflow,
+          attention: {
+            preparationForegroundMs: 800,
+            finalReviewForegroundMs: 1_200,
+            totalOperatorAttentionMs: 2_000,
+          },
+          metadataDirectCostMicrousd: 11n,
+          thumbnailDirectCostMicrousd: workflow === "AI_ASSISTED" ? 13n : 0n,
+        });
+      },
+    );
+
+    it("rejects a signed citation before public review or v2 approval persistence", async () => {
+      const candidate = await readyApprovalCandidate();
+      const assisted = await addAssistedProvenance(candidate, "MIXED");
+      const secret = "must-not-escape-approval-boundary";
+      await prisma.researchCitation.update({
+        where: { id: assisted.citationIds[0]! },
+        data: {
+          url: `https://example.com/private?X-Amz-Signature=${secret}&X-Amz-Expires=60`,
+        },
+      });
+      const repository = new PrismaEditorialApprovalRepository(prisma, true);
+      const review = await repository.getReview(candidate.cut.jobId);
+      expect(review).toMatchObject({
+        approvable: false,
+        components: {
+          metadata: {
+            citations: [],
+            incompleteReasons: expect.arrayContaining([
+              "CITATIONS_INVALID",
+              "CITATION_LINEAGE_INVALID",
+            ]),
+          },
+        },
+      });
+      const publicReview = JSON.stringify(review, (_key, value) =>
+        typeof value === "bigint" ? value.toString() : value,
+      );
+      expect(publicReview).not.toContain(secret);
+      let rejection: unknown;
+      try {
+        await repository.create({
+          approvalId: randomUUID(),
+          operationRequestId: randomUUID(),
+          renderId: candidate.renderId,
+          editorialRevision: 1,
+          candidateFingerprint: "a".repeat(64),
+          approvalContractVersion: "human-horizontal-approval-v2",
+          attention: {
+            schemaVersion: "operator-attention-v2",
+            preparationForegroundMs: 1,
+            finalReviewForegroundMs: 1,
+          },
+          idempotencyKey: randomUUID(),
+        });
+      } catch (error) {
+        rejection = error;
+      }
+      expect(rejection).toBeInstanceOf(EditorialApprovalCandidateConflictError);
+      expect(String(rejection)).not.toContain(secret);
+      expect(
+        await prisma.editorialApproval.count({
+          where: { editorialPackageId: candidate.editorialPackageId },
+        }),
+      ).toBe(0);
+    });
+
+    it("fails closed on private thumbnail safety data without exposing it", async () => {
+      const secret = "must-not-escape-thumbnail-safety";
+      const candidate = await readyApprovalCandidate();
+      await addAssistedProvenance(candidate, "AI_ASSISTED");
+      const thumbnailProvenance =
+        await prisma.editorialComponentProvenance.findFirstOrThrow({
+          where: {
+            packageRevisionId: candidate.editorialRevisionId,
+            component: "THUMBNAIL",
+          },
+        });
+      await prisma.imageSuggestionCandidate.update({
+        where: { id: thumbnailProvenance.imageCandidateId! },
+        data: {
+          safetyDecision: { credentials: secret, prompt: "private prompt" },
+        },
+      });
+      const repository = new PrismaEditorialApprovalRepository(prisma, true);
+      const review = await repository.getReview(candidate.cut.jobId);
+      expect(review).toMatchObject({
+        approvable: false,
+        components: {
+          thumbnail: {
+            imageSafetyDecision: null,
+            incompleteReasons: expect.arrayContaining([
+              "THUMBNAIL_LINEAGE_INVALID",
+            ]),
+          },
+        },
+      });
+      const publicReview = JSON.stringify(review, (_key, value) =>
+        typeof value === "bigint" ? value.toString() : value,
+      );
+      expect(publicReview).not.toContain(secret);
+      expect(publicReview).not.toContain("private prompt");
+      await expect(
+        repository.create({
+          approvalId: randomUUID(),
+          operationRequestId: randomUUID(),
+          renderId: candidate.renderId,
+          editorialRevision: 1,
+          candidateFingerprint: "a".repeat(64),
+          approvalContractVersion: "human-horizontal-approval-v2",
+          attention: {
+            schemaVersion: "operator-attention-v2",
+            preparationForegroundMs: 1,
+            finalReviewForegroundMs: 1,
+          },
+          idempotencyKey: randomUUID(),
+        }),
+      ).rejects.toBeInstanceOf(EditorialApprovalCandidateConflictError);
+
+      const historical = await readyApprovalCandidate();
+      await addAssistedProvenance(historical, "AI_ASSISTED");
+      const historicalReview = await repository.getReview(historical.cut.jobId);
+      if (!historicalReview?.candidateFingerprint)
+        throw new Error("assisted review was not built");
+      const approval = await repository.create({
+        approvalId: randomUUID(),
+        operationRequestId: randomUUID(),
+        renderId: historical.renderId,
+        editorialRevision: 1,
+        candidateFingerprint: historicalReview.candidateFingerprint,
+        approvalContractVersion: "human-horizontal-approval-v2",
+        attention: {
+          schemaVersion: "operator-attention-v2",
+          preparationForegroundMs: 1,
+          finalReviewForegroundMs: 1,
+        },
+        idempotencyKey: randomUUID(),
+      });
+      await prisma.editorialApprovalComponentSnapshot.update({
+        where: {
+          approvalId_component: {
+            approvalId: approval.id,
+            component: "THUMBNAIL",
+          },
+        },
+        data: {
+          imageSafetyDecision: { credentials: secret, prompt: "private prompt" },
+        },
+      });
+      const reloaded = await repository.getReview(historical.cut.jobId);
+      const publicReload = JSON.stringify(reloaded, (_key, value) =>
+        typeof value === "bigint" ? value.toString() : value,
+      );
+      expect(reloaded?.currentApproval).toBeNull();
+      expect(reloaded?.latestApproval).toMatchObject({ state: "STALE" });
+      expect(publicReload).not.toContain(secret);
+      expect(publicReload).not.toContain("private prompt");
+      await expect(
+        new PrismaEditorialExportRepository(prisma).create({
+          intentId: randomUUID(),
+          operationRequestId: randomUUID(),
+          jobId: randomUUID(),
+          attemptId: randomUUID(),
+          approvalId: approval.id,
+          idempotencyKey: randomUUID(),
+        }),
+      ).rejects.toBeInstanceOf(EditorialExportApprovalStaleError);
+    });
+
     it("terminalizes a queued export whose exact processing template snapshot changed", async () => {
       const prepared = await readyApprovedExport();
       const templateRevision =
@@ -1739,6 +2114,7 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         include: { revisions: true },
       });
       const editorialPackageId = randomUUID();
+      const editorialRevisionId = randomUUID();
       await prisma.editorialPackage.create({
         data: {
           id: editorialPackageId,
@@ -1753,7 +2129,7 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           currentRevision: 1,
           revisions: {
             create: {
-              id: randomUUID(),
+              id: editorialRevisionId,
               revision: 1,
               processingTemplateRevisionId: template.revisions[0]!.id,
               title: "Тестовый заголовок",
@@ -1769,10 +2145,351 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         bannerId,
         recipeId: recipeResponse.body.id as string,
         editorialPackageId,
+        editorialRevisionId,
+        thumbnailId,
         renderId: renderResponse.body.id as string,
         resultId,
         assemblyJobId,
       };
+    }
+
+    async function addAssistedProvenance(
+      candidate: Awaited<ReturnType<typeof readyApprovalCandidate>>,
+      workflow: "MIXED" | "AI_ASSISTED",
+    ) {
+      const source = await prisma.videoSource.findUniqueOrThrow({
+        where: { id: candidate.cut.sourceId },
+        include: { authorizations: true },
+      });
+      const cut = await prisma.pipelineJob.findUniqueOrThrow({
+        where: { id: candidate.cut.jobId },
+        include: { segment: true, resultArtifact: true },
+      });
+      const thumbnail = await prisma.editorialAsset.findUniqueOrThrow({
+        where: { id: candidate.thumbnailId },
+      });
+      const authorization = source.authorizations[0]!;
+      const now = new Date("2026-09-24T00:00:00.000Z");
+      const later = new Date("2026-09-25T00:00:00.000Z");
+      const profileId = randomUUID();
+      const profileRevisionId = randomUUID();
+      const identityId = randomUUID();
+      const contextId = randomUUID();
+      const contextRevisionId = randomUUID();
+      const promptId = randomUUID();
+      const promptRevisionId = randomUUID();
+      await prisma.creatorProfile.create({ data: { id: profileId } });
+      await prisma.creatorProfileOfficialUrlIdentity.create({
+        data: {
+          id: identityId,
+          creatorProfileId: profileId,
+          canonicalUrl: `https://example.test/creator/${profileId}`,
+        },
+      });
+      await prisma.creatorProfileRevision.create({
+        data: {
+          id: profileRevisionId,
+          creatorProfileId: profileId,
+          revision: 1,
+          canonicalDisplayName: "Integrated review fixture",
+          officialUrlIdentityId: identityId,
+          officialUrl: `https://example.test/creator/${profileId}`,
+          primaryLanguage: "ru",
+          topics: [],
+          editorialNotes: "",
+          restrictions: [],
+        },
+      });
+      await prisma.sourceEditorialContext.create({
+        data: {
+          id: contextId,
+          projectId: candidate.cut.projectId,
+          sourceId: candidate.cut.sourceId,
+          sourceVersion: 1,
+        },
+      });
+      await prisma.sourceEditorialContextRevision.create({
+        data: {
+          id: contextRevisionId,
+          contextId,
+          revision: 1,
+          projectId: candidate.cut.projectId,
+          sourceId: candidate.cut.sourceId,
+          sourceVersion: 1,
+          creatorProfileId: profileId,
+          creatorProfileRevisionId: profileRevisionId,
+          creatorProfileRevisionNo: 1,
+          sourceTitle: "Integrated fixture",
+          gameOrTopic: "fixture",
+          audience: "fixture",
+          editorialGoal: "fixture",
+          language: "ru",
+          defaultCta: "",
+          restrictions: [],
+          operatorNotes: "",
+        },
+      });
+      await prisma.cutEditorialPrompt.create({
+        data: {
+          id: promptId,
+          cutPipelineJobId: cut.id,
+          projectId: cut.projectId,
+          sourceId: cut.sourceId,
+          sourceVersion: cut.sourceVersion,
+          cutResultArtifactId: cut.resultArtifact!.id,
+          cutResultSha256: cut.resultArtifact!.sha256,
+          cutResultSizeBytes: cut.resultArtifact!.sizeBytes,
+        },
+      });
+      await prisma.cutEditorialPromptRevision.create({
+        data: {
+          id: promptRevisionId,
+          promptId,
+          revision: 1,
+          projectId: cut.projectId,
+          sourceId: cut.sourceId,
+          sourceVersion: cut.sourceVersion,
+          sourceContextId: contextId,
+          sourceContextRevisionId: contextRevisionId,
+          sourceContextRevisionNo: 1,
+          whatHappens: "fixture",
+          desiredAngle: "fixture",
+          tone: "fixture",
+          cta: "",
+          restrictions: [],
+        },
+      });
+      const transcriptIntentId = randomUUID();
+      const transcriptArtifactId = randomUUID();
+      const transcriptSha256 = "1".repeat(64);
+      await prisma.transcriptEvidenceIntent.create({
+        data: {
+          id: transcriptIntentId,
+          idempotencyKey: randomUUID(),
+          requestFingerprint: "2".repeat(64),
+          projectId: cut.projectId,
+          sourceId: cut.sourceId,
+          sourceVersion: cut.sourceVersion,
+          sourceSha256: source.sha256,
+          sourceAuthorizationRevision: authorization.revision,
+          sourceAuthorizationBasis: authorization.basis,
+          sourceAuthorizationDeclarationVersion:
+            authorization.declarationVersion,
+          sourceAuthorizationDecidedAt: authorization.decidedAt,
+          cutPipelineJobId: cut.id,
+          cutResultArtifactId: cut.resultArtifact!.id,
+          cutResultSha256: cut.resultArtifact!.sha256,
+          cutResultSizeBytes: cut.resultArtifact!.sizeBytes,
+          cutStartMs: cut.segment!.startMs,
+          cutEndMs: cut.segment!.endMs,
+          creatorProfileRevisionId: profileRevisionId,
+          creatorProfileId: profileId,
+          creatorProfileRevisionNo: 1,
+          sourceContextRevisionId: contextRevisionId,
+          sourceContextId: contextId,
+          sourceContextRevisionNo: 1,
+          cutPromptRevisionId: promptRevisionId,
+          cutPromptId: promptId,
+          cutPromptRevisionNo: 1,
+          contractVersion: "transcript-evidence-v1",
+          adapterVersion: "local-deterministic-transcript-v1",
+          language: "ru",
+          fixture: {},
+          state: "READY",
+          attemptCount: 1,
+          startedAt: now,
+          finishedAt: now,
+          artifact: {
+            create: {
+              id: transcriptArtifactId,
+              objectKey: `ai-content/transcripts/${transcriptIntentId}/transcript.json`,
+              contentType: "application/json",
+              sizeBytes: 64n,
+              sha256: transcriptSha256,
+              adapterVersion: "local-deterministic-transcript-v1",
+              language: "ru",
+              segments: [],
+            },
+          },
+        },
+      });
+      const researchIntentId = randomUUID();
+      const citationIds = [randomUUID(), randomUUID(), randomUUID()];
+      await prisma.researchSuggestionIntent.create({
+        data: {
+          id: researchIntentId,
+          idempotencyKey: randomUUID(),
+          requestFingerprint: "3".repeat(64),
+          transcriptIntentId,
+          projectId: cut.projectId,
+          sourceId: cut.sourceId,
+          sourceVersion: cut.sourceVersion,
+          cutPipelineJobId: cut.id,
+          cutResultArtifactId: cut.resultArtifact!.id,
+          creatorProfileRevisionId: profileRevisionId,
+          sourceContextRevisionId: contextRevisionId,
+          cutPromptRevisionId: promptRevisionId,
+          contextPolicyFingerprint: "4".repeat(64),
+          transcriptArtifactId,
+          transcriptSha256,
+          query: "fixture",
+          contractVersion: "research-suggestion-v1",
+          adapterVersion: "local-deterministic-research-v1",
+          freshnessPolicyVersion: "research-freshness-v1",
+          searchedAt: now,
+          freshUntil: later,
+          state: "READY",
+          citations: {
+            create: citationIds.map((id, ordinal) => ({
+              id,
+              ordinal,
+              url: `https://example.com/citation/${ordinal}`,
+              title: `Citation ${ordinal}`,
+              publisher: "Example",
+              accessedAt: now,
+              excerpt: "private excerpt",
+              checksum: "5".repeat(64),
+            })),
+          },
+        },
+      });
+      const researchAttemptId = randomUUID();
+      await prisma.researchSuggestionAttempt.create({
+        data: {
+          id: researchAttemptId,
+          intentId: researchIntentId,
+          attemptNumber: 1,
+          state: "READY",
+          leaseToken: randomUUID(),
+          leaseExpiresAt: later,
+          workDeadlineAt: later,
+        },
+      });
+      const suggestionSetId = randomUUID();
+      await prisma.researchSuggestionSet.create({
+        data: {
+          id: suggestionSetId,
+          intentId: researchIntentId,
+          attemptId: researchAttemptId,
+          title: "Suggested title",
+          description: "Suggested description",
+          tags: ["suggested"],
+          claims: [],
+          citationIds: [citationIds[1]!, citationIds[0]!],
+          basisVersion: "research-suggestion-v1",
+          directCostMicrousd: 11n,
+          costBasisVersion: "local-direct-ai-cost-v1",
+        },
+      });
+      let imageIntentId: string | null = null;
+      let imageCandidateId: string | null = null;
+      if (workflow === "AI_ASSISTED") {
+        imageIntentId = randomUUID();
+        const imageAttemptId = randomUUID();
+        imageCandidateId = randomUUID();
+        await prisma.imageSuggestionIntent.create({
+          data: {
+            id: imageIntentId,
+            idempotencyKey: randomUUID(),
+            requestFingerprint: "6".repeat(64),
+            projectId: cut.projectId,
+            sourceId: cut.sourceId,
+            sourceVersion: cut.sourceVersion,
+            sourceSha256: source.sha256,
+            sourceAuthorizationRevision: authorization.revision,
+            sourceAuthorizationBasis: authorization.basis!,
+            sourceAuthorizationDeclarationVersion:
+              authorization.declarationVersion!,
+            sourceAuthorizationDecidedAt: authorization.decidedAt!,
+            cutPipelineJobId: cut.id,
+            cutResultArtifactId: cut.resultArtifact!.id,
+            cutResultSha256: cut.resultArtifact!.sha256,
+            cutResultSizeBytes: cut.resultArtifact!.sizeBytes,
+            cutStartMs: cut.segment!.startMs,
+            cutEndMs: cut.segment!.endMs,
+            creatorProfileId: profileId,
+            creatorProfileRevisionId: profileRevisionId,
+            creatorProfileRevisionNo: 1,
+            sourceContextId: contextId,
+            sourceContextRevisionId: contextRevisionId,
+            sourceContextRevisionNo: 1,
+            cutPromptId: promptId,
+            cutPromptRevisionId: promptRevisionId,
+            cutPromptRevisionNo: 1,
+            contextPolicyFingerprint: "4".repeat(64),
+            contractVersion: "image-suggestion-v1",
+            adapterVersion: "local-no-likeness-png-v1",
+            promptBasisVersion: "local-abstract-thumbnail-prompt-v1",
+            state: "READY",
+          },
+        });
+        await prisma.imageSuggestionAttempt.create({
+          data: {
+            id: imageAttemptId,
+            intentId: imageIntentId,
+            attemptNumber: 1,
+            state: "READY",
+            leaseToken: randomUUID(),
+            leaseExpiresAt: later,
+            workDeadlineAt: later,
+            objectKey: thumbnail.objectKey,
+            uploadStartedAt: now,
+            uploadSettledAt: now,
+            cleanupStatus: "NOT_REQUIRED",
+          },
+        });
+        await prisma.imageSuggestionCandidate.create({
+          data: {
+            id: imageCandidateId,
+            intentId: imageIntentId,
+            attemptId: imageAttemptId,
+            objectKey: thumbnail.objectKey,
+            contentType: thumbnail.contentType,
+            sizeBytes: thumbnail.sizeBytes,
+            sha256: thumbnail.sha256,
+            width: thumbnail.width!,
+            height: thumbnail.height!,
+            contractVersion: "editorial-thumbnail-v1",
+            adapterVersion: "local-no-likeness-png-v1",
+            promptBasisVersion: "local-abstract-thumbnail-prompt-v1",
+            likeness: "NONE",
+            safetyDecision: {
+              version: "no-likeness-safety-v1",
+              realisticPersonRequested: false,
+              referenceImageUsed: false,
+              externalProviderUsed: false,
+            },
+            directCostMicrousd: 13n,
+            costBasisVersion: "local-direct-ai-cost-v1",
+          },
+        });
+      }
+      await prisma.editorialComponentProvenance.createMany({
+        data: [
+          {
+            id: randomUUID(),
+            packageRevisionId: candidate.editorialRevisionId,
+            component: "METADATA",
+            mode: workflow,
+            basisVersion: "research-suggestion-v1",
+            researchIntentId,
+            suggestionSetId,
+          },
+          {
+            id: randomUUID(),
+            packageRevisionId: candidate.editorialRevisionId,
+            component: "THUMBNAIL",
+            mode: workflow === "AI_ASSISTED" ? "AI_ASSISTED" : "MANUAL",
+            basisVersion:
+              workflow === "AI_ASSISTED"
+                ? "image-suggestion-v1"
+                : "manual-editorial-v1",
+            imageIntentId,
+            imageCandidateId,
+          },
+        ],
+      });
+      return { citationIds };
     }
 
     async function readyCut(existingSource?: {

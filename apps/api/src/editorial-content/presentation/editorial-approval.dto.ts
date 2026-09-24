@@ -8,10 +8,37 @@ import {
   Matches,
   Max,
   Min,
+  ValidateNested,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
+export class OperatorAttentionV2Dto {
+  @ApiProperty({ enum: ["operator-attention-v2"] })
+  @IsIn(["operator-attention-v2"])
+  schemaVersion!: "operator-attention-v2";
+
+  @ApiProperty({ type: "integer", minimum: 0, maximum: 28_800_000 })
+  @IsInt()
+  @Min(0)
+  @Max(28_800_000)
+  preparationForegroundMs!: number;
+
+  @ApiProperty({ type: "integer", minimum: 0, maximum: 28_800_000 })
+  @IsInt()
+  @Min(0)
+  @Max(28_800_000)
+  finalReviewForegroundMs!: number;
+}
+
 export class CreateEditorialApprovalDto {
+  @ApiPropertyOptional({
+    enum: ["manual-horizontal-approval-v1", "human-horizontal-approval-v2"],
+  })
+  @IsOptional()
+  @IsIn(["manual-horizontal-approval-v1", "human-horizontal-approval-v2"])
+  approvalContractVersion?:
+    "manual-horizontal-approval-v1" | "human-horizontal-approval-v2";
+
   @ApiProperty({ type: "integer", minimum: 1 })
   @IsInt()
   @Min(1)
@@ -23,15 +50,23 @@ export class CreateEditorialApprovalDto {
   @Matches(/^[a-f0-9]{64}$/)
   candidateFingerprint!: string;
 
-  @ApiProperty({ type: "integer", minimum: 0, maximum: 28_800_000 })
+  @ApiPropertyOptional({ type: "integer", minimum: 0, maximum: 28_800_000 })
+  @IsOptional()
   @IsInt()
   @Min(0)
   @Max(28_800_000)
-  manualAttentionMs!: number;
+  manualAttentionMs?: number;
 
-  @ApiProperty({ enum: ["foreground-preview-v1"] })
+  @ApiPropertyOptional({ enum: ["foreground-preview-v1"] })
+  @IsOptional()
   @IsIn(["foreground-preview-v1"])
-  attentionMeasurementVersion!: "foreground-preview-v1";
+  attentionMeasurementVersion?: "foreground-preview-v1";
+
+  @ApiPropertyOptional({ type: () => OperatorAttentionV2Dto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => OperatorAttentionV2Dto)
+  attention?: OperatorAttentionV2Dto;
 }
 
 export class EditorialApprovalListQueryDto {
@@ -89,8 +124,93 @@ export class ApprovalProcessingMetricsResponseDto {
 export class EditorialApprovalMetricsResponseDto extends ApprovalProcessingMetricsResponseDto {
   @ApiProperty({ type: "integer", minimum: 0, maximum: 28_800_000 })
   manualAttentionMs!: number;
-  @ApiProperty({ enum: ["foreground-preview-v1"] })
+  @ApiProperty({ enum: ["foreground-preview-v1", "operator-attention-v2"] })
   attentionMeasurementVersion!: string;
+}
+
+export class EditorialCitationResponseDto {
+  @ApiProperty({ type: String, format: "uuid" }) id!: string;
+  @ApiProperty({ type: String, format: "uri" }) url!: string;
+  @ApiProperty({ type: String }) title!: string;
+  @ApiProperty({ type: String }) publisher!: string;
+  @ApiProperty({ type: String, format: "date-time", nullable: true })
+  publishedAt!: string | null;
+  @ApiProperty({ type: String, format: "date-time" }) accessedAt!: string;
+}
+
+export class EditorialResearchFreshnessResponseDto {
+  @ApiProperty({ type: String, format: "date-time" }) searchedAt!: string;
+  @ApiProperty({ type: String, format: "date-time" }) freshUntil!: string;
+  @ApiProperty({ enum: ["CURRENT", "EXPIRED"] }) freshness!: string;
+}
+
+export class EditorialImageSafetyDecisionResponseDto {
+  @ApiProperty({ type: String, enum: ["no-likeness-safety-v1"] })
+  version!: "no-likeness-safety-v1";
+  @ApiProperty({ type: Boolean, enum: [false] })
+  realisticPersonRequested!: false;
+  @ApiProperty({ type: Boolean, enum: [false] }) referenceImageUsed!: false;
+  @ApiProperty({ type: Boolean, enum: [false] }) externalProviderUsed!: false;
+}
+
+export class EditorialComponentSummaryResponseDto {
+  @ApiProperty({ enum: ["METADATA", "THUMBNAIL"] }) component!: string;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  provenanceId!: string | null;
+  @ApiProperty({ enum: ["MANUAL", "AI_ASSISTED", "MIXED"] }) mode!: string;
+  @ApiProperty({ type: String }) basisVersion!: string;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  researchIntentId!: string | null;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  suggestionSetId!: string | null;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  imageIntentId!: string | null;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  imageCandidateId!: string | null;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  transcriptArtifactId!: string | null;
+  @ApiProperty({ type: String, nullable: true }) transcriptSha256!:
+    string | null;
+  @ApiProperty({ type: [EditorialCitationResponseDto] })
+  citations!: EditorialCitationResponseDto[];
+  @ApiProperty({ type: EditorialResearchFreshnessResponseDto, nullable: true })
+  research!: EditorialResearchFreshnessResponseDto | null;
+  @ApiProperty({
+    type: EditorialImageSafetyDecisionResponseDto,
+    additionalProperties: false,
+    nullable: true,
+  })
+  imageSafetyDecision!: EditorialImageSafetyDecisionResponseDto | null;
+  @ApiProperty({ type: String, nullable: true }) likeness!: string | null;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  directCostMicrousd!: string;
+  @ApiProperty({ type: String }) costBasisVersion!: string;
+  @ApiProperty({ type: [String] }) incompleteReasons!: string[];
+  @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
+  snapshotFingerprint!: string;
+}
+
+export class EditorialEconomicsPreviewResponseDto {
+  @ApiProperty({ type: ApprovalProcessingMetricsResponseDto, nullable: true })
+  processingMetrics!: ApprovalProcessingMetricsResponseDto | null;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  metadataDirectCostMicrousd!: string;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  evidenceDirectCostMicrousd!: string;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  thumbnailDirectCostMicrousd!: string;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  combinedDirectCostMicrousd!: string;
+  @ApiProperty({ enum: ["USD"] }) currency!: string;
+  @ApiProperty({ enum: ["MICRO"] }) unit!: string;
+  @ApiProperty({ type: [String] }) incompleteReasons!: string[];
+}
+
+export class EditorialReviewComponentsResponseDto {
+  @ApiProperty({ type: EditorialComponentSummaryResponseDto })
+  metadata!: EditorialComponentSummaryResponseDto;
+  @ApiProperty({ type: EditorialComponentSummaryResponseDto })
+  thumbnail!: EditorialComponentSummaryResponseDto;
 }
 
 export class EditorialApprovalResponseDto {
@@ -128,7 +248,9 @@ export class EditorialApprovalResponseDto {
   renderArtifactSizeBytes!: string;
   @ApiProperty({ enum: ["horizontal-render-v1"] })
   renderContractVersion!: string;
-  @ApiProperty({ enum: ["manual-horizontal-approval-v1"] })
+  @ApiProperty({
+    enum: ["manual-horizontal-approval-v1", "human-horizontal-approval-v2"],
+  })
   approvalContractVersion!: string;
   @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
   candidateFingerprint!: string;
@@ -137,6 +259,10 @@ export class EditorialApprovalResponseDto {
   @ApiProperty({ type: [String] }) staleReasons!: string[];
   @ApiProperty({ type: EditorialApprovalMetricsResponseDto })
   metrics!: EditorialApprovalMetricsResponseDto;
+  @ApiProperty({ type: [EditorialComponentSummaryResponseDto] })
+  componentSnapshots!: EditorialComponentSummaryResponseDto[];
+  @ApiProperty({ type: "object", additionalProperties: true, nullable: true })
+  economicsV2!: Record<string, unknown> | null;
 }
 
 export class EditorialApprovalListResponseDto {
@@ -191,6 +317,9 @@ export class EditorialReviewRenderResponseDto {
 }
 
 export class EditorialReviewResponseDto {
+  @ApiProperty({ enum: ["editorial-review-candidate-v2"] })
+  reviewContractVersion!: string;
+  @ApiProperty({ type: Boolean }) integratedReviewEnabled!: boolean;
   @ApiProperty({ type: String, format: "uuid" }) projectId!: string;
   @ApiProperty({ type: String, format: "uuid" }) sourceId!: string;
   @ApiProperty({ type: "integer", minimum: 1 }) sourceVersion!: number;
@@ -209,6 +338,15 @@ export class EditorialReviewResponseDto {
   @ApiProperty({ type: [String] }) blockers!: string[];
   @ApiProperty({ type: ApprovalProcessingMetricsResponseDto, nullable: true })
   processingMetrics!: ApprovalProcessingMetricsResponseDto | null;
+  @ApiProperty({ enum: ["MANUAL", "AI_ASSISTED", "MIXED"] })
+  workflowMode!: string;
+  @ApiProperty({ type: EditorialReviewComponentsResponseDto })
+  components!: {
+    metadata: EditorialComponentSummaryResponseDto;
+    thumbnail: EditorialComponentSummaryResponseDto;
+  };
+  @ApiProperty({ type: EditorialEconomicsPreviewResponseDto })
+  economicsPreview!: EditorialEconomicsPreviewResponseDto;
   @ApiProperty({ type: EditorialApprovalResponseDto, nullable: true })
   currentApproval!: EditorialApprovalResponseDto | null;
   @ApiProperty({ type: EditorialApprovalResponseDto, nullable: true })

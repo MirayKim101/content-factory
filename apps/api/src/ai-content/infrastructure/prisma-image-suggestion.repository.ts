@@ -1,7 +1,14 @@
 import { createHash, randomUUID } from "node:crypto";
 
 import { Injectable } from "@nestjs/common";
-import { THUMBNAIL_CONTRACT_VERSION, type FrameContextCapture, type FrameContextFacts } from "@content-factory/contracts";
+import {
+  LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
+  LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
+  THUMBNAIL_CONTRACT_VERSION,
+  projectNoLikenessSafetyDecision,
+  type FrameContextCapture,
+  type FrameContextFacts,
+} from "@content-factory/contracts";
 
 import { apiEnvironment } from "../../config/environment.js";
 import { PrismaService } from "../../database/prisma.service.js";
@@ -19,8 +26,8 @@ import {
   requireFrameContext,
 } from "./prisma-frame-context.js";
 
-const ADAPTER_VERSION = "local-no-likeness-png-v1";
-const PROMPT_BASIS_VERSION = "local-abstract-thumbnail-prompt-v1";
+const ADAPTER_VERSION = LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION;
+const PROMPT_BASIS_VERSION = LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION;
 
 const include = { candidate: true } satisfies Prisma.ImageSuggestionIntentInclude;
 type Row = Prisma.ImageSuggestionIntentGetPayload<{ include: typeof include }>;
@@ -153,10 +160,15 @@ export class PrismaImageSuggestionRepository implements ImageSuggestionRepositor
 
   private map(row: Row): ImageSuggestionView {
     const candidate = row.candidate;
+    const safetyDecision = projectNoLikenessSafetyDecision(
+      candidate?.safetyDecision,
+    );
+    if (candidate && !safetyDecision)
+      throw new Error("IMAGE_SUGGESTION_PUBLIC_SAFETY_INVALID");
     return { id: row.id, projectId: row.projectId, cutPipelineJobId: row.cutPipelineJobId, state: row.state, contractVersion: row.contractVersion,
       adapterVersion: row.adapterVersion, promptBasisVersion: row.promptBasisVersion,
       candidate: candidate ? { id: candidate.id, contentType: "image/png", sizeBytes: candidate.sizeBytes.toString(), sha256: candidate.sha256,
-        width: candidate.width, height: candidate.height, likeness: "NONE", safetyDecision: candidate.safetyDecision,
+        width: candidate.width, height: candidate.height, likeness: "NONE", safetyDecision: safetyDecision!,
         directCostMicrousd: candidate.directCostMicrousd.toString(), costBasisVersion: candidate.costBasisVersion } : null,
       failure: row.failureCode && row.failureMessage ? { code: row.failureCode, message: row.failureMessage } : null,
       createdAt: row.createdAt, updatedAt: row.updatedAt };

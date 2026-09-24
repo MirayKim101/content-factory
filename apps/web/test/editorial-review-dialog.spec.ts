@@ -36,6 +36,8 @@ function candidate(
   fingerprint = "a".repeat(64),
 ) {
   return {
+    reviewContractVersion: "editorial-review-candidate-v2",
+    integratedReviewEnabled: true,
     projectId,
     sourceId: "00000000-0000-4000-8000-000000000007",
     sourceVersion: 1,
@@ -104,8 +106,49 @@ function candidate(
       costBasisVersion: "local-direct-provider-cost-v1",
       incompleteReasons: [],
     },
+    workflowMode: "MIXED",
+    components: {
+      metadata: component("METADATA", "AI_ASSISTED"),
+      thumbnail: component("THUMBNAIL", "MANUAL"),
+    },
+    economicsPreview: {
+      processingMetrics: null,
+      metadataDirectCostMicrousd: "0",
+      evidenceDirectCostMicrousd: "0",
+      thumbnailDirectCostMicrousd: "0",
+      combinedDirectCostMicrousd: "0",
+      currency: "USD",
+      unit: "MICRO",
+      incompleteReasons: [],
+    },
     currentApproval: null,
     latestApproval: null,
+  };
+}
+
+function component(
+  componentType: "METADATA" | "THUMBNAIL",
+  mode: "MANUAL" | "AI_ASSISTED" | "MIXED",
+) {
+  return {
+    component: componentType,
+    provenanceId: "00000000-0000-4000-8000-000000000020",
+    mode,
+    basisVersion: "local-test-v1",
+    researchIntentId: null,
+    suggestionSetId: null,
+    imageIntentId: null,
+    imageCandidateId: null,
+    transcriptArtifactId: null,
+    transcriptSha256: null,
+    citations: [],
+    research: null,
+    imageSafetyDecision: null,
+    likeness: null,
+    directCostMicrousd: "0",
+    costBasisVersion: "local-direct-ai-cost-v1",
+    incompleteReasons: [],
+    snapshotFingerprint: "e".repeat(64),
   };
 }
 
@@ -190,23 +233,25 @@ describe("editorial review dialog", () => {
     await flushPromises();
     const draft = JSON.parse(
       window.localStorage.getItem(
-        `content-factory:editorial-approval-draft:v1:${jobA}`,
+        `content-factory:editorial-approval-draft:v2:${jobA}`,
       )!,
     );
     expect(draft).toMatchObject({
       candidateFingerprint: "a".repeat(64),
-      manualAttentionMs: 7_000,
+      preparationForegroundMs: 7_000,
+      finalReviewForegroundMs: 0,
     });
     await vi.advanceTimersByTimeAsync(3_000);
     await wrapper.setProps({ visible: false });
     const changed = JSON.parse(
       window.localStorage.getItem(
-        `content-factory:editorial-approval-draft:v1:${jobA}`,
+        `content-factory:editorial-approval-draft:v2:${jobA}`,
       )!,
     );
     expect(changed).toMatchObject({
       candidateFingerprint: "e".repeat(64),
-      manualAttentionMs: 3_000,
+      preparationForegroundMs: 3_000,
+      finalReviewForegroundMs: 0,
     });
   });
 
@@ -247,10 +292,11 @@ describe("editorial review dialog", () => {
 
   it("retries a response-lost approval with the frozen saved tuple after reload", async () => {
     window.localStorage.setItem(
-      `content-factory:editorial-approval-draft:v1:${jobA}`,
+      `content-factory:editorial-approval-draft:v2:${jobA}`,
       JSON.stringify({
         candidateFingerprint: "a".repeat(64),
-        manualAttentionMs: 5_000,
+        preparationForegroundMs: 5_000,
+        finalReviewForegroundMs: 0,
         idempotencyKey: "response-lost-key",
       }),
     );
@@ -266,10 +312,68 @@ describe("editorial review dialog", () => {
       .trigger("click");
     expect(mocks.approve).toHaveBeenCalledWith(
       renderA,
-      expect.objectContaining({ manualAttentionMs: 5_000 }),
+      expect.objectContaining({
+        approvalContractVersion: "human-horizontal-approval-v2",
+        attention: expect.objectContaining({ preparationForegroundMs: 5_000 }),
+      }),
       "response-lost-key",
     );
     expect(wrapper.text()).toContain("Время проверки зафиксировано");
+  });
+
+  it("submits non-zero preparation and final-review attention for an assisted review", async () => {
+    mocks.review.mockResolvedValue(candidate());
+    mocks.approve.mockResolvedValue({});
+    const { wrapper } = mountDialog();
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(3_000);
+    await wrapper.find("input[type='checkbox']").trigger("change");
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await wrapper
+      .findAll("button")
+      .find((item) => item.text().includes("Подтвердить"))!
+      .trigger("click");
+    expect(mocks.approve).toHaveBeenCalledWith(
+      renderA,
+      expect.objectContaining({
+        approvalContractVersion: "human-horizontal-approval-v2",
+        attention: {
+          schemaVersion: "operator-attention-v2",
+          preparationForegroundMs: 3_000,
+          finalReviewForegroundMs: 2_000,
+        },
+      }),
+      expect.any(String),
+    );
+  });
+
+  it("keeps the manual v1 approval path usable while integrated review is disabled", async () => {
+    const value = candidate();
+    value.integratedReviewEnabled = false;
+    value.workflowMode = "MANUAL";
+    value.components.metadata = component("METADATA", "MANUAL");
+    value.components.thumbnail = component("THUMBNAIL", "MANUAL");
+    mocks.review.mockResolvedValue(value);
+    mocks.approve.mockResolvedValue({});
+    const { wrapper } = mountDialog();
+    await flushPromises();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await wrapper.find("input[type='checkbox']").trigger("change");
+    await vi.advanceTimersByTimeAsync(3_000);
+    await wrapper
+      .findAll("button")
+      .find((item) => item.text().includes("Подтвердить"))!
+      .trigger("click");
+    expect(mocks.approve).toHaveBeenCalledWith(
+      renderA,
+      expect.objectContaining({
+        approvalContractVersion: "manual-horizontal-approval-v1",
+        manualAttentionMs: 5_000,
+        attentionMeasurementVersion: "foreground-preview-v1",
+      }),
+      expect.any(String),
+    );
   });
 
   it("fails closed for blockers, missing metrics and a render mismatch", async () => {
@@ -344,10 +448,11 @@ describe("editorial review dialog", () => {
       .trigger("click");
     expect(mocks.approve).toHaveBeenCalledTimes(1);
     window.localStorage.setItem(
-      `content-factory:editorial-approval-draft:v1:${jobB}`,
+      `content-factory:editorial-approval-draft:v2:${jobB}`,
       JSON.stringify({
         candidateFingerprint: "f".repeat(64),
-        manualAttentionMs: 41,
+        preparationForegroundMs: 41,
+        finalReviewForegroundMs: 0,
         idempotencyKey: "b-key",
       }),
     );
@@ -364,9 +469,9 @@ describe("editorial review dialog", () => {
     expect(
       JSON.parse(
         window.localStorage.getItem(
-          `content-factory:editorial-approval-draft:v1:${jobB}`,
+          `content-factory:editorial-approval-draft:v2:${jobB}`,
         )!,
       ),
-    ).toMatchObject({ manualAttentionMs: 41, idempotencyKey: "b-key" });
+    ).toMatchObject({ preparationForegroundMs: 41, idempotencyKey: "b-key" });
   });
 });

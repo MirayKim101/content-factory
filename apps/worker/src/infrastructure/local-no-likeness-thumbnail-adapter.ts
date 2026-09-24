@@ -2,15 +2,18 @@ import { createHash } from "node:crypto";
 import { deflateSync, inflateSync } from "node:zlib";
 
 import {
+  LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
+  LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
+  NO_LIKENESS_SAFETY_DECISION_VERSION,
   THUMBNAIL_CONTRACT_VERSION,
   validateThumbnailCandidate,
   type ThumbnailCandidate,
 } from "@content-factory/contracts";
 
-export const LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION =
-  "local-no-likeness-png-v1";
-export const LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION =
-  "local-abstract-thumbnail-prompt-v1";
+export {
+  LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
+  LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
+};
 export const LOCAL_NO_LIKENESS_COST_BASIS_VERSION =
   "local-direct-provider-cost-zero-v1";
 
@@ -21,7 +24,7 @@ export type LocalThumbnailOutput = Readonly<{
   bytes: Buffer;
   candidate: ThumbnailCandidate;
   safetyDecision: Readonly<{
-    version: "no-likeness-safety-v1";
+    version: typeof NO_LIKENESS_SAFETY_DECISION_VERSION;
     realisticPersonRequested: false;
     referenceImageUsed: false;
     externalProviderUsed: false;
@@ -80,7 +83,7 @@ export function generateLocalNoLikenessThumbnail(input: {
     bytes,
     candidate,
     safetyDecision: {
-      version: "no-likeness-safety-v1",
+      version: NO_LIKENESS_SAFETY_DECISION_VERSION,
       realisticPersonRequested: false,
       referenceImageUsed: false,
       externalProviderUsed: false,

@@ -757,14 +757,82 @@ model EditorialApproval {
   candidateFingerprint         String
   approvedAt                   DateTime                    @default(now())
   metrics                      EditorialApprovalMetrics?
+  componentSnapshots           EditorialApprovalComponentSnapshot[]
+  economicsV2                  EditorialApprovalEconomicsV2?
   operationRequests            EditorialOperationRequest[]
   exportIntents                EditorialExportIntent[]
 
   @@unique([editorialPackageRevisionId, assemblyRenderResultId, approvalContractVersion], map: "EditorialApproval_logical_key")
+  @@unique([id, editorialPackageRevisionId], map: "EditorialApproval_id_revision_key")
   @@unique([id, projectId], map: "EditorialApproval_id_projectId_key")
   @@unique([id, projectId, sourceId, sourceVersion, cutPipelineJobId, candidateFingerprint, editorialPackageRevisionId, recipeRevisionId, assemblyRenderResultId], map: "EditorialApproval_export_snapshot_key")
   @@index([projectId, approvedAt, id])
   @@index([cutPipelineJobId, approvedAt, id])
+}
+
+/// Immutable v2 approval capture for one independently reviewed editorial component.
+model EditorialApprovalComponentSnapshot {
+  id                    String                       @id @db.Uuid
+  approvalId            String                       @db.Uuid
+  editorialPackageRevisionId String                  @db.Uuid
+  approval              EditorialApproval            @relation(fields: [approvalId, editorialPackageRevisionId], references: [id, editorialPackageRevisionId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_approval_revision_fkey")
+  component             EditorialComponentType
+  provenanceId          String                       @db.Uuid
+  provenance            EditorialComponentProvenance @relation(fields: [provenanceId, editorialPackageRevisionId, component], references: [id, packageRevisionId, component], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_provenance_fkey")
+  mode                  EditorialProvenanceMode
+  basisVersion          String
+  researchIntentId      String?                      @db.Uuid
+  researchIntent        ResearchSuggestionIntent?    @relation(fields: [researchIntentId], references: [id], onDelete: Restrict)
+  suggestionSetId       String?                      @db.Uuid
+  suggestionSet         ResearchSuggestionSet?       @relation(fields: [suggestionSetId, researchIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_suggestion_fkey")
+  imageIntentId         String?                      @db.Uuid
+  imageIntent           ImageSuggestionIntent?       @relation(fields: [imageIntentId], references: [id], onDelete: Restrict)
+  imageCandidateId      String?                      @db.Uuid
+  imageCandidate        ImageSuggestionCandidate?    @relation(fields: [imageCandidateId, imageIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_image_fkey")
+  transcriptArtifactId  String?                      @db.Uuid
+  transcriptArtifact    TranscriptEvidenceArtifact?  @relation(fields: [transcriptArtifactId], references: [id], onDelete: Restrict)
+  transcriptSha256      String?
+  citations             Json
+  freshness             Json?
+  imageSafetyDecision   Json?
+  likeness              String?
+  directCostMicrousd    BigInt
+  costBasisVersion      String
+  incompleteReasons     Json
+  snapshotFingerprint   String
+  createdAt             DateTime                     @default(now())
+
+  @@unique([approvalId, component], map: "EditorialApprovalComponentSnapshot_approval_component_key")
+  @@index([provenanceId])
+  @@index([researchIntentId])
+  @@index([suggestionSetId])
+  @@index([imageIntentId])
+  @@index([imageCandidateId])
+}
+
+/// One authoritative economics snapshot for a human-horizontal-approval-v2 row.
+model EditorialApprovalEconomicsV2 {
+  approvalId                    String            @id @db.Uuid
+  approval                      EditorialApproval @relation(fields: [approvalId], references: [id], onDelete: Restrict)
+  schemaVersion                 String
+  workflowMode                  EditorialProvenanceMode
+  attentionSchemaVersion        String
+  preparationForegroundMs      Int
+  finalReviewForegroundMs       Int
+  totalOperatorAttentionMs      Int
+  metadataDirectCostMicrousd    BigInt
+  evidenceDirectCostMicrousd    BigInt
+  thumbnailDirectCostMicrousd   BigInt
+  combinedDirectCostMicrousd    BigInt
+  currency                      String
+  unit                          String
+  metadataCostBasisVersion      String
+  evidenceCostBasisVersion      String
+  thumbnailCostBasisVersion     String
+  assistanceTiming             Json?
+  incompleteReasons            Json
+  snapshotFingerprint          String
+  createdAt                    DateTime          @default(now())
 }
 
 model EditorialApprovalMetrics {
@@ -1152,8 +1220,10 @@ model EditorialComponentProvenance {
   imageCandidateId  String?                   @db.Uuid
   imageCandidate    ImageSuggestionCandidate? @relation(fields: [imageCandidateId, imageIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialComponentProvenance_exact_image_candidate_fkey")
   createdAt         DateTime                  @default(now())
+  approvalSnapshots EditorialApprovalComponentSnapshot[]
 
   @@unique([packageRevisionId, component], map: "EditorialComponentProvenance_revision_component_key")
+  @@unique([id, packageRevisionId, component], map: "EditorialComponentProvenance_exact_snapshot_key")
   @@index([packageRevisionId])
   @@index([researchIntentId])
   @@index([suggestionSetId])
@@ -1415,6 +1485,7 @@ model ResearchSuggestionIntent {
   attempts                 ResearchSuggestionAttempt[]
   suggestionSet            ResearchSuggestionSet?
   componentProvenance      EditorialComponentProvenance[]
+  approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
 
   @@index([transcriptIntentId, createdAt, id])
   @@index([projectId, state, createdAt])
@@ -1473,6 +1544,9 @@ model ResearchSuggestionSet {
   costBasisVersion    String
   createdAt           DateTime                       @default(now())
   componentProvenance EditorialComponentProvenance[]
+  approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
+
+  @@unique([id, intentId], map: "ResearchSuggestionSet_id_intent_key")
 }
 
 /// Durable no-likeness image request bound to exact cut and creator context.
@@ -1515,6 +1589,7 @@ model ImageSuggestionIntent {
   attempts                              ImageSuggestionAttempt[]
   candidate                             ImageSuggestionCandidate?
   componentProvenance                   EditorialComponentProvenance[]
+  approvalComponentSnapshots            EditorialApprovalComponentSnapshot[]
 
   @@index([cutPipelineJobId, createdAt, id])
   @@index([projectId, state, createdAt])
@@ -1572,6 +1647,7 @@ model ImageSuggestionCandidate {
   costBasisVersion    String
   createdAt           DateTime                       @default(now())
   componentProvenance EditorialComponentProvenance[]
+  approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
 
   @@unique([id, intentId], map: "ImageSuggestionCandidate_id_intent_key")
   @@unique([attemptId, intentId], map: "ImageSuggestionCandidate_attempt_intent_key")
@@ -1610,4 +1686,5 @@ model TranscriptEvidenceArtifact {
   language       String
   segments       Json
   createdAt      DateTime                 @default(now())
+  approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
 }

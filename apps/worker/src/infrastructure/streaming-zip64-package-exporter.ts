@@ -25,12 +25,21 @@ export class StreamingZip64PackageExporter implements PackageExporter {
     input: Parameters<PackageExporter["export"]>[0],
   ): Promise<PackageExporterResult> {
     const metadataText = metadataTextBytes(input.plan.metadata);
-    const metadataJson = jsonLine({
-      metadataSchemaVersion: "editorial-metadata-v1",
-      title: input.plan.metadata.title,
-      description: input.plan.metadata.description,
-      tags: input.plan.metadata.tags,
-    });
+    const metadataJson =
+      input.plan.exportContractVersion === "editorial-export-zip-v2"
+        ? jsonLine({
+            metadataSchemaVersion: "editorial-metadata-v2",
+            title: input.plan.metadata.title,
+            description: input.plan.metadata.description,
+            tags: input.plan.metadata.tags,
+            workflowMode: input.plan.approvalSnapshot?.workflowMode,
+          })
+        : jsonLine({
+            metadataSchemaVersion: "editorial-metadata-v1",
+            title: input.plan.metadata.title,
+            description: input.plan.metadata.description,
+            tags: input.plan.metadata.tags,
+          });
     const thumbnailName = thumbnailEntryName(input.plan.thumbnail.contentType);
     const totalPayloadBytes =
       input.plan.video.sizeBytes +
@@ -129,8 +138,11 @@ export class StreamingZip64PackageExporter implements PackageExporter {
         BigInt(metadataJson.length),
         async () => Readable.from([metadataJson]),
       );
-      const manifest = {
-        manifestSchemaVersion: "editorial-export-manifest-v1",
+      const manifestBase = {
+        manifestSchemaVersion:
+          input.plan.exportContractVersion === "editorial-export-zip-v2"
+            ? "editorial-export-manifest-v2"
+            : "editorial-export-manifest-v1",
         exportContractVersion: input.plan.exportContractVersion,
         approvalContractVersion: input.plan.approvalContractVersion,
         exportIntentId: input.plan.intentId,
@@ -152,7 +164,17 @@ export class StreamingZip64PackageExporter implements PackageExporter {
           }),
         ),
       };
-      const manifestBytes = jsonLine(manifest);
+      const manifest =
+        input.plan.exportContractVersion === "editorial-export-zip-v2"
+          ? {
+              ...manifestBase,
+              approvalSnapshot: requireV2ApprovalSnapshot(input.plan),
+            }
+          : manifestBase;
+      const manifestBytes =
+        input.plan.exportContractVersion === "editorial-export-zip-v2"
+          ? canonicalJsonLine(manifest)
+          : jsonLine(manifest);
       await writeEntry(
         "manifest.json",
         BigInt(manifestBytes.length),
@@ -174,6 +196,37 @@ export class StreamingZip64PackageExporter implements PackageExporter {
   }
 }
 
+function requireV2ApprovalSnapshot(plan: {
+  approvalSnapshot?: {
+    workflowMode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+    components: unknown[];
+    economics: unknown;
+    processingMetrics: unknown;
+  };
+}) {
+  if (
+    !plan.approvalSnapshot ||
+    plan.approvalSnapshot.components.length !== 2 ||
+    !plan.approvalSnapshot.processingMetrics ||
+    !safeManifestValue(plan.approvalSnapshot, 64 * 1024)
+  )
+    throw new ControlledMediaError(
+      "EXPORT_APPROVAL_SNAPSHOT_INVALID",
+      "The exact v2 approval snapshot cannot be exported.",
+      false,
+    );
+  return plan.approvalSnapshot;
+}
+
+function safeManifestValue(value: unknown, maxBytes: number): boolean {
+  try {
+    const serialized = JSON.stringify(value);
+    return Buffer.byteLength(serialized, "utf8") <= maxBytes;
+  } catch {
+    return false;
+  }
+}
+
 function metadataTextBytes(metadata: {
   title: string;
   description: string;
@@ -187,6 +240,30 @@ function metadataTextBytes(metadata: {
 
 function jsonLine(value: unknown): Buffer {
   return Buffer.from(`${JSON.stringify(value)}\n`, "utf8");
+}
+
+function canonicalJsonLine(value: unknown): Buffer {
+  return Buffer.from(`${canonicalJson(value)}\n`, "utf8");
+}
+
+function canonicalJson(value: unknown): string {
+  if (value === null || typeof value !== "object") {
+    const serialized = JSON.stringify(value);
+    if (serialized === undefined) throw new Error("MANIFEST_VALUE_UNSUPPORTED");
+    return serialized;
+  }
+  if (Array.isArray(value)) {
+    return `[${value
+      .map((item) => (item === undefined ? "null" : canonicalJson(item)))
+      .join(",")}]`;
+  }
+  if (value instanceof Date) return JSON.stringify(value.toJSON());
+  const record = value as Record<string, unknown>;
+  const fields = Object.keys(record)
+    .sort()
+    .filter((key) => JSON.stringify(record[key]) !== undefined)
+    .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`);
+  return `{${fields.join(",")}}`;
 }
 
 function thumbnailEntryName(contentType: string): string {

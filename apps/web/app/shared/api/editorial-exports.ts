@@ -37,7 +37,10 @@ const exportSchema: z.ZodType<EditorialExport> = z.object({
   editorialPackageRevisionId: uuid,
   recipeRevisionId: uuid,
   assemblyRenderResultId: uuid,
-  exportContractVersion: z.literal("editorial-export-zip-v1"),
+  exportContractVersion: z.enum([
+    "editorial-export-zip-v1",
+    "editorial-export-zip-v2",
+  ]),
   createdAt: z.iso.datetime(),
   job: z.object({
     id: uuid,
