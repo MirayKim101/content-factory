@@ -28,6 +28,9 @@ export interface TranscriptEvidenceRepository {
     language: string;
     fixture: LocalTranscriptFixture;
   }): Promise<string>;
+  latestForJob(
+    cutPipelineJobId: string,
+  ): Promise<TranscriptEvidenceView | null>;
   detail(intentId: string): Promise<TranscriptEvidenceView | null>;
   content(intentId: string): Promise<{
     objectKey: string;

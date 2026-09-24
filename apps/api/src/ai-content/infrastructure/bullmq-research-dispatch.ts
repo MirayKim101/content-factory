@@ -1,18 +1,19 @@
 import { Inject, Injectable, type OnModuleDestroy } from "@nestjs/common";
 import { Queue } from "bullmq";
+
 import { apiEnvironment } from "../../config/environment.js";
 import {
-  TRANSCRIPT_JOB_SCHEMA_VERSION,
-  type TranscriptEvidenceDeliveryV1,
-  type TranscriptEvidenceDispatch,
-} from "../application/transcript-evidence-dispatch.port.js";
+  RESEARCH_JOB_SCHEMA_VERSION,
+  type ResearchSuggestionDeliveryV1,
+  type ResearchSuggestionDispatch,
+} from "../application/research-suggestion-dispatch.port.js";
 
-export const TRANSCRIPT_QUEUE = Symbol("TRANSCRIPT_QUEUE");
+export const RESEARCH_QUEUE = Symbol("RESEARCH_QUEUE");
 
-export function createTranscriptQueue(): Queue<TranscriptEvidenceDeliveryV1> | null {
+export function createResearchQueue(): Queue<ResearchSuggestionDeliveryV1> | null {
   const config = apiEnvironment();
   if (config.mediaQueueDisabled) return null;
-  return new Queue("ai-transcript-v1", {
+  return new Queue("ai-research-v1", {
     connection: {
       host: config.redisHost,
       port: config.redisPort,
@@ -25,15 +26,15 @@ export function createTranscriptQueue(): Queue<TranscriptEvidenceDeliveryV1> | n
 }
 
 @Injectable()
-export class BullMqTranscriptDispatch
-  implements TranscriptEvidenceDispatch, OnModuleDestroy
+export class BullMqResearchDispatch
+  implements ResearchSuggestionDispatch, OnModuleDestroy
 {
   constructor(
-    @Inject(TRANSCRIPT_QUEUE)
-    private readonly queue: Queue<TranscriptEvidenceDeliveryV1> | null,
+    @Inject(RESEARCH_QUEUE)
+    private readonly queue: Queue<ResearchSuggestionDeliveryV1> | null,
   ) {}
 
-  async dispatch(delivery: TranscriptEvidenceDeliveryV1): Promise<void> {
+  async dispatch(delivery: ResearchSuggestionDeliveryV1): Promise<void> {
     if (!this.queue) return;
     const existing = await this.queue.getJob(delivery.intentId);
     if (existing) {
@@ -42,11 +43,11 @@ export class BullMqTranscriptDispatch
       await existing.remove();
     }
     await this.queue.add(
-      "transcript-evidence-v1",
-      { ...delivery, schemaVersion: TRANSCRIPT_JOB_SCHEMA_VERSION },
+      "research-suggestion-v1",
+      { ...delivery, schemaVersion: RESEARCH_JOB_SCHEMA_VERSION },
       {
         jobId: delivery.intentId,
-        attempts: 3,
+        attempts: 2,
         backoff: { type: "exponential", delay: 1_000 },
         removeOnComplete: { age: 3_600, count: 1_000 },
         removeOnFail: { age: 86_400, count: 5_000 },

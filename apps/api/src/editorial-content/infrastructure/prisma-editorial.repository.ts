@@ -271,6 +271,23 @@ export class PrismaEditorialRepository implements EditorialRepository {
     return this.savePackageWithRetry(input, 0);
   }
 
+  async getMutationResult(
+    idempotencyKey: string,
+  ): Promise<EditorialPackageView | null> {
+    const mutation = await this.prisma.editorialMutationRequest.findUnique({
+      where: { idempotencyKey },
+      select: {
+        packageRevision: { select: { packageId: true, revision: true } },
+      },
+    });
+    if (!mutation) return null;
+    const row = await this.findPackageRow(
+      mutation.packageRevision.packageId,
+      this.prisma,
+    );
+    return row ? this.mapPackage(row, mutation.packageRevision.revision) : null;
+  }
+
   private async savePackageWithRetry(
     input: SavePackageInput,
     transactionConflictCount: number,
@@ -332,6 +349,49 @@ export class PrismaEditorialRepository implements EditorialRepository {
               where: { id: input.processingTemplateRevisionId },
             });
           if (!template) throw new ProcessingTemplateRevisionNotFoundError();
+          if (input.metadataProvenance) {
+            const research = await transaction.$queryRaw<Array<{ id: string }>>`
+              SELECT i."id"
+                FROM "ResearchSuggestionIntent" i
+                JOIN "ResearchSuggestionSet" ss ON ss."intentId" = i."id"
+                JOIN "TranscriptEvidenceIntent" t ON t."id" = i."transcriptIntentId"
+                JOIN "TranscriptEvidenceArtifact" ta ON ta."intentId" = t."id"
+                JOIN "PipelineJob" j ON j."id" = t."cutPipelineJobId"
+                JOIN "MediaArtifact" m ON m."id" = t."cutResultArtifactId"
+                JOIN "VideoSource" s ON s."id" = t."sourceId" AND s."sourceVersion" = t."sourceVersion"
+                JOIN "SourceAuthorization" sa ON sa."sourceId" = s."id" AND sa."sourceVersion" = s."sourceVersion"
+                JOIN "SourceEditorialContextRevision" scr ON scr."id" = t."sourceContextRevisionId"
+                JOIN "SourceEditorialContext" sc ON sc."id" = scr."contextId" AND sc."currentRevision" = scr."revision"
+                JOIN "CreatorProfileRevision" cpr ON cpr."id" = t."creatorProfileRevisionId"
+                JOIN "CreatorProfile" cp ON cp."id" = cpr."creatorProfileId" AND cp."currentRevision" = cpr."revision"
+                JOIN "CutEditorialPromptRevision" pr ON pr."id" = t."cutPromptRevisionId"
+                JOIN "CutEditorialPrompt" p ON p."id" = pr."promptId" AND p."currentRevision" = pr."revision"
+               WHERE i."id" = ${input.metadataProvenance.researchIntentId}::uuid
+                 AND ss."id" = ${input.metadataProvenance.suggestionSetId}::uuid
+                 AND i."state" = 'READY' AND i."freshUntil" >= now()
+                 AND i."projectId" = ${job.projectId}::uuid
+                 AND i."cutPipelineJobId" = ${job.id}::uuid
+                 AND t."state" = 'READY' AND ta."id" = i."transcriptArtifactId"
+                 AND ta."sha256" = i."transcriptSha256"
+                 AND s."status" = 'READY' AND s."sha256" = t."sourceSha256"
+                 AND j."type" = 'CUT_SEGMENT' AND j."state" = 'READY'
+                 AND m."status" = 'READY' AND m."sha256" = t."cutResultSha256"
+                 AND m."sizeBytes" = t."cutResultSizeBytes"
+                 AND sa."revision" = t."sourceAuthorizationRevision" AND sa."status" = 'CLEARED'
+                 AND sa."basis"::text = t."sourceAuthorizationBasis"
+                 AND sa."declarationVersion" = t."sourceAuthorizationDeclarationVersion"
+                 AND sa."decidedAt" = t."sourceAuthorizationDecidedAt"
+                 AND scr."contextId" = t."sourceContextId"
+                 AND cpr."creatorProfileId" = t."creatorProfileId"
+                 AND pr."promptId" = t."cutPromptId"
+                 AND i."sourceContextRevisionId" = t."sourceContextRevisionId"
+                 AND i."creatorProfileRevisionId" = t."creatorProfileRevisionId"
+                 AND i."cutPromptRevisionId" = t."cutPromptRevisionId"
+               FOR SHARE OF i, ss, t, ta, j, m, s, sa, scr, sc, cpr, cp, pr, p
+            `;
+            if (research.length !== 1)
+              throw new EditorialRevisionConflictError();
+          }
           if (input.thumbnailAssetId) {
             const thumbnail = await transaction.editorialAsset.findUnique({
               where: { id: input.thumbnailAssetId },
@@ -507,6 +567,16 @@ export class PrismaEditorialRepository implements EditorialRepository {
       description: string | null;
       tags: string[] | null;
       thumbnailAssetId: string | null;
+      metadataProvenance?: {
+        mode: "AI_ASSISTED" | "MIXED";
+        basisVersion: string;
+        researchIntentId: string;
+        suggestionSetId: string;
+      } | null;
+      thumbnailProvenance?: {
+        mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+        basisVersion: string;
+      } | null;
     },
     revision: number,
   ) {
@@ -530,14 +600,20 @@ export class PrismaEditorialRepository implements EditorialRepository {
           {
             id: randomUUID(),
             component: "METADATA" as const,
-            mode: "MANUAL" as const,
-            basisVersion: "manual-editorial-v1",
+            mode: input.metadataProvenance?.mode ?? ("MANUAL" as const),
+            basisVersion:
+              input.metadataProvenance?.basisVersion ?? "manual-editorial-v1",
+            researchIntentId:
+              input.metadataProvenance?.researchIntentId ?? undefined,
+            suggestionSetId:
+              input.metadataProvenance?.suggestionSetId ?? undefined,
           },
           {
             id: randomUUID(),
             component: "THUMBNAIL" as const,
-            mode: "MANUAL" as const,
-            basisVersion: "manual-editorial-v1",
+            mode: input.thumbnailProvenance?.mode ?? ("MANUAL" as const),
+            basisVersion:
+              input.thumbnailProvenance?.basisVersion ?? "manual-editorial-v1",
           },
         ],
       },

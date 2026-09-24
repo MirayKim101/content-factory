@@ -72,7 +72,20 @@ export interface EditorialRepository {
     description: string | null;
     tags: string[] | null;
     thumbnailAssetId: string | null;
+    metadataProvenance?: {
+      mode: "AI_ASSISTED" | "MIXED";
+      basisVersion: string;
+      researchIntentId: string;
+      suggestionSetId: string;
+    } | null;
+    thumbnailProvenance?: {
+      mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+      basisVersion: string;
+    } | null;
   }): Promise<EditorialPackageView>;
+  getMutationResult(
+    idempotencyKey: string,
+  ): Promise<EditorialPackageView | null>;
   getPackage(pipelineJobId: string): Promise<EditorialPackageView | null>;
   listPackages(projectId: string): Promise<EditorialPackageView[]>;
 }

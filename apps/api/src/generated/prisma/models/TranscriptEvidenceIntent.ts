@@ -61,6 +61,9 @@ export type TranscriptEvidenceIntentMinAggregateOutputType = {
   sourceVersion: number | null
   sourceSha256: string | null
   sourceAuthorizationRevision: number | null
+  sourceAuthorizationBasis: string | null
+  sourceAuthorizationDeclarationVersion: string | null
+  sourceAuthorizationDecidedAt: Date | null
   cutPipelineJobId: string | null
   cutResultArtifactId: string | null
   cutResultSha256: string | null
@@ -68,10 +71,13 @@ export type TranscriptEvidenceIntentMinAggregateOutputType = {
   cutStartMs: number | null
   cutEndMs: number | null
   creatorProfileRevisionId: string | null
+  creatorProfileId: string | null
   creatorProfileRevisionNo: number | null
   sourceContextRevisionId: string | null
+  sourceContextId: string | null
   sourceContextRevisionNo: number | null
   cutPromptRevisionId: string | null
+  cutPromptId: string | null
   cutPromptRevisionNo: number | null
   contractVersion: string | null
   adapterVersion: string | null
@@ -97,6 +103,9 @@ export type TranscriptEvidenceIntentMaxAggregateOutputType = {
   sourceVersion: number | null
   sourceSha256: string | null
   sourceAuthorizationRevision: number | null
+  sourceAuthorizationBasis: string | null
+  sourceAuthorizationDeclarationVersion: string | null
+  sourceAuthorizationDecidedAt: Date | null
   cutPipelineJobId: string | null
   cutResultArtifactId: string | null
   cutResultSha256: string | null
@@ -104,10 +113,13 @@ export type TranscriptEvidenceIntentMaxAggregateOutputType = {
   cutStartMs: number | null
   cutEndMs: number | null
   creatorProfileRevisionId: string | null
+  creatorProfileId: string | null
   creatorProfileRevisionNo: number | null
   sourceContextRevisionId: string | null
+  sourceContextId: string | null
   sourceContextRevisionNo: number | null
   cutPromptRevisionId: string | null
+  cutPromptId: string | null
   cutPromptRevisionNo: number | null
   contractVersion: string | null
   adapterVersion: string | null
@@ -133,6 +145,9 @@ export type TranscriptEvidenceIntentCountAggregateOutputType = {
   sourceVersion: number
   sourceSha256: number
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis: number
+  sourceAuthorizationDeclarationVersion: number
+  sourceAuthorizationDecidedAt: number
   cutPipelineJobId: number
   cutResultArtifactId: number
   cutResultSha256: number
@@ -140,10 +155,13 @@ export type TranscriptEvidenceIntentCountAggregateOutputType = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: number
+  creatorProfileId: number
   creatorProfileRevisionNo: number
   sourceContextRevisionId: number
+  sourceContextId: number
   sourceContextRevisionNo: number
   cutPromptRevisionId: number
+  cutPromptId: number
   cutPromptRevisionNo: number
   contractVersion: number
   adapterVersion: number
@@ -198,6 +216,9 @@ export type TranscriptEvidenceIntentMinAggregateInputType = {
   sourceVersion?: true
   sourceSha256?: true
   sourceAuthorizationRevision?: true
+  sourceAuthorizationBasis?: true
+  sourceAuthorizationDeclarationVersion?: true
+  sourceAuthorizationDecidedAt?: true
   cutPipelineJobId?: true
   cutResultArtifactId?: true
   cutResultSha256?: true
@@ -205,10 +226,13 @@ export type TranscriptEvidenceIntentMinAggregateInputType = {
   cutStartMs?: true
   cutEndMs?: true
   creatorProfileRevisionId?: true
+  creatorProfileId?: true
   creatorProfileRevisionNo?: true
   sourceContextRevisionId?: true
+  sourceContextId?: true
   sourceContextRevisionNo?: true
   cutPromptRevisionId?: true
+  cutPromptId?: true
   cutPromptRevisionNo?: true
   contractVersion?: true
   adapterVersion?: true
@@ -234,6 +258,9 @@ export type TranscriptEvidenceIntentMaxAggregateInputType = {
   sourceVersion?: true
   sourceSha256?: true
   sourceAuthorizationRevision?: true
+  sourceAuthorizationBasis?: true
+  sourceAuthorizationDeclarationVersion?: true
+  sourceAuthorizationDecidedAt?: true
   cutPipelineJobId?: true
   cutResultArtifactId?: true
   cutResultSha256?: true
@@ -241,10 +268,13 @@ export type TranscriptEvidenceIntentMaxAggregateInputType = {
   cutStartMs?: true
   cutEndMs?: true
   creatorProfileRevisionId?: true
+  creatorProfileId?: true
   creatorProfileRevisionNo?: true
   sourceContextRevisionId?: true
+  sourceContextId?: true
   sourceContextRevisionNo?: true
   cutPromptRevisionId?: true
+  cutPromptId?: true
   cutPromptRevisionNo?: true
   contractVersion?: true
   adapterVersion?: true
@@ -270,6 +300,9 @@ export type TranscriptEvidenceIntentCountAggregateInputType = {
   sourceVersion?: true
   sourceSha256?: true
   sourceAuthorizationRevision?: true
+  sourceAuthorizationBasis?: true
+  sourceAuthorizationDeclarationVersion?: true
+  sourceAuthorizationDecidedAt?: true
   cutPipelineJobId?: true
   cutResultArtifactId?: true
   cutResultSha256?: true
@@ -277,10 +310,13 @@ export type TranscriptEvidenceIntentCountAggregateInputType = {
   cutStartMs?: true
   cutEndMs?: true
   creatorProfileRevisionId?: true
+  creatorProfileId?: true
   creatorProfileRevisionNo?: true
   sourceContextRevisionId?: true
+  sourceContextId?: true
   sourceContextRevisionNo?: true
   cutPromptRevisionId?: true
+  cutPromptId?: true
   cutPromptRevisionNo?: true
   contractVersion?: true
   adapterVersion?: true
@@ -394,6 +430,9 @@ export type TranscriptEvidenceIntentGroupByOutputType = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis: string | null
+  sourceAuthorizationDeclarationVersion: string | null
+  sourceAuthorizationDecidedAt: Date | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -401,10 +440,13 @@ export type TranscriptEvidenceIntentGroupByOutputType = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -454,6 +496,9 @@ export type TranscriptEvidenceIntentWhereInput = {
   sourceVersion?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   sourceSha256?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
   sourceAuthorizationRevision?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
+  sourceAuthorizationBasis?: Prisma.StringNullableFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.StringNullableFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDecidedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceIntent"> | Date | string | null
   cutPipelineJobId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
   cutResultArtifactId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
   cutResultSha256?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
@@ -461,10 +506,13 @@ export type TranscriptEvidenceIntentWhereInput = {
   cutStartMs?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   cutEndMs?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   creatorProfileRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  creatorProfileId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   creatorProfileRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   sourceContextRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  sourceContextId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   sourceContextRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   cutPromptRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  cutPromptId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   cutPromptRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   contractVersion?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
   adapterVersion?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
@@ -499,6 +547,9 @@ export type TranscriptEvidenceIntentOrderByWithRelationInput = {
   sourceVersion?: Prisma.SortOrder
   sourceSha256?: Prisma.SortOrder
   sourceAuthorizationRevision?: Prisma.SortOrder
+  sourceAuthorizationBasis?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceAuthorizationDeclarationVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceAuthorizationDecidedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cutPipelineJobId?: Prisma.SortOrder
   cutResultArtifactId?: Prisma.SortOrder
   cutResultSha256?: Prisma.SortOrder
@@ -506,10 +557,13 @@ export type TranscriptEvidenceIntentOrderByWithRelationInput = {
   cutStartMs?: Prisma.SortOrder
   cutEndMs?: Prisma.SortOrder
   creatorProfileRevisionId?: Prisma.SortOrder
+  creatorProfileId?: Prisma.SortOrderInput | Prisma.SortOrder
   creatorProfileRevisionNo?: Prisma.SortOrder
   sourceContextRevisionId?: Prisma.SortOrder
+  sourceContextId?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceContextRevisionNo?: Prisma.SortOrder
   cutPromptRevisionId?: Prisma.SortOrder
+  cutPromptId?: Prisma.SortOrderInput | Prisma.SortOrder
   cutPromptRevisionNo?: Prisma.SortOrder
   contractVersion?: Prisma.SortOrder
   adapterVersion?: Prisma.SortOrder
@@ -547,6 +601,9 @@ export type TranscriptEvidenceIntentWhereUniqueInput = Prisma.AtLeast<{
   sourceVersion?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   sourceSha256?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
   sourceAuthorizationRevision?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
+  sourceAuthorizationBasis?: Prisma.StringNullableFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.StringNullableFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDecidedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceIntent"> | Date | string | null
   cutPipelineJobId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
   cutResultArtifactId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
   cutResultSha256?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
@@ -554,10 +611,13 @@ export type TranscriptEvidenceIntentWhereUniqueInput = Prisma.AtLeast<{
   cutStartMs?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   cutEndMs?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   creatorProfileRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  creatorProfileId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   creatorProfileRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   sourceContextRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  sourceContextId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   sourceContextRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   cutPromptRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  cutPromptId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   cutPromptRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   contractVersion?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
   adapterVersion?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
@@ -592,6 +652,9 @@ export type TranscriptEvidenceIntentOrderByWithAggregationInput = {
   sourceVersion?: Prisma.SortOrder
   sourceSha256?: Prisma.SortOrder
   sourceAuthorizationRevision?: Prisma.SortOrder
+  sourceAuthorizationBasis?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceAuthorizationDeclarationVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceAuthorizationDecidedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cutPipelineJobId?: Prisma.SortOrder
   cutResultArtifactId?: Prisma.SortOrder
   cutResultSha256?: Prisma.SortOrder
@@ -599,10 +662,13 @@ export type TranscriptEvidenceIntentOrderByWithAggregationInput = {
   cutStartMs?: Prisma.SortOrder
   cutEndMs?: Prisma.SortOrder
   creatorProfileRevisionId?: Prisma.SortOrder
+  creatorProfileId?: Prisma.SortOrderInput | Prisma.SortOrder
   creatorProfileRevisionNo?: Prisma.SortOrder
   sourceContextRevisionId?: Prisma.SortOrder
+  sourceContextId?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceContextRevisionNo?: Prisma.SortOrder
   cutPromptRevisionId?: Prisma.SortOrder
+  cutPromptId?: Prisma.SortOrderInput | Prisma.SortOrder
   cutPromptRevisionNo?: Prisma.SortOrder
   contractVersion?: Prisma.SortOrder
   adapterVersion?: Prisma.SortOrder
@@ -637,6 +703,9 @@ export type TranscriptEvidenceIntentScalarWhereWithAggregatesInput = {
   sourceVersion?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceIntent"> | number
   sourceSha256?: Prisma.StringWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
   sourceAuthorizationRevision?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceIntent"> | number
+  sourceAuthorizationBasis?: Prisma.StringNullableWithAggregatesFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.StringNullableWithAggregatesFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDecidedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TranscriptEvidenceIntent"> | Date | string | null
   cutPipelineJobId?: Prisma.UuidWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
   cutResultArtifactId?: Prisma.UuidWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
   cutResultSha256?: Prisma.StringWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
@@ -644,10 +713,13 @@ export type TranscriptEvidenceIntentScalarWhereWithAggregatesInput = {
   cutStartMs?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceIntent"> | number
   cutEndMs?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceIntent"> | number
   creatorProfileRevisionId?: Prisma.UuidWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
+  creatorProfileId?: Prisma.UuidNullableWithAggregatesFilter<"TranscriptEvidenceIntent"> | string | null
   creatorProfileRevisionNo?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceIntent"> | number
   sourceContextRevisionId?: Prisma.UuidWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
+  sourceContextId?: Prisma.UuidNullableWithAggregatesFilter<"TranscriptEvidenceIntent"> | string | null
   sourceContextRevisionNo?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceIntent"> | number
   cutPromptRevisionId?: Prisma.UuidWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
+  cutPromptId?: Prisma.UuidNullableWithAggregatesFilter<"TranscriptEvidenceIntent"> | string | null
   cutPromptRevisionNo?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceIntent"> | number
   contractVersion?: Prisma.StringWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
   adapterVersion?: Prisma.StringWithAggregatesFilter<"TranscriptEvidenceIntent"> | string
@@ -674,12 +746,18 @@ export type TranscriptEvidenceIntentCreateInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -714,6 +792,9 @@ export type TranscriptEvidenceIntentUncheckedCreateInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -721,10 +802,13 @@ export type TranscriptEvidenceIntentUncheckedCreateInput = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -754,12 +838,18 @@ export type TranscriptEvidenceIntentUpdateInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -794,6 +884,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -801,10 +894,13 @@ export type TranscriptEvidenceIntentUncheckedUpdateInput = {
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -834,6 +930,9 @@ export type TranscriptEvidenceIntentCreateManyInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -841,10 +940,13 @@ export type TranscriptEvidenceIntentCreateManyInput = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -871,12 +973,18 @@ export type TranscriptEvidenceIntentUpdateManyMutationInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -903,6 +1011,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -910,10 +1021,13 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyInput = {
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -950,6 +1064,9 @@ export type TranscriptEvidenceIntentCountOrderByAggregateInput = {
   sourceVersion?: Prisma.SortOrder
   sourceSha256?: Prisma.SortOrder
   sourceAuthorizationRevision?: Prisma.SortOrder
+  sourceAuthorizationBasis?: Prisma.SortOrder
+  sourceAuthorizationDeclarationVersion?: Prisma.SortOrder
+  sourceAuthorizationDecidedAt?: Prisma.SortOrder
   cutPipelineJobId?: Prisma.SortOrder
   cutResultArtifactId?: Prisma.SortOrder
   cutResultSha256?: Prisma.SortOrder
@@ -957,10 +1074,13 @@ export type TranscriptEvidenceIntentCountOrderByAggregateInput = {
   cutStartMs?: Prisma.SortOrder
   cutEndMs?: Prisma.SortOrder
   creatorProfileRevisionId?: Prisma.SortOrder
+  creatorProfileId?: Prisma.SortOrder
   creatorProfileRevisionNo?: Prisma.SortOrder
   sourceContextRevisionId?: Prisma.SortOrder
+  sourceContextId?: Prisma.SortOrder
   sourceContextRevisionNo?: Prisma.SortOrder
   cutPromptRevisionId?: Prisma.SortOrder
+  cutPromptId?: Prisma.SortOrder
   cutPromptRevisionNo?: Prisma.SortOrder
   contractVersion?: Prisma.SortOrder
   adapterVersion?: Prisma.SortOrder
@@ -1000,6 +1120,9 @@ export type TranscriptEvidenceIntentMaxOrderByAggregateInput = {
   sourceVersion?: Prisma.SortOrder
   sourceSha256?: Prisma.SortOrder
   sourceAuthorizationRevision?: Prisma.SortOrder
+  sourceAuthorizationBasis?: Prisma.SortOrder
+  sourceAuthorizationDeclarationVersion?: Prisma.SortOrder
+  sourceAuthorizationDecidedAt?: Prisma.SortOrder
   cutPipelineJobId?: Prisma.SortOrder
   cutResultArtifactId?: Prisma.SortOrder
   cutResultSha256?: Prisma.SortOrder
@@ -1007,10 +1130,13 @@ export type TranscriptEvidenceIntentMaxOrderByAggregateInput = {
   cutStartMs?: Prisma.SortOrder
   cutEndMs?: Prisma.SortOrder
   creatorProfileRevisionId?: Prisma.SortOrder
+  creatorProfileId?: Prisma.SortOrder
   creatorProfileRevisionNo?: Prisma.SortOrder
   sourceContextRevisionId?: Prisma.SortOrder
+  sourceContextId?: Prisma.SortOrder
   sourceContextRevisionNo?: Prisma.SortOrder
   cutPromptRevisionId?: Prisma.SortOrder
+  cutPromptId?: Prisma.SortOrder
   cutPromptRevisionNo?: Prisma.SortOrder
   contractVersion?: Prisma.SortOrder
   adapterVersion?: Prisma.SortOrder
@@ -1036,6 +1162,9 @@ export type TranscriptEvidenceIntentMinOrderByAggregateInput = {
   sourceVersion?: Prisma.SortOrder
   sourceSha256?: Prisma.SortOrder
   sourceAuthorizationRevision?: Prisma.SortOrder
+  sourceAuthorizationBasis?: Prisma.SortOrder
+  sourceAuthorizationDeclarationVersion?: Prisma.SortOrder
+  sourceAuthorizationDecidedAt?: Prisma.SortOrder
   cutPipelineJobId?: Prisma.SortOrder
   cutResultArtifactId?: Prisma.SortOrder
   cutResultSha256?: Prisma.SortOrder
@@ -1043,10 +1172,13 @@ export type TranscriptEvidenceIntentMinOrderByAggregateInput = {
   cutStartMs?: Prisma.SortOrder
   cutEndMs?: Prisma.SortOrder
   creatorProfileRevisionId?: Prisma.SortOrder
+  creatorProfileId?: Prisma.SortOrder
   creatorProfileRevisionNo?: Prisma.SortOrder
   sourceContextRevisionId?: Prisma.SortOrder
+  sourceContextId?: Prisma.SortOrder
   sourceContextRevisionNo?: Prisma.SortOrder
   cutPromptRevisionId?: Prisma.SortOrder
+  cutPromptId?: Prisma.SortOrder
   cutPromptRevisionNo?: Prisma.SortOrder
   contractVersion?: Prisma.SortOrder
   adapterVersion?: Prisma.SortOrder
@@ -1346,12 +1478,18 @@ export type TranscriptEvidenceIntentCreateWithoutCutResultArtifactInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1385,16 +1523,22 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCutResultArtifactInput
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1453,6 +1597,9 @@ export type TranscriptEvidenceIntentScalarWhereInput = {
   sourceVersion?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   sourceSha256?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
   sourceAuthorizationRevision?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
+  sourceAuthorizationBasis?: Prisma.StringNullableFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.StringNullableFilter<"TranscriptEvidenceIntent"> | string | null
+  sourceAuthorizationDecidedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceIntent"> | Date | string | null
   cutPipelineJobId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
   cutResultArtifactId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
   cutResultSha256?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
@@ -1460,10 +1607,13 @@ export type TranscriptEvidenceIntentScalarWhereInput = {
   cutStartMs?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   cutEndMs?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   creatorProfileRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  creatorProfileId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   creatorProfileRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   sourceContextRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  sourceContextId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   sourceContextRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   cutPromptRevisionId?: Prisma.UuidFilter<"TranscriptEvidenceIntent"> | string
+  cutPromptId?: Prisma.UuidNullableFilter<"TranscriptEvidenceIntent"> | string | null
   cutPromptRevisionNo?: Prisma.IntFilter<"TranscriptEvidenceIntent"> | number
   contractVersion?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
   adapterVersion?: Prisma.StringFilter<"TranscriptEvidenceIntent"> | string
@@ -1490,12 +1640,18 @@ export type TranscriptEvidenceIntentCreateWithoutCutPipelineJobInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1529,16 +1685,22 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCutPipelineJobInput = 
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultArtifactId: string
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1594,12 +1756,18 @@ export type TranscriptEvidenceIntentCreateWithoutCreatorProfileRevisionInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1633,16 +1801,22 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCreatorProfileRevision
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1698,12 +1872,18 @@ export type TranscriptEvidenceIntentCreateWithoutSourceContextRevisionInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1737,6 +1917,9 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutSourceContextRevisionI
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -1744,9 +1927,12 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutSourceContextRevisionI
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1802,12 +1988,18 @@ export type TranscriptEvidenceIntentCreateWithoutCutPromptRevisionInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1841,6 +2033,9 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCutPromptRevisionInput
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -1848,9 +2043,12 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCutPromptRevisionInput
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1906,12 +2104,18 @@ export type TranscriptEvidenceIntentCreateWithoutResearchSuggestionsInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -1945,6 +2149,9 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutResearchSuggestionsInp
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -1952,10 +2159,13 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutResearchSuggestionsInp
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2000,12 +2210,18 @@ export type TranscriptEvidenceIntentUpdateWithoutResearchSuggestionsInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2039,6 +2255,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutResearchSuggestionsInp
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2046,10 +2265,13 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutResearchSuggestionsInp
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2078,12 +2300,18 @@ export type TranscriptEvidenceIntentCreateWithoutAttemptsInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2117,6 +2345,9 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutAttemptsInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -2124,10 +2355,13 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutAttemptsInput = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2172,12 +2406,18 @@ export type TranscriptEvidenceIntentUpdateWithoutAttemptsInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2211,6 +2451,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutAttemptsInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2218,10 +2461,13 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutAttemptsInput = {
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2250,12 +2496,18 @@ export type TranscriptEvidenceIntentCreateWithoutArtifactInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2289,6 +2541,9 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutArtifactInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -2296,10 +2551,13 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutArtifactInput = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2344,12 +2602,18 @@ export type TranscriptEvidenceIntentUpdateWithoutArtifactInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2383,6 +2647,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutArtifactInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2390,10 +2657,13 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutArtifactInput = {
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2422,16 +2692,22 @@ export type TranscriptEvidenceIntentCreateManyCutResultArtifactInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2458,12 +2734,18 @@ export type TranscriptEvidenceIntentUpdateWithoutCutResultArtifactInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2497,16 +2779,22 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutResultArtifactInput
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2536,16 +2824,22 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactI
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2572,16 +2866,22 @@ export type TranscriptEvidenceIntentCreateManyCutPipelineJobInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutResultArtifactId: string
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2608,12 +2908,18 @@ export type TranscriptEvidenceIntentUpdateWithoutCutPipelineJobInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2647,16 +2953,22 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutPipelineJobInput = 
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2686,16 +2998,22 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobInpu
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2722,16 +3040,22 @@ export type TranscriptEvidenceIntentCreateManyCreatorProfileRevisionInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
   cutResultSizeBytes: bigint | number
   cutStartMs: number
   cutEndMs: number
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2758,12 +3082,18 @@ export type TranscriptEvidenceIntentUpdateWithoutCreatorProfileRevisionInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2797,16 +3127,22 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCreatorProfileRevision
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2836,16 +3172,22 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevi
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2872,6 +3214,9 @@ export type TranscriptEvidenceIntentCreateManySourceContextRevisionInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -2879,9 +3224,12 @@ export type TranscriptEvidenceIntentCreateManySourceContextRevisionInput = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
   cutPromptRevisionId: string
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -2908,12 +3256,18 @@ export type TranscriptEvidenceIntentUpdateWithoutSourceContextRevisionInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2947,6 +3301,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutSourceContextRevisionI
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2954,9 +3311,12 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutSourceContextRevisionI
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2986,6 +3346,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevis
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2993,9 +3356,12 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevis
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3022,6 +3388,9 @@ export type TranscriptEvidenceIntentCreateManyCutPromptRevisionInput = {
   sourceVersion: number
   sourceSha256: string
   sourceAuthorizationRevision: number
+  sourceAuthorizationBasis?: string | null
+  sourceAuthorizationDeclarationVersion?: string | null
+  sourceAuthorizationDecidedAt?: Date | string | null
   cutPipelineJobId: string
   cutResultArtifactId: string
   cutResultSha256: string
@@ -3029,9 +3398,12 @@ export type TranscriptEvidenceIntentCreateManyCutPromptRevisionInput = {
   cutStartMs: number
   cutEndMs: number
   creatorProfileRevisionId: string
+  creatorProfileId?: string | null
   creatorProfileRevisionNo: number
   sourceContextRevisionId: string
+  sourceContextId?: string | null
   sourceContextRevisionNo: number
+  cutPromptId?: string | null
   cutPromptRevisionNo: number
   contractVersion: string
   adapterVersion: string
@@ -3058,12 +3430,18 @@ export type TranscriptEvidenceIntentUpdateWithoutCutPromptRevisionInput = {
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3097,6 +3475,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutPromptRevisionInput
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3104,9 +3485,12 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutPromptRevisionInput
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3136,6 +3520,9 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPromptRevisionI
   sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
   sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceAuthorizationBasis?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceAuthorizationDecidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
   cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3143,9 +3530,12 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPromptRevisionI
   cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
   cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
   creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
   contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3212,6 +3602,9 @@ export type TranscriptEvidenceIntentSelect<ExtArgs extends runtime.Types.Extensi
   sourceVersion?: boolean
   sourceSha256?: boolean
   sourceAuthorizationRevision?: boolean
+  sourceAuthorizationBasis?: boolean
+  sourceAuthorizationDeclarationVersion?: boolean
+  sourceAuthorizationDecidedAt?: boolean
   cutPipelineJobId?: boolean
   cutResultArtifactId?: boolean
   cutResultSha256?: boolean
@@ -3219,10 +3612,13 @@ export type TranscriptEvidenceIntentSelect<ExtArgs extends runtime.Types.Extensi
   cutStartMs?: boolean
   cutEndMs?: boolean
   creatorProfileRevisionId?: boolean
+  creatorProfileId?: boolean
   creatorProfileRevisionNo?: boolean
   sourceContextRevisionId?: boolean
+  sourceContextId?: boolean
   sourceContextRevisionNo?: boolean
   cutPromptRevisionId?: boolean
+  cutPromptId?: boolean
   cutPromptRevisionNo?: boolean
   contractVersion?: boolean
   adapterVersion?: boolean
@@ -3258,6 +3654,9 @@ export type TranscriptEvidenceIntentSelectCreateManyAndReturn<ExtArgs extends ru
   sourceVersion?: boolean
   sourceSha256?: boolean
   sourceAuthorizationRevision?: boolean
+  sourceAuthorizationBasis?: boolean
+  sourceAuthorizationDeclarationVersion?: boolean
+  sourceAuthorizationDecidedAt?: boolean
   cutPipelineJobId?: boolean
   cutResultArtifactId?: boolean
   cutResultSha256?: boolean
@@ -3265,10 +3664,13 @@ export type TranscriptEvidenceIntentSelectCreateManyAndReturn<ExtArgs extends ru
   cutStartMs?: boolean
   cutEndMs?: boolean
   creatorProfileRevisionId?: boolean
+  creatorProfileId?: boolean
   creatorProfileRevisionNo?: boolean
   sourceContextRevisionId?: boolean
+  sourceContextId?: boolean
   sourceContextRevisionNo?: boolean
   cutPromptRevisionId?: boolean
+  cutPromptId?: boolean
   cutPromptRevisionNo?: boolean
   contractVersion?: boolean
   adapterVersion?: boolean
@@ -3300,6 +3702,9 @@ export type TranscriptEvidenceIntentSelectUpdateManyAndReturn<ExtArgs extends ru
   sourceVersion?: boolean
   sourceSha256?: boolean
   sourceAuthorizationRevision?: boolean
+  sourceAuthorizationBasis?: boolean
+  sourceAuthorizationDeclarationVersion?: boolean
+  sourceAuthorizationDecidedAt?: boolean
   cutPipelineJobId?: boolean
   cutResultArtifactId?: boolean
   cutResultSha256?: boolean
@@ -3307,10 +3712,13 @@ export type TranscriptEvidenceIntentSelectUpdateManyAndReturn<ExtArgs extends ru
   cutStartMs?: boolean
   cutEndMs?: boolean
   creatorProfileRevisionId?: boolean
+  creatorProfileId?: boolean
   creatorProfileRevisionNo?: boolean
   sourceContextRevisionId?: boolean
+  sourceContextId?: boolean
   sourceContextRevisionNo?: boolean
   cutPromptRevisionId?: boolean
+  cutPromptId?: boolean
   cutPromptRevisionNo?: boolean
   contractVersion?: boolean
   adapterVersion?: boolean
@@ -3342,6 +3750,9 @@ export type TranscriptEvidenceIntentSelectScalar = {
   sourceVersion?: boolean
   sourceSha256?: boolean
   sourceAuthorizationRevision?: boolean
+  sourceAuthorizationBasis?: boolean
+  sourceAuthorizationDeclarationVersion?: boolean
+  sourceAuthorizationDecidedAt?: boolean
   cutPipelineJobId?: boolean
   cutResultArtifactId?: boolean
   cutResultSha256?: boolean
@@ -3349,10 +3760,13 @@ export type TranscriptEvidenceIntentSelectScalar = {
   cutStartMs?: boolean
   cutEndMs?: boolean
   creatorProfileRevisionId?: boolean
+  creatorProfileId?: boolean
   creatorProfileRevisionNo?: boolean
   sourceContextRevisionId?: boolean
+  sourceContextId?: boolean
   sourceContextRevisionNo?: boolean
   cutPromptRevisionId?: boolean
+  cutPromptId?: boolean
   cutPromptRevisionNo?: boolean
   contractVersion?: boolean
   adapterVersion?: boolean
@@ -3370,7 +3784,7 @@ export type TranscriptEvidenceIntentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type TranscriptEvidenceIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "projectId" | "sourceId" | "sourceVersion" | "sourceSha256" | "sourceAuthorizationRevision" | "cutPipelineJobId" | "cutResultArtifactId" | "cutResultSha256" | "cutResultSizeBytes" | "cutStartMs" | "cutEndMs" | "creatorProfileRevisionId" | "creatorProfileRevisionNo" | "sourceContextRevisionId" | "sourceContextRevisionNo" | "cutPromptRevisionId" | "cutPromptRevisionNo" | "contractVersion" | "adapterVersion" | "language" | "fixture" | "state" | "attemptCount" | "retryBudget" | "failureCode" | "failureMessage" | "queuedAt" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["transcriptEvidenceIntent"]>
+export type TranscriptEvidenceIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "projectId" | "sourceId" | "sourceVersion" | "sourceSha256" | "sourceAuthorizationRevision" | "sourceAuthorizationBasis" | "sourceAuthorizationDeclarationVersion" | "sourceAuthorizationDecidedAt" | "cutPipelineJobId" | "cutResultArtifactId" | "cutResultSha256" | "cutResultSizeBytes" | "cutStartMs" | "cutEndMs" | "creatorProfileRevisionId" | "creatorProfileId" | "creatorProfileRevisionNo" | "sourceContextRevisionId" | "sourceContextId" | "sourceContextRevisionNo" | "cutPromptRevisionId" | "cutPromptId" | "cutPromptRevisionNo" | "contractVersion" | "adapterVersion" | "language" | "fixture" | "state" | "attemptCount" | "retryBudget" | "failureCode" | "failureMessage" | "queuedAt" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["transcriptEvidenceIntent"]>
 export type TranscriptEvidenceIntentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cutPipelineJob?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
   cutResultArtifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
@@ -3418,6 +3832,9 @@ export type $TranscriptEvidenceIntentPayload<ExtArgs extends runtime.Types.Exten
     sourceVersion: number
     sourceSha256: string
     sourceAuthorizationRevision: number
+    sourceAuthorizationBasis: string | null
+    sourceAuthorizationDeclarationVersion: string | null
+    sourceAuthorizationDecidedAt: Date | null
     cutPipelineJobId: string
     cutResultArtifactId: string
     cutResultSha256: string
@@ -3425,10 +3842,13 @@ export type $TranscriptEvidenceIntentPayload<ExtArgs extends runtime.Types.Exten
     cutStartMs: number
     cutEndMs: number
     creatorProfileRevisionId: string
+    creatorProfileId: string | null
     creatorProfileRevisionNo: number
     sourceContextRevisionId: string
+    sourceContextId: string | null
     sourceContextRevisionNo: number
     cutPromptRevisionId: string
+    cutPromptId: string | null
     cutPromptRevisionNo: number
     contractVersion: string
     adapterVersion: string
@@ -3883,6 +4303,9 @@ export interface TranscriptEvidenceIntentFieldRefs {
   readonly sourceVersion: Prisma.FieldRef<"TranscriptEvidenceIntent", 'Int'>
   readonly sourceSha256: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
   readonly sourceAuthorizationRevision: Prisma.FieldRef<"TranscriptEvidenceIntent", 'Int'>
+  readonly sourceAuthorizationBasis: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
+  readonly sourceAuthorizationDeclarationVersion: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
+  readonly sourceAuthorizationDecidedAt: Prisma.FieldRef<"TranscriptEvidenceIntent", 'DateTime'>
   readonly cutPipelineJobId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
   readonly cutResultArtifactId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
   readonly cutResultSha256: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
@@ -3890,10 +4313,13 @@ export interface TranscriptEvidenceIntentFieldRefs {
   readonly cutStartMs: Prisma.FieldRef<"TranscriptEvidenceIntent", 'Int'>
   readonly cutEndMs: Prisma.FieldRef<"TranscriptEvidenceIntent", 'Int'>
   readonly creatorProfileRevisionId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
+  readonly creatorProfileId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
   readonly creatorProfileRevisionNo: Prisma.FieldRef<"TranscriptEvidenceIntent", 'Int'>
   readonly sourceContextRevisionId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
+  readonly sourceContextId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
   readonly sourceContextRevisionNo: Prisma.FieldRef<"TranscriptEvidenceIntent", 'Int'>
   readonly cutPromptRevisionId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
+  readonly cutPromptId: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
   readonly cutPromptRevisionNo: Prisma.FieldRef<"TranscriptEvidenceIntent", 'Int'>
   readonly contractVersion: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>
   readonly adapterVersion: Prisma.FieldRef<"TranscriptEvidenceIntent", 'String'>

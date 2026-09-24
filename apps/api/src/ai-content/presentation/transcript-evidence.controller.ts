@@ -20,6 +20,7 @@ import {
   ApiBody,
   ApiHeader,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiParam,
   ApiResponse,
   ApiTags,
@@ -112,10 +113,20 @@ export class TranscriptEvidenceController {
         schemaVersion: "transcript-job-v1",
         intentId: id,
       });
-      return detail;
+      return publicTranscript(detail);
     } catch (error) {
       throw mapTranscriptError(error);
     }
+  }
+
+  @Get("pipeline-jobs/:cutJobId/transcript-evidence")
+  @ApiParam({ name: "cutJobId", format: "uuid", type: String })
+  @ApiNotFoundResponse({ type: TranscriptEvidenceErrorResponseDto })
+  @ApiOkResponse({ type: TranscriptEvidenceDto })
+  async latestForJob(@Param("cutJobId", uuid) cutPipelineJobId: string) {
+    const value = await this.repository.latestForJob(cutPipelineJobId);
+    if (!value) throw new NotFoundException({ code: "TRANSCRIPT_NOT_FOUND" });
+    return publicTranscript(value);
   }
 
   @Get("transcript-evidence/:intentId")
@@ -125,7 +136,7 @@ export class TranscriptEvidenceController {
   async detail(@Param("intentId", uuid) intentId: string) {
     const value = await this.repository.detail(intentId);
     if (!value) throw new NotFoundException({ code: "TRANSCRIPT_NOT_FOUND" });
-    return value;
+    return publicTranscript(value);
   }
 
   @Head("transcript-evidence/:intentId/content")
@@ -188,6 +199,26 @@ export class TranscriptEvidenceController {
     response.once("close", () => stored.body.destroy());
     stored.body.pipe(response);
   }
+}
+
+function publicTranscript(
+  value: NonNullable<
+    Awaited<ReturnType<TranscriptEvidenceRepository["detail"]>>
+  >,
+) {
+  return {
+    ...value,
+    artifact: value.artifact
+      ? {
+          id: value.artifact.id,
+          contentType: value.artifact.contentType,
+          sizeBytes: value.artifact.sizeBytes,
+          sha256: value.artifact.sha256,
+          adapterVersion: value.artifact.adapterVersion,
+          language: value.artifact.language,
+        }
+      : null,
+  };
 }
 
 function mapTranscriptError(error: unknown): Error {

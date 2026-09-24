@@ -20,7 +20,8 @@ import {
   type EditorialOperationAttempt,
   type EditorialSaveAttempt,
 } from "~/features/edit-editorial-package/model/save-identity";
-import ResearchTextManualFallback from "~/widgets/editorial-package/ui/research-text-manual-fallback.vue";
+import ResearchTextPanel from "~/widgets/editorial-package/ui/research-text-panel.vue";
+import type { ResearchMetadataApplyResponse } from "~/shared/api/research-text";
 import {
   createEditorialContentApi,
   EditorialApiError,
@@ -362,6 +363,36 @@ function reloadServerRevision(): void {
   });
   success.value = undefined;
 }
+
+function loadResearchSuggestion(value: {
+  title: string;
+  description: string;
+  tags: string[];
+}): void {
+  form.title = value.title;
+  form.description = value.description;
+  form.tagsText = value.tags.join("\n");
+  success.value =
+    "Research-вариант перенесён в форму. Проверьте его перед применением.";
+}
+
+async function researchApplied(
+  result: ResearchMetadataApplyResponse,
+): Promise<void> {
+  const refreshed = await packages.refetch();
+  const latest = refreshed.data?.find(
+    (item) => item.pipelineJobId === props.jobId,
+  );
+  if (latest) loadPackage(latest);
+  await queryClient.invalidateQueries({
+    queryKey: ["editorial-exports", props.projectId],
+  });
+  await queryClient.invalidateQueries({
+    queryKey: ["editorial-review", props.projectId, props.jobId],
+  });
+  saveError.value = undefined;
+  success.value = `Research применён: revision ${result.revision}, provenance ${result.metadataMode}.`;
+}
 </script>
 
 <template>
@@ -407,7 +438,15 @@ function reloadServerRevision(): void {
         </p>
         <form @submit.prevent="requestSave">
           <fieldset class="form-fields" :disabled="save.isPending.value">
-            <ResearchTextManualFallback />
+            <ResearchTextPanel
+              :job-id="jobId"
+              :expected-revision="serverRevision"
+              :title="form.title"
+              :description="form.description"
+              :tags-text="form.tagsText"
+              @load-suggestion="loadResearchSuggestion"
+              @applied="researchApplied"
+            />
             <label
               >Заголовок<InputText
                 v-model="form.title"

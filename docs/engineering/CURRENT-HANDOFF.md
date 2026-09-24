@@ -31,10 +31,13 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   restored-runtime smoke. Worker fenced по lease/deadline и повторно проверяет
   текущие source authorization, cut lineage, context/profile/prompt revisions
   перед READY. Media worker больше не потребляет AI-очередь.
-- Stage 2B-4 имеет provider-neutral local cited research endpoint и typed web
-  client; UI сохраняет ручной путь, пока transcript intent не связан с
-  editorial dialog. Durable apply/edit revision и внешние research providers
-  остаются следующим bounded slice.
+- Stage 2B-4a теперь имеет durable PostgreSQL cited-research intent/citations/
+  attempts/suggestion/cost, отдельную AI-worker очередь, reloadable operator UI
+  и exact metadata apply. Сервер выводит `AI_ASSISTED` или `MIXED`, сохраняет
+  thumbnail/provenance и отклоняет stale lineage. Admission остаётся выключен
+  `RESEARCH_TEXT_ENABLED=0`; внешние providers не подключены. Disposable-DB
+  smoke и независимый review реального diff — PASS/CLEAN; runtime rights policy
+  повторно проверяется worker при claim и finalize.
 
 ## Проверено и не проверено
 
@@ -173,9 +176,9 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
    `af8f7a5`, `459fbf6`, `9e5b568`, `673104d`, `ae5fea1`; worker suite 117/117,
    API focused transcript/research checks и restored AI/media worker logs
    подтверждены. Нужен отдельный disposable-db smoke с реальным READY intent.
-6. Stage 2B-4 следующий bounded slice: связать transcript intent с UI,
-   сохранить research snapshot/suggestion revision и добавить apply с
-   invalidation manual/AI/mixed approval.
+6. Stage 2B-4a принят как bounded local slice: focused checks,
+   disposable-PostgreSQL reload/apply smoke и независимый review реального diff
+   прошли; admission по умолчанию остаётся выключен.
 7. Затем Stage 2B-5/2B-6: thumbnail candidates и единая проверка
    manual/AI/mixed approval/export и экономика.
 8. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и

@@ -91,8 +91,6 @@ export class TranscriptArtifactDto {
   @ApiProperty({ type: String }) sha256!: string;
   @ApiProperty({ type: String }) adapterVersion!: string;
   @ApiProperty({ type: String }) language!: string;
-  @ApiProperty({ type: [TranscriptSegmentDto] })
-  segments!: TranscriptSegmentDto[];
 }
 
 export class TranscriptFailureDto {

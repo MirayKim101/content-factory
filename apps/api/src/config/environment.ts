@@ -56,6 +56,7 @@ const API_ENVIRONMENT_KEYS = [
   "EDITORIAL_EXPORT_ENABLED",
   "AI_CONTEXT_ENABLED",
   "EDITORIAL_FRAMES_ENABLED",
+  "RESEARCH_TEXT_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -169,6 +170,7 @@ export interface ApiEnvironment {
   editorialExportEnabled: boolean;
   aiContextEnabled: boolean;
   editorialFramesEnabled: boolean;
+  researchTextEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -249,6 +251,7 @@ export function apiEnvironment(): ApiEnvironment {
     editorialExportEnabled: editorialExportAdmissionEnabled(process.env),
     aiContextEnabled: aiContextAdmissionEnabled(process.env),
     editorialFramesEnabled: process.env.EDITORIAL_FRAMES_ENABLED === "1",
+    researchTextEnabled: process.env.RESEARCH_TEXT_ENABLED === "1",
   };
 }
 

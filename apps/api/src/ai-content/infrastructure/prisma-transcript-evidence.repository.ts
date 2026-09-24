@@ -77,7 +77,7 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
         : ["CUT_LINEAGE_UNUSABLE"];
       if (!facts || blockers.length)
         throw new TranscriptContextRejectedError(blockers);
-      const capture = toTranscriptCapture(facts.capture);
+      const capture = toStoredTranscriptCapture(facts.capture);
       const id = randomUUID();
       await tx.transcriptEvidenceIntent.create({
         data: {
@@ -140,6 +140,17 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
           }
         : null,
     };
+  }
+
+  async latestForJob(
+    cutPipelineJobId: string,
+  ): Promise<TranscriptEvidenceView | null> {
+    const row = await this.prisma.transcriptEvidenceIntent.findFirst({
+      where: { cutPipelineJobId },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: { id: true },
+    });
+    return row ? this.detail(row.id) : null;
   }
 
   async content(intentId: string) {
@@ -344,25 +355,33 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
       sourceVersion: number;
       sourceSha256: string;
       sourceAuthorizationRevision: number;
+      sourceAuthorizationBasis: string | null;
+      sourceAuthorizationDeclarationVersion: string | null;
+      sourceAuthorizationDecidedAt: Date | null;
       cutResultArtifactId: string;
       cutResultSha256: string;
       cutResultSizeBytes: bigint;
       cutStartMs: number;
       cutEndMs: number;
       creatorProfileRevisionId: string;
+      creatorProfileId: string | null;
       creatorProfileRevisionNo: number;
       sourceContextRevisionNo: number;
+      sourceContextId: string | null;
       cutPromptRevisionNo: number;
+      cutPromptId: string | null;
     },
   ): Promise<void> {
     const facts = await lockedFrameContext(tx, row);
-    const captured = captureFromRow(row);
+    const captured = policyCaptureFromRow(row);
     const blockers = facts
-      ? frameContextBlockers(
-          facts,
-          apiEnvironment().sourceAuthorizationPolicy,
-          captured as FrameContextCapture,
-        )
+      ? captured
+        ? frameContextBlockers(
+            facts,
+            apiEnvironment().sourceAuthorizationPolicy,
+            captured,
+          )
+        : ["CAPTURED_CONTEXT_CHANGED" as const]
       : ["CUT_LINEAGE_UNUSABLE"];
     if (blockers.length) throw new TranscriptContextRejectedError(blockers);
   }
@@ -416,15 +435,30 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
   }
 }
 
-function toTranscriptCapture(
+type StoredTranscriptCapture = TranscriptInputCapture &
+  Pick<
+    FrameContextCapture,
+    | "sourceAuthorizationBasis"
+    | "sourceAuthorizationDeclarationVersion"
+    | "sourceAuthorizationDecidedAt"
+    | "creatorProfileId"
+    | "sourceContextId"
+    | "cutPromptId"
+  >;
+
+function toStoredTranscriptCapture(
   capture: FrameContextCapture,
-): TranscriptInputCapture {
+): StoredTranscriptCapture {
   return {
     projectId: capture.projectId,
     sourceId: capture.sourceId,
     sourceVersion: capture.sourceVersion,
     sourceSha256: capture.sourceSha256,
     sourceAuthorizationRevision: capture.sourceAuthorizationRevision,
+    sourceAuthorizationBasis: capture.sourceAuthorizationBasis,
+    sourceAuthorizationDeclarationVersion:
+      capture.sourceAuthorizationDeclarationVersion,
+    sourceAuthorizationDecidedAt: capture.sourceAuthorizationDecidedAt,
     cutPipelineJobId: capture.cutPipelineJobId,
     cutResultArtifactId: capture.cutResultArtifactId,
     cutResultSha256: capture.cutResultSha256,
@@ -432,11 +466,62 @@ function toTranscriptCapture(
     cutStartMs: capture.cutStartMs,
     cutEndMs: capture.cutEndMs,
     creatorProfileRevisionId: capture.creatorProfileRevisionId,
+    creatorProfileId: capture.creatorProfileId,
     creatorProfileRevisionNo: capture.creatorProfileRevisionNo,
     sourceContextRevisionId: capture.sourceContextRevisionId,
+    sourceContextId: capture.sourceContextId,
     sourceContextRevisionNo: capture.sourceContextRevisionNo,
     cutPromptRevisionId: capture.cutPromptRevisionId,
+    cutPromptId: capture.cutPromptId,
     cutPromptRevisionNo: capture.cutPromptRevisionNo,
+  };
+}
+
+function policyCaptureFromRow(row: {
+  projectId: string;
+  sourceId: string;
+  sourceVersion: number;
+  sourceSha256: string;
+  sourceAuthorizationRevision: number;
+  sourceAuthorizationBasis: string | null;
+  sourceAuthorizationDeclarationVersion: string | null;
+  sourceAuthorizationDecidedAt: Date | null;
+  cutPipelineJobId: string;
+  cutResultArtifactId: string;
+  cutResultSha256: string;
+  cutResultSizeBytes: bigint;
+  cutStartMs: number;
+  cutEndMs: number;
+  creatorProfileId: string | null;
+  creatorProfileRevisionId: string;
+  creatorProfileRevisionNo: number;
+  sourceContextId: string | null;
+  sourceContextRevisionId: string;
+  sourceContextRevisionNo: number;
+  cutPromptId: string | null;
+  cutPromptRevisionId: string;
+  cutPromptRevisionNo: number;
+}): FrameContextCapture | null {
+  if (
+    !row.sourceAuthorizationBasis ||
+    !row.sourceAuthorizationDeclarationVersion ||
+    !row.sourceAuthorizationDecidedAt ||
+    !row.creatorProfileId ||
+    !row.sourceContextId ||
+    !row.cutPromptId
+  )
+    return null;
+  return {
+    ...row,
+    sourceAuthorizationBasis: row.sourceAuthorizationBasis,
+    sourceAuthorizationDeclarationVersion:
+      row.sourceAuthorizationDeclarationVersion,
+    sourceAuthorizationDecidedAt:
+      row.sourceAuthorizationDecidedAt.toISOString(),
+    creatorProfileId: row.creatorProfileId,
+    sourceContextId: row.sourceContextId,
+    cutPromptId: row.cutPromptId,
+    cutResultSizeBytes: row.cutResultSizeBytes.toString(),
   };
 }
 

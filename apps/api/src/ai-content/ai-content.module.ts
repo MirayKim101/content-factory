@@ -3,6 +3,8 @@ import { Module } from "@nestjs/common";
 import { apiEnvironment } from "../config/environment.js";
 import { MediaPipelineModule } from "../media-pipeline/media-pipeline.module.js";
 import { ProjectsModule } from "../projects/projects.module.js";
+import { EditorialContentModule } from "../editorial-content/editorial-content.module.js";
+import { ApplyResearchMetadata } from "./application/apply-research-metadata.js";
 import {
   AI_CONTEXT_ADMISSION_ENABLED,
   CREATOR_CONTEXT_REPOSITORY,
@@ -28,6 +30,14 @@ import { TRANSCRIPT_EVIDENCE_REPOSITORY } from "./application/transcript-evidenc
 import { PrismaTranscriptEvidenceRepository } from "./infrastructure/prisma-transcript-evidence.repository.js";
 import { TranscriptEvidenceController } from "./presentation/transcript-evidence.controller.js";
 import { ResearchController } from "./research/research.controller.js";
+import { PrismaResearchSuggestionRepository } from "./infrastructure/prisma-research-suggestion.repository.js";
+import { RESEARCH_SUGGESTION_REPOSITORY } from "./application/research-suggestion-repository.port.js";
+import { RESEARCH_SUGGESTION_DISPATCH } from "./application/research-suggestion-dispatch.port.js";
+import {
+  BullMqResearchDispatch,
+  createResearchQueue,
+  RESEARCH_QUEUE,
+} from "./infrastructure/bullmq-research-dispatch.js";
 import {
   TRANSCRIPT_QUEUE,
   BullMqTranscriptDispatch,
@@ -36,7 +46,7 @@ import {
 import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-dispatch.port.js";
 
 @Module({
-  imports: [ProjectsModule, MediaPipelineModule],
+  imports: [ProjectsModule, MediaPipelineModule, EditorialContentModule],
   controllers: [
     CreatorContextController,
     FrameEvidenceController,
@@ -45,9 +55,12 @@ import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-
   ],
   providers: [
     CreatorContextService,
+    ApplyResearchMetadata,
     PrismaFrameEvidenceRepository,
     PrismaTranscriptEvidenceRepository,
+    PrismaResearchSuggestionRepository,
     BullMqTranscriptDispatch,
+    BullMqResearchDispatch,
     {
       provide: TRANSCRIPT_QUEUE,
       useFactory: createTranscriptQueue,
@@ -57,12 +70,24 @@ import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-
       useExisting: BullMqTranscriptDispatch,
     },
     {
+      provide: RESEARCH_QUEUE,
+      useFactory: createResearchQueue,
+    },
+    {
+      provide: RESEARCH_SUGGESTION_DISPATCH,
+      useExisting: BullMqResearchDispatch,
+    },
+    {
       provide: FRAME_EVIDENCE_REPOSITORY,
       useExisting: PrismaFrameEvidenceRepository,
     },
     {
       provide: TRANSCRIPT_EVIDENCE_REPOSITORY,
       useExisting: PrismaTranscriptEvidenceRepository,
+    },
+    {
+      provide: RESEARCH_SUGGESTION_REPOSITORY,
+      useExisting: PrismaResearchSuggestionRepository,
     },
     ResolveAiEditorialContext,
     ReconcileCreatorReferences,

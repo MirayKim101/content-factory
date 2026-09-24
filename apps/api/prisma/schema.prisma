@@ -1309,48 +1309,54 @@ model FrameEvidenceFrame {
 
 /// Immutable exact cut/context capture and durable state for one transcript request.
 model TranscriptEvidenceIntent {
-  id                          String                         @id @db.Uuid
-  idempotencyKey              String                         @unique
-  requestFingerprint          String
-  projectId                   String                         @db.Uuid
-  sourceId                    String                         @db.Uuid
-  sourceVersion               Int
-  sourceSha256                String
-  sourceAuthorizationRevision Int
-  cutPipelineJobId            String                         @db.Uuid
-  cutPipelineJob              PipelineJob                    @relation(fields: [cutPipelineJobId], references: [id], onDelete: Restrict)
-  cutResultArtifactId         String                         @db.Uuid
-  cutResultArtifact           MediaArtifact                  @relation(fields: [cutResultArtifactId], references: [id], onDelete: Restrict)
-  cutResultSha256             String
-  cutResultSizeBytes          BigInt
-  cutStartMs                  Int
-  cutEndMs                    Int
-  creatorProfileRevisionId    String                         @db.Uuid
-  creatorProfileRevisionNo    Int
-  creatorProfileRevision      CreatorProfileRevision         @relation(fields: [creatorProfileRevisionId], references: [id], onDelete: Restrict)
-  sourceContextRevisionId     String                         @db.Uuid
-  sourceContextRevisionNo     Int
-  sourceContextRevision       SourceEditorialContextRevision @relation(fields: [sourceContextRevisionId], references: [id], onDelete: Restrict)
-  cutPromptRevisionId         String                         @db.Uuid
-  cutPromptRevisionNo         Int
-  cutPromptRevision           CutEditorialPromptRevision     @relation(fields: [cutPromptRevisionId], references: [id], onDelete: Restrict)
-  contractVersion             String
-  adapterVersion              String
-  language                    String
-  fixture                     Json
-  state                       TranscriptIntentState          @default(QUEUED)
-  attemptCount                Int                            @default(0)
-  retryBudget                 Int                            @default(1)
-  failureCode                 String?
-  failureMessage              String?
-  queuedAt                    DateTime                       @default(now())
-  startedAt                   DateTime?
-  finishedAt                  DateTime?
-  createdAt                   DateTime                       @default(now())
-  updatedAt                   DateTime                       @updatedAt
-  attempts                    TranscriptEvidenceAttempt[]
-  artifact                    TranscriptEvidenceArtifact?
-  researchSuggestions         ResearchSuggestionIntent[]
+  id                                    String                         @id @db.Uuid
+  idempotencyKey                        String                         @unique
+  requestFingerprint                    String
+  projectId                             String                         @db.Uuid
+  sourceId                              String                         @db.Uuid
+  sourceVersion                         Int
+  sourceSha256                          String
+  sourceAuthorizationRevision           Int
+  sourceAuthorizationBasis              String?
+  sourceAuthorizationDeclarationVersion String?
+  sourceAuthorizationDecidedAt          DateTime?
+  cutPipelineJobId                      String                         @db.Uuid
+  cutPipelineJob                        PipelineJob                    @relation(fields: [cutPipelineJobId], references: [id], onDelete: Restrict)
+  cutResultArtifactId                   String                         @db.Uuid
+  cutResultArtifact                     MediaArtifact                  @relation(fields: [cutResultArtifactId], references: [id], onDelete: Restrict)
+  cutResultSha256                       String
+  cutResultSizeBytes                    BigInt
+  cutStartMs                            Int
+  cutEndMs                              Int
+  creatorProfileRevisionId              String                         @db.Uuid
+  creatorProfileId                      String?                        @db.Uuid
+  creatorProfileRevisionNo              Int
+  creatorProfileRevision                CreatorProfileRevision         @relation(fields: [creatorProfileRevisionId], references: [id], onDelete: Restrict)
+  sourceContextRevisionId               String                         @db.Uuid
+  sourceContextId                       String?                        @db.Uuid
+  sourceContextRevisionNo               Int
+  sourceContextRevision                 SourceEditorialContextRevision @relation(fields: [sourceContextRevisionId], references: [id], onDelete: Restrict)
+  cutPromptRevisionId                   String                         @db.Uuid
+  cutPromptId                           String?                        @db.Uuid
+  cutPromptRevisionNo                   Int
+  cutPromptRevision                     CutEditorialPromptRevision     @relation(fields: [cutPromptRevisionId], references: [id], onDelete: Restrict)
+  contractVersion                       String
+  adapterVersion                        String
+  language                              String
+  fixture                               Json
+  state                                 TranscriptIntentState          @default(QUEUED)
+  attemptCount                          Int                            @default(0)
+  retryBudget                           Int                            @default(1)
+  failureCode                           String?
+  failureMessage                        String?
+  queuedAt                              DateTime                       @default(now())
+  startedAt                             DateTime?
+  finishedAt                            DateTime?
+  createdAt                             DateTime                       @default(now())
+  updatedAt                             DateTime                       @updatedAt
+  attempts                              TranscriptEvidenceAttempt[]
+  artifact                              TranscriptEvidenceArtifact?
+  researchSuggestions                   ResearchSuggestionIntent[]
 
   @@index([cutPipelineJobId, createdAt, id])
   @@index([state, queuedAt])

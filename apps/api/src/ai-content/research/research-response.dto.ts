@@ -17,10 +17,18 @@ export class ResearchSnapshotResponseDto {
   contractVersion!: "editorial-research-v1";
   @ApiProperty({ type: String }) adapterVersion!: string;
   @ApiProperty({ type: String }) query!: string;
-  @ApiProperty({ type: String, enum: ["CURRENT", "STALE"] }) freshness!:
-    "CURRENT" | "STALE";
+  @ApiProperty({ type: String, enum: ["CURRENT", "STALE"] })
+  freshness!: "CURRENT" | "STALE";
+  @ApiProperty({ type: String, format: "date-time" }) searchedAt!: string;
+  @ApiProperty({ type: String, format: "date-time" }) freshUntil!: string;
+  @ApiProperty({ type: String }) freshnessPolicyVersion!: string;
   @ApiProperty({ type: [ResearchCitationResponseDto] })
   citations!: ResearchCitationResponseDto[];
+}
+
+export class ResearchClaimResponseDto {
+  @ApiProperty({ type: String }) text!: string;
+  @ApiProperty({ type: [String] }) citationIds!: string[];
 }
 
 export class ResearchTextSuggestionResponseDto {
@@ -30,14 +38,53 @@ export class ResearchTextSuggestionResponseDto {
   @ApiProperty({ type: [String] }) tags!: string[];
   @ApiProperty({ type: String }) basisVersion!: string;
   @ApiProperty({ type: [String] }) citationIds!: string[];
-  @ApiProperty({ type: "array", items: { type: "object" } })
-  claims!: Array<{ text: string; citationIds: string[] }>;
+  @ApiProperty({ type: [ResearchClaimResponseDto] })
+  claims!: ResearchClaimResponseDto[];
+}
+
+export class ResearchCostResponseDto {
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  directCostMicrousd!: string;
+  @ApiProperty({ type: String }) basisVersion!: string;
+}
+
+export class ResearchFailureResponseDto {
+  @ApiProperty({ type: String }) code!: string;
+  @ApiProperty({ type: String }) message!: string;
 }
 
 export class ResearchSuggestionResponseDto {
-  @ApiProperty({ type: String, format: "uuid" }) intentId!: string;
+  @ApiProperty({ type: String, format: "uuid" }) id!: string;
+  @ApiProperty({ type: String, format: "uuid" }) transcriptIntentId!: string;
+  @ApiProperty({
+    type: String,
+    enum: ["QUEUED", "PROCESSING", "READY", "FAILED_FINAL"],
+  })
+  state!: "QUEUED" | "PROCESSING" | "READY" | "FAILED_FINAL";
   @ApiProperty({ type: ResearchSnapshotResponseDto })
   snapshot!: ResearchSnapshotResponseDto;
-  @ApiProperty({ type: ResearchTextSuggestionResponseDto })
-  suggestion!: ResearchTextSuggestionResponseDto;
+  @ApiProperty({ type: ResearchTextSuggestionResponseDto, nullable: true })
+  suggestion!: ResearchTextSuggestionResponseDto | null;
+  @ApiProperty({ type: ResearchCostResponseDto, nullable: true })
+  cost!: ResearchCostResponseDto | null;
+  @ApiProperty({ type: ResearchFailureResponseDto, nullable: true })
+  failure!: ResearchFailureResponseDto | null;
+}
+
+export class ResearchSuggestionListResponseDto {
+  @ApiProperty({ type: [ResearchSuggestionResponseDto] })
+  items!: ResearchSuggestionResponseDto[];
+}
+
+export class ResearchMetadataApplyResponseDto {
+  @ApiProperty({ type: String, format: "uuid" }) packageId!: string;
+  @ApiProperty({ type: String, format: "uuid" }) packageRevisionId!: string;
+  @ApiProperty({ type: "integer", minimum: 1 }) revision!: number;
+  @ApiProperty({ type: String }) title!: string;
+  @ApiProperty({ type: String }) description!: string;
+  @ApiProperty({ type: [String] }) tags!: string[];
+  @ApiProperty({ type: String, enum: ["AI_ASSISTED", "MIXED"] })
+  metadataMode!: "AI_ASSISTED" | "MIXED";
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  thumbnailAssetId!: string | null;
 }

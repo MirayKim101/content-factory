@@ -2,6 +2,10 @@
 export const RESEARCH_CONTRACT_VERSION = "editorial-research-v1" as const;
 export const LOCAL_RESEARCH_ADAPTER_VERSION =
   "local-manual-research-v1" as const;
+export const RESEARCH_FRESHNESS_POLICY_VERSION =
+  "research-freshness-24h-v1" as const;
+export const LOCAL_RESEARCH_COST_BASIS_VERSION =
+  "local-provider-cost-zero-v1" as const;
 
 export type ResearchCitation = Readonly<{
   id: string;
@@ -30,6 +34,27 @@ export type TextSuggestion = Readonly<{
   basisVersion: string;
   citationIds: readonly string[];
   claims: readonly Readonly<{ text: string; citationIds: readonly string[] }>[];
+}>;
+
+export type ResearchSuggestionState =
+  "QUEUED" | "PROCESSING" | "READY" | "FAILED_FINAL";
+
+export type ResearchSuggestionView = Readonly<{
+  id: string;
+  transcriptIntentId: string;
+  state: ResearchSuggestionState;
+  snapshot: ResearchSnapshot &
+    Readonly<{
+      searchedAt: string;
+      freshUntil: string;
+      freshnessPolicyVersion: string;
+    }>;
+  suggestion: TextSuggestion | null;
+  cost: Readonly<{
+    directCostMicrousd: string;
+    basisVersion: string;
+  }> | null;
+  failure: Readonly<{ code: string; message: string }> | null;
 }>;
 
 export function validateResearchSnapshot(snapshot: ResearchSnapshot): void {

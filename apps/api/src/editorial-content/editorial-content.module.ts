@@ -72,6 +72,8 @@ import { EditorialAssetReconciliationStartup } from "./infrastructure/editorial-
 import { PrismaEditorialRepository } from "./infrastructure/prisma-editorial.repository.js";
 import { ProjectObjectEditorialStorage } from "./infrastructure/project-object-editorial-storage.js";
 import { EditorialController } from "./presentation/editorial.controller.js";
+import { ApplyAiMetadata } from "./application/apply-ai-metadata.js";
+import { EDITORIAL_AI_METADATA_APPLIER } from "./application/editorial-ai-metadata-applier.port.js";
 
 @Module({
   imports: [ProjectsModule, MediaPipelineModule],
@@ -145,16 +147,19 @@ import { EditorialController } from "./presentation/editorial.controller.js";
     ListEditorialAssets,
     GetEditorialAsset,
     SaveEditorialPackage,
+    ApplyAiMetadata,
     ReconcileEditorialAssets,
     EditorialAssetReconciliationStartup,
     GetEditorialPackage,
     ListEditorialPackages,
     TempUploadLifecycleInterceptor,
     { provide: EDITORIAL_REPOSITORY, useExisting: PrismaEditorialRepository },
+    { provide: EDITORIAL_AI_METADATA_APPLIER, useExisting: ApplyAiMetadata },
     {
       provide: EDITORIAL_STORAGE,
       useExisting: ProjectObjectEditorialStorage,
     },
   ],
+  exports: [EDITORIAL_AI_METADATA_APPLIER],
 })
 export class EditorialContentModule {}

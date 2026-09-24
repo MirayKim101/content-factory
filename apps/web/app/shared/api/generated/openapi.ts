@@ -383,7 +383,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations["TranscriptEvidenceController_latestForJob"];
     put?: never;
     post: operations["TranscriptEvidenceController_create"];
     delete?: never;
@@ -801,6 +801,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/research-suggestions/{researchIntentId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["ResearchController_detail"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/research-suggestions/{researchIntentId}/apply-metadata": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["ResearchController_apply"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/transcript-evidence/{intentId}": {
     parameters: {
       query?: never;
@@ -840,9 +872,9 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations["ResearchController_list"];
     put?: never;
-    post: operations["ResearchController_suggest"];
+    post: operations["ResearchController_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -853,6 +885,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    ApplyResearchMetadataDto: {
+      description: string;
+      expectedEditorialRevision: number;
+      tags: string[];
+      title: string;
+    };
     ApprovalJobMetricsResponseDto: {
       activeAttemptMs: number | null;
       attemptCount: number;
@@ -1172,7 +1210,6 @@ export interface components {
     CreateResearchSuggestionDto: {
       citations: components["schemas"]["ResearchCitationDto"][];
       query: string;
-      sourceTitle: string;
     };
     CreateTranscriptEvidenceDto: {
       /** Format: uuid */
@@ -2043,8 +2080,6 @@ export interface components {
       sourceTitle: string;
     };
     ResearchCitationDto: {
-      /** @example 2026-09-23T00:00:00.000Z */
-      accessedAt: string;
       excerpt: string;
       /** @example 2026-09-23T00:00:00.000Z */
       publishedAt: string;
@@ -2066,25 +2101,66 @@ export interface components {
       title: string;
       url: string;
     };
+    ResearchClaimResponseDto: {
+      citationIds: string[];
+      text: string;
+    };
+    ResearchCostResponseDto: {
+      basisVersion: string;
+      directCostMicrousd: string;
+    };
+    ResearchFailureResponseDto: {
+      code: string;
+      message: string;
+    };
+    ResearchMetadataApplyResponseDto: {
+      description: string;
+      /** @enum {string} */
+      metadataMode: "AI_ASSISTED" | "MIXED";
+      /** Format: uuid */
+      packageId: string;
+      /** Format: uuid */
+      packageRevisionId: string;
+      revision: number;
+      tags: string[];
+      /** Format: uuid */
+      thumbnailAssetId: string | null;
+      title: string;
+    };
     ResearchSnapshotResponseDto: {
       adapterVersion: string;
       citations: components["schemas"]["ResearchCitationResponseDto"][];
       /** @enum {string} */
       contractVersion: "editorial-research-v1";
+      /** Format: date-time */
+      freshUntil: string;
       /** @enum {string} */
       freshness: "CURRENT" | "STALE";
+      freshnessPolicyVersion: string;
       query: string;
+      /** Format: date-time */
+      searchedAt: string;
+    };
+    ResearchSuggestionListResponseDto: {
+      items: components["schemas"]["ResearchSuggestionResponseDto"][];
     };
     ResearchSuggestionResponseDto: {
+      cost: components["schemas"]["ResearchCostResponseDto"] | null;
+      failure: components["schemas"]["ResearchFailureResponseDto"] | null;
       /** Format: uuid */
-      intentId: string;
+      id: string;
       snapshot: components["schemas"]["ResearchSnapshotResponseDto"];
-      suggestion: components["schemas"]["ResearchTextSuggestionResponseDto"];
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "READY" | "FAILED_FINAL";
+      suggestion:
+        components["schemas"]["ResearchTextSuggestionResponseDto"] | null;
+      /** Format: uuid */
+      transcriptIntentId: string;
     };
     ResearchTextSuggestionResponseDto: {
       basisVersion: string;
       citationIds: string[];
-      claims: Record<string, never>[];
+      claims: components["schemas"]["ResearchClaimResponseDto"][];
       description: string;
       /** Format: uuid */
       id: string;
@@ -2236,7 +2312,6 @@ export interface components {
       /** Format: uuid */
       id: string;
       language: string;
-      segments: components["schemas"]["TranscriptSegmentDto"][];
       sha256: string;
       sizeBytes: number;
     };
@@ -3587,6 +3662,51 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["FrameEvidenceErrorResponseDto"];
+        };
+      };
+    };
+  };
+  TranscriptEvidenceController_latestForJob: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        cutJobId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceDto"];
+        };
+      };
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
+        };
+      };
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
+        };
+      };
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TranscriptEvidenceErrorResponseDto"];
         };
       };
     };
@@ -5102,6 +5222,54 @@ export interface operations {
       };
     };
   };
+  ResearchController_detail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        researchIntentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ResearchSuggestionResponseDto"];
+        };
+      };
+    };
+  };
+  ResearchController_apply: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        researchIntentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ApplyResearchMetadataDto"];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ResearchMetadataApplyResponseDto"];
+        };
+      };
+    };
+  };
   TranscriptEvidenceController_detail: {
     parameters: {
       query?: never;
@@ -5213,10 +5381,33 @@ export interface operations {
       };
     };
   };
-  ResearchController_suggest: {
+  ResearchController_list: {
     parameters: {
       query?: never;
       header?: never;
+      path: {
+        intentId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ResearchSuggestionListResponseDto"];
+        };
+      };
+    };
+  };
+  ResearchController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
       path: {
         intentId: string;
       };
@@ -5228,7 +5419,6 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Deterministic cited local suggestion. */
       202: {
         headers: {
           [name: string]: unknown;

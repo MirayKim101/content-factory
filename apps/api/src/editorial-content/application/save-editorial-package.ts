@@ -23,6 +23,16 @@ export class SaveEditorialPackage {
     description?: string | null;
     tags?: string[] | null;
     thumbnailAssetId?: string | null;
+    metadataProvenance?: {
+      mode: "AI_ASSISTED" | "MIXED";
+      basisVersion: string;
+      researchIntentId: string;
+      suggestionSetId: string;
+    };
+    thumbnailProvenance?: {
+      mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+      basisVersion: string;
+    };
   }) {
     const snapshot = {
       pipelineJobId: input.pipelineJobId,
@@ -32,6 +42,8 @@ export class SaveEditorialPackage {
       description: input.description ?? null,
       tags: input.tags ?? null,
       thumbnailAssetId: input.thumbnailAssetId ?? null,
+      metadataProvenance: input.metadataProvenance ?? null,
+      thumbnailProvenance: input.thumbnailProvenance ?? null,
     };
     const requestFingerprint = createHash("sha256")
       .update(JSON.stringify(snapshot))

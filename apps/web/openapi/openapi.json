@@ -1,6 +1,36 @@
 {
   "components": {
     "schemas": {
+      "ApplyResearchMetadataDto": {
+        "properties": {
+          "description": {
+            "maxLength": 5000,
+            "type": "string"
+          },
+          "expectedEditorialRevision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedEditorialRevision",
+          "title",
+          "description",
+          "tags"
+        ],
+        "type": "object"
+      },
       "ApprovalJobMetricsResponseDto": {
         "properties": {
           "activeAttemptMs": {
@@ -1069,12 +1099,9 @@
           },
           "query": {
             "type": "string"
-          },
-          "sourceTitle": {
-            "type": "string"
           }
         },
-        "required": ["query", "sourceTitle", "citations"],
+        "required": ["query", "citations"],
         "type": "object"
       },
       "CreateTranscriptEvidenceDto": {
@@ -3971,10 +3998,6 @@
       },
       "ResearchCitationDto": {
         "properties": {
-          "accessedAt": {
-            "example": "2026-09-23T00:00:00.000Z",
-            "type": "string"
-          },
           "excerpt": {
             "type": "string"
           },
@@ -3993,14 +4016,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "url",
-          "title",
-          "publisher",
-          "publishedAt",
-          "accessedAt",
-          "excerpt"
-        ],
+        "required": ["url", "title", "publisher", "publishedAt", "excerpt"],
         "type": "object"
       },
       "ResearchCitationResponseDto": {
@@ -4047,6 +4063,94 @@
         ],
         "type": "object"
       },
+      "ResearchClaimResponseDto": {
+        "properties": {
+          "citationIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": ["text", "citationIds"],
+        "type": "object"
+      },
+      "ResearchCostResponseDto": {
+        "properties": {
+          "basisVersion": {
+            "type": "string"
+          },
+          "directCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          }
+        },
+        "required": ["directCostMicrousd", "basisVersion"],
+        "type": "object"
+      },
+      "ResearchFailureResponseDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "ResearchMetadataApplyResponseDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "metadataMode": {
+            "enum": ["AI_ASSISTED", "MIXED"],
+            "type": "string"
+          },
+          "packageId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "packageRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "thumbnailAssetId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "packageId",
+          "packageRevisionId",
+          "revision",
+          "title",
+          "description",
+          "tags",
+          "metadataMode",
+          "thumbnailAssetId"
+        ],
+        "type": "object"
+      },
       "ResearchSnapshotResponseDto": {
         "properties": {
           "adapterVersion": {
@@ -4062,11 +4166,22 @@
             "enum": ["editorial-research-v1"],
             "type": "string"
           },
+          "freshUntil": {
+            "format": "date-time",
+            "type": "string"
+          },
           "freshness": {
             "enum": ["CURRENT", "STALE"],
             "type": "string"
           },
+          "freshnessPolicyVersion": {
+            "type": "string"
+          },
           "query": {
+            "type": "string"
+          },
+          "searchedAt": {
+            "format": "date-time",
             "type": "string"
           }
         },
@@ -4075,24 +4190,79 @@
           "adapterVersion",
           "query",
           "freshness",
+          "searchedAt",
+          "freshUntil",
+          "freshnessPolicyVersion",
           "citations"
         ],
         "type": "object"
       },
+      "ResearchSuggestionListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchSuggestionResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "type": "object"
+      },
       "ResearchSuggestionResponseDto": {
         "properties": {
-          "intentId": {
+          "cost": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResearchCostResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResearchFailureResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "id": {
             "format": "uuid",
             "type": "string"
           },
           "snapshot": {
             "$ref": "#/components/schemas/ResearchSnapshotResponseDto"
           },
+          "state": {
+            "enum": ["QUEUED", "PROCESSING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          },
           "suggestion": {
-            "$ref": "#/components/schemas/ResearchTextSuggestionResponseDto"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResearchTextSuggestionResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "transcriptIntentId": {
+            "format": "uuid",
+            "type": "string"
           }
         },
-        "required": ["intentId", "snapshot", "suggestion"],
+        "required": [
+          "id",
+          "transcriptIntentId",
+          "state",
+          "snapshot",
+          "suggestion",
+          "cost",
+          "failure"
+        ],
         "type": "object"
       },
       "ResearchTextSuggestionResponseDto": {
@@ -4108,7 +4278,7 @@
           },
           "claims": {
             "items": {
-              "type": "object"
+              "$ref": "#/components/schemas/ResearchClaimResponseDto"
             },
             "type": "array"
           },
@@ -4581,12 +4751,6 @@
           "language": {
             "type": "string"
           },
-          "segments": {
-            "items": {
-              "$ref": "#/components/schemas/TranscriptSegmentDto"
-            },
-            "type": "array"
-          },
           "sha256": {
             "type": "string"
           },
@@ -4601,8 +4765,7 @@
           "sizeBytes",
           "sha256",
           "adapterVersion",
-          "language",
-          "segments"
+          "language"
         ],
         "type": "object"
       },
@@ -6756,6 +6919,63 @@
       }
     },
     "/api/v1/pipeline-jobs/{cutJobId}/transcript-evidence": {
+      "get": {
+        "operationId": "TranscriptEvidenceController_latestForJob",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptEvidenceErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["transcript-evidence"]
+      },
       "post": {
         "operationId": "TranscriptEvidenceController_create",
         "parameters": [
@@ -8986,6 +9206,82 @@
         "tags": ["ai-content-context"]
       }
     },
+    "/api/v1/research-suggestions/{researchIntentId}": {
+      "get": {
+        "operationId": "ResearchController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "researchIntentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchSuggestionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["research-text"]
+      }
+    },
+    "/api/v1/research-suggestions/{researchIntentId}/apply-metadata": {
+      "post": {
+        "operationId": "ResearchController_apply",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "researchIntentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyResearchMetadataDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchMetadataApplyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["research-text"]
+      }
+    },
     "/api/v1/transcript-evidence/{intentId}": {
       "get": {
         "operationId": "TranscriptEvidenceController_detail",
@@ -9108,9 +9404,44 @@
       }
     },
     "/api/v1/transcript-evidence/{intentId}/research-suggestions": {
-      "post": {
-        "operationId": "ResearchController_suggest",
+      "get": {
+        "operationId": "ResearchController_list",
         "parameters": [
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchSuggestionListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["research-text"]
+      },
+      "post": {
+        "operationId": "ResearchController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "path",
             "name": "intentId",
@@ -9140,7 +9471,7 @@
                 }
               }
             },
-            "description": "Deterministic cited local suggestion."
+            "description": ""
           }
         },
         "tags": ["research-text"]

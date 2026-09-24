@@ -20,6 +20,7 @@ import { ExportScratchReconciler } from "./infrastructure/export-scratch-reconci
 import { MediaScratchReconciler } from "./infrastructure/media-scratch-reconciler.js";
 import { verifyWorkerRollbackCompatibility } from "./rollback-compatibility.js";
 import { PgTranscriptWorker } from "./infrastructure/pg-transcript-worker.js";
+import { PgResearchWorker } from "./infrastructure/pg-research-worker.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -41,8 +42,12 @@ async function startAiWorker(): Promise<void> {
     bucket: config.storage.bucket,
     storage: config.storage,
   });
+  const researchWorker = new PgResearchWorker(
+    config.databaseUrl,
+    config.sourceAuthorizationPolicy,
+  );
   const workerId = `ai-worker-${randomUUID()}`;
-  const queue = new Worker(
+  const transcriptQueue = new Worker(
     "ai-transcript-v1",
     async (delivery) => {
       const intentId = (delivery.data as { intentId?: unknown }).intentId;
@@ -55,7 +60,19 @@ async function startAiWorker(): Promise<void> {
       concurrency: 1,
     },
   );
-  queue.on("error", (error) =>
+  const researchQueue = new Worker(
+    "ai-research-v1",
+    async (delivery) => {
+      const intentId = (delivery.data as { intentId?: unknown }).intentId;
+      if (typeof intentId !== "string") throw new Error("RESEARCH_JOB_INVALID");
+      await researchWorker.process(intentId);
+    },
+    {
+      connection: { ...config.redis, maxRetriesPerRequest: null },
+      concurrency: 1,
+    },
+  );
+  transcriptQueue.on("error", (error) =>
     console.error(
       JSON.stringify({
         event: "ai_worker_error",
@@ -64,18 +81,44 @@ async function startAiWorker(): Promise<void> {
       }),
     ),
   );
+  researchQueue.on("error", (error) =>
+    console.error(
+      JSON.stringify({
+        event: "ai_research_worker_error",
+        workerId,
+        error: error.message,
+      }),
+    ),
+  );
+  await researchWorker.recover();
+  const researchRecoveryTimer = setInterval(() => {
+    void researchWorker
+      .recover()
+      .catch(() =>
+        console.error(
+          JSON.stringify({ event: "ai_research_reconciliation_failed" }),
+        ),
+      );
+  }, 5_000);
+  researchRecoveryTimer.unref();
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.once(signal, async () => {
-      await queue.close().catch(() => undefined);
+      clearInterval(researchRecoveryTimer);
+      await transcriptQueue.close().catch(() => undefined);
+      await researchQueue.close().catch(() => undefined);
       await transcriptWorker.close().catch(() => undefined);
+      await researchWorker.close().catch(() => undefined);
     });
   }
-  await queue.waitUntilReady();
+  await Promise.all([
+    transcriptQueue.waitUntilReady(),
+    researchQueue.waitUntilReady(),
+  ]);
   console.log(
     JSON.stringify({
       event: "ai_worker_started",
       workerId,
-      queue: "ai-transcript-v1",
+      queues: ["ai-transcript-v1", "ai-research-v1"],
     }),
   );
 }
