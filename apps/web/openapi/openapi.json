@@ -3674,7 +3674,12 @@
             "type": "string"
           },
           "safetyDecision": {
-            "$ref": "#/components/schemas/ImageSuggestionSafetyDecisionDto"
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageSuggestionSafetyDecisionDto"
+              }
+            ]
           },
           "sha256": {
             "type": "string"
