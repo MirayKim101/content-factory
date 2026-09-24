@@ -220,7 +220,8 @@ export const AiContentOperationType = {
   PUT_SOURCE_EDITORIAL_CONTEXT: 'PUT_SOURCE_EDITORIAL_CONTEXT',
   PUT_CUT_EDITORIAL_PROMPT: 'PUT_CUT_EDITORIAL_PROMPT',
   CREATE_FRAME_EVIDENCE: 'CREATE_FRAME_EVIDENCE',
-  CREATE_TRANSCRIPT_EVIDENCE: 'CREATE_TRANSCRIPT_EVIDENCE'
+  CREATE_TRANSCRIPT_EVIDENCE: 'CREATE_TRANSCRIPT_EVIDENCE',
+  CREATE_RESEARCH_SUGGESTION: 'CREATE_RESEARCH_SUGGESTION'
 } as const
 
 export type AiContentOperationType = (typeof AiContentOperationType)[keyof typeof AiContentOperationType]
@@ -243,6 +244,25 @@ export const TranscriptAttemptState = {
 } as const
 
 export type TranscriptAttemptState = (typeof TranscriptAttemptState)[keyof typeof TranscriptAttemptState]
+
+
+export const ResearchIntentState = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type ResearchIntentState = (typeof ResearchIntentState)[keyof typeof ResearchIntentState]
+
+
+export const ResearchAttemptState = {
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type ResearchAttemptState = (typeof ResearchAttemptState)[keyof typeof ResearchAttemptState]
 
 
 export const EditorialComponentType = {

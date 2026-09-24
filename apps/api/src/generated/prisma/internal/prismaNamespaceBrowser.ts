@@ -97,6 +97,10 @@ export const ModelName = {
   FrameEvidenceResult: 'FrameEvidenceResult',
   FrameEvidenceFrame: 'FrameEvidenceFrame',
   TranscriptEvidenceIntent: 'TranscriptEvidenceIntent',
+  ResearchSuggestionIntent: 'ResearchSuggestionIntent',
+  ResearchCitation: 'ResearchCitation',
+  ResearchSuggestionAttempt: 'ResearchSuggestionAttempt',
+  ResearchSuggestionSet: 'ResearchSuggestionSet',
   TranscriptEvidenceAttempt: 'TranscriptEvidenceAttempt',
   TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact'
 } as const
@@ -859,6 +863,8 @@ export const EditorialComponentProvenanceScalarFieldEnum = {
   component: 'component',
   mode: 'mode',
   basisVersion: 'basisVersion',
+  researchIntentId: 'researchIntentId',
+  suggestionSetId: 'suggestionSetId',
   createdAt: 'createdAt'
 } as const
 
@@ -1033,6 +1039,90 @@ export const TranscriptEvidenceIntentScalarFieldEnum = {
 } as const
 
 export type TranscriptEvidenceIntentScalarFieldEnum = (typeof TranscriptEvidenceIntentScalarFieldEnum)[keyof typeof TranscriptEvidenceIntentScalarFieldEnum]
+
+
+export const ResearchSuggestionIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  transcriptIntentId: 'transcriptIntentId',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  cutPromptRevisionId: 'cutPromptRevisionId',
+  contextPolicyFingerprint: 'contextPolicyFingerprint',
+  transcriptArtifactId: 'transcriptArtifactId',
+  transcriptSha256: 'transcriptSha256',
+  query: 'query',
+  contractVersion: 'contractVersion',
+  adapterVersion: 'adapterVersion',
+  freshnessPolicyVersion: 'freshnessPolicyVersion',
+  searchedAt: 'searchedAt',
+  freshUntil: 'freshUntil',
+  state: 'state',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ResearchSuggestionIntentScalarFieldEnum = (typeof ResearchSuggestionIntentScalarFieldEnum)[keyof typeof ResearchSuggestionIntentScalarFieldEnum]
+
+
+export const ResearchCitationScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  ordinal: 'ordinal',
+  url: 'url',
+  title: 'title',
+  publisher: 'publisher',
+  publishedAt: 'publishedAt',
+  accessedAt: 'accessedAt',
+  excerpt: 'excerpt',
+  checksum: 'checksum',
+  createdAt: 'createdAt'
+} as const
+
+export type ResearchCitationScalarFieldEnum = (typeof ResearchCitationScalarFieldEnum)[keyof typeof ResearchCitationScalarFieldEnum]
+
+
+export const ResearchSuggestionAttemptScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  workDeadlineAt: 'workDeadlineAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ResearchSuggestionAttemptScalarFieldEnum = (typeof ResearchSuggestionAttemptScalarFieldEnum)[keyof typeof ResearchSuggestionAttemptScalarFieldEnum]
+
+
+export const ResearchSuggestionSetScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptId: 'attemptId',
+  title: 'title',
+  description: 'description',
+  tags: 'tags',
+  claims: 'claims',
+  citationIds: 'citationIds',
+  basisVersion: 'basisVersion',
+  directCostMicrousd: 'directCostMicrousd',
+  costBasisVersion: 'costBasisVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type ResearchSuggestionSetScalarFieldEnum = (typeof ResearchSuggestionSetScalarFieldEnum)[keyof typeof ResearchSuggestionSetScalarFieldEnum]
 
 
 export const TranscriptEvidenceAttemptScalarFieldEnum = {

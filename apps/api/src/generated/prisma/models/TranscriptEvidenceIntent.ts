@@ -487,6 +487,7 @@ export type TranscriptEvidenceIntentWhereInput = {
   cutPromptRevision?: Prisma.XOR<Prisma.CutEditorialPromptRevisionScalarRelationFilter, Prisma.CutEditorialPromptRevisionWhereInput>
   attempts?: Prisma.TranscriptEvidenceAttemptListRelationFilter
   artifact?: Prisma.XOR<Prisma.TranscriptEvidenceArtifactNullableScalarRelationFilter, Prisma.TranscriptEvidenceArtifactWhereInput> | null
+  researchSuggestions?: Prisma.ResearchSuggestionIntentListRelationFilter
 }
 
 export type TranscriptEvidenceIntentOrderByWithRelationInput = {
@@ -531,6 +532,7 @@ export type TranscriptEvidenceIntentOrderByWithRelationInput = {
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionOrderByWithRelationInput
   attempts?: Prisma.TranscriptEvidenceAttemptOrderByRelationAggregateInput
   artifact?: Prisma.TranscriptEvidenceArtifactOrderByWithRelationInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentOrderByRelationAggregateInput
 }
 
 export type TranscriptEvidenceIntentWhereUniqueInput = Prisma.AtLeast<{
@@ -578,6 +580,7 @@ export type TranscriptEvidenceIntentWhereUniqueInput = Prisma.AtLeast<{
   cutPromptRevision?: Prisma.XOR<Prisma.CutEditorialPromptRevisionScalarRelationFilter, Prisma.CutEditorialPromptRevisionWhereInput>
   attempts?: Prisma.TranscriptEvidenceAttemptListRelationFilter
   artifact?: Prisma.XOR<Prisma.TranscriptEvidenceArtifactNullableScalarRelationFilter, Prisma.TranscriptEvidenceArtifactWhereInput> | null
+  researchSuggestions?: Prisma.ResearchSuggestionIntentListRelationFilter
 }, "id" | "idempotencyKey">
 
 export type TranscriptEvidenceIntentOrderByWithAggregationInput = {
@@ -699,6 +702,7 @@ export type TranscriptEvidenceIntentCreateInput = {
   cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateInput = {
@@ -738,6 +742,7 @@ export type TranscriptEvidenceIntentUncheckedCreateInput = {
   updatedAt?: Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUpdateInput = {
@@ -777,6 +782,7 @@ export type TranscriptEvidenceIntentUpdateInput = {
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateInput = {
@@ -816,6 +822,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentCreateManyInput = {
@@ -1288,6 +1295,20 @@ export type EnumTranscriptIntentStateFieldUpdateOperationsInput = {
   set?: $Enums.TranscriptIntentState
 }
 
+export type TranscriptEvidenceIntentCreateNestedOneWithoutResearchSuggestionsInput = {
+  create?: Prisma.XOR<Prisma.TranscriptEvidenceIntentCreateWithoutResearchSuggestionsInput, Prisma.TranscriptEvidenceIntentUncheckedCreateWithoutResearchSuggestionsInput>
+  connectOrCreate?: Prisma.TranscriptEvidenceIntentCreateOrConnectWithoutResearchSuggestionsInput
+  connect?: Prisma.TranscriptEvidenceIntentWhereUniqueInput
+}
+
+export type TranscriptEvidenceIntentUpdateOneRequiredWithoutResearchSuggestionsNestedInput = {
+  create?: Prisma.XOR<Prisma.TranscriptEvidenceIntentCreateWithoutResearchSuggestionsInput, Prisma.TranscriptEvidenceIntentUncheckedCreateWithoutResearchSuggestionsInput>
+  connectOrCreate?: Prisma.TranscriptEvidenceIntentCreateOrConnectWithoutResearchSuggestionsInput
+  upsert?: Prisma.TranscriptEvidenceIntentUpsertWithoutResearchSuggestionsInput
+  connect?: Prisma.TranscriptEvidenceIntentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TranscriptEvidenceIntentUpdateToOneWithWhereWithoutResearchSuggestionsInput, Prisma.TranscriptEvidenceIntentUpdateWithoutResearchSuggestionsInput>, Prisma.TranscriptEvidenceIntentUncheckedUpdateWithoutResearchSuggestionsInput>
+}
+
 export type TranscriptEvidenceIntentCreateNestedOneWithoutAttemptsInput = {
   create?: Prisma.XOR<Prisma.TranscriptEvidenceIntentCreateWithoutAttemptsInput, Prisma.TranscriptEvidenceIntentUncheckedCreateWithoutAttemptsInput>
   connectOrCreate?: Prisma.TranscriptEvidenceIntentCreateOrConnectWithoutAttemptsInput
@@ -1352,6 +1373,7 @@ export type TranscriptEvidenceIntentCreateWithoutCutResultArtifactInput = {
   cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateWithoutCutResultArtifactInput = {
@@ -1390,6 +1412,7 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCutResultArtifactInput
   updatedAt?: Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentCreateOrConnectWithoutCutResultArtifactInput = {
@@ -1494,6 +1517,7 @@ export type TranscriptEvidenceIntentCreateWithoutCutPipelineJobInput = {
   cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateWithoutCutPipelineJobInput = {
@@ -1532,6 +1556,7 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCutPipelineJobInput = 
   updatedAt?: Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentCreateOrConnectWithoutCutPipelineJobInput = {
@@ -1596,6 +1621,7 @@ export type TranscriptEvidenceIntentCreateWithoutCreatorProfileRevisionInput = {
   cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateWithoutCreatorProfileRevisionInput = {
@@ -1634,6 +1660,7 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCreatorProfileRevision
   updatedAt?: Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentCreateOrConnectWithoutCreatorProfileRevisionInput = {
@@ -1698,6 +1725,7 @@ export type TranscriptEvidenceIntentCreateWithoutSourceContextRevisionInput = {
   cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateWithoutSourceContextRevisionInput = {
@@ -1736,6 +1764,7 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutSourceContextRevisionI
   updatedAt?: Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentCreateOrConnectWithoutSourceContextRevisionInput = {
@@ -1800,6 +1829,7 @@ export type TranscriptEvidenceIntentCreateWithoutCutPromptRevisionInput = {
   sourceContextRevision: Prisma.SourceEditorialContextRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateWithoutCutPromptRevisionInput = {
@@ -1838,6 +1868,7 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutCutPromptRevisionInput
   updatedAt?: Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentCreateOrConnectWithoutCutPromptRevisionInput = {
@@ -1864,6 +1895,178 @@ export type TranscriptEvidenceIntentUpdateWithWhereUniqueWithoutCutPromptRevisio
 export type TranscriptEvidenceIntentUpdateManyWithWhereWithoutCutPromptRevisionInput = {
   where: Prisma.TranscriptEvidenceIntentScalarWhereInput
   data: Prisma.XOR<Prisma.TranscriptEvidenceIntentUpdateManyMutationInput, Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPromptRevisionInput>
+}
+
+export type TranscriptEvidenceIntentCreateWithoutResearchSuggestionsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  sourceSha256: string
+  sourceAuthorizationRevision: number
+  cutResultSha256: string
+  cutResultSizeBytes: bigint | number
+  cutStartMs: number
+  cutEndMs: number
+  creatorProfileRevisionNo: number
+  sourceContextRevisionNo: number
+  cutPromptRevisionNo: number
+  contractVersion: string
+  adapterVersion: string
+  language: string
+  fixture: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.TranscriptIntentState
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  cutPipelineJob: Prisma.PipelineJobCreateNestedOneWithoutTranscriptEvidenceInputsInput
+  cutResultArtifact: Prisma.MediaArtifactCreateNestedOneWithoutTranscriptEvidenceInputsInput
+  creatorProfileRevision: Prisma.CreatorProfileRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
+  sourceContextRevision: Prisma.SourceEditorialContextRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
+  cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
+  attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
+  artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+}
+
+export type TranscriptEvidenceIntentUncheckedCreateWithoutResearchSuggestionsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  sourceSha256: string
+  sourceAuthorizationRevision: number
+  cutPipelineJobId: string
+  cutResultArtifactId: string
+  cutResultSha256: string
+  cutResultSizeBytes: bigint | number
+  cutStartMs: number
+  cutEndMs: number
+  creatorProfileRevisionId: string
+  creatorProfileRevisionNo: number
+  sourceContextRevisionId: string
+  sourceContextRevisionNo: number
+  cutPromptRevisionId: string
+  cutPromptRevisionNo: number
+  contractVersion: string
+  adapterVersion: string
+  language: string
+  fixture: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.TranscriptIntentState
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
+  artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+}
+
+export type TranscriptEvidenceIntentCreateOrConnectWithoutResearchSuggestionsInput = {
+  where: Prisma.TranscriptEvidenceIntentWhereUniqueInput
+  create: Prisma.XOR<Prisma.TranscriptEvidenceIntentCreateWithoutResearchSuggestionsInput, Prisma.TranscriptEvidenceIntentUncheckedCreateWithoutResearchSuggestionsInput>
+}
+
+export type TranscriptEvidenceIntentUpsertWithoutResearchSuggestionsInput = {
+  update: Prisma.XOR<Prisma.TranscriptEvidenceIntentUpdateWithoutResearchSuggestionsInput, Prisma.TranscriptEvidenceIntentUncheckedUpdateWithoutResearchSuggestionsInput>
+  create: Prisma.XOR<Prisma.TranscriptEvidenceIntentCreateWithoutResearchSuggestionsInput, Prisma.TranscriptEvidenceIntentUncheckedCreateWithoutResearchSuggestionsInput>
+  where?: Prisma.TranscriptEvidenceIntentWhereInput
+}
+
+export type TranscriptEvidenceIntentUpdateToOneWithWhereWithoutResearchSuggestionsInput = {
+  where?: Prisma.TranscriptEvidenceIntentWhereInput
+  data: Prisma.XOR<Prisma.TranscriptEvidenceIntentUpdateWithoutResearchSuggestionsInput, Prisma.TranscriptEvidenceIntentUncheckedUpdateWithoutResearchSuggestionsInput>
+}
+
+export type TranscriptEvidenceIntentUpdateWithoutResearchSuggestionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
+  cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  fixture?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumTranscriptIntentStateFieldUpdateOperationsInput | $Enums.TranscriptIntentState
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cutPipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutTranscriptEvidenceInputsNestedInput
+  cutResultArtifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutTranscriptEvidenceInputsNestedInput
+  creatorProfileRevision?: Prisma.CreatorProfileRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
+  sourceContextRevision?: Prisma.SourceEditorialContextRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
+  cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
+  attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
+  artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+}
+
+export type TranscriptEvidenceIntentUncheckedUpdateWithoutResearchSuggestionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAuthorizationRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  cutResultSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  cutStartMs?: Prisma.IntFieldUpdateOperationsInput | number
+  cutEndMs?: Prisma.IntFieldUpdateOperationsInput | number
+  creatorProfileRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorProfileRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceContextRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceContextRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPromptRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  cutPromptRevisionNo?: Prisma.IntFieldUpdateOperationsInput | number
+  contractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  adapterVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  fixture?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumTranscriptIntentStateFieldUpdateOperationsInput | $Enums.TranscriptIntentState
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
+  artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentCreateWithoutAttemptsInput = {
@@ -1902,6 +2105,7 @@ export type TranscriptEvidenceIntentCreateWithoutAttemptsInput = {
   sourceContextRevision: Prisma.SourceEditorialContextRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   artifact?: Prisma.TranscriptEvidenceArtifactCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateWithoutAttemptsInput = {
@@ -1940,6 +2144,7 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutAttemptsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedCreateNestedOneWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentCreateOrConnectWithoutAttemptsInput = {
@@ -1994,6 +2199,7 @@ export type TranscriptEvidenceIntentUpdateWithoutAttemptsInput = {
   sourceContextRevision?: Prisma.SourceEditorialContextRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateWithoutAttemptsInput = {
@@ -2032,6 +2238,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutAttemptsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentCreateWithoutArtifactInput = {
@@ -2070,6 +2277,7 @@ export type TranscriptEvidenceIntentCreateWithoutArtifactInput = {
   sourceContextRevision: Prisma.SourceEditorialContextRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   cutPromptRevision: Prisma.CutEditorialPromptRevisionCreateNestedOneWithoutTranscriptEvidenceIntentsInput
   attempts?: Prisma.TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentUncheckedCreateWithoutArtifactInput = {
@@ -2108,6 +2316,7 @@ export type TranscriptEvidenceIntentUncheckedCreateWithoutArtifactInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedCreateNestedManyWithoutIntentInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedCreateNestedManyWithoutTranscriptIntentInput
 }
 
 export type TranscriptEvidenceIntentCreateOrConnectWithoutArtifactInput = {
@@ -2162,6 +2371,7 @@ export type TranscriptEvidenceIntentUpdateWithoutArtifactInput = {
   sourceContextRevision?: Prisma.SourceEditorialContextRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateWithoutArtifactInput = {
@@ -2200,6 +2410,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutArtifactInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentCreateManyCutResultArtifactInput = {
@@ -2274,6 +2485,7 @@ export type TranscriptEvidenceIntentUpdateWithoutCutResultArtifactInput = {
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutResultArtifactInput = {
@@ -2312,6 +2524,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutResultArtifactInput
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutResultArtifactInput = {
@@ -2422,6 +2635,7 @@ export type TranscriptEvidenceIntentUpdateWithoutCutPipelineJobInput = {
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutPipelineJobInput = {
@@ -2460,6 +2674,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutPipelineJobInput = 
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobInput = {
@@ -2570,6 +2785,7 @@ export type TranscriptEvidenceIntentUpdateWithoutCreatorProfileRevisionInput = {
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateWithoutCreatorProfileRevisionInput = {
@@ -2608,6 +2824,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCreatorProfileRevision
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCreatorProfileRevisionInput = {
@@ -2718,6 +2935,7 @@ export type TranscriptEvidenceIntentUpdateWithoutSourceContextRevisionInput = {
   cutPromptRevision?: Prisma.CutEditorialPromptRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateWithoutSourceContextRevisionInput = {
@@ -2756,6 +2974,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutSourceContextRevisionI
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutSourceContextRevisionInput = {
@@ -2866,6 +3085,7 @@ export type TranscriptEvidenceIntentUpdateWithoutCutPromptRevisionInput = {
   sourceContextRevision?: Prisma.SourceEditorialContextRevisionUpdateOneRequiredWithoutTranscriptEvidenceIntentsNestedInput
   attempts?: Prisma.TranscriptEvidenceAttemptUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutPromptRevisionInput = {
@@ -2904,6 +3124,7 @@ export type TranscriptEvidenceIntentUncheckedUpdateWithoutCutPromptRevisionInput
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentNestedInput
   artifact?: Prisma.TranscriptEvidenceArtifactUncheckedUpdateOneWithoutIntentNestedInput
+  researchSuggestions?: Prisma.ResearchSuggestionIntentUncheckedUpdateManyWithoutTranscriptIntentNestedInput
 }
 
 export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPromptRevisionInput = {
@@ -2949,10 +3170,12 @@ export type TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPromptRevisionI
 
 export type TranscriptEvidenceIntentCountOutputType = {
   attempts: number
+  researchSuggestions: number
 }
 
 export type TranscriptEvidenceIntentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   attempts?: boolean | TranscriptEvidenceIntentCountOutputTypeCountAttemptsArgs
+  researchSuggestions?: boolean | TranscriptEvidenceIntentCountOutputTypeCountResearchSuggestionsArgs
 }
 
 /**
@@ -2970,6 +3193,13 @@ export type TranscriptEvidenceIntentCountOutputTypeDefaultArgs<ExtArgs extends r
  */
 export type TranscriptEvidenceIntentCountOutputTypeCountAttemptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.TranscriptEvidenceAttemptWhereInput
+}
+
+/**
+ * TranscriptEvidenceIntentCountOutputType without action
+ */
+export type TranscriptEvidenceIntentCountOutputTypeCountResearchSuggestionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ResearchSuggestionIntentWhereInput
 }
 
 
@@ -3015,6 +3245,7 @@ export type TranscriptEvidenceIntentSelect<ExtArgs extends runtime.Types.Extensi
   cutPromptRevision?: boolean | Prisma.CutEditorialPromptRevisionDefaultArgs<ExtArgs>
   attempts?: boolean | Prisma.TranscriptEvidenceIntent$attemptsArgs<ExtArgs>
   artifact?: boolean | Prisma.TranscriptEvidenceIntent$artifactArgs<ExtArgs>
+  researchSuggestions?: boolean | Prisma.TranscriptEvidenceIntent$researchSuggestionsArgs<ExtArgs>
   _count?: boolean | Prisma.TranscriptEvidenceIntentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transcriptEvidenceIntent"]>
 
@@ -3148,6 +3379,7 @@ export type TranscriptEvidenceIntentInclude<ExtArgs extends runtime.Types.Extens
   cutPromptRevision?: boolean | Prisma.CutEditorialPromptRevisionDefaultArgs<ExtArgs>
   attempts?: boolean | Prisma.TranscriptEvidenceIntent$attemptsArgs<ExtArgs>
   artifact?: boolean | Prisma.TranscriptEvidenceIntent$artifactArgs<ExtArgs>
+  researchSuggestions?: boolean | Prisma.TranscriptEvidenceIntent$researchSuggestionsArgs<ExtArgs>
   _count?: boolean | Prisma.TranscriptEvidenceIntentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TranscriptEvidenceIntentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3175,6 +3407,7 @@ export type $TranscriptEvidenceIntentPayload<ExtArgs extends runtime.Types.Exten
     cutPromptRevision: Prisma.$CutEditorialPromptRevisionPayload<ExtArgs>
     attempts: Prisma.$TranscriptEvidenceAttemptPayload<ExtArgs>[]
     artifact: Prisma.$TranscriptEvidenceArtifactPayload<ExtArgs> | null
+    researchSuggestions: Prisma.$ResearchSuggestionIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3612,6 +3845,7 @@ export interface Prisma__TranscriptEvidenceIntentClient<T, Null = never, ExtArgs
   cutPromptRevision<T extends Prisma.CutEditorialPromptRevisionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CutEditorialPromptRevisionDefaultArgs<ExtArgs>>): Prisma.Prisma__CutEditorialPromptRevisionClient<runtime.Types.Result.GetResult<Prisma.$CutEditorialPromptRevisionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   attempts<T extends Prisma.TranscriptEvidenceIntent$attemptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TranscriptEvidenceIntent$attemptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TranscriptEvidenceAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   artifact<T extends Prisma.TranscriptEvidenceIntent$artifactArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TranscriptEvidenceIntent$artifactArgs<ExtArgs>>): Prisma.Prisma__TranscriptEvidenceArtifactClient<runtime.Types.Result.GetResult<Prisma.$TranscriptEvidenceArtifactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  researchSuggestions<T extends Prisma.TranscriptEvidenceIntent$researchSuggestionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TranscriptEvidenceIntent$researchSuggestionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ResearchSuggestionIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4116,6 +4350,30 @@ export type TranscriptEvidenceIntent$artifactArgs<ExtArgs extends runtime.Types.
    */
   include?: Prisma.TranscriptEvidenceArtifactInclude<ExtArgs> | null
   where?: Prisma.TranscriptEvidenceArtifactWhereInput
+}
+
+/**
+ * TranscriptEvidenceIntent.researchSuggestions
+ */
+export type TranscriptEvidenceIntent$researchSuggestionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ResearchSuggestionIntent
+   */
+  select?: Prisma.ResearchSuggestionIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ResearchSuggestionIntent
+   */
+  omit?: Prisma.ResearchSuggestionIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ResearchSuggestionIntentInclude<ExtArgs> | null
+  where?: Prisma.ResearchSuggestionIntentWhereInput
+  orderBy?: Prisma.ResearchSuggestionIntentOrderByWithRelationInput | Prisma.ResearchSuggestionIntentOrderByWithRelationInput[]
+  cursor?: Prisma.ResearchSuggestionIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ResearchSuggestionIntentScalarFieldEnum | Prisma.ResearchSuggestionIntentScalarFieldEnum[]
 }
 
 /**

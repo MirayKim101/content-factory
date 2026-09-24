@@ -30,6 +30,8 @@ export type EditorialComponentProvenanceMinAggregateOutputType = {
   component: $Enums.EditorialComponentType | null
   mode: $Enums.EditorialProvenanceMode | null
   basisVersion: string | null
+  researchIntentId: string | null
+  suggestionSetId: string | null
   createdAt: Date | null
 }
 
@@ -39,6 +41,8 @@ export type EditorialComponentProvenanceMaxAggregateOutputType = {
   component: $Enums.EditorialComponentType | null
   mode: $Enums.EditorialProvenanceMode | null
   basisVersion: string | null
+  researchIntentId: string | null
+  suggestionSetId: string | null
   createdAt: Date | null
 }
 
@@ -48,6 +52,8 @@ export type EditorialComponentProvenanceCountAggregateOutputType = {
   component: number
   mode: number
   basisVersion: number
+  researchIntentId: number
+  suggestionSetId: number
   createdAt: number
   _all: number
 }
@@ -59,6 +65,8 @@ export type EditorialComponentProvenanceMinAggregateInputType = {
   component?: true
   mode?: true
   basisVersion?: true
+  researchIntentId?: true
+  suggestionSetId?: true
   createdAt?: true
 }
 
@@ -68,6 +76,8 @@ export type EditorialComponentProvenanceMaxAggregateInputType = {
   component?: true
   mode?: true
   basisVersion?: true
+  researchIntentId?: true
+  suggestionSetId?: true
   createdAt?: true
 }
 
@@ -77,6 +87,8 @@ export type EditorialComponentProvenanceCountAggregateInputType = {
   component?: true
   mode?: true
   basisVersion?: true
+  researchIntentId?: true
+  suggestionSetId?: true
   createdAt?: true
   _all?: true
 }
@@ -159,6 +171,8 @@ export type EditorialComponentProvenanceGroupByOutputType = {
   component: $Enums.EditorialComponentType
   mode: $Enums.EditorialProvenanceMode
   basisVersion: string
+  researchIntentId: string | null
+  suggestionSetId: string | null
   createdAt: Date
   _count: EditorialComponentProvenanceCountAggregateOutputType | null
   _min: EditorialComponentProvenanceMinAggregateOutputType | null
@@ -189,8 +203,12 @@ export type EditorialComponentProvenanceWhereInput = {
   component?: Prisma.EnumEditorialComponentTypeFilter<"EditorialComponentProvenance"> | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeFilter<"EditorialComponentProvenance"> | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFilter<"EditorialComponentProvenance"> | string
+  researchIntentId?: Prisma.UuidNullableFilter<"EditorialComponentProvenance"> | string | null
+  suggestionSetId?: Prisma.UuidNullableFilter<"EditorialComponentProvenance"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EditorialComponentProvenance"> | Date | string
   packageRevision?: Prisma.XOR<Prisma.EditorialPackageRevisionScalarRelationFilter, Prisma.EditorialPackageRevisionWhereInput>
+  researchIntent?: Prisma.XOR<Prisma.ResearchSuggestionIntentNullableScalarRelationFilter, Prisma.ResearchSuggestionIntentWhereInput> | null
+  suggestionSet?: Prisma.XOR<Prisma.ResearchSuggestionSetNullableScalarRelationFilter, Prisma.ResearchSuggestionSetWhereInput> | null
 }
 
 export type EditorialComponentProvenanceOrderByWithRelationInput = {
@@ -199,8 +217,12 @@ export type EditorialComponentProvenanceOrderByWithRelationInput = {
   component?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   basisVersion?: Prisma.SortOrder
+  researchIntentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestionSetId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   packageRevision?: Prisma.EditorialPackageRevisionOrderByWithRelationInput
+  researchIntent?: Prisma.ResearchSuggestionIntentOrderByWithRelationInput
+  suggestionSet?: Prisma.ResearchSuggestionSetOrderByWithRelationInput
 }
 
 export type EditorialComponentProvenanceWhereUniqueInput = Prisma.AtLeast<{
@@ -213,8 +235,12 @@ export type EditorialComponentProvenanceWhereUniqueInput = Prisma.AtLeast<{
   component?: Prisma.EnumEditorialComponentTypeFilter<"EditorialComponentProvenance"> | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeFilter<"EditorialComponentProvenance"> | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFilter<"EditorialComponentProvenance"> | string
+  researchIntentId?: Prisma.UuidNullableFilter<"EditorialComponentProvenance"> | string | null
+  suggestionSetId?: Prisma.UuidNullableFilter<"EditorialComponentProvenance"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EditorialComponentProvenance"> | Date | string
   packageRevision?: Prisma.XOR<Prisma.EditorialPackageRevisionScalarRelationFilter, Prisma.EditorialPackageRevisionWhereInput>
+  researchIntent?: Prisma.XOR<Prisma.ResearchSuggestionIntentNullableScalarRelationFilter, Prisma.ResearchSuggestionIntentWhereInput> | null
+  suggestionSet?: Prisma.XOR<Prisma.ResearchSuggestionSetNullableScalarRelationFilter, Prisma.ResearchSuggestionSetWhereInput> | null
 }, "id" | "packageRevisionId_component">
 
 export type EditorialComponentProvenanceOrderByWithAggregationInput = {
@@ -223,6 +249,8 @@ export type EditorialComponentProvenanceOrderByWithAggregationInput = {
   component?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   basisVersion?: Prisma.SortOrder
+  researchIntentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  suggestionSetId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.EditorialComponentProvenanceCountOrderByAggregateInput
   _max?: Prisma.EditorialComponentProvenanceMaxOrderByAggregateInput
@@ -238,6 +266,8 @@ export type EditorialComponentProvenanceScalarWhereWithAggregatesInput = {
   component?: Prisma.EnumEditorialComponentTypeWithAggregatesFilter<"EditorialComponentProvenance"> | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeWithAggregatesFilter<"EditorialComponentProvenance"> | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringWithAggregatesFilter<"EditorialComponentProvenance"> | string
+  researchIntentId?: Prisma.UuidNullableWithAggregatesFilter<"EditorialComponentProvenance"> | string | null
+  suggestionSetId?: Prisma.UuidNullableWithAggregatesFilter<"EditorialComponentProvenance"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EditorialComponentProvenance"> | Date | string
 }
 
@@ -248,6 +278,8 @@ export type EditorialComponentProvenanceCreateInput = {
   basisVersion?: string
   createdAt?: Date | string
   packageRevision: Prisma.EditorialPackageRevisionCreateNestedOneWithoutComponentProvenanceInput
+  researchIntent?: Prisma.ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
+  suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateInput = {
@@ -256,6 +288,8 @@ export type EditorialComponentProvenanceUncheckedCreateInput = {
   component: $Enums.EditorialComponentType
   mode?: $Enums.EditorialProvenanceMode
   basisVersion?: string
+  researchIntentId?: string | null
+  suggestionSetId?: string | null
   createdAt?: Date | string
 }
 
@@ -266,6 +300,8 @@ export type EditorialComponentProvenanceUpdateInput = {
   basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   packageRevision?: Prisma.EditorialPackageRevisionUpdateOneRequiredWithoutComponentProvenanceNestedInput
+  researchIntent?: Prisma.ResearchSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
+  suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateInput = {
@@ -274,6 +310,8 @@ export type EditorialComponentProvenanceUncheckedUpdateInput = {
   component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -283,6 +321,8 @@ export type EditorialComponentProvenanceCreateManyInput = {
   component: $Enums.EditorialComponentType
   mode?: $Enums.EditorialProvenanceMode
   basisVersion?: string
+  researchIntentId?: string | null
+  suggestionSetId?: string | null
   createdAt?: Date | string
 }
 
@@ -300,6 +340,8 @@ export type EditorialComponentProvenanceUncheckedUpdateManyInput = {
   component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -324,6 +366,8 @@ export type EditorialComponentProvenanceCountOrderByAggregateInput = {
   component?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   basisVersion?: Prisma.SortOrder
+  researchIntentId?: Prisma.SortOrder
+  suggestionSetId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -333,6 +377,8 @@ export type EditorialComponentProvenanceMaxOrderByAggregateInput = {
   component?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   basisVersion?: Prisma.SortOrder
+  researchIntentId?: Prisma.SortOrder
+  suggestionSetId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -342,6 +388,8 @@ export type EditorialComponentProvenanceMinOrderByAggregateInput = {
   component?: Prisma.SortOrder
   mode?: Prisma.SortOrder
   basisVersion?: Prisma.SortOrder
+  researchIntentId?: Prisma.SortOrder
+  suggestionSetId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -395,12 +443,98 @@ export type EnumEditorialProvenanceModeFieldUpdateOperationsInput = {
   set?: $Enums.EditorialProvenanceMode
 }
 
+export type EditorialComponentProvenanceCreateNestedManyWithoutResearchIntentInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput> | Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManyResearchIntentInputEnvelope
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+}
+
+export type EditorialComponentProvenanceUncheckedCreateNestedManyWithoutResearchIntentInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput> | Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManyResearchIntentInputEnvelope
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+}
+
+export type EditorialComponentProvenanceUpdateManyWithoutResearchIntentNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput> | Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput[]
+  upsert?: Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutResearchIntentInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManyResearchIntentInputEnvelope
+  set?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  disconnect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  delete?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  update?: Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutResearchIntentInput[]
+  updateMany?: Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutResearchIntentInput[]
+  deleteMany?: Prisma.EditorialComponentProvenanceScalarWhereInput | Prisma.EditorialComponentProvenanceScalarWhereInput[]
+}
+
+export type EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput> | Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput[]
+  upsert?: Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutResearchIntentInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManyResearchIntentInputEnvelope
+  set?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  disconnect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  delete?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  update?: Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutResearchIntentInput[]
+  updateMany?: Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutResearchIntentInput | Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutResearchIntentInput[]
+  deleteMany?: Prisma.EditorialComponentProvenanceScalarWhereInput | Prisma.EditorialComponentProvenanceScalarWhereInput[]
+}
+
+export type EditorialComponentProvenanceCreateNestedManyWithoutSuggestionSetInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput> | Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManySuggestionSetInputEnvelope
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+}
+
+export type EditorialComponentProvenanceUncheckedCreateNestedManyWithoutSuggestionSetInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput> | Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManySuggestionSetInputEnvelope
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+}
+
+export type EditorialComponentProvenanceUpdateManyWithoutSuggestionSetNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput> | Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput[]
+  upsert?: Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutSuggestionSetInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManySuggestionSetInputEnvelope
+  set?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  disconnect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  delete?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  update?: Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutSuggestionSetInput[]
+  updateMany?: Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutSuggestionSetInput[]
+  deleteMany?: Prisma.EditorialComponentProvenanceScalarWhereInput | Prisma.EditorialComponentProvenanceScalarWhereInput[]
+}
+
+export type EditorialComponentProvenanceUncheckedUpdateManyWithoutSuggestionSetNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput> | Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput[] | Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput[]
+  connectOrCreate?: Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput[]
+  upsert?: Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceUpsertWithWhereUniqueWithoutSuggestionSetInput[]
+  createMany?: Prisma.EditorialComponentProvenanceCreateManySuggestionSetInputEnvelope
+  set?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  disconnect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  delete?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  connect?: Prisma.EditorialComponentProvenanceWhereUniqueInput | Prisma.EditorialComponentProvenanceWhereUniqueInput[]
+  update?: Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceUpdateWithWhereUniqueWithoutSuggestionSetInput[]
+  updateMany?: Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutSuggestionSetInput | Prisma.EditorialComponentProvenanceUpdateManyWithWhereWithoutSuggestionSetInput[]
+  deleteMany?: Prisma.EditorialComponentProvenanceScalarWhereInput | Prisma.EditorialComponentProvenanceScalarWhereInput[]
+}
+
 export type EditorialComponentProvenanceCreateWithoutPackageRevisionInput = {
   id: string
   component: $Enums.EditorialComponentType
   mode?: $Enums.EditorialProvenanceMode
   basisVersion?: string
   createdAt?: Date | string
+  researchIntent?: Prisma.ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
+  suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
 }
 
 export type EditorialComponentProvenanceUncheckedCreateWithoutPackageRevisionInput = {
@@ -408,6 +542,8 @@ export type EditorialComponentProvenanceUncheckedCreateWithoutPackageRevisionInp
   component: $Enums.EditorialComponentType
   mode?: $Enums.EditorialProvenanceMode
   basisVersion?: string
+  researchIntentId?: string | null
+  suggestionSetId?: string | null
   createdAt?: Date | string
 }
 
@@ -446,7 +582,101 @@ export type EditorialComponentProvenanceScalarWhereInput = {
   component?: Prisma.EnumEditorialComponentTypeFilter<"EditorialComponentProvenance"> | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeFilter<"EditorialComponentProvenance"> | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFilter<"EditorialComponentProvenance"> | string
+  researchIntentId?: Prisma.UuidNullableFilter<"EditorialComponentProvenance"> | string | null
+  suggestionSetId?: Prisma.UuidNullableFilter<"EditorialComponentProvenance"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EditorialComponentProvenance"> | Date | string
+}
+
+export type EditorialComponentProvenanceCreateWithoutResearchIntentInput = {
+  id: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  createdAt?: Date | string
+  packageRevision: Prisma.EditorialPackageRevisionCreateNestedOneWithoutComponentProvenanceInput
+  suggestionSet?: Prisma.ResearchSuggestionSetCreateNestedOneWithoutComponentProvenanceInput
+}
+
+export type EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput = {
+  id: string
+  packageRevisionId: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  suggestionSetId?: string | null
+  createdAt?: Date | string
+}
+
+export type EditorialComponentProvenanceCreateOrConnectWithoutResearchIntentInput = {
+  where: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  create: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput>
+}
+
+export type EditorialComponentProvenanceCreateManyResearchIntentInputEnvelope = {
+  data: Prisma.EditorialComponentProvenanceCreateManyResearchIntentInput | Prisma.EditorialComponentProvenanceCreateManyResearchIntentInput[]
+  skipDuplicates?: boolean
+}
+
+export type EditorialComponentProvenanceUpsertWithWhereUniqueWithoutResearchIntentInput = {
+  where: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  update: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedUpdateWithoutResearchIntentInput>
+  create: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutResearchIntentInput>
+}
+
+export type EditorialComponentProvenanceUpdateWithWhereUniqueWithoutResearchIntentInput = {
+  where: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  data: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateWithoutResearchIntentInput, Prisma.EditorialComponentProvenanceUncheckedUpdateWithoutResearchIntentInput>
+}
+
+export type EditorialComponentProvenanceUpdateManyWithWhereWithoutResearchIntentInput = {
+  where: Prisma.EditorialComponentProvenanceScalarWhereInput
+  data: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateManyMutationInput, Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentInput>
+}
+
+export type EditorialComponentProvenanceCreateWithoutSuggestionSetInput = {
+  id: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  createdAt?: Date | string
+  packageRevision: Prisma.EditorialPackageRevisionCreateNestedOneWithoutComponentProvenanceInput
+  researchIntent?: Prisma.ResearchSuggestionIntentCreateNestedOneWithoutComponentProvenanceInput
+}
+
+export type EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput = {
+  id: string
+  packageRevisionId: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  researchIntentId?: string | null
+  createdAt?: Date | string
+}
+
+export type EditorialComponentProvenanceCreateOrConnectWithoutSuggestionSetInput = {
+  where: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  create: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput>
+}
+
+export type EditorialComponentProvenanceCreateManySuggestionSetInputEnvelope = {
+  data: Prisma.EditorialComponentProvenanceCreateManySuggestionSetInput | Prisma.EditorialComponentProvenanceCreateManySuggestionSetInput[]
+  skipDuplicates?: boolean
+}
+
+export type EditorialComponentProvenanceUpsertWithWhereUniqueWithoutSuggestionSetInput = {
+  where: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  update: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedUpdateWithoutSuggestionSetInput>
+  create: Prisma.XOR<Prisma.EditorialComponentProvenanceCreateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedCreateWithoutSuggestionSetInput>
+}
+
+export type EditorialComponentProvenanceUpdateWithWhereUniqueWithoutSuggestionSetInput = {
+  where: Prisma.EditorialComponentProvenanceWhereUniqueInput
+  data: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateWithoutSuggestionSetInput, Prisma.EditorialComponentProvenanceUncheckedUpdateWithoutSuggestionSetInput>
+}
+
+export type EditorialComponentProvenanceUpdateManyWithWhereWithoutSuggestionSetInput = {
+  where: Prisma.EditorialComponentProvenanceScalarWhereInput
+  data: Prisma.XOR<Prisma.EditorialComponentProvenanceUpdateManyMutationInput, Prisma.EditorialComponentProvenanceUncheckedUpdateManyWithoutSuggestionSetInput>
 }
 
 export type EditorialComponentProvenanceCreateManyPackageRevisionInput = {
@@ -454,6 +684,8 @@ export type EditorialComponentProvenanceCreateManyPackageRevisionInput = {
   component: $Enums.EditorialComponentType
   mode?: $Enums.EditorialProvenanceMode
   basisVersion?: string
+  researchIntentId?: string | null
+  suggestionSetId?: string | null
   createdAt?: Date | string
 }
 
@@ -463,6 +695,8 @@ export type EditorialComponentProvenanceUpdateWithoutPackageRevisionInput = {
   mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  researchIntent?: Prisma.ResearchSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
+  suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
 }
 
 export type EditorialComponentProvenanceUncheckedUpdateWithoutPackageRevisionInput = {
@@ -470,6 +704,8 @@ export type EditorialComponentProvenanceUncheckedUpdateWithoutPackageRevisionInp
   component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -478,6 +714,88 @@ export type EditorialComponentProvenanceUncheckedUpdateManyWithoutPackageRevisio
   component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
   mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
   basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EditorialComponentProvenanceCreateManyResearchIntentInput = {
+  id: string
+  packageRevisionId: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  suggestionSetId?: string | null
+  createdAt?: Date | string
+}
+
+export type EditorialComponentProvenanceUpdateWithoutResearchIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  packageRevision?: Prisma.EditorialPackageRevisionUpdateOneRequiredWithoutComponentProvenanceNestedInput
+  suggestionSet?: Prisma.ResearchSuggestionSetUpdateOneWithoutComponentProvenanceNestedInput
+}
+
+export type EditorialComponentProvenanceUncheckedUpdateWithoutResearchIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  packageRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EditorialComponentProvenanceUncheckedUpdateManyWithoutResearchIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  packageRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  suggestionSetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EditorialComponentProvenanceCreateManySuggestionSetInput = {
+  id: string
+  packageRevisionId: string
+  component: $Enums.EditorialComponentType
+  mode?: $Enums.EditorialProvenanceMode
+  basisVersion?: string
+  researchIntentId?: string | null
+  createdAt?: Date | string
+}
+
+export type EditorialComponentProvenanceUpdateWithoutSuggestionSetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  packageRevision?: Prisma.EditorialPackageRevisionUpdateOneRequiredWithoutComponentProvenanceNestedInput
+  researchIntent?: Prisma.ResearchSuggestionIntentUpdateOneWithoutComponentProvenanceNestedInput
+}
+
+export type EditorialComponentProvenanceUncheckedUpdateWithoutSuggestionSetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  packageRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EditorialComponentProvenanceUncheckedUpdateManyWithoutSuggestionSetInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  packageRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  component?: Prisma.EnumEditorialComponentTypeFieldUpdateOperationsInput | $Enums.EditorialComponentType
+  mode?: Prisma.EnumEditorialProvenanceModeFieldUpdateOperationsInput | $Enums.EditorialProvenanceMode
+  basisVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  researchIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -489,8 +807,12 @@ export type EditorialComponentProvenanceSelect<ExtArgs extends runtime.Types.Ext
   component?: boolean
   mode?: boolean
   basisVersion?: boolean
+  researchIntentId?: boolean
+  suggestionSetId?: boolean
   createdAt?: boolean
   packageRevision?: boolean | Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>
+  researchIntent?: boolean | Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs>
+  suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
 }, ExtArgs["result"]["editorialComponentProvenance"]>
 
 export type EditorialComponentProvenanceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -499,8 +821,12 @@ export type EditorialComponentProvenanceSelectCreateManyAndReturn<ExtArgs extend
   component?: boolean
   mode?: boolean
   basisVersion?: boolean
+  researchIntentId?: boolean
+  suggestionSetId?: boolean
   createdAt?: boolean
   packageRevision?: boolean | Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>
+  researchIntent?: boolean | Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs>
+  suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
 }, ExtArgs["result"]["editorialComponentProvenance"]>
 
 export type EditorialComponentProvenanceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -509,8 +835,12 @@ export type EditorialComponentProvenanceSelectUpdateManyAndReturn<ExtArgs extend
   component?: boolean
   mode?: boolean
   basisVersion?: boolean
+  researchIntentId?: boolean
+  suggestionSetId?: boolean
   createdAt?: boolean
   packageRevision?: boolean | Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>
+  researchIntent?: boolean | Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs>
+  suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
 }, ExtArgs["result"]["editorialComponentProvenance"]>
 
 export type EditorialComponentProvenanceSelectScalar = {
@@ -519,24 +849,34 @@ export type EditorialComponentProvenanceSelectScalar = {
   component?: boolean
   mode?: boolean
   basisVersion?: boolean
+  researchIntentId?: boolean
+  suggestionSetId?: boolean
   createdAt?: boolean
 }
 
-export type EditorialComponentProvenanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "packageRevisionId" | "component" | "mode" | "basisVersion" | "createdAt", ExtArgs["result"]["editorialComponentProvenance"]>
+export type EditorialComponentProvenanceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "packageRevisionId" | "component" | "mode" | "basisVersion" | "researchIntentId" | "suggestionSetId" | "createdAt", ExtArgs["result"]["editorialComponentProvenance"]>
 export type EditorialComponentProvenanceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   packageRevision?: boolean | Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>
+  researchIntent?: boolean | Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs>
+  suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
 }
 export type EditorialComponentProvenanceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   packageRevision?: boolean | Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>
+  researchIntent?: boolean | Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs>
+  suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
 }
 export type EditorialComponentProvenanceIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   packageRevision?: boolean | Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>
+  researchIntent?: boolean | Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs>
+  suggestionSet?: boolean | Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>
 }
 
 export type $EditorialComponentProvenancePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EditorialComponentProvenance"
   objects: {
     packageRevision: Prisma.$EditorialPackageRevisionPayload<ExtArgs>
+    researchIntent: Prisma.$ResearchSuggestionIntentPayload<ExtArgs> | null
+    suggestionSet: Prisma.$ResearchSuggestionSetPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -544,6 +884,8 @@ export type $EditorialComponentProvenancePayload<ExtArgs extends runtime.Types.E
     component: $Enums.EditorialComponentType
     mode: $Enums.EditorialProvenanceMode
     basisVersion: string
+    researchIntentId: string | null
+    suggestionSetId: string | null
     createdAt: Date
   }, ExtArgs["result"]["editorialComponentProvenance"]>
   composites: {}
@@ -940,6 +1282,8 @@ readonly fields: EditorialComponentProvenanceFieldRefs;
 export interface Prisma__EditorialComponentProvenanceClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   packageRevision<T extends Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialPackageRevisionDefaultArgs<ExtArgs>>): Prisma.Prisma__EditorialPackageRevisionClient<runtime.Types.Result.GetResult<Prisma.$EditorialPackageRevisionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  researchIntent<T extends Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialComponentProvenance$researchIntentArgs<ExtArgs>>): Prisma.Prisma__ResearchSuggestionIntentClient<runtime.Types.Result.GetResult<Prisma.$ResearchSuggestionIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  suggestionSet<T extends Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialComponentProvenance$suggestionSetArgs<ExtArgs>>): Prisma.Prisma__ResearchSuggestionSetClient<runtime.Types.Result.GetResult<Prisma.$ResearchSuggestionSetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -974,6 +1318,8 @@ export interface EditorialComponentProvenanceFieldRefs {
   readonly component: Prisma.FieldRef<"EditorialComponentProvenance", 'EditorialComponentType'>
   readonly mode: Prisma.FieldRef<"EditorialComponentProvenance", 'EditorialProvenanceMode'>
   readonly basisVersion: Prisma.FieldRef<"EditorialComponentProvenance", 'String'>
+  readonly researchIntentId: Prisma.FieldRef<"EditorialComponentProvenance", 'String'>
+  readonly suggestionSetId: Prisma.FieldRef<"EditorialComponentProvenance", 'String'>
   readonly createdAt: Prisma.FieldRef<"EditorialComponentProvenance", 'DateTime'>
 }
     
@@ -1373,6 +1719,44 @@ export type EditorialComponentProvenanceDeleteManyArgs<ExtArgs extends runtime.T
    * Limit how many EditorialComponentProvenances to delete.
    */
   limit?: number
+}
+
+/**
+ * EditorialComponentProvenance.researchIntent
+ */
+export type EditorialComponentProvenance$researchIntentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ResearchSuggestionIntent
+   */
+  select?: Prisma.ResearchSuggestionIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ResearchSuggestionIntent
+   */
+  omit?: Prisma.ResearchSuggestionIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ResearchSuggestionIntentInclude<ExtArgs> | null
+  where?: Prisma.ResearchSuggestionIntentWhereInput
+}
+
+/**
+ * EditorialComponentProvenance.suggestionSet
+ */
+export type EditorialComponentProvenance$suggestionSetArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ResearchSuggestionSet
+   */
+  select?: Prisma.ResearchSuggestionSetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ResearchSuggestionSet
+   */
+  omit?: Prisma.ResearchSuggestionSetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ResearchSuggestionSetInclude<ExtArgs> | null
+  where?: Prisma.ResearchSuggestionSetWhereInput
 }
 
 /**

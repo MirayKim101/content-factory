@@ -156,6 +156,7 @@ enum AiContentOperationType {
   PUT_CUT_EDITORIAL_PROMPT
   CREATE_FRAME_EVIDENCE
   CREATE_TRANSCRIPT_EVIDENCE
+  CREATE_RESEARCH_SUGGESTION
 }
 
 enum TranscriptIntentState {
@@ -166,6 +167,19 @@ enum TranscriptIntentState {
 }
 
 enum TranscriptAttemptState {
+  PROCESSING
+  READY
+  FAILED_FINAL
+}
+
+enum ResearchIntentState {
+  QUEUED
+  PROCESSING
+  READY
+  FAILED_FINAL
+}
+
+enum ResearchAttemptState {
   PROCESSING
   READY
   FAILED_FINAL
@@ -1109,16 +1123,22 @@ model AiContentOperationRequest {
 }
 
 model EditorialComponentProvenance {
-  id                String                   @id @db.Uuid
-  packageRevisionId String                   @db.Uuid
-  packageRevision   EditorialPackageRevision @relation(fields: [packageRevisionId], references: [id], onDelete: Restrict)
+  id                String                    @id @db.Uuid
+  packageRevisionId String                    @db.Uuid
+  packageRevision   EditorialPackageRevision  @relation(fields: [packageRevisionId], references: [id], onDelete: Restrict)
   component         EditorialComponentType
-  mode              EditorialProvenanceMode  @default(MANUAL)
-  basisVersion      String                   @default("manual-editorial-v1")
-  createdAt         DateTime                 @default(now())
+  mode              EditorialProvenanceMode   @default(MANUAL)
+  basisVersion      String                    @default("manual-editorial-v1")
+  researchIntentId  String?                   @db.Uuid
+  researchIntent    ResearchSuggestionIntent? @relation(fields: [researchIntentId], references: [id], onDelete: Restrict)
+  suggestionSetId   String?                   @db.Uuid
+  suggestionSet     ResearchSuggestionSet?    @relation(fields: [suggestionSetId], references: [id], onDelete: Restrict)
+  createdAt         DateTime                  @default(now())
 
   @@unique([packageRevisionId, component], map: "EditorialComponentProvenance_revision_component_key")
   @@index([packageRevisionId])
+  @@index([researchIntentId])
+  @@index([suggestionSetId])
 }
 
 // Frame evidence is AI Content-owned; it does not overload MediaArtifact's
@@ -1330,9 +1350,103 @@ model TranscriptEvidenceIntent {
   updatedAt                   DateTime                       @updatedAt
   attempts                    TranscriptEvidenceAttempt[]
   artifact                    TranscriptEvidenceArtifact?
+  researchSuggestions         ResearchSuggestionIntent[]
 
   @@index([cutPipelineJobId, createdAt, id])
   @@index([state, queuedAt])
+}
+
+/// Durable operator-supplied cited research request bound to exact transcript lineage.
+model ResearchSuggestionIntent {
+  id                       String                         @id @db.Uuid
+  idempotencyKey           String                         @unique
+  requestFingerprint       String
+  transcriptIntentId       String                         @db.Uuid
+  transcriptIntent         TranscriptEvidenceIntent       @relation(fields: [transcriptIntentId], references: [id], onDelete: Restrict)
+  projectId                String                         @db.Uuid
+  sourceId                 String                         @db.Uuid
+  sourceVersion            Int
+  cutPipelineJobId         String                         @db.Uuid
+  cutResultArtifactId      String                         @db.Uuid
+  creatorProfileRevisionId String                         @db.Uuid
+  sourceContextRevisionId  String                         @db.Uuid
+  cutPromptRevisionId      String                         @db.Uuid
+  contextPolicyFingerprint String
+  transcriptArtifactId     String                         @db.Uuid
+  transcriptSha256         String
+  query                    String
+  contractVersion          String
+  adapterVersion           String
+  freshnessPolicyVersion   String
+  searchedAt               DateTime
+  freshUntil               DateTime
+  state                    ResearchIntentState            @default(QUEUED)
+  failureCode              String?
+  failureMessage           String?
+  createdAt                DateTime                       @default(now())
+  updatedAt                DateTime                       @updatedAt
+  citations                ResearchCitation[]
+  attempts                 ResearchSuggestionAttempt[]
+  suggestionSet            ResearchSuggestionSet?
+  componentProvenance      EditorialComponentProvenance[]
+
+  @@index([transcriptIntentId, createdAt, id])
+  @@index([projectId, state, createdAt])
+}
+
+model ResearchCitation {
+  id          String                   @id @db.Uuid
+  intentId    String                   @db.Uuid
+  intent      ResearchSuggestionIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  ordinal     Int
+  url         String
+  title       String
+  publisher   String
+  publishedAt DateTime?
+  accessedAt  DateTime
+  excerpt     String
+  checksum    String
+  createdAt   DateTime                 @default(now())
+
+  @@unique([intentId, ordinal])
+  @@unique([intentId, url])
+}
+
+model ResearchSuggestionAttempt {
+  id             String                   @id @db.Uuid
+  intentId       String                   @db.Uuid
+  intent         ResearchSuggestionIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptNumber  Int
+  state          ResearchAttemptState     @default(PROCESSING)
+  leaseToken     String                   @unique
+  leaseExpiresAt DateTime
+  workDeadlineAt DateTime
+  failureCode    String?
+  failureMessage String?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  suggestionSet  ResearchSuggestionSet?
+
+  @@unique([intentId, attemptNumber])
+  @@index([leaseExpiresAt, state])
+}
+
+model ResearchSuggestionSet {
+  id                  String                         @id @db.Uuid
+  intentId            String                         @unique @db.Uuid
+  intent              ResearchSuggestionIntent       @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptId           String                         @unique @db.Uuid
+  attempt             ResearchSuggestionAttempt      @relation(fields: [attemptId], references: [id], onDelete: Restrict)
+  title               String
+  description         String
+  tags                Json
+  claims              Json
+  citationIds         Json
+  basisVersion        String
+  directCostMicrousd  BigInt                         @default(0)
+  costBasisVersion    String
+  createdAt           DateTime                       @default(now())
+  componentProvenance EditorialComponentProvenance[]
 }
 
 /// Fenced worker attempt. An expired lease may be reclaimed until retryBudget is exhausted.

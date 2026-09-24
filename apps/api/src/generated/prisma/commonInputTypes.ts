@@ -894,6 +894,40 @@ export type EnumTranscriptIntentStateWithAggregatesFilter<$PrismaModel = never> 
   _max?: Prisma.NestedEnumTranscriptIntentStateFilter<$PrismaModel>
 }
 
+export type EnumResearchIntentStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchIntentState | Prisma.EnumResearchIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchIntentStateFilter<$PrismaModel> | $Enums.ResearchIntentState
+}
+
+export type EnumResearchIntentStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchIntentState | Prisma.EnumResearchIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchIntentStateWithAggregatesFilter<$PrismaModel> | $Enums.ResearchIntentState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumResearchIntentStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumResearchIntentStateFilter<$PrismaModel>
+}
+
+export type EnumResearchAttemptStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchAttemptState | Prisma.EnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel> | $Enums.ResearchAttemptState
+}
+
+export type EnumResearchAttemptStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchAttemptState | Prisma.EnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchAttemptStateWithAggregatesFilter<$PrismaModel> | $Enums.ResearchAttemptState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel>
+}
+
 export type EnumTranscriptAttemptStateFilter<$PrismaModel = never> = {
   equals?: $Enums.TranscriptAttemptState | Prisma.EnumTranscriptAttemptStateFieldRefInput<$PrismaModel>
   in?: $Enums.TranscriptAttemptState[] | Prisma.ListEnumTranscriptAttemptStateFieldRefInput<$PrismaModel>
@@ -1733,6 +1767,40 @@ export type NestedEnumTranscriptIntentStateWithAggregatesFilter<$PrismaModel = n
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTranscriptIntentStateFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTranscriptIntentStateFilter<$PrismaModel>
+}
+
+export type NestedEnumResearchIntentStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchIntentState | Prisma.EnumResearchIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchIntentStateFilter<$PrismaModel> | $Enums.ResearchIntentState
+}
+
+export type NestedEnumResearchIntentStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchIntentState | Prisma.EnumResearchIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchIntentState[] | Prisma.ListEnumResearchIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchIntentStateWithAggregatesFilter<$PrismaModel> | $Enums.ResearchIntentState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumResearchIntentStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumResearchIntentStateFilter<$PrismaModel>
+}
+
+export type NestedEnumResearchAttemptStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchAttemptState | Prisma.EnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel> | $Enums.ResearchAttemptState
+}
+
+export type NestedEnumResearchAttemptStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResearchAttemptState | Prisma.EnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ResearchAttemptState[] | Prisma.ListEnumResearchAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumResearchAttemptStateWithAggregatesFilter<$PrismaModel> | $Enums.ResearchAttemptState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel>
 }
 
 export type NestedEnumTranscriptAttemptStateFilter<$PrismaModel = never> = {

@@ -272,6 +272,26 @@ export type FrameEvidenceFrame = Prisma.FrameEvidenceFrameModel
  */
 export type TranscriptEvidenceIntent = Prisma.TranscriptEvidenceIntentModel
 /**
+ * Model ResearchSuggestionIntent
+ * Durable operator-supplied cited research request bound to exact transcript lineage.
+ */
+export type ResearchSuggestionIntent = Prisma.ResearchSuggestionIntentModel
+/**
+ * Model ResearchCitation
+ * 
+ */
+export type ResearchCitation = Prisma.ResearchCitationModel
+/**
+ * Model ResearchSuggestionAttempt
+ * 
+ */
+export type ResearchSuggestionAttempt = Prisma.ResearchSuggestionAttemptModel
+/**
+ * Model ResearchSuggestionSet
+ * 
+ */
+export type ResearchSuggestionSet = Prisma.ResearchSuggestionSetModel
+/**
  * Model TranscriptEvidenceAttempt
  * Fenced worker attempt. An expired lease may be reclaimed until retryBudget is exhausted.
  */

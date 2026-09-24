@@ -443,6 +443,10 @@ export const ModelName = {
   FrameEvidenceResult: 'FrameEvidenceResult',
   FrameEvidenceFrame: 'FrameEvidenceFrame',
   TranscriptEvidenceIntent: 'TranscriptEvidenceIntent',
+  ResearchSuggestionIntent: 'ResearchSuggestionIntent',
+  ResearchCitation: 'ResearchCitation',
+  ResearchSuggestionAttempt: 'ResearchSuggestionAttempt',
+  ResearchSuggestionSet: 'ResearchSuggestionSet',
   TranscriptEvidenceAttempt: 'TranscriptEvidenceAttempt',
   TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact'
 } as const
@@ -460,7 +464,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3868,6 +3872,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ResearchSuggestionIntent: {
+      payload: Prisma.$ResearchSuggestionIntentPayload<ExtArgs>
+      fields: Prisma.ResearchSuggestionIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ResearchSuggestionIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ResearchSuggestionIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.ResearchSuggestionIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ResearchSuggestionIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>
+        }
+        findMany: {
+          args: Prisma.ResearchSuggestionIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>[]
+        }
+        create: {
+          args: Prisma.ResearchSuggestionIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>
+        }
+        createMany: {
+          args: Prisma.ResearchSuggestionIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ResearchSuggestionIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.ResearchSuggestionIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>
+        }
+        update: {
+          args: Prisma.ResearchSuggestionIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.ResearchSuggestionIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ResearchSuggestionIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ResearchSuggestionIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.ResearchSuggestionIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.ResearchSuggestionIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateResearchSuggestionIntent>
+        }
+        groupBy: {
+          args: Prisma.ResearchSuggestionIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchSuggestionIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ResearchSuggestionIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchSuggestionIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    ResearchCitation: {
+      payload: Prisma.$ResearchCitationPayload<ExtArgs>
+      fields: Prisma.ResearchCitationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ResearchCitationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ResearchCitationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>
+        }
+        findFirst: {
+          args: Prisma.ResearchCitationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ResearchCitationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>
+        }
+        findMany: {
+          args: Prisma.ResearchCitationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>[]
+        }
+        create: {
+          args: Prisma.ResearchCitationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>
+        }
+        createMany: {
+          args: Prisma.ResearchCitationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ResearchCitationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>[]
+        }
+        delete: {
+          args: Prisma.ResearchCitationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>
+        }
+        update: {
+          args: Prisma.ResearchCitationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>
+        }
+        deleteMany: {
+          args: Prisma.ResearchCitationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ResearchCitationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ResearchCitationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>[]
+        }
+        upsert: {
+          args: Prisma.ResearchCitationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchCitationPayload>
+        }
+        aggregate: {
+          args: Prisma.ResearchCitationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateResearchCitation>
+        }
+        groupBy: {
+          args: Prisma.ResearchCitationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchCitationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ResearchCitationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchCitationCountAggregateOutputType> | number
+        }
+      }
+    }
+    ResearchSuggestionAttempt: {
+      payload: Prisma.$ResearchSuggestionAttemptPayload<ExtArgs>
+      fields: Prisma.ResearchSuggestionAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ResearchSuggestionAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ResearchSuggestionAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.ResearchSuggestionAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ResearchSuggestionAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.ResearchSuggestionAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.ResearchSuggestionAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.ResearchSuggestionAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ResearchSuggestionAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.ResearchSuggestionAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>
+        }
+        update: {
+          args: Prisma.ResearchSuggestionAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.ResearchSuggestionAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ResearchSuggestionAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ResearchSuggestionAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.ResearchSuggestionAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.ResearchSuggestionAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateResearchSuggestionAttempt>
+        }
+        groupBy: {
+          args: Prisma.ResearchSuggestionAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchSuggestionAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ResearchSuggestionAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchSuggestionAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
+    ResearchSuggestionSet: {
+      payload: Prisma.$ResearchSuggestionSetPayload<ExtArgs>
+      fields: Prisma.ResearchSuggestionSetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ResearchSuggestionSetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ResearchSuggestionSetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>
+        }
+        findFirst: {
+          args: Prisma.ResearchSuggestionSetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ResearchSuggestionSetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>
+        }
+        findMany: {
+          args: Prisma.ResearchSuggestionSetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>[]
+        }
+        create: {
+          args: Prisma.ResearchSuggestionSetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>
+        }
+        createMany: {
+          args: Prisma.ResearchSuggestionSetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ResearchSuggestionSetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>[]
+        }
+        delete: {
+          args: Prisma.ResearchSuggestionSetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>
+        }
+        update: {
+          args: Prisma.ResearchSuggestionSetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>
+        }
+        deleteMany: {
+          args: Prisma.ResearchSuggestionSetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ResearchSuggestionSetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ResearchSuggestionSetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>[]
+        }
+        upsert: {
+          args: Prisma.ResearchSuggestionSetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResearchSuggestionSetPayload>
+        }
+        aggregate: {
+          args: Prisma.ResearchSuggestionSetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateResearchSuggestionSet>
+        }
+        groupBy: {
+          args: Prisma.ResearchSuggestionSetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchSuggestionSetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ResearchSuggestionSetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResearchSuggestionSetCountAggregateOutputType> | number
+        }
+      }
+    }
     TranscriptEvidenceAttempt: {
       payload: Prisma.$TranscriptEvidenceAttemptPayload<ExtArgs>
       fields: Prisma.TranscriptEvidenceAttemptFieldRefs
@@ -4797,6 +5097,8 @@ export const EditorialComponentProvenanceScalarFieldEnum = {
   component: 'component',
   mode: 'mode',
   basisVersion: 'basisVersion',
+  researchIntentId: 'researchIntentId',
+  suggestionSetId: 'suggestionSetId',
   createdAt: 'createdAt'
 } as const
 
@@ -4971,6 +5273,90 @@ export const TranscriptEvidenceIntentScalarFieldEnum = {
 } as const
 
 export type TranscriptEvidenceIntentScalarFieldEnum = (typeof TranscriptEvidenceIntentScalarFieldEnum)[keyof typeof TranscriptEvidenceIntentScalarFieldEnum]
+
+
+export const ResearchSuggestionIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  transcriptIntentId: 'transcriptIntentId',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  cutPromptRevisionId: 'cutPromptRevisionId',
+  contextPolicyFingerprint: 'contextPolicyFingerprint',
+  transcriptArtifactId: 'transcriptArtifactId',
+  transcriptSha256: 'transcriptSha256',
+  query: 'query',
+  contractVersion: 'contractVersion',
+  adapterVersion: 'adapterVersion',
+  freshnessPolicyVersion: 'freshnessPolicyVersion',
+  searchedAt: 'searchedAt',
+  freshUntil: 'freshUntil',
+  state: 'state',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ResearchSuggestionIntentScalarFieldEnum = (typeof ResearchSuggestionIntentScalarFieldEnum)[keyof typeof ResearchSuggestionIntentScalarFieldEnum]
+
+
+export const ResearchCitationScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  ordinal: 'ordinal',
+  url: 'url',
+  title: 'title',
+  publisher: 'publisher',
+  publishedAt: 'publishedAt',
+  accessedAt: 'accessedAt',
+  excerpt: 'excerpt',
+  checksum: 'checksum',
+  createdAt: 'createdAt'
+} as const
+
+export type ResearchCitationScalarFieldEnum = (typeof ResearchCitationScalarFieldEnum)[keyof typeof ResearchCitationScalarFieldEnum]
+
+
+export const ResearchSuggestionAttemptScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  workDeadlineAt: 'workDeadlineAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ResearchSuggestionAttemptScalarFieldEnum = (typeof ResearchSuggestionAttemptScalarFieldEnum)[keyof typeof ResearchSuggestionAttemptScalarFieldEnum]
+
+
+export const ResearchSuggestionSetScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptId: 'attemptId',
+  title: 'title',
+  description: 'description',
+  tags: 'tags',
+  claims: 'claims',
+  citationIds: 'citationIds',
+  basisVersion: 'basisVersion',
+  directCostMicrousd: 'directCostMicrousd',
+  costBasisVersion: 'costBasisVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type ResearchSuggestionSetScalarFieldEnum = (typeof ResearchSuggestionSetScalarFieldEnum)[keyof typeof ResearchSuggestionSetScalarFieldEnum]
 
 
 export const TranscriptEvidenceAttemptScalarFieldEnum = {
@@ -5492,28 +5878,56 @@ export type ListEnumEditorialProvenanceModeFieldRefInput<$PrismaModel> = FieldRe
  * Reference to a field of type 'TranscriptIntentState'
  */
 export type EnumTranscriptIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptIntentState'>
-
+    
 
 
 /**
  * Reference to a field of type 'TranscriptIntentState[]'
  */
 export type ListEnumTranscriptIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptIntentState[]'>
+    
 
+
+/**
+ * Reference to a field of type 'ResearchIntentState'
+ */
+export type EnumResearchIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResearchIntentState'>
+    
+
+
+/**
+ * Reference to a field of type 'ResearchIntentState[]'
+ */
+export type ListEnumResearchIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResearchIntentState[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ResearchAttemptState'
+ */
+export type EnumResearchAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResearchAttemptState'>
+    
+
+
+/**
+ * Reference to a field of type 'ResearchAttemptState[]'
+ */
+export type ListEnumResearchAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResearchAttemptState[]'>
+    
 
 
 /**
  * Reference to a field of type 'TranscriptAttemptState'
  */
 export type EnumTranscriptAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptAttemptState'>
-
+    
 
 
 /**
  * Reference to a field of type 'TranscriptAttemptState[]'
  */
 export type ListEnumTranscriptAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptAttemptState[]'>
-
+    
 
 /**
  * Batch Payload for updateMany & deleteMany & createMany
@@ -5712,6 +6126,10 @@ export type GlobalOmitConfig = {
   frameEvidenceResult?: Prisma.FrameEvidenceResultOmit
   frameEvidenceFrame?: Prisma.FrameEvidenceFrameOmit
   transcriptEvidenceIntent?: Prisma.TranscriptEvidenceIntentOmit
+  researchSuggestionIntent?: Prisma.ResearchSuggestionIntentOmit
+  researchCitation?: Prisma.ResearchCitationOmit
+  researchSuggestionAttempt?: Prisma.ResearchSuggestionAttemptOmit
+  researchSuggestionSet?: Prisma.ResearchSuggestionSetOmit
   transcriptEvidenceAttempt?: Prisma.TranscriptEvidenceAttemptOmit
   transcriptEvidenceArtifact?: Prisma.TranscriptEvidenceArtifactOmit
 }
@@ -5776,3 +6194,4 @@ export type PrismaAction =
  * `PrismaClient` proxy available in interactive transactions.
  */
 export type TransactionClient = Omit<DefaultPrismaClient, runtime.ITXClientDenyList>
+
