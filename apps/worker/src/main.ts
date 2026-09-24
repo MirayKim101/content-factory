@@ -21,6 +21,7 @@ import { MediaScratchReconciler } from "./infrastructure/media-scratch-reconcile
 import { verifyWorkerRollbackCompatibility } from "./rollback-compatibility.js";
 import { PgTranscriptWorker } from "./infrastructure/pg-transcript-worker.js";
 import { PgResearchWorker } from "./infrastructure/pg-research-worker.js";
+import { PgImageSuggestionWorker } from "./infrastructure/pg-image-suggestion-worker.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -45,6 +46,15 @@ async function startAiWorker(): Promise<void> {
   const researchWorker = new PgResearchWorker(
     config.databaseUrl,
     config.sourceAuthorizationPolicy,
+  );
+  const imageStorage = new S3WorkerObjectStorage(
+    config.storage.bucket,
+    config.storage,
+  );
+  const imageWorker = new PgImageSuggestionWorker(
+    config.databaseUrl,
+    config.sourceAuthorizationPolicy,
+    imageStorage,
   );
   const workerId = `ai-worker-${randomUUID()}`;
   const transcriptQueue = new Worker(
@@ -72,6 +82,18 @@ async function startAiWorker(): Promise<void> {
       concurrency: 1,
     },
   );
+  const imageQueue = new Worker(
+    "ai-image-suggestion-v1",
+    async (delivery) => {
+      const intentId = (delivery.data as { intentId?: unknown }).intentId;
+      if (typeof intentId !== "string") throw new Error("IMAGE_JOB_INVALID");
+      await imageWorker.process(intentId);
+    },
+    {
+      connection: { ...config.redis, maxRetriesPerRequest: null },
+      concurrency: 1,
+    },
+  );
   transcriptQueue.on("error", (error) =>
     console.error(
       JSON.stringify({
@@ -90,7 +112,12 @@ async function startAiWorker(): Promise<void> {
       }),
     ),
   );
-  await researchWorker.recover();
+  imageQueue.on("error", (error) =>
+    console.error(
+      JSON.stringify({ event: "ai_image_worker_error", workerId, error: error.message }),
+    ),
+  );
+  await Promise.all([researchWorker.recover(), imageWorker.recover()]);
   const researchRecoveryTimer = setInterval(() => {
     void researchWorker
       .recover()
@@ -101,24 +128,35 @@ async function startAiWorker(): Promise<void> {
       );
   }, 5_000);
   researchRecoveryTimer.unref();
+  const imageRecoveryTimer = setInterval(() => {
+    void imageWorker.recover().catch(() =>
+      console.error(JSON.stringify({ event: "ai_image_reconciliation_failed" })),
+    );
+  }, 5_000);
+  imageRecoveryTimer.unref();
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.once(signal, async () => {
       clearInterval(researchRecoveryTimer);
+      clearInterval(imageRecoveryTimer);
       await transcriptQueue.close().catch(() => undefined);
       await researchQueue.close().catch(() => undefined);
+      await imageQueue.close().catch(() => undefined);
       await transcriptWorker.close().catch(() => undefined);
       await researchWorker.close().catch(() => undefined);
+      await imageWorker.close().catch(() => undefined);
+      imageStorage.close();
     });
   }
   await Promise.all([
     transcriptQueue.waitUntilReady(),
     researchQueue.waitUntilReady(),
+    imageQueue.waitUntilReady(),
   ]);
   console.log(
     JSON.stringify({
       event: "ai_worker_started",
       workerId,
-      queues: ["ai-transcript-v1", "ai-research-v1"],
+      queues: ["ai-transcript-v1", "ai-research-v1", "ai-image-suggestion-v1"],
     }),
   );
 }

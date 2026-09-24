@@ -39,6 +39,12 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   smoke и независимый review реального diff — PASS/CLEAN; runtime rights policy
   повторно проверяется worker при claim и finalize.
 
+- Stage 2B-5a принят: private deterministic no-likeness PNG candidates,
+  restart-safe worker/cleanup, bounded content, exact apply, asset reuse и
+  immutable thumbnail provenance прошли disposable PostgreSQL + ContentFactory
+  MinIO smoke и независимый CLEAN review. Admission остаётся выключен по
+  умолчанию; следующий срез — Stage 2B-6 integrated review/economics.
+
 ## Проверено и не проверено
 
 Frozen install, Prisma validate/generate, typecheck/build и OpenAPI drift

@@ -72,6 +72,7 @@ export interface EditorialRepository {
     description: string | null;
     tags: string[] | null;
     thumbnailAssetId: string | null;
+    generatedThumbnailAssetId?: string | null;
     metadataProvenance?: {
       mode: "AI_ASSISTED" | "MIXED";
       basisVersion: string;
@@ -81,6 +82,8 @@ export interface EditorialRepository {
     thumbnailProvenance?: {
       mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
       basisVersion: string;
+      imageIntentId?: string;
+      imageCandidateId?: string;
     } | null;
   }): Promise<EditorialPackageView>;
   getMutationResult(

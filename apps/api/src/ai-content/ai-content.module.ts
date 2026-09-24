@@ -44,6 +44,16 @@ import {
   createTranscriptQueue,
 } from "./infrastructure/bullmq-transcript-dispatch.js";
 import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-dispatch.port.js";
+import { ApplyImageSuggestion } from "./application/apply-image-suggestion.js";
+import { ImageSuggestionController } from "./presentation/image-suggestion.controller.js";
+import { PrismaImageSuggestionRepository } from "./infrastructure/prisma-image-suggestion.repository.js";
+import { IMAGE_SUGGESTION_REPOSITORY } from "./application/image-suggestion-repository.port.js";
+import { IMAGE_SUGGESTION_DISPATCH } from "./application/image-suggestion-dispatch.port.js";
+import {
+  BullMqImageSuggestionDispatch,
+  createImageSuggestionQueue,
+  IMAGE_SUGGESTION_QUEUE,
+} from "./infrastructure/bullmq-image-suggestion-dispatch.js";
 
 @Module({
   imports: [ProjectsModule, MediaPipelineModule, EditorialContentModule],
@@ -52,15 +62,19 @@ import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-
     FrameEvidenceController,
     TranscriptEvidenceController,
     ResearchController,
+    ImageSuggestionController,
   ],
   providers: [
     CreatorContextService,
     ApplyResearchMetadata,
+    ApplyImageSuggestion,
     PrismaFrameEvidenceRepository,
     PrismaTranscriptEvidenceRepository,
     PrismaResearchSuggestionRepository,
     BullMqTranscriptDispatch,
     BullMqResearchDispatch,
+    PrismaImageSuggestionRepository,
+    BullMqImageSuggestionDispatch,
     {
       provide: TRANSCRIPT_QUEUE,
       useFactory: createTranscriptQueue,
@@ -78,6 +92,14 @@ import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-
       useExisting: BullMqResearchDispatch,
     },
     {
+      provide: IMAGE_SUGGESTION_QUEUE,
+      useFactory: createImageSuggestionQueue,
+    },
+    {
+      provide: IMAGE_SUGGESTION_DISPATCH,
+      useExisting: BullMqImageSuggestionDispatch,
+    },
+    {
       provide: FRAME_EVIDENCE_REPOSITORY,
       useExisting: PrismaFrameEvidenceRepository,
     },
@@ -88,6 +110,10 @@ import { TRANSCRIPT_EVIDENCE_DISPATCH } from "./application/transcript-evidence-
     {
       provide: RESEARCH_SUGGESTION_REPOSITORY,
       useExisting: PrismaResearchSuggestionRepository,
+    },
+    {
+      provide: IMAGE_SUGGESTION_REPOSITORY,
+      useExisting: PrismaImageSuggestionRepository,
     },
     ResolveAiEditorialContext,
     ReconcileCreatorReferences,

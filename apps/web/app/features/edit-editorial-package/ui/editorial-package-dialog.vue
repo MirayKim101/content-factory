@@ -22,6 +22,8 @@ import {
 } from "~/features/edit-editorial-package/model/save-identity";
 import ResearchTextPanel from "~/widgets/editorial-package/ui/research-text-panel.vue";
 import type { ResearchMetadataApplyResponse } from "~/shared/api/research-text";
+import ThumbnailSuggestionsPanel from "~/widgets/editorial-package/ui/thumbnail-suggestions-panel.vue";
+import type { ThumbnailSuggestionApply } from "~/shared/api/thumbnail-suggestions";
 import {
   createEditorialContentApi,
   EditorialApiError,
@@ -393,6 +395,27 @@ async function researchApplied(
   saveError.value = undefined;
   success.value = `Research применён: revision ${result.revision}, provenance ${result.metadataMode}.`;
 }
+
+async function thumbnailSuggestionApplied(
+  result: ThumbnailSuggestionApply,
+): Promise<void> {
+  const [refreshed] = await Promise.all([
+    packages.refetch(),
+    thumbnails.refetch(),
+  ]);
+  const latest = refreshed.data?.find(
+    (item) => item.pipelineJobId === props.jobId,
+  );
+  if (latest) loadPackage(latest);
+  await queryClient.invalidateQueries({
+    queryKey: ["editorial-exports", props.projectId],
+  });
+  await queryClient.invalidateQueries({
+    queryKey: ["editorial-review", props.projectId, props.jobId],
+  });
+  saveError.value = undefined;
+  success.value = `AI-обложка применена: revision ${result.revision}, provenance ${result.thumbnailMode}.`;
+}
 </script>
 
 <template>
@@ -502,6 +525,12 @@ async function researchApplied(
             </div>
             <fieldset>
               <legend>Собственная обложка</legend>
+              <ThumbnailSuggestionsPanel
+                :project-id="projectId"
+                :job-id="jobId"
+                :expected-revision="serverRevision"
+                @applied="thumbnailSuggestionApplied"
+              />
               <input
                 aria-label="Загрузить JPEG, PNG или WebP"
                 type="file"

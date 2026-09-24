@@ -32,6 +32,8 @@ export class SaveEditorialPackage {
     thumbnailProvenance?: {
       mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
       basisVersion: string;
+      imageIntentId?: string;
+      imageCandidateId?: string;
     };
   }) {
     const snapshot = {
@@ -52,6 +54,8 @@ export class SaveEditorialPackage {
       packageId: randomUUID(),
       revisionId: randomUUID(),
       mutationId: randomUUID(),
+      generatedThumbnailAssetId:
+        input.thumbnailProvenance?.imageCandidateId ? randomUUID() : null,
       idempotencyKey: input.idempotencyKey,
       requestFingerprint,
       ...snapshot,

@@ -285,7 +285,7 @@ export class PrismaEditorialRepository implements EditorialRepository {
       mutation.packageRevision.packageId,
       this.prisma,
     );
-    return row ? this.mapPackage(row, mutation.packageRevision.revision) : null;
+    return row ? this.mapPackage(row, mutation.packageRevision.revision, false) : null;
   }
 
   private async savePackageWithRetry(
@@ -311,7 +311,7 @@ export class PrismaEditorialRepository implements EditorialRepository {
               transaction,
             );
             if (!row) throw new EditorialPersistenceConflictError();
-            return this.mapPackage(row, replay.packageRevision.revision);
+            return this.mapPackage(row, replay.packageRevision.revision, false);
           }
 
           const job = await transaction.pipelineJob.findUnique({
@@ -349,6 +349,7 @@ export class PrismaEditorialRepository implements EditorialRepository {
               where: { id: input.processingTemplateRevisionId },
             });
           if (!template) throw new ProcessingTemplateRevisionNotFoundError();
+          let resolvedThumbnailAssetId = input.thumbnailAssetId;
           if (input.metadataProvenance) {
             const research = await transaction.$queryRaw<Array<{ id: string }>>`
               SELECT i."id"
@@ -407,10 +408,121 @@ export class PrismaEditorialRepository implements EditorialRepository {
               throw new EditorialAssetNotFoundError();
             }
           }
+          if (
+            input.thumbnailProvenance?.imageIntentId &&
+            input.thumbnailProvenance.imageCandidateId
+          ) {
+            if (input.thumbnailAssetId || !input.generatedThumbnailAssetId)
+              throw new EditorialRevisionConflictError();
+            const candidates = await transaction.$queryRaw<
+              Array<{
+                id: string;
+                objectKey: string;
+                contentType: string;
+                sizeBytes: bigint;
+                sha256: string;
+                width: number;
+                height: number;
+                storageEtag: string | null;
+                storageVersion: string | null;
+              }>
+            >`
+              SELECT c."id",c."objectKey",c."contentType",c."sizeBytes",c."sha256",c."width",c."height",c."storageEtag",c."storageVersion"
+                FROM "ImageSuggestionIntent" i
+                JOIN "ImageSuggestionCandidate" c ON c."intentId"=i."id"
+                JOIN "ImageSuggestionAttempt" ia ON ia."id"=c."attemptId" AND ia."intentId"=i."id"
+                JOIN "PipelineJob" ij ON ij."id"=i."cutPipelineJobId"
+                JOIN "CutSegment" cs ON cs."jobId"=ij."id"
+                JOIN "MediaArtifact" im ON im."id"=i."cutResultArtifactId" AND im."pipelineJobId"=ij."id"
+                JOIN "VideoSource" s ON s."id"=i."sourceId" AND s."sourceVersion"=i."sourceVersion"
+                JOIN "SourceAuthorization" sa ON sa."sourceId"=s."id" AND sa."sourceVersion"=s."sourceVersion"
+                JOIN "CreatorProfileRevision" cpr ON cpr."id"=i."creatorProfileRevisionId" AND cpr."creatorProfileId"=i."creatorProfileId" AND cpr."revision"=i."creatorProfileRevisionNo"
+                JOIN "CreatorProfile" cp ON cp."id"=cpr."creatorProfileId" AND cp."currentRevision"=cpr."revision"
+                JOIN "SourceEditorialContextRevision" scr ON scr."id"=i."sourceContextRevisionId" AND scr."contextId"=i."sourceContextId" AND scr."revision"=i."sourceContextRevisionNo"
+                JOIN "SourceEditorialContext" sc ON sc."id"=scr."contextId" AND sc."currentRevision"=scr."revision"
+                JOIN "CutEditorialPromptRevision" pr ON pr."id"=i."cutPromptRevisionId" AND pr."promptId"=i."cutPromptId" AND pr."revision"=i."cutPromptRevisionNo"
+                JOIN "CutEditorialPrompt" p ON p."id"=pr."promptId" AND p."currentRevision"=pr."revision"
+               WHERE i."id"=${input.thumbnailProvenance.imageIntentId}::uuid
+                 AND c."id"=${input.thumbnailProvenance.imageCandidateId}::uuid
+                 AND i."state"='READY' AND i."projectId"=${job.projectId}::uuid AND i."cutPipelineJobId"=${job.id}::uuid
+                 AND s."status"='READY' AND s."sha256"=i."sourceSha256"
+                 AND sa."revision"=i."sourceAuthorizationRevision" AND sa."status"='CLEARED' AND sa."basis"::text=i."sourceAuthorizationBasis"
+                 AND (sa."basis"::text<>'LOCAL_DEVELOPMENT_AUTO' OR ${sourceAuthorizationRuntime().policy}='local-auto')
+                 AND sa."declarationVersion"=i."sourceAuthorizationDeclarationVersion" AND sa."decidedAt"=i."sourceAuthorizationDecidedAt"
+                 AND ij."type"='CUT_SEGMENT' AND ij."state"='READY' AND ij."projectId"=i."projectId" AND ij."sourceId"=i."sourceId" AND ij."sourceVersion"=i."sourceVersion"
+                 AND im."id"=${artifact.id}::uuid AND im."status"='READY' AND im."role"='CUT_RESULT' AND im."projectId"=i."projectId" AND im."sourceId"=i."sourceId"
+                 AND im."sha256"=i."cutResultSha256" AND im."sha256"=${artifact.sha256} AND im."sizeBytes"=i."cutResultSizeBytes" AND im."sizeBytes"=${artifact.sizeBytes}
+                 AND cs."startMs"=i."cutStartMs" AND cs."endMs"=i."cutEndMs"
+                 AND scr."projectId"=i."projectId" AND scr."sourceId"=i."sourceId" AND scr."sourceVersion"=i."sourceVersion"
+                 AND pr."projectId"=i."projectId" AND pr."sourceId"=i."sourceId" AND pr."sourceVersion"=i."sourceVersion"
+                 AND p."cutPipelineJobId"=i."cutPipelineJobId" AND p."cutResultArtifactId"=i."cutResultArtifactId"
+                 AND ia."state"='READY'
+                 AND c."contractVersion"=i."contractVersion" AND c."adapterVersion"=i."adapterVersion" AND c."promptBasisVersion"=i."promptBasisVersion"
+                 AND c."contentType"='image/png' AND c."likeness"='NONE' AND c."sha256" ~ '^[0-9a-f]{64}$'
+                 AND c."sizeBytes">0 AND c."width"=1280 AND c."height"=720 AND c."directCostMicrousd"=0
+               FOR SHARE OF i,c,ia,ij,cs,im,s,sa,cpr,cp,scr,sc,pr,p
+            `;
+            const candidate = candidates[0];
+            if (!candidate) throw new EditorialRevisionConflictError();
+            const existingAsset = await transaction.editorialAsset.findUnique({ where: { objectKey: candidate.objectKey } });
+            if (existingAsset) {
+              if (
+                existingAsset.projectId !== job.projectId ||
+                existingAsset.type !== "THUMBNAIL" ||
+                existingAsset.status !== "READY" ||
+                existingAsset.contentType !== "image/png" ||
+                existingAsset.sizeBytes !== candidate.sizeBytes ||
+                existingAsset.sha256 !== candidate.sha256 ||
+                existingAsset.width !== candidate.width ||
+                existingAsset.height !== candidate.height
+              ) throw new EditorialRevisionConflictError();
+              resolvedThumbnailAssetId = existingAsset.id;
+            } else {
+              resolvedThumbnailAssetId = input.generatedThumbnailAssetId;
+              await transaction.editorialAsset.create({
+                data: {
+                  id: resolvedThumbnailAssetId,
+                  projectId: job.projectId,
+                  type: "THUMBNAIL",
+                  status: "READY",
+                  idempotencyKey: `ai-image:${input.idempotencyKey}`,
+                  requestFingerprint: input.requestFingerprint,
+                  objectKey: candidate.objectKey,
+                  storageEtag: candidate.storageEtag,
+                  storageVersion: candidate.storageVersion,
+                  originalFilename: `ai-thumbnail-${candidate.id}.png`,
+                  contentType: "image/png",
+                  sizeBytes: candidate.sizeBytes,
+                  sha256: candidate.sha256,
+                  width: candidate.width,
+                  height: candidate.height,
+                },
+              });
+            }
+          }
 
           const current = await transaction.editorialPackage.findUnique({
             where: { pipelineJobId: job.id },
           });
+          let effectiveThumbnailProvenance = input.thumbnailProvenance;
+          if (!effectiveThumbnailProvenance && current && resolvedThumbnailAssetId) {
+            const previousRevision = await transaction.editorialPackageRevision.findUnique({
+              where: { packageId_revision: { packageId: current.id, revision: current.currentRevision } },
+              include: { componentProvenance: true },
+            });
+            if (previousRevision?.thumbnailAssetId === resolvedThumbnailAssetId) {
+              const previous = previousRevision.componentProvenance.find((item) => item.component === "THUMBNAIL");
+              if (previous && previous.mode !== "MANUAL") {
+                if (!previous.imageIntentId || !previous.imageCandidateId) throw new EditorialRevisionConflictError();
+                effectiveThumbnailProvenance = {
+                  mode: previous.mode,
+                  basisVersion: previous.basisVersion,
+                  imageIntentId: previous.imageIntentId,
+                  imageCandidateId: previous.imageCandidateId,
+                };
+              }
+            }
+          }
           const nextRevision = input.expectedRevision + 1;
           if (!current) {
             if (input.expectedRevision !== 0) {
@@ -429,7 +541,10 @@ export class PrismaEditorialRepository implements EditorialRepository {
                 lineageSourceVersion: artifact.lineageSourceVersion,
                 currentRevision: 1,
                 revisions: {
-                  create: this.revisionCreateData(input, 1),
+                  create: this.revisionCreateData(
+                    { ...input, thumbnailAssetId: resolvedThumbnailAssetId, thumbnailProvenance: effectiveThumbnailProvenance },
+                    1,
+                  ),
                 },
               },
             });
@@ -464,7 +579,10 @@ export class PrismaEditorialRepository implements EditorialRepository {
           await transaction.editorialPackageRevision.create({
             data: {
               packageId: current.id,
-              ...this.revisionCreateData(input, nextRevision),
+              ...this.revisionCreateData(
+                { ...input, thumbnailAssetId: resolvedThumbnailAssetId, thumbnailProvenance: effectiveThumbnailProvenance },
+                nextRevision,
+              ),
             },
           });
           const updated = await this.findPackageRow(current.id, transaction);
@@ -514,7 +632,7 @@ export class PrismaEditorialRepository implements EditorialRepository {
       }
       const row = await this.findPackageRow(replay.packageRevision.packageId);
       if (!row) throw new EditorialPersistenceConflictError();
-      return this.mapPackage(row, replay.packageRevision.revision);
+      return this.mapPackage(row, replay.packageRevision.revision, false);
     }
   }
 
@@ -576,6 +694,8 @@ export class PrismaEditorialRepository implements EditorialRepository {
       thumbnailProvenance?: {
         mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
         basisVersion: string;
+        imageIntentId?: string;
+        imageCandidateId?: string;
       } | null;
     },
     revision: number,
@@ -614,6 +734,10 @@ export class PrismaEditorialRepository implements EditorialRepository {
             mode: input.thumbnailProvenance?.mode ?? ("MANUAL" as const),
             basisVersion:
               input.thumbnailProvenance?.basisVersion ?? "manual-editorial-v1",
+            imageIntentId:
+              input.thumbnailProvenance?.imageIntentId ?? undefined,
+            imageCandidateId:
+              input.thumbnailProvenance?.imageCandidateId ?? undefined,
           },
         ],
       },
@@ -633,37 +757,39 @@ export class PrismaEditorialRepository implements EditorialRepository {
   private mapPackage(
     row: PackageRow,
     revisionNumber: number,
+    validateCurrentLineage = true,
   ): EditorialPackageView {
-    if (
-      row.pipelineJob.type !== "CUT_SEGMENT" ||
-      row.pipelineJob.state !== "READY"
-    ) {
-      throw new EditorialCutNotReadyError();
-    }
-    this.requireAuthorization(
-      row.pipelineJob.sourceVersion,
-      row.pipelineJob.source.authorizations,
-    );
-    if (
-      row.cutResultArtifact.status !== "READY" ||
-      row.cutResultArtifact.role !== "CUT_RESULT" ||
-      row.cutResultArtifact.id !== row.cutResultArtifactId ||
-      row.cutResultArtifact.projectId !== row.projectId ||
-      row.cutResultArtifact.sourceId !== row.pipelineJob.sourceId ||
-      row.cutResultArtifact.lineageSourceId !== row.pipelineJob.sourceId ||
-      row.cutResultArtifact.lineageSourceVersion !==
-        row.pipelineJob.sourceVersion ||
-      row.cutResultArtifact.pipelineJobId !== row.pipelineJobId ||
-      row.cutResultArtifact.recipeVersion !== row.pipelineJob.recipeVersion ||
-      !this.isSha256(row.cutResultArtifact.sha256) ||
-      row.cutResultArtifact.sizeBytes <= 0n ||
-      row.cutResultSha256 !== row.cutResultArtifact.sha256 ||
-      row.cutResultSizeBytes !== row.cutResultArtifact.sizeBytes ||
-      row.cutResultRecipeVersion !== row.cutResultArtifact.recipeVersion ||
-      row.lineageSourceId !== row.cutResultArtifact.lineageSourceId ||
-      row.lineageSourceVersion !== row.cutResultArtifact.lineageSourceVersion
-    ) {
-      throw new EditorialCutArtifactInvalidError();
+    if (validateCurrentLineage) {
+      if (
+        row.pipelineJob.type !== "CUT_SEGMENT" ||
+        row.pipelineJob.state !== "READY"
+      ) {
+        throw new EditorialCutNotReadyError();
+      }
+      this.requireAuthorization(
+        row.pipelineJob.sourceVersion,
+        row.pipelineJob.source.authorizations,
+      );
+      if (
+        row.cutResultArtifact.status !== "READY" ||
+        row.cutResultArtifact.role !== "CUT_RESULT" ||
+        row.cutResultArtifact.id !== row.cutResultArtifactId ||
+        row.cutResultArtifact.projectId !== row.projectId ||
+        row.cutResultArtifact.sourceId !== row.pipelineJob.sourceId ||
+        row.cutResultArtifact.lineageSourceId !== row.pipelineJob.sourceId ||
+        row.cutResultArtifact.lineageSourceVersion !== row.pipelineJob.sourceVersion ||
+        row.cutResultArtifact.pipelineJobId !== row.pipelineJobId ||
+        row.cutResultArtifact.recipeVersion !== row.pipelineJob.recipeVersion ||
+        !this.isSha256(row.cutResultArtifact.sha256) ||
+        row.cutResultArtifact.sizeBytes <= 0n ||
+        row.cutResultSha256 !== row.cutResultArtifact.sha256 ||
+        row.cutResultSizeBytes !== row.cutResultArtifact.sizeBytes ||
+        row.cutResultRecipeVersion !== row.cutResultArtifact.recipeVersion ||
+        row.lineageSourceId !== row.cutResultArtifact.lineageSourceId ||
+        row.lineageSourceVersion !== row.cutResultArtifact.lineageSourceVersion
+      ) {
+        throw new EditorialCutArtifactInvalidError();
+      }
     }
     const revision = row.revisions.find(
       (candidate) => candidate.revision === revisionNumber,
@@ -775,16 +901,38 @@ export class PrismaEditorialRepository implements EditorialRepository {
       component: "METADATA" | "THUMBNAIL";
       mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
       basisVersion: string;
+      researchIntentId: string | null;
+      suggestionSetId: string | null;
+      imageIntentId: string | null;
+      imageCandidateId: string | null;
     }>,
   ): EditorialPackageView["revision"]["provenance"] {
     const metadata = rows.find((row) => row.component === "METADATA");
     const thumbnail = rows.find((row) => row.component === "THUMBNAIL");
     return {
       metadata: metadata
-        ? { mode: metadata.mode, basisVersion: metadata.basisVersion }
+        ? {
+            mode: metadata.mode,
+            basisVersion: metadata.basisVersion,
+            ...(metadata.researchIntentId
+              ? { researchIntentId: metadata.researchIntentId }
+              : {}),
+            ...(metadata.suggestionSetId
+              ? { suggestionSetId: metadata.suggestionSetId }
+              : {}),
+          }
         : LEGACY_MANUAL_EDITORIAL_PROVENANCE,
       thumbnail: thumbnail
-        ? { mode: thumbnail.mode, basisVersion: thumbnail.basisVersion }
+        ? {
+            mode: thumbnail.mode,
+            basisVersion: thumbnail.basisVersion,
+            ...(thumbnail.imageIntentId
+              ? { imageIntentId: thumbnail.imageIntentId }
+              : {}),
+            ...(thumbnail.imageCandidateId
+              ? { imageCandidateId: thumbnail.imageCandidateId }
+              : {}),
+          }
         : LEGACY_MANUAL_EDITORIAL_PROVENANCE,
     };
   }

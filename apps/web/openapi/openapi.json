@@ -1,6 +1,16 @@
 {
   "components": {
     "schemas": {
+      "ApplyImageSuggestionDto": {
+        "properties": {
+          "expectedEditorialRevision": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": ["expectedEditorialRevision"],
+        "type": "object"
+      },
       "ApplyResearchMetadataDto": {
         "properties": {
           "description": {
@@ -1043,6 +1053,20 @@
         "type": "object"
       },
       "CreateFrameEvidenceDto": {
+        "properties": {
+          "cutPromptRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sourceContextRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": ["sourceContextRevisionId", "cutPromptRevisionId"],
+        "type": "object"
+      },
+      "CreateImageSuggestionDto": {
         "properties": {
           "cutPromptRevisionId": {
             "format": "uuid",
@@ -3317,6 +3341,207 @@
           "phase",
           "completedFrameCount",
           "basisPoints"
+        ],
+        "type": "object"
+      },
+      "ImageCandidateResponseDto": {
+        "properties": {
+          "contentType": {
+            "enum": ["image/png"],
+            "type": "string"
+          },
+          "costBasisVersion": {
+            "type": "string"
+          },
+          "directCostMicrousd": {
+            "type": "string"
+          },
+          "height": {
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "likeness": {
+            "enum": ["NONE"],
+            "type": "string"
+          },
+          "safetyDecision": {
+            "$ref": "#/components/schemas/ImageSuggestionSafetyDecisionDto"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "string"
+          },
+          "width": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "contentType",
+          "sizeBytes",
+          "sha256",
+          "width",
+          "height",
+          "likeness",
+          "safetyDecision",
+          "directCostMicrousd",
+          "costBasisVersion"
+        ],
+        "type": "object"
+      },
+      "ImageSuggestionApplyResponseDto": {
+        "properties": {
+          "packageId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "packageRevisionId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "thumbnailAssetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "thumbnailMode": {
+            "enum": ["AI_ASSISTED"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "packageId",
+          "packageRevisionId",
+          "revision",
+          "thumbnailAssetId",
+          "thumbnailMode"
+        ],
+        "type": "object"
+      },
+      "ImageSuggestionFailureDto": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
+      "ImageSuggestionListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ImageSuggestionResponseDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": ["items"],
+        "type": "object"
+      },
+      "ImageSuggestionResponseDto": {
+        "properties": {
+          "adapterVersion": {
+            "type": "string"
+          },
+          "candidate": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageCandidateResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "contractVersion": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageSuggestionFailureDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "promptBasisVersion": {
+            "type": "string"
+          },
+          "state": {
+            "enum": ["QUEUED", "PROCESSING", "READY", "FAILED_FINAL"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "cutPipelineJobId",
+          "state",
+          "contractVersion",
+          "adapterVersion",
+          "promptBasisVersion",
+          "candidate",
+          "failure",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ImageSuggestionSafetyDecisionDto": {
+        "properties": {
+          "externalProviderUsed": {
+            "enum": [false],
+            "type": "boolean"
+          },
+          "realisticPersonRequested": {
+            "enum": [false],
+            "type": "boolean"
+          },
+          "referenceImageUsed": {
+            "enum": [false],
+            "type": "boolean"
+          },
+          "version": {
+            "enum": ["no-likeness-safety-v1"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "realisticPersonRequested",
+          "referenceImageUsed",
+          "externalProviderUsed"
         ],
         "type": "object"
       },
@@ -8859,6 +9084,146 @@
         },
         "summary": "List persisted cut jobs for the current source",
         "tags": ["media-pipeline"]
+      }
+    },
+    "/api/v1/projects/{projectId}/pipeline-jobs/{cutJobId}/image-suggestions": {
+      "get": {
+        "operationId": "ImageSuggestionController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageSuggestionListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["thumbnail-suggestions"]
+      },
+      "post": {
+        "operationId": "ImageSuggestionController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cutJobId",
+            "required": true,
+            "schema": {
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateImageSuggestionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageSuggestionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["thumbnail-suggestions"]
+      }
+    },
+    "/api/v1/projects/{projectId}/pipeline-jobs/{cutJobId}/image-suggestions/{intentId}": {
+      "get": {
+        "operationId": "ImageSuggestionController_detail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageSuggestionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["thumbnail-suggestions"]
+      }
+    },
+    "/api/v1/projects/{projectId}/pipeline-jobs/{cutJobId}/image-suggestions/{intentId}/apply": {
+      "post": {
+        "operationId": "ImageSuggestionController_apply",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyImageSuggestionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImageSuggestionApplyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["thumbnail-suggestions"]
+      }
+    },
+    "/api/v1/projects/{projectId}/pipeline-jobs/{cutJobId}/image-suggestions/{intentId}/candidates/{candidateId}/content": {
+      "get": {
+        "operationId": "ImageSuggestionController_content",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["thumbnail-suggestions"]
       }
     },
     "/api/v1/projects/{projectId}/source": {

@@ -178,7 +178,9 @@
 4. Этап 2B-4a: durable research с HTTPS-источниками, варианты текста и exact
    apply принят как bounded local slice после disposable-DB smoke и независимого
    CLEAN review; feature flag выключен по умолчанию.
-5. Этап 2B-5: варианты обложек с независимым ручным режимом.
+5. Этап 2B-5: durable no-likeness варианты обложек, exact apply и независимый
+   ручной режим приняты после real PostgreSQL/MinIO smoke и CLEAN review;
+   admission выключен по умолчанию.
 6. Этап 2B-6: единая проверка manual/AI/mixed, подтверждение, экспорт и
    измерение затрат времени и стоимости.
 7. Этап 3: Twitch, вертикальный pipeline, публикация и сбор статусов по

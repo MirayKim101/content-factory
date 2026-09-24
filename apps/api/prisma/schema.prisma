@@ -157,6 +157,7 @@ enum AiContentOperationType {
   CREATE_FRAME_EVIDENCE
   CREATE_TRANSCRIPT_EVIDENCE
   CREATE_RESEARCH_SUGGESTION
+  CREATE_IMAGE_SUGGESTION
 }
 
 enum TranscriptIntentState {
@@ -180,6 +181,19 @@ enum ResearchIntentState {
 }
 
 enum ResearchAttemptState {
+  PROCESSING
+  READY
+  FAILED_FINAL
+}
+
+enum ImageSuggestionState {
+  QUEUED
+  PROCESSING
+  READY
+  FAILED_FINAL
+}
+
+enum ImageSuggestionAttemptState {
   PROCESSING
   READY
   FAILED_FINAL
@@ -1133,12 +1147,18 @@ model EditorialComponentProvenance {
   researchIntent    ResearchSuggestionIntent? @relation(fields: [researchIntentId], references: [id], onDelete: Restrict)
   suggestionSetId   String?                   @db.Uuid
   suggestionSet     ResearchSuggestionSet?    @relation(fields: [suggestionSetId], references: [id], onDelete: Restrict)
+  imageIntentId     String?                   @db.Uuid
+  imageIntent       ImageSuggestionIntent?    @relation(fields: [imageIntentId], references: [id], onDelete: Restrict)
+  imageCandidateId  String?                   @db.Uuid
+  imageCandidate    ImageSuggestionCandidate? @relation(fields: [imageCandidateId, imageIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialComponentProvenance_exact_image_candidate_fkey")
   createdAt         DateTime                  @default(now())
 
   @@unique([packageRevisionId, component], map: "EditorialComponentProvenance_revision_component_key")
   @@index([packageRevisionId])
   @@index([researchIntentId])
   @@index([suggestionSetId])
+  @@index([imageIntentId])
+  @@index([imageCandidateId])
 }
 
 // Frame evidence is AI Content-owned; it does not overload MediaArtifact's
@@ -1453,6 +1473,108 @@ model ResearchSuggestionSet {
   costBasisVersion    String
   createdAt           DateTime                       @default(now())
   componentProvenance EditorialComponentProvenance[]
+}
+
+/// Durable no-likeness image request bound to exact cut and creator context.
+model ImageSuggestionIntent {
+  id                                    String                         @id @db.Uuid
+  idempotencyKey                        String                         @unique
+  requestFingerprint                    String
+  projectId                             String                         @db.Uuid
+  sourceId                              String                         @db.Uuid
+  sourceVersion                         Int
+  sourceSha256                          String
+  sourceAuthorizationRevision           Int
+  sourceAuthorizationBasis              String
+  sourceAuthorizationDeclarationVersion String
+  sourceAuthorizationDecidedAt          DateTime
+  cutPipelineJobId                      String                         @db.Uuid
+  cutResultArtifactId                   String                         @db.Uuid
+  cutResultSha256                       String
+  cutResultSizeBytes                    BigInt
+  cutStartMs                            Int
+  cutEndMs                              Int
+  creatorProfileId                      String                         @db.Uuid
+  creatorProfileRevisionId              String                         @db.Uuid
+  creatorProfileRevisionNo              Int
+  sourceContextId                       String                         @db.Uuid
+  sourceContextRevisionId               String                         @db.Uuid
+  sourceContextRevisionNo               Int
+  cutPromptId                           String                         @db.Uuid
+  cutPromptRevisionId                   String                         @db.Uuid
+  cutPromptRevisionNo                   Int
+  contextPolicyFingerprint              String
+  contractVersion                       String
+  adapterVersion                        String
+  promptBasisVersion                    String
+  state                                 ImageSuggestionState           @default(QUEUED)
+  failureCode                           String?
+  failureMessage                        String?
+  createdAt                             DateTime                       @default(now())
+  updatedAt                             DateTime                       @updatedAt
+  attempts                              ImageSuggestionAttempt[]
+  candidate                             ImageSuggestionCandidate?
+  componentProvenance                   EditorialComponentProvenance[]
+
+  @@index([cutPipelineJobId, createdAt, id])
+  @@index([projectId, state, createdAt])
+}
+
+model ImageSuggestionAttempt {
+  id             String                      @id @db.Uuid
+  intentId       String                      @db.Uuid
+  intent         ImageSuggestionIntent       @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptNumber  Int
+  state          ImageSuggestionAttemptState @default(PROCESSING)
+  leaseToken     String                      @unique
+  leaseExpiresAt DateTime
+  workDeadlineAt DateTime
+  failureCode    String?
+  failureMessage String?
+  objectKey      String                @unique
+  uploadStartedAt DateTime?
+  uploadSettledAt DateTime?
+  cleanupStatus  ArtifactCleanupStatus @default(PENDING)
+  cleanupAttemptCount Int               @default(0)
+  cleanupLastErrorCode String?
+  nextCleanupAt  DateTime               @default(now())
+  cleanupCompletedAt DateTime?
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+  candidate      ImageSuggestionCandidate?
+
+  @@unique([intentId, attemptNumber])
+  @@unique([id, intentId], map: "ImageSuggestionAttempt_id_intent_key")
+  @@index([leaseExpiresAt, state])
+  @@index([cleanupStatus, nextCleanupAt])
+}
+
+model ImageSuggestionCandidate {
+  id                  String                         @id @db.Uuid
+  intentId            String                         @unique @db.Uuid
+  intent              ImageSuggestionIntent          @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptId           String                         @unique @db.Uuid
+  attempt             ImageSuggestionAttempt         @relation(fields: [attemptId, intentId], references: [id, intentId], onDelete: Restrict, map: "ImageSuggestionCandidate_exact_attempt_fkey")
+  objectKey           String                         @unique
+  contentType         String
+  sizeBytes           BigInt
+  sha256              String
+  width               Int
+  height              Int
+  storageEtag         String?
+  storageVersion      String?
+  contractVersion     String
+  adapterVersion      String
+  promptBasisVersion  String
+  likeness            String                         @default("NONE")
+  safetyDecision      Json
+  directCostMicrousd  BigInt                         @default(0)
+  costBasisVersion    String
+  createdAt           DateTime                       @default(now())
+  componentProvenance EditorialComponentProvenance[]
+
+  @@unique([id, intentId], map: "ImageSuggestionCandidate_id_intent_key")
+  @@unique([attemptId, intentId], map: "ImageSuggestionCandidate_attempt_intent_key")
 }
 
 /// Fenced worker attempt. An expired lease may be reclaimed until retryBudget is exhausted.

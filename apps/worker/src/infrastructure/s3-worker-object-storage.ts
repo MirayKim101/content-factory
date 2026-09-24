@@ -205,6 +205,30 @@ export class S3WorkerObjectStorage implements WorkerObjectStorage {
     );
   }
 
+  async uploadBytes(input: {
+    objectKey: string;
+    bytes: Buffer;
+    contentType: string;
+    sha256: string;
+    signal?: AbortSignal;
+  }): Promise<{ etag?: string; version?: string }> {
+    const result = await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: input.objectKey,
+        Body: input.bytes,
+        ContentLength: input.bytes.length,
+        ContentType: input.contentType,
+        Metadata: { sha256: input.sha256 },
+      }),
+      { abortSignal: input.signal },
+    );
+    return {
+      ...(result.ETag ? { etag: result.ETag } : {}),
+      ...(result.VersionId ? { version: result.VersionId } : {}),
+    };
+  }
+
   close(): void {
     this.client.destroy();
   }

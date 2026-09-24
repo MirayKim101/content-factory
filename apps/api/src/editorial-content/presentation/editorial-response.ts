@@ -39,6 +39,16 @@ export function toEditorialPackageResponse(
     },
     revision: {
       ...value.revision,
+      provenance: {
+        metadata: {
+          mode: value.revision.provenance.metadata.mode,
+          basisVersion: value.revision.provenance.metadata.basisVersion,
+        },
+        thumbnail: {
+          mode: value.revision.provenance.thumbnail.mode,
+          basisVersion: value.revision.provenance.thumbnail.basisVersion,
+        },
+      },
       processingTemplateRevision: toProcessingTemplateResponse(
         value.revision.processingTemplateRevision,
       ),

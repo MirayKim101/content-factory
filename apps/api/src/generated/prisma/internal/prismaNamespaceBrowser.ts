@@ -101,6 +101,9 @@ export const ModelName = {
   ResearchCitation: 'ResearchCitation',
   ResearchSuggestionAttempt: 'ResearchSuggestionAttempt',
   ResearchSuggestionSet: 'ResearchSuggestionSet',
+  ImageSuggestionIntent: 'ImageSuggestionIntent',
+  ImageSuggestionAttempt: 'ImageSuggestionAttempt',
+  ImageSuggestionCandidate: 'ImageSuggestionCandidate',
   TranscriptEvidenceAttempt: 'TranscriptEvidenceAttempt',
   TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact'
 } as const
@@ -865,6 +868,8 @@ export const EditorialComponentProvenanceScalarFieldEnum = {
   basisVersion: 'basisVersion',
   researchIntentId: 'researchIntentId',
   suggestionSetId: 'suggestionSetId',
+  imageIntentId: 'imageIntentId',
+  imageCandidateId: 'imageCandidateId',
   createdAt: 'createdAt'
 } as const
 
@@ -1129,6 +1134,97 @@ export const ResearchSuggestionSetScalarFieldEnum = {
 } as const
 
 export type ResearchSuggestionSetScalarFieldEnum = (typeof ResearchSuggestionSetScalarFieldEnum)[keyof typeof ResearchSuggestionSetScalarFieldEnum]
+
+
+export const ImageSuggestionIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  sourceSha256: 'sourceSha256',
+  sourceAuthorizationRevision: 'sourceAuthorizationRevision',
+  sourceAuthorizationBasis: 'sourceAuthorizationBasis',
+  sourceAuthorizationDeclarationVersion: 'sourceAuthorizationDeclarationVersion',
+  sourceAuthorizationDecidedAt: 'sourceAuthorizationDecidedAt',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  cutResultSha256: 'cutResultSha256',
+  cutResultSizeBytes: 'cutResultSizeBytes',
+  cutStartMs: 'cutStartMs',
+  cutEndMs: 'cutEndMs',
+  creatorProfileId: 'creatorProfileId',
+  creatorProfileRevisionId: 'creatorProfileRevisionId',
+  creatorProfileRevisionNo: 'creatorProfileRevisionNo',
+  sourceContextId: 'sourceContextId',
+  sourceContextRevisionId: 'sourceContextRevisionId',
+  sourceContextRevisionNo: 'sourceContextRevisionNo',
+  cutPromptId: 'cutPromptId',
+  cutPromptRevisionId: 'cutPromptRevisionId',
+  cutPromptRevisionNo: 'cutPromptRevisionNo',
+  contextPolicyFingerprint: 'contextPolicyFingerprint',
+  contractVersion: 'contractVersion',
+  adapterVersion: 'adapterVersion',
+  promptBasisVersion: 'promptBasisVersion',
+  state: 'state',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageSuggestionIntentScalarFieldEnum = (typeof ImageSuggestionIntentScalarFieldEnum)[keyof typeof ImageSuggestionIntentScalarFieldEnum]
+
+
+export const ImageSuggestionAttemptScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptNumber: 'attemptNumber',
+  state: 'state',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  workDeadlineAt: 'workDeadlineAt',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  objectKey: 'objectKey',
+  uploadStartedAt: 'uploadStartedAt',
+  uploadSettledAt: 'uploadSettledAt',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  nextCleanupAt: 'nextCleanupAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ImageSuggestionAttemptScalarFieldEnum = (typeof ImageSuggestionAttemptScalarFieldEnum)[keyof typeof ImageSuggestionAttemptScalarFieldEnum]
+
+
+export const ImageSuggestionCandidateScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  attemptId: 'attemptId',
+  objectKey: 'objectKey',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  width: 'width',
+  height: 'height',
+  storageEtag: 'storageEtag',
+  storageVersion: 'storageVersion',
+  contractVersion: 'contractVersion',
+  adapterVersion: 'adapterVersion',
+  promptBasisVersion: 'promptBasisVersion',
+  likeness: 'likeness',
+  safetyDecision: 'safetyDecision',
+  directCostMicrousd: 'directCostMicrousd',
+  costBasisVersion: 'costBasisVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type ImageSuggestionCandidateScalarFieldEnum = (typeof ImageSuggestionCandidateScalarFieldEnum)[keyof typeof ImageSuggestionCandidateScalarFieldEnum]
 
 
 export const TranscriptEvidenceAttemptScalarFieldEnum = {

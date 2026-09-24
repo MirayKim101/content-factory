@@ -57,6 +57,7 @@ const API_ENVIRONMENT_KEYS = [
   "AI_CONTEXT_ENABLED",
   "EDITORIAL_FRAMES_ENABLED",
   "RESEARCH_TEXT_ENABLED",
+  "THUMBNAIL_SUGGESTIONS_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -171,6 +172,7 @@ export interface ApiEnvironment {
   aiContextEnabled: boolean;
   editorialFramesEnabled: boolean;
   researchTextEnabled: boolean;
+  thumbnailSuggestionsEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -252,6 +254,8 @@ export function apiEnvironment(): ApiEnvironment {
     aiContextEnabled: aiContextAdmissionEnabled(process.env),
     editorialFramesEnabled: process.env.EDITORIAL_FRAMES_ENABLED === "1",
     researchTextEnabled: process.env.RESEARCH_TEXT_ENABLED === "1",
+    thumbnailSuggestionsEnabled:
+      process.env.THUMBNAIL_SUGGESTIONS_ENABLED === "1",
   };
 }
 

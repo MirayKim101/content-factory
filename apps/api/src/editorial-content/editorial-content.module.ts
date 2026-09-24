@@ -73,7 +73,9 @@ import { PrismaEditorialRepository } from "./infrastructure/prisma-editorial.rep
 import { ProjectObjectEditorialStorage } from "./infrastructure/project-object-editorial-storage.js";
 import { EditorialController } from "./presentation/editorial.controller.js";
 import { ApplyAiMetadata } from "./application/apply-ai-metadata.js";
+import { ApplyAiThumbnail } from "./application/apply-ai-thumbnail.js";
 import { EDITORIAL_AI_METADATA_APPLIER } from "./application/editorial-ai-metadata-applier.port.js";
+import { EDITORIAL_AI_THUMBNAIL_APPLIER } from "./application/editorial-ai-thumbnail-applier.port.js";
 
 @Module({
   imports: [ProjectsModule, MediaPipelineModule],
@@ -148,6 +150,7 @@ import { EDITORIAL_AI_METADATA_APPLIER } from "./application/editorial-ai-metada
     GetEditorialAsset,
     SaveEditorialPackage,
     ApplyAiMetadata,
+    ApplyAiThumbnail,
     ReconcileEditorialAssets,
     EditorialAssetReconciliationStartup,
     GetEditorialPackage,
@@ -156,10 +159,14 @@ import { EDITORIAL_AI_METADATA_APPLIER } from "./application/editorial-ai-metada
     { provide: EDITORIAL_REPOSITORY, useExisting: PrismaEditorialRepository },
     { provide: EDITORIAL_AI_METADATA_APPLIER, useExisting: ApplyAiMetadata },
     {
+      provide: EDITORIAL_AI_THUMBNAIL_APPLIER,
+      useExisting: ApplyAiThumbnail,
+    },
+    {
       provide: EDITORIAL_STORAGE,
       useExisting: ProjectObjectEditorialStorage,
     },
   ],
-  exports: [EDITORIAL_AI_METADATA_APPLIER],
+  exports: [EDITORIAL_AI_METADATA_APPLIER, EDITORIAL_AI_THUMBNAIL_APPLIER],
 })
 export class EditorialContentModule {}

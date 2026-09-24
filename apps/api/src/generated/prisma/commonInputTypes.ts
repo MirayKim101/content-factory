@@ -928,6 +928,40 @@ export type EnumResearchAttemptStateWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel>
 }
 
+export type EnumImageSuggestionStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionState | Prisma.EnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionStateFilter<$PrismaModel> | $Enums.ImageSuggestionState
+}
+
+export type EnumImageSuggestionStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionState | Prisma.EnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionStateWithAggregatesFilter<$PrismaModel> | $Enums.ImageSuggestionState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumImageSuggestionStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumImageSuggestionStateFilter<$PrismaModel>
+}
+
+export type EnumImageSuggestionAttemptStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionAttemptState | Prisma.EnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionAttemptStateFilter<$PrismaModel> | $Enums.ImageSuggestionAttemptState
+}
+
+export type EnumImageSuggestionAttemptStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionAttemptState | Prisma.EnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionAttemptStateWithAggregatesFilter<$PrismaModel> | $Enums.ImageSuggestionAttemptState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumImageSuggestionAttemptStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumImageSuggestionAttemptStateFilter<$PrismaModel>
+}
+
 export type EnumTranscriptAttemptStateFilter<$PrismaModel = never> = {
   equals?: $Enums.TranscriptAttemptState | Prisma.EnumTranscriptAttemptStateFieldRefInput<$PrismaModel>
   in?: $Enums.TranscriptAttemptState[] | Prisma.ListEnumTranscriptAttemptStateFieldRefInput<$PrismaModel>
@@ -1801,6 +1835,40 @@ export type NestedEnumResearchAttemptStateWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel>
   _max?: Prisma.NestedEnumResearchAttemptStateFilter<$PrismaModel>
+}
+
+export type NestedEnumImageSuggestionStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionState | Prisma.EnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionStateFilter<$PrismaModel> | $Enums.ImageSuggestionState
+}
+
+export type NestedEnumImageSuggestionStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionState | Prisma.EnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionState[] | Prisma.ListEnumImageSuggestionStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionStateWithAggregatesFilter<$PrismaModel> | $Enums.ImageSuggestionState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumImageSuggestionStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumImageSuggestionStateFilter<$PrismaModel>
+}
+
+export type NestedEnumImageSuggestionAttemptStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionAttemptState | Prisma.EnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionAttemptStateFilter<$PrismaModel> | $Enums.ImageSuggestionAttemptState
+}
+
+export type NestedEnumImageSuggestionAttemptStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ImageSuggestionAttemptState | Prisma.EnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  in?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ImageSuggestionAttemptState[] | Prisma.ListEnumImageSuggestionAttemptStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumImageSuggestionAttemptStateWithAggregatesFilter<$PrismaModel> | $Enums.ImageSuggestionAttemptState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumImageSuggestionAttemptStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumImageSuggestionAttemptStateFilter<$PrismaModel>
 }
 
 export type NestedEnumTranscriptAttemptStateFilter<$PrismaModel = never> = {

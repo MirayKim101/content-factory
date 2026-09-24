@@ -221,7 +221,8 @@ export const AiContentOperationType = {
   PUT_CUT_EDITORIAL_PROMPT: 'PUT_CUT_EDITORIAL_PROMPT',
   CREATE_FRAME_EVIDENCE: 'CREATE_FRAME_EVIDENCE',
   CREATE_TRANSCRIPT_EVIDENCE: 'CREATE_TRANSCRIPT_EVIDENCE',
-  CREATE_RESEARCH_SUGGESTION: 'CREATE_RESEARCH_SUGGESTION'
+  CREATE_RESEARCH_SUGGESTION: 'CREATE_RESEARCH_SUGGESTION',
+  CREATE_IMAGE_SUGGESTION: 'CREATE_IMAGE_SUGGESTION'
 } as const
 
 export type AiContentOperationType = (typeof AiContentOperationType)[keyof typeof AiContentOperationType]
@@ -263,6 +264,25 @@ export const ResearchAttemptState = {
 } as const
 
 export type ResearchAttemptState = (typeof ResearchAttemptState)[keyof typeof ResearchAttemptState]
+
+
+export const ImageSuggestionState = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type ImageSuggestionState = (typeof ImageSuggestionState)[keyof typeof ImageSuggestionState]
+
+
+export const ImageSuggestionAttemptState = {
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type ImageSuggestionAttemptState = (typeof ImageSuggestionAttemptState)[keyof typeof ImageSuggestionAttemptState]
 
 
 export const EditorialComponentType = {

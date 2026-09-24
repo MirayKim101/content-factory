@@ -75,6 +75,10 @@ export interface EditorialPackageView {
 export interface EditorialComponentProvenanceView {
   mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
   basisVersion: string;
+  researchIntentId?: string;
+  suggestionSetId?: string;
+  imageIntentId?: string;
+  imageCandidateId?: string;
 }
 
 export const MANUAL_EDITORIAL_PROVENANCE = {
