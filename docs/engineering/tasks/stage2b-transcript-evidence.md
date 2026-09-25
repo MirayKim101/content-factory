@@ -1,6 +1,6 @@
 # Stage 2B-3 — transcript evidence and local AI-worker foundation
 
-Status: local runtime checkpoint; live acceptance and private range delivery pending
+Status: accepted; implementation, live recovery evidence and independent review complete
 
 This slice adds a provider-neutral transcript evidence boundary after the
 accepted sparse-frame slice. It keeps the existing manual editorial path
@@ -14,7 +14,8 @@ available when no transcript adapter is configured.
    metadata, checksums, adapter version and controlled terminal failure.
 3. Transcript work is delivered asynchronously to the `ai-transcript-v1`
    BullMQ queue and consumed by the worker's deterministic local adapter. HTTP
-   never performs transcription. Live restart/recovery acceptance is pending.
+   never performs transcription. Live restart/recovery acceptance is recorded
+   in `../TRANSCRIPT-WORKER-RECOVERY-ACCEPTANCE.md`.
 4. The first adapter is a deterministic local/manual adapter. It accepts a
    bounded operator transcript fixture for local acceptance and never calls an
    external provider or requires credentials.
@@ -30,9 +31,13 @@ available when no transcript adapter is configured.
    checksum preservation.
 
 Current checkpoint: PostgreSQL schema, immutable capture, idempotency registry,
-lease/attempt state machine, versioned HTTP/OpenAPI routes, queue dispatch and
-worker delivery are implemented. Private range/HEAD delivery and live
-acceptance remain.
+lease/attempt state machine, versioned HTTP/OpenAPI routes, queue dispatch,
+private GET/HEAD/Range delivery and worker recovery are implemented. A guarded
+disposable PostgreSQL + private object-storage run proves READY, duplicate
+delivery, expired-lease restart, stale-context object cleanup and controlled
+retry exhaustion. Attempt-owned object keys, upload settlement markers and a
+periodic durable cleanup reconciler protect ambiguous PUT/COMMIT outcomes.
+Independent real-diff review completed CLEAN after architect approval.
 
 Out of scope: external speech provider selection, automatic highlight
 detection, factual research, text/image generation and Stage 3 publication.

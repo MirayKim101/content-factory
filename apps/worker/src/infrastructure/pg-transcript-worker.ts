@@ -1,6 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
-import { Pool } from "pg";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { Pool, types as pgTypes } from "pg";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import {
   LOCAL_TRANSCRIPT_ADAPTER_VERSION,
   TRANSCRIPT_CONTRACT_VERSION,
@@ -25,7 +29,20 @@ export class PgTranscriptWorker {
   private readonly storage: S3Client;
 
   constructor(private readonly config: Config) {
-    this.pool = new Pool({ connectionString: config.databaseUrl, max: 2 });
+    this.pool = new Pool({
+      connectionString: config.databaseUrl,
+      max: 2,
+      options: "-c timezone=UTC",
+      types: {
+        // Prisma timestamp(3) values represent UTC. The default node-postgres
+        // parser treats timestamp-without-time-zone as worker-local time,
+        // which can make a fresh lease look expired outside UTC.
+        getTypeParser: (oid, format) =>
+          oid === 1114 && format !== "binary"
+            ? (value: string) => new Date(`${value.replace(" ", "T")}Z`)
+            : pgTypes.getTypeParser(oid, format),
+      },
+    });
     this.storage = new S3Client({
       endpoint: config.storage.endpoint,
       region: config.storage.region,
@@ -38,12 +55,13 @@ export class PgTranscriptWorker {
   }
 
   async process(intentId: string): Promise<void> {
+    await this.recover(10);
     const client = await this.pool.connect();
     let claim:
       | {
           attemptId: string;
           leaseToken: string;
-          workDeadlineAt: Date;
+          objectKey: string;
           fixture: { language: string; segments: TranscriptSegment[] };
           durationMs: number;
           sourceVersion: number;
@@ -86,7 +104,7 @@ export class PgTranscriptWorker {
         attemptCount: number;
         retryBudget: number;
         attemptState: string | null;
-        leaseExpiresAt: Date;
+        leaseActive: boolean;
       }>(
         `SELECT i."id", i."state", i."fixture", i."cutStartMs", i."cutEndMs",
                 i."sourceVersion", i."sourceSha256", i."sourceAuthorizationRevision",
@@ -95,7 +113,8 @@ export class PgTranscriptWorker {
                 i."sourceContextRevisionId", i."sourceContextRevisionNo",
                 i."cutPromptRevisionId", i."cutPromptRevisionNo",
                 i."attemptCount", i."retryBudget",
-                a."state" AS "attemptState", a."leaseExpiresAt"
+                a."state" AS "attemptState",
+                COALESCE(a."leaseExpiresAt" > now(), false) AS "leaseActive"
            FROM "TranscriptEvidenceIntent" i
            LEFT JOIN LATERAL (
              SELECT "state", "leaseExpiresAt" FROM "TranscriptEvidenceAttempt"
@@ -109,9 +128,32 @@ export class PgTranscriptWorker {
         await client.query("ROLLBACK");
         return;
       }
-      if (row.state === "PROCESSING" && row.leaseExpiresAt > new Date()) {
+      if (
+        row.state === "PROCESSING" &&
+        row.attemptState === "PROCESSING" &&
+        row.leaseActive
+      ) {
         await client.query("ROLLBACK");
         return;
+      }
+      if (
+        row.state === "PROCESSING" &&
+        row.attemptState === "PROCESSING" &&
+        !row.leaseActive
+      ) {
+        const expiredAttempt = await client.query(
+          `UPDATE "TranscriptEvidenceAttempt"
+              SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
+                  "failureCode" = 'TRANSCRIPT_LEASE_EXPIRED',
+                  "failureMessage" = 'Предыдущий AI worker потерял lease.'
+            WHERE "intentId" = $1 AND "attemptNumber" = $2
+              AND "state" = 'PROCESSING' AND "leaseExpiresAt" <= now()`,
+          [intentId, row.attemptCount],
+        );
+        if (expiredAttempt.rowCount !== 1) {
+          await client.query("ROLLBACK");
+          return;
+        }
       }
       if (row.attemptCount >= row.retryBudget + 1) {
         await client.query(
@@ -126,16 +168,20 @@ export class PgTranscriptWorker {
       const attemptId = randomUUID();
       const leaseToken = randomUUID();
       const attemptNumber = row.attemptCount + 1;
+      const objectKey = `ai-content/transcripts/${intentId}/attempts/${attemptId}/transcript.json`;
       await client.query(
         `INSERT INTO "TranscriptEvidenceAttempt"
-          ("id", "intentId", "attemptNumber", "workerId", "leaseToken", "leaseExpiresAt", "workDeadlineAt")
-         VALUES ($1, $2, $3, $4, $5, now() + interval '30 seconds', now() + interval '120 seconds')`,
+          ("id", "intentId", "attemptNumber", "workerId", "leaseToken", "leaseExpiresAt", "workDeadlineAt",
+           "objectKey", "cleanupStatus", "nextCleanupAt", "updatedAt")
+         VALUES ($1, $2, $3, $4, $5, now() + interval '30 seconds', now() + interval '120 seconds',
+                 $6, 'PENDING', now(), now())`,
         [
           attemptId,
           intentId,
           attemptNumber,
           `ai-worker-${process.pid}`,
           leaseToken,
+          objectKey,
         ],
       );
       await client.query(
@@ -148,7 +194,7 @@ export class PgTranscriptWorker {
       claim = {
         attemptId,
         leaseToken,
-        workDeadlineAt: new Date(Date.now() + 120_000),
+        objectKey,
         fixture: row.fixture,
         durationMs: row.cutEndMs - row.cutStartMs,
         sourceVersion: row.sourceVersion,
@@ -196,27 +242,42 @@ export class PgTranscriptWorker {
       const bytes = Buffer.from(payload);
       const sha256 = createHash("sha256").update(bytes).digest("hex");
       const artifactId = randomUUID();
-      const objectKey = `ai-content/transcripts/${intentId}/transcript.json`;
-      await this.storage.send(
-        new PutObjectCommand({
-          Bucket: this.config.bucket,
-          Key: objectKey,
-          Body: bytes,
-          ContentType: "application/json",
-          Metadata: { sha256 },
-        }),
-      );
+      if (!(await this.markUploadStarted(claim.attemptId, claim.leaseToken))) {
+        await this.reconcileAttemptObject(claim.attemptId);
+        return;
+      }
+      const uploadController = new AbortController();
+      const uploadTimer = setTimeout(() => uploadController.abort(), 25_000);
+      uploadTimer.unref();
+      try {
+        await this.storage.send(
+          new PutObjectCommand({
+            Bucket: this.config.bucket,
+            Key: claim.objectKey,
+            Body: bytes,
+            ContentType: "application/json",
+            Metadata: { sha256 },
+          }),
+          { abortSignal: uploadController.signal },
+        );
+        await this.markUploadSettled(claim.attemptId, claim.leaseToken);
+      } finally {
+        clearTimeout(uploadTimer);
+      }
       const finalize = await this.pool.connect();
       try {
         await finalize.query("BEGIN");
         const current = await finalize.query<{
           state: string;
           leaseToken: string;
-          workDeadlineAt: Date;
+          leaseActive: boolean;
+          deadlineActive: boolean;
           attemptNumber: number;
           attemptCount: number;
         }>(
-          `SELECT i."state", a."leaseToken", a."workDeadlineAt"
+          `SELECT i."state", a."leaseToken",
+                  a."leaseExpiresAt" > now() AS "leaseActive",
+                  a."workDeadlineAt" > now() AS "deadlineActive"
                   , a."attemptNumber", i."attemptCount"
              FROM "TranscriptEvidenceIntent" i
              JOIN "TranscriptEvidenceAttempt" a ON a."intentId" = i."id"
@@ -229,9 +290,11 @@ export class PgTranscriptWorker {
           !currentRow ||
           currentRow.state !== "PROCESSING" ||
           currentRow.leaseToken !== claim.leaseToken ||
-          currentRow.workDeadlineAt <= new Date()
+          !currentRow.leaseActive ||
+          !currentRow.deadlineActive
         ) {
           await finalize.query("ROLLBACK");
+          await this.reconcileAttemptObject(claim.attemptId);
           return;
         }
         const context = await finalize.query(
@@ -259,32 +322,39 @@ export class PgTranscriptWorker {
           [intentId],
         );
         if (context.rowCount !== 1) {
-          await finalize.query(
+          const staleAttempt = await finalize.query(
             `UPDATE "TranscriptEvidenceAttempt"
                 SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
                     "failureCode" = 'TRANSCRIPT_CONTEXT_STALE',
                     "failureMessage" = 'Контекст или разрешение источника изменились.'
               WHERE "id" = $1 AND "leaseToken" = $2
                 AND "state" = 'PROCESSING'
-                AND "attemptNumber" = (SELECT "attemptCount" FROM "TranscriptEvidenceIntent" WHERE "id" = $3);
-             UPDATE "TranscriptEvidenceIntent"
+                AND "attemptNumber" = (SELECT "attemptCount" FROM "TranscriptEvidenceIntent" WHERE "id" = $3)`,
+            [claim.attemptId, claim.leaseToken, intentId],
+          );
+          const staleIntent = await finalize.query(
+            `UPDATE "TranscriptEvidenceIntent"
                 SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
                     "failureCode" = 'TRANSCRIPT_CONTEXT_STALE',
                     "failureMessage" = 'Контекст или разрешение источника изменились.'
-              WHERE "id" = $3 AND "state" = 'PROCESSING' AND "attemptCount" = $4`,
-            [claim.attemptId, claim.leaseToken, intentId, claim.attemptNumber],
+              WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $2`,
+            [intentId, claim.attemptNumber],
           );
+          if (staleAttempt.rowCount !== 1 || staleIntent.rowCount !== 1) {
+            throw new Error("TRANSCRIPT_STALE_FINALIZE_LEASE_LOST");
+          }
           await finalize.query("COMMIT");
+          await this.reconcileAttemptObject(claim.attemptId);
           return;
         }
-        await finalize.query(
+        const artifactInsert = await finalize.query(
           `INSERT INTO "TranscriptEvidenceArtifact"
           ("id", "intentId", "objectKey", "contentType", "sizeBytes", "sha256", "adapterVersion", "language", "segments")
          VALUES ($1, $2, $3, 'application/json', $4, $5, $6, $7, $8::jsonb)`,
           [
             artifactId,
             intentId,
-            objectKey,
+            claim.objectKey,
             bytes.length,
             sha256,
             LOCAL_TRANSCRIPT_ADAPTER_VERSION,
@@ -292,11 +362,24 @@ export class PgTranscriptWorker {
             JSON.stringify(segments),
           ],
         );
-        await finalize.query(
-          `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'READY', "finishedAt" = now() WHERE "id" = $1;
-         UPDATE "TranscriptEvidenceIntent" SET "state" = 'READY', "finishedAt" = now() WHERE "id" = $2`,
-          [claim.attemptId, intentId],
+        const readyAttempt = await finalize.query(
+          `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'READY', "finishedAt" = now(),
+             "cleanupStatus" = 'NOT_REQUIRED', "cleanupLastErrorCode" = NULL, "updatedAt" = now()
+            WHERE "id" = $1 AND "leaseToken" = $2 AND "state" = 'PROCESSING'`,
+          [claim.attemptId, claim.leaseToken],
         );
+        const readyIntent = await finalize.query(
+          `UPDATE "TranscriptEvidenceIntent" SET "state" = 'READY', "finishedAt" = now()
+            WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $2`,
+          [intentId, claim.attemptNumber],
+        );
+        if (
+          artifactInsert.rowCount !== 1 ||
+          readyAttempt.rowCount !== 1 ||
+          readyIntent.rowCount !== 1
+        ) {
+          throw new Error("TRANSCRIPT_FINALIZE_LEASE_LOST");
+        }
         await finalize.query("COMMIT");
       } catch (error) {
         await finalize.query("ROLLBACK").catch(() => undefined);
@@ -305,28 +388,363 @@ export class PgTranscriptWorker {
         finalize.release();
       }
     } catch (error) {
-      const failed = await this.pool.connect();
-      await failed.query(
-        `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
-           "failureCode" = 'TRANSCRIPT_DELIVERY_FAILED', "failureMessage" = $3
-         WHERE "id" = $1 AND "leaseToken" = $2 AND "state" = 'PROCESSING'
-           AND "attemptNumber" = (SELECT "attemptCount" FROM "TranscriptEvidenceIntent" WHERE "id" = $4);
-         UPDATE "TranscriptEvidenceIntent" SET "state" = CASE WHEN "attemptCount" <= "retryBudget" THEN 'QUEUED' ELSE 'FAILED_FINAL' END,
-           "finishedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE now() END,
-           "queuedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN now() ELSE "queuedAt" END,
-           "failureCode" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'TRANSCRIPT_DELIVERY_FAILED' END,
-           "failureMessage" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'Transcript delivery failed.' END
-         WHERE "id" = $4 AND "state" = 'PROCESSING' AND "attemptCount" = $5`,
-        [
-          claim.attemptId,
-          claim.leaseToken,
-          "TRANSCRIPT_DELIVERY_FAILED",
+      let accepted: boolean;
+      try {
+        accepted = await this.hasPersistedArtifact(
           intentId,
-          claim.attemptNumber,
-        ],
-      );
-      failed.release();
+          claim.attemptId,
+          claim.objectKey,
+        );
+      } catch (reconciliationError) {
+        throw new AggregateError(
+          [error, reconciliationError],
+          "TRANSCRIPT_DELIVERY_OUTCOME_UNKNOWN",
+        );
+      }
+      if (accepted) return;
+      const failed = await this.pool.connect();
+      try {
+        await failed.query("BEGIN");
+        const failedAttempt = await failed.query(
+          `UPDATE "TranscriptEvidenceAttempt" SET "state" = 'FAILED_FINAL', "finishedAt" = now(),
+             "failureCode" = 'TRANSCRIPT_DELIVERY_FAILED', "failureMessage" = $3
+           WHERE "id" = $1 AND "leaseToken" = $2 AND "state" = 'PROCESSING'
+             AND "attemptNumber" = (SELECT "attemptCount" FROM "TranscriptEvidenceIntent" WHERE "id" = $4)`,
+          [
+            claim.attemptId,
+            claim.leaseToken,
+            "TRANSCRIPT_DELIVERY_FAILED",
+            intentId,
+          ],
+        );
+        const failedIntent = await failed.query(
+          `UPDATE "TranscriptEvidenceIntent"
+              SET "state" = CASE WHEN "attemptCount" <= "retryBudget"
+                    THEN 'QUEUED'::"TranscriptIntentState"
+                    ELSE 'FAILED_FINAL'::"TranscriptIntentState" END,
+                  "finishedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE now() END,
+                  "queuedAt" = CASE WHEN "attemptCount" <= "retryBudget" THEN now() ELSE "queuedAt" END,
+                  "failureCode" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'TRANSCRIPT_DELIVERY_FAILED' END,
+                  "failureMessage" = CASE WHEN "attemptCount" <= "retryBudget" THEN NULL ELSE 'Transcript delivery failed.' END
+            WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $2`,
+          [intentId, claim.attemptNumber],
+        );
+        if (failedAttempt.rowCount !== 1 || failedIntent.rowCount !== 1) {
+          throw new Error("TRANSCRIPT_FAILURE_LEASE_LOST");
+        }
+        await failed.query("COMMIT");
+      } catch (recordingError) {
+        await failed.query("ROLLBACK").catch(() => undefined);
+        throw new AggregateError(
+          [error, recordingError],
+          "TRANSCRIPT_DELIVERY_FAILURE_RECORDING_FAILED",
+        );
+      } finally {
+        failed.release();
+      }
+      await this.reconcileAttemptObject(claim.attemptId);
       throw error;
+    }
+  }
+
+  async recover(limit = 50): Promise<number> {
+    const boundedLimit = Math.max(1, Math.min(500, Math.trunc(limit)));
+    const due = await this.pool.query<{ id: string }>(
+      `SELECT "id" FROM "TranscriptEvidenceAttempt"
+        WHERE "cleanupStatus" = 'PENDING' AND "nextCleanupAt" <= now()
+        ORDER BY "nextCleanupAt", "id" LIMIT $1`,
+      [boundedLimit],
+    );
+    for (const row of due.rows) await this.reconcileAttemptObject(row.id);
+    return due.rows.length;
+  }
+
+  private async markUploadStarted(
+    attemptId: string,
+    leaseToken: string,
+  ): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "TranscriptEvidenceAttempt"
+          SET "uploadStartedAt" = COALESCE("uploadStartedAt", now()), "updatedAt" = now()
+        WHERE "id" = $1 AND "leaseToken" = $2 AND "state" = 'PROCESSING'
+          AND "leaseExpiresAt" > now() AND "workDeadlineAt" > now()`,
+      [attemptId, leaseToken],
+    );
+    return result.rowCount === 1;
+  }
+
+  private async markUploadSettled(
+    attemptId: string,
+    leaseToken: string,
+  ): Promise<void> {
+    const result = await this.pool.query(
+      `UPDATE "TranscriptEvidenceAttempt"
+          SET "uploadSettledAt" = COALESCE("uploadSettledAt", now()), "updatedAt" = now()
+        WHERE "id" = $1 AND "leaseToken" = $2`,
+      [attemptId, leaseToken],
+    );
+    if (result.rowCount !== 1)
+      throw new Error("TRANSCRIPT_UPLOAD_SETTLEMENT_LOST");
+  }
+
+  private async hasPersistedArtifact(
+    intentId: string,
+    attemptId: string,
+    objectKey: string,
+  ): Promise<boolean> {
+    const accepted = await this.pool.query(
+      `SELECT 1
+         FROM "TranscriptEvidenceArtifact" ar
+         JOIN "TranscriptEvidenceAttempt" a ON a."objectKey" = ar."objectKey"
+        WHERE a."intentId" = $1 AND a."id" = $2 AND ar."objectKey" = $3`,
+      [intentId, attemptId, objectKey],
+    );
+    return accepted.rowCount === 1;
+  }
+
+  private async reconcileAttemptObject(
+    attemptId: string,
+  ): Promise<"ACCEPTED" | "COMPLETED" | "PENDING"> {
+    const reservation = await this.reserveCleanup(attemptId);
+    if (reservation.disposition !== "DELETE") return reservation.disposition;
+    let deleted = true;
+    try {
+      await this.storage.send(
+        new DeleteObjectCommand({
+          Bucket: this.config.bucket,
+          Key: reservation.objectKey,
+        }),
+      );
+    } catch {
+      deleted = false;
+    }
+    return this.finishCleanupReservation(
+      attemptId,
+      reservation.cleanupLeaseToken,
+      deleted,
+      reservation.keepTombstone,
+    );
+  }
+
+  private async reserveCleanup(attemptId: string): Promise<
+    | { disposition: "ACCEPTED" | "COMPLETED" | "PENDING" }
+    | {
+        disposition: "DELETE";
+        objectKey: string;
+        cleanupLeaseToken: string;
+        keepTombstone: boolean;
+      }
+  > {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const locked = await client.query<{
+        objectKey: string | null;
+        cleanupStatus: string;
+        uploadStarted: boolean;
+        uploadSettled: boolean;
+        attemptState: string;
+        intentState: string;
+        currentAttempt: boolean;
+        leaseActive: boolean;
+        graceElapsed: boolean;
+        cleanupLeaseActive: boolean;
+        artifactId: string | null;
+      }>(
+        `SELECT a."objectKey", a."cleanupStatus",
+                a."uploadStartedAt" IS NOT NULL AS "uploadStarted",
+                a."uploadSettledAt" IS NOT NULL AS "uploadSettled",
+                a."state" AS "attemptState", i."state" AS "intentState",
+                a."attemptNumber" = i."attemptCount" AS "currentAttempt",
+                a."leaseExpiresAt" > now() AS "leaseActive",
+                now() > a."workDeadlineAt" + interval '30 seconds' AS "graceElapsed",
+                COALESCE(a."cleanupLeaseExpiresAt" > now(), false) AS "cleanupLeaseActive",
+                ar."id" AS "artifactId"
+           FROM "TranscriptEvidenceAttempt" a
+           JOIN "TranscriptEvidenceIntent" i ON i."id" = a."intentId"
+           LEFT JOIN "TranscriptEvidenceArtifact" ar
+             ON ar."objectKey" = a."objectKey"
+          WHERE a."id" = $1
+          FOR UPDATE OF a, i`,
+        [attemptId],
+      );
+      const row = locked.rows[0];
+      if (!row) {
+        await client.query("ROLLBACK");
+        return { disposition: "COMPLETED" };
+      }
+      if (row.artifactId) {
+        await client.query(
+          `UPDATE "TranscriptEvidenceAttempt"
+              SET "cleanupStatus" = 'NOT_REQUIRED', "cleanupLastErrorCode" = NULL,
+                  "cleanupLeaseToken" = NULL, "cleanupLeaseExpiresAt" = NULL,
+                  "updatedAt" = now()
+            WHERE "id" = $1`,
+          [attemptId],
+        );
+        await client.query("COMMIT");
+        return { disposition: "ACCEPTED" };
+      }
+      if (row.cleanupStatus !== "PENDING") {
+        await client.query("COMMIT");
+        return { disposition: "COMPLETED" };
+      }
+      const activeOwner = row.attemptState === "PROCESSING" && row.leaseActive;
+      const unknownUploadStillUnsafe =
+        row.uploadStarted && !row.uploadSettled && !row.graceElapsed;
+      if (activeOwner || unknownUploadStillUnsafe || row.cleanupLeaseActive) {
+        await client.query(
+          `UPDATE "TranscriptEvidenceAttempt"
+              SET "cleanupLastErrorCode" = $2, "nextCleanupAt" = now() + interval '30 seconds',
+                  "updatedAt" = now()
+            WHERE "id" = $1 AND "cleanupStatus" = 'PENDING'`,
+          [
+            attemptId,
+            activeOwner
+              ? "TRANSCRIPT_CLEANUP_ACTIVE_LEASE"
+              : unknownUploadStillUnsafe
+                ? "TRANSCRIPT_UPLOAD_OUTCOME_UNKNOWN"
+                : "TRANSCRIPT_CLEANUP_RESERVED",
+          ],
+        );
+        await client.query("COMMIT");
+        return { disposition: "PENDING" };
+      }
+      if (!row.objectKey || !row.uploadStarted) {
+        await client.query(
+          `UPDATE "TranscriptEvidenceAttempt"
+              SET "cleanupStatus" = 'COMPLETED',
+                  "cleanupAttemptCount" = "cleanupAttemptCount" + 1,
+                  "cleanupLastErrorCode" = NULL, "cleanupCompletedAt" = now(),
+                  "cleanupLeaseToken" = NULL, "cleanupLeaseExpiresAt" = NULL,
+                  "updatedAt" = now()
+            WHERE "id" = $1 AND "cleanupStatus" = 'PENDING'`,
+          [attemptId],
+        );
+        await client.query("COMMIT");
+        return { disposition: "COMPLETED" };
+      }
+      const cleanupLeaseToken = randomUUID();
+      const reserved = await client.query(
+        `UPDATE "TranscriptEvidenceAttempt"
+            SET "cleanupLeaseToken" = $2,
+                "cleanupLeaseExpiresAt" = now() + interval '5 minutes',
+                "nextCleanupAt" = now() + interval '5 minutes',
+                "updatedAt" = now()
+          WHERE "id" = $1 AND "cleanupStatus" = 'PENDING'
+            AND ("cleanupLeaseExpiresAt" IS NULL OR "cleanupLeaseExpiresAt" <= now())`,
+        [attemptId, cleanupLeaseToken],
+      );
+      if (reserved.rowCount !== 1) {
+        await client.query("ROLLBACK");
+        return { disposition: "PENDING" };
+      }
+      await client.query("COMMIT");
+      return {
+        disposition: "DELETE",
+        objectKey: row.objectKey,
+        cleanupLeaseToken,
+        keepTombstone: row.uploadStarted && !row.uploadSettled,
+      };
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  private async finishCleanupReservation(
+    attemptId: string,
+    cleanupLeaseToken: string,
+    deleted: boolean,
+    keepTombstone: boolean,
+  ): Promise<"ACCEPTED" | "COMPLETED" | "PENDING"> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const current = await client.query<{
+        cleanupStatus: string;
+        cleanupLeaseToken: string | null;
+        artifactId: string | null;
+      }>(
+        `SELECT a."cleanupStatus", a."cleanupLeaseToken", ar."id" AS "artifactId"
+           FROM "TranscriptEvidenceAttempt" a
+           LEFT JOIN "TranscriptEvidenceArtifact" ar ON ar."objectKey" = a."objectKey"
+          WHERE a."id" = $1 FOR UPDATE OF a`,
+        [attemptId],
+      );
+      const row = current.rows[0];
+      if (!row) {
+        await client.query("ROLLBACK");
+        return "COMPLETED";
+      }
+      if (row.artifactId) {
+        await client.query(
+          `UPDATE "TranscriptEvidenceAttempt"
+              SET "cleanupStatus" = 'NOT_REQUIRED', "cleanupLastErrorCode" = NULL,
+                  "cleanupLeaseToken" = NULL, "cleanupLeaseExpiresAt" = NULL,
+                  "updatedAt" = now()
+            WHERE "id" = $1`,
+          [attemptId],
+        );
+        await client.query("COMMIT");
+        return "ACCEPTED";
+      }
+      if (
+        row.cleanupStatus !== "PENDING" ||
+        row.cleanupLeaseToken !== cleanupLeaseToken
+      ) {
+        await client.query("COMMIT");
+        return row.cleanupStatus === "COMPLETED" ? "COMPLETED" : "PENDING";
+      }
+      if (!deleted) {
+        await client.query(
+          `UPDATE "TranscriptEvidenceAttempt"
+              SET "cleanupAttemptCount" = "cleanupAttemptCount" + 1,
+                  "cleanupLastErrorCode" = 'TRANSCRIPT_OBJECT_DELETE_FAILED',
+                  "cleanupLeaseToken" = NULL, "cleanupLeaseExpiresAt" = NULL,
+                  "nextCleanupAt" = now() + interval '30 seconds', "updatedAt" = now()
+            WHERE "id" = $1 AND "cleanupStatus" = 'PENDING' AND "cleanupLeaseToken" = $2`,
+          [attemptId, cleanupLeaseToken],
+        );
+        await client.query("COMMIT");
+        return "PENDING";
+      }
+      if (keepTombstone) {
+        await client.query(
+          `UPDATE "TranscriptEvidenceAttempt"
+              SET "cleanupAttemptCount" = "cleanupAttemptCount" + 1,
+                  "cleanupLastErrorCode" = 'TRANSCRIPT_UPLOAD_OUTCOME_UNKNOWN',
+                  "cleanupLeaseToken" = NULL, "cleanupLeaseExpiresAt" = NULL,
+                  "nextCleanupAt" = now() + interval '30 seconds', "updatedAt" = now()
+            WHERE "id" = $1 AND "cleanupStatus" = 'PENDING' AND "cleanupLeaseToken" = $2`,
+          [attemptId, cleanupLeaseToken],
+        );
+        await client.query("COMMIT");
+        return "PENDING";
+      }
+      const completed = await client.query(
+        `UPDATE "TranscriptEvidenceAttempt"
+            SET "cleanupStatus" = 'COMPLETED',
+                "cleanupAttemptCount" = "cleanupAttemptCount" + 1,
+                "cleanupLastErrorCode" = NULL, "cleanupCompletedAt" = now(),
+                "cleanupLeaseToken" = NULL, "cleanupLeaseExpiresAt" = NULL,
+                "updatedAt" = now()
+          WHERE "id" = $1 AND "cleanupStatus" = 'PENDING' AND "cleanupLeaseToken" = $2`,
+        [attemptId, cleanupLeaseToken],
+      );
+      if (completed.rowCount !== 1) {
+        await client.query("ROLLBACK");
+        return "PENDING";
+      }
+      await client.query("COMMIT");
+      return "COMPLETED";
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
     }
   }
 

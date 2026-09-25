@@ -9,8 +9,10 @@ directories and their services remain outside every step.
 - [x] Serve private transcript bytes with GET, HEAD, Range, ETag and cache policy.
 - [x] Run transcript processing in the isolated `ai-worker` queue.
 - [x] Fence lease, deadline, latest attempt, source authorization and current
-  context/profile/prompt revisions before READY.
-- [ ] Reproduce a real disposable database READY/expired-lease/restart smoke.
+      context/profile/prompt revisions before READY.
+- [x] Reproduce a real disposable database READY/expired-lease/restart smoke.
+
+Evidence: `TRANSCRIPT-WORKER-RECOVERY-ACCEPTANCE.md`.
 
 Acceptance: one valid intent yields one authoritative artifact; stale or
 replaced attempts cannot finalize or leave an intent stuck in PROCESSING.
@@ -41,7 +43,7 @@ their provenance is visible in the package revision.
 ## 4. Unified approval and export gate
 
 - [ ] Revalidate current metadata, thumbnail, transcript/frame lineage and rights
-  at approval time.
+      at approval time.
 - [ ] Invalidate approval after every edit or regeneration.
 - [ ] Export the exact approved revision and manifest.
 - [ ] Record processing time, manual attention and local/provider cost fields.

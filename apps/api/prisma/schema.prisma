@@ -1656,22 +1656,34 @@ model ImageSuggestionCandidate {
 
 /// Fenced worker attempt. An expired lease may be reclaimed until retryBudget is exhausted.
 model TranscriptEvidenceAttempt {
-  id             String                   @id @db.Uuid
-  intentId       String                   @db.Uuid
-  intent         TranscriptEvidenceIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
-  attemptNumber  Int
-  state          TranscriptAttemptState   @default(PROCESSING)
-  workerId       String
-  leaseToken     String                   @unique
-  leaseExpiresAt DateTime
-  workDeadlineAt DateTime
-  startedAt      DateTime                 @default(now())
-  finishedAt     DateTime?
-  failureCode    String?
-  failureMessage String?
+  id                   String                   @id @db.Uuid
+  intentId             String                   @db.Uuid
+  intent               TranscriptEvidenceIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptNumber        Int
+  state                TranscriptAttemptState   @default(PROCESSING)
+  workerId             String
+  leaseToken           String                   @unique
+  leaseExpiresAt       DateTime
+  workDeadlineAt       DateTime
+  objectKey            String?                  @unique
+  uploadStartedAt      DateTime?
+  uploadSettledAt      DateTime?
+  cleanupStatus        ArtifactCleanupStatus    @default(NOT_REQUIRED)
+  cleanupAttemptCount  Int                      @default(0)
+  cleanupLastErrorCode String?
+  cleanupLeaseToken    String?                  @unique
+  cleanupLeaseExpiresAt DateTime?
+  nextCleanupAt        DateTime                 @default(now())
+  cleanupCompletedAt   DateTime?
+  startedAt            DateTime                 @default(now())
+  finishedAt           DateTime?
+  failureCode          String?
+  failureMessage       String?
+  updatedAt            DateTime                 @updatedAt
 
   @@unique([intentId, attemptNumber])
   @@index([state, leaseExpiresAt])
+  @@index([cleanupStatus, nextCleanupAt])
 }
 
 /// Private immutable transcript bytes and normalized timestamp metadata.

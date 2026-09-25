@@ -30,7 +30,12 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   content delivery с GET/HEAD/Range, отдельный `ai-transcript-v1` worker и
   restored-runtime smoke. Worker fenced по lease/deadline и повторно проверяет
   текущие source authorization, cut lineage, context/profile/prompt revisions
-  перед READY. Media worker больше не потребляет AI-очередь.
+  перед READY. Media worker больше не потребляет AI-очередь. Дополнительный
+  disposable PostgreSQL + private object-storage recovery smoke воспроизвёл
+  READY, duplicate delivery, expired-lease restart и controlled retry
+  exhaustion, а также удаление attempt-owned объекта при stale context;
+  ambiguous PUT/COMMIT закрыты durable cleanup tombstone и периодическим
+  reconciler; evidence: `TRANSCRIPT-WORKER-RECOVERY-ACCEPTANCE.md`.
 - Stage 2B-4a теперь имеет durable PostgreSQL cited-research intent/citations/
   attempts/suggestion/cost, отдельную AI-worker очередь, reloadable operator UI
   и exact metadata apply. Сервер выводит `AI_ASSISTED` или `MIXED`, сохраняет

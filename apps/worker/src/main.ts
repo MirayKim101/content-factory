@@ -117,7 +117,21 @@ async function startAiWorker(): Promise<void> {
       JSON.stringify({ event: "ai_image_worker_error", workerId, error: error.message }),
     ),
   );
-  await Promise.all([researchWorker.recover(), imageWorker.recover()]);
+  await Promise.all([
+    transcriptWorker.recover(),
+    researchWorker.recover(),
+    imageWorker.recover(),
+  ]);
+  const transcriptRecoveryTimer = setInterval(() => {
+    void transcriptWorker
+      .recover()
+      .catch(() =>
+        console.error(
+          JSON.stringify({ event: "ai_transcript_reconciliation_failed" }),
+        ),
+      );
+  }, 5_000);
+  transcriptRecoveryTimer.unref();
   const researchRecoveryTimer = setInterval(() => {
     void researchWorker
       .recover()
@@ -138,6 +152,7 @@ async function startAiWorker(): Promise<void> {
     process.once(signal, async () => {
       clearInterval(researchRecoveryTimer);
       clearInterval(imageRecoveryTimer);
+      clearInterval(transcriptRecoveryTimer);
       await transcriptQueue.close().catch(() => undefined);
       await researchQueue.close().catch(() => undefined);
       await imageQueue.close().catch(() => undefined);
