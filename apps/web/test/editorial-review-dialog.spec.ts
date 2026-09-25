@@ -265,7 +265,24 @@ describe("editorial review dialog", () => {
     const { wrapper } = mountDialog();
     await flushPromises();
     expect(wrapper.text()).toContain("Подтверждение устарело");
-    expect(wrapper.text()).toContain("EDITORIAL_REVISION_CHANGED");
+    expect(wrapper.text()).toContain("изменилось оформление");
+    expect(wrapper.text()).not.toContain("EDITORIAL_REVISION_CHANGED");
+  });
+
+  it("blocks blind approval when the thumbnail preview cannot be loaded", async () => {
+    mocks.review.mockResolvedValue(candidate());
+    const { wrapper } = mountDialog();
+    await flushPromises();
+
+    await wrapper.get("img").trigger("error");
+    await wrapper.find("input[type='checkbox']").trigger("change");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Обложка не загрузилась");
+    const approve = wrapper
+      .findAll("button")
+      .find((item) => item.text() === "Подтвердить версию")!;
+    expect(approve.attributes("disabled")).toBeDefined();
   });
 
   it("creates a background ZIP only from the current approval", async () => {

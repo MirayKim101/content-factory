@@ -94,6 +94,9 @@ function severity(): "success" | "warn" | "danger" | "secondary" {
 .montage-card {
   min-width: 0;
 }
+:deep(.p-card-content) {
+  padding: 1rem;
+}
 .montage-card-header {
   display: flex;
   align-items: start;

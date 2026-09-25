@@ -533,7 +533,11 @@ function setDefault(assetId?: string) {
 </script>
 <template>
   <main class="workspace">
-    <header>
+    <header class="page-header">
+      <nav class="breadcrumbs" aria-label="Хлебные крошки">
+        <span>Настройки</span><span aria-hidden="true">/</span
+        ><strong>Контекст автора</strong>
+      </nav>
       <p class="eyebrow">Редакторский контекст</p>
       <h1>Профили стримеров</h1>
       <p>
@@ -839,7 +843,27 @@ function setDefault(assetId?: string) {
 .workspace {
   max-width: 110rem;
   margin: auto;
-  padding: 2rem;
+  padding: 2.25rem clamp(1rem, 3vw, 3rem) 5rem;
+}
+.page-header {
+  max-width: 58rem;
+  margin-bottom: 1.5rem;
+}
+.page-header h1 {
+  margin: 0.15rem 0 0.35rem;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  letter-spacing: -0.035em;
+}
+.page-header > p:last-child {
+  margin: 0;
+  color: var(--cf-text-muted);
+}
+.breadcrumbs {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
 }
 .layout {
   display: grid;
@@ -858,14 +882,25 @@ function setDefault(assetId?: string) {
   margin: 0.5rem 0;
   padding: 1rem;
   text-align: left;
-  border: 1px solid #d5ddd7;
+  border: 1px solid var(--cf-border);
   background: #fff;
-  border-radius: 0.5rem;
+  border-radius: var(--cf-radius-md);
+  color: var(--cf-text);
+  box-shadow: var(--cf-shadow-sm);
+  cursor: pointer;
+}
+.profile:hover,
+.profile:focus-visible {
+  border-color: #8bb6a4;
+  background: var(--cf-brand-soft);
+  outline: none;
 }
 .editor {
-  padding: 1rem;
-  border: 1px solid #d5ddd7;
-  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-lg);
+  background: #fff;
+  box-shadow: var(--cf-shadow-sm);
 }
 form,
 label {
@@ -878,23 +913,30 @@ label {
   gap: 0.5rem;
   padding: 1rem;
   margin-top: 1rem;
-  border-top: 1px solid #d5ddd7;
+  border-top: 1px solid var(--cf-border);
 }
 .reference img {
   max-width: 16rem;
   max-height: 12rem;
 }
 .error {
-  color: #991b1b;
+  color: var(--cf-danger);
 }
 .warning {
-  color: #7c4a03;
+  color: var(--cf-warning);
 }
 .eyebrow {
-  color: #65736b;
-  font-weight: 700;
+  margin: 0;
+  color: var(--cf-brand);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 @media (max-width: 1023px) {
+  .workspace {
+    padding: 1.25rem 0.85rem 4rem;
+  }
   .layout {
     grid-template-columns: 1fr;
   }

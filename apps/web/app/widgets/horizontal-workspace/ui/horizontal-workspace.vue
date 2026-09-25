@@ -123,6 +123,37 @@ const rows = computed(() =>
     return query ? [{ id, query }] : [];
   }),
 );
+const loadedSourceCount = computed(
+  () => rows.value.filter((row) => row.query.data !== undefined).length,
+);
+const readyCutCount = computed(() =>
+  historyQueries.value.reduce(
+    (total, query) =>
+      total +
+      (query.data?.items.filter((job) => job.state === "READY").length ?? 0),
+    0,
+  ),
+);
+const activeCutCount = computed(() =>
+  historyQueries.value.reduce(
+    (total, query) =>
+      total +
+      (query.data?.items.filter((job) =>
+        ["QUEUED", "PROCESSING", "RETRY_WAIT"].includes(job.state),
+      ).length ?? 0),
+    0,
+  ),
+);
+function sourceStatusLabel(value: {
+  status: string;
+  source: { authorization: { usable: boolean } };
+}): string {
+  if (value.status === "FAILED_FINAL") return "Ошибка источника";
+  if (value.status !== "SOURCE_READY") return "Источник обрабатывается";
+  return value.source.authorization.usable
+    ? "Источник готов"
+    : "Права не подтверждены";
+}
 const editorRow = computed(() =>
   rows.value.find((row) => row.id === editorProjectId.value),
 );
@@ -434,20 +465,49 @@ watch(
 
 <template>
   <main class="workspace" aria-labelledby="horizontal-title">
-    <header class="header">
-      <div>
-        <p class="eyebrow">Content Factory · Этап 1.5</p>
+    <header class="page-header">
+      <div class="page-heading">
+        <nav class="breadcrumbs" aria-label="Хлебные крошки">
+          <span>Производство</span><span aria-hidden="true">/</span
+          ><strong>Горизонтальные видео</strong>
+        </nav>
+        <p class="eyebrow">Редакционный конвейер · Этап 2B</p>
         <h1 id="horizontal-title">Горизонтальные видео</h1>
-        <p>Выбрано: {{ ids.length }} источников</p>
+        <p class="page-description">
+          Управляйте нарезкой, оформлением, сборкой и подтверждением из одного
+          рабочего пространства.
+        </p>
       </div>
       <Button as-child>
         <NuxtLink
           class="action-link"
           :to="{ path: '/library', query: { returnTo: route.fullPath } }"
-          >Добавить видео</NuxtLink
+          >+ Добавить видео</NuxtLink
         >
       </Button>
     </header>
+    <section class="summary-strip" aria-label="Сводка рабочей очереди">
+      <article>
+        <span>Источники</span>
+        <strong>{{ loadedSourceCount }}<small>/ {{ ids.length }}</small></strong>
+        <p>добавлено в работу</p>
+      </article>
+      <article>
+        <span>Готовые нарезки</span>
+        <strong>{{ readyCutCount }}</strong>
+        <p>можно оформлять и собирать</p>
+      </article>
+      <article>
+        <span>В работе</span>
+        <strong>{{ activeCutCount }}</strong>
+        <p>очередь и обработка</p>
+      </article>
+      <article class="summary-next">
+        <span>Следующий шаг</span>
+        <strong>{{ readyCutCount ? "Оформить нарезку" : "Создать нарезку" }}</strong>
+        <p>{{ readyCutCount ? "добавьте текст и обложку" : "задайте таймкоды" }}</p>
+      </article>
+    </section>
     <p v-if="normalized.removed" class="warning" role="status">
       Некоторые ссылки на видео недействительны и не были открыты.
     </p>
@@ -455,7 +515,15 @@ watch(
       <p>Здесь появятся выбранные исходники и их таймкоды.</p>
       <NuxtLink to="/library">Выбрать видео в медиатеке</NuxtLink>
     </section>
-    <section v-else class="source-grid" aria-label="Выбранные исходные видео">
+    <section v-else class="queue-section" aria-labelledby="queue-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Рабочая очередь</p>
+          <h2 id="queue-title">Выбранные источники</h2>
+        </div>
+        <span class="count-badge">{{ ids.length }}</span>
+      </div>
+      <div class="source-grid" aria-label="Выбранные исходные видео">
       <Card v-for="(row, rowIndex) in rows" :key="row.id" class="source-card">
         <template #content>
           <p v-if="row.query.isLoading">Загружаем исходное видео…</p>
@@ -468,14 +536,27 @@ watch(
           </div>
           <template v-else-if="row.query.data">
             <div class="card-heading">
-              <div
-                class="filename"
-                :title="row.query.data.source.originalFilename"
-              >
-                {{ row.query.data.source.originalFilename }}
+              <div class="card-title-row">
+                <div>
+                  <div class="project-name">{{ row.query.data.name }}</div>
+                  <div
+                    class="filename"
+                    :title="row.query.data.source.originalFilename"
+                  >
+                    {{ row.query.data.source.originalFilename }}
+                  </div>
+                </div>
+                <span
+                  class="source-status"
+                  :class="{
+                    ready:
+                      row.query.data.status === 'SOURCE_READY' &&
+                      row.query.data.source.authorization.usable,
+                  }"
+                  >{{ sourceStatusLabel(row.query.data) }}</span
+                >
               </div>
               <div class="meta">
-                {{ row.query.data.name }} ·
                 {{
                   row.query.data.source.durationMs === undefined
                     ? "длительность проверяется"
@@ -505,7 +586,7 @@ watch(
               }}
             </p>
             <p class="position">
-              Позиция:
+              Текущая позиция
               <strong>{{
                 formatDisplayTimecode(currentMsById[row.id] ?? 0)
               }}</strong>
@@ -604,6 +685,7 @@ watch(
           </template>
         </template>
       </Card>
+      </div>
     </section>
     <p class="sr-only" aria-live="polite">{{ announcement }}</p>
 
@@ -886,51 +968,191 @@ watch(
 <style scoped>
 .workspace {
   box-sizing: border-box;
-  max-width: 120rem;
+  max-width: 112rem;
   margin: 0 auto;
-  padding: 2rem clamp(1rem, 3vw, 3rem) 5rem;
+  padding: 2.25rem clamp(1rem, 3vw, 3rem) 5rem;
 }
-.header {
+.page-header {
   display: flex;
-  gap: 0.75rem;
-  align-items: center;
+  gap: 1.5rem;
+  align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
 }
+.page-heading {
+  max-width: 48rem;
+}
+.breadcrumbs {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
+}
+.breadcrumbs strong {
+  color: var(--cf-text);
+}
 .eyebrow {
   margin: 0;
-  color: #65736b;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  color: var(--cf-brand);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+.page-header h1 {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.8rem, 3vw, 2.55rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+.page-description {
+  max-width: 44rem;
+  margin: 0.55rem 0 0;
+  color: var(--cf-text-muted);
+  font-size: 1rem;
+}
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 2rem;
+  overflow: hidden;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-surface);
+  box-shadow: var(--cf-shadow-sm);
+}
+.summary-strip article {
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  border-right: 1px solid var(--cf-border);
+}
+.summary-strip article:last-child {
+  border-right: 0;
+}
+.summary-strip span,
+.summary-strip p {
+  display: block;
+  margin: 0;
+  color: var(--cf-text-muted);
+  font-size: 0.75rem;
+}
+.summary-strip strong {
+  display: block;
+  margin: 0.2rem 0 0.15rem;
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+.summary-strip strong small {
+  margin-left: 0.2rem;
+  color: var(--cf-text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.summary-strip .summary-next {
+  background: linear-gradient(135deg, var(--cf-brand-soft), #f5fbf8);
+}
+.summary-next strong {
+  color: var(--cf-brand-strong);
+  font-size: 1rem;
+}
+.queue-section {
+  margin-top: 2rem;
+}
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+.section-heading h2 {
+  margin: 0.1rem 0 0;
+  font-size: 1.25rem;
+  letter-spacing: -0.015em;
+}
+.count-badge {
+  display: grid;
+  min-width: 2rem;
+  height: 2rem;
+  place-items: center;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: var(--cf-surface-muted);
+  color: var(--cf-text-muted);
+  font-weight: 750;
 }
 .source-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
-  margin-top: 1rem;
   align-items: start;
 }
 .source-card {
   min-width: 0;
   overflow: hidden;
 }
+.source-card :deep(.p-card-content) {
+  padding: 1rem;
+}
 .card-heading {
   min-width: 0;
   margin-bottom: 0.75rem;
 }
+.card-title-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.card-title-row > div:first-child {
+  min-width: 0;
+}
+.project-name {
+  margin-bottom: 0.1rem;
+  font-size: 1rem;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+}
 .filename {
   overflow: hidden;
-  font-size: 1rem;
-  font-weight: 700;
+  color: var(--cf-text-muted);
+  font-size: 0.8rem;
+  font-weight: 560;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.source-status {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cf-warning-soft);
+  color: var(--cf-warning);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+.source-status.ready {
+  background: var(--cf-success-soft);
+  color: var(--cf-success);
+}
 .meta,
 .position {
-  color: #65736b;
+  color: var(--cf-text-muted);
   font-size: 0.875rem;
+}
+.meta {
+  margin-top: 0.35rem;
+}
+.position {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0.55rem 0;
+}
+.position strong {
+  color: var(--cf-text);
+  font-variant-numeric: tabular-nums;
 }
 video {
   display: block;
@@ -938,14 +1160,14 @@ video {
   width: 100%;
   object-fit: contain;
   background: #111;
-  border-radius: 0.5rem;
+  border-radius: 0.7rem;
 }
 .card-jobs {
   display: grid;
   gap: 0.5rem;
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #d9e0d8;
+  border-top: 1px solid var(--cf-border);
 }
 .card-jobs h2 {
   margin: 0;
@@ -957,6 +1179,9 @@ video {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+.card-actions {
+  padding-bottom: 0.2rem;
 }
 .segment {
   display: grid;
@@ -995,15 +1220,19 @@ video {
 }
 .warning {
   padding: 0.75rem;
-  background: #fff7d6;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-warning-soft);
+  color: var(--cf-warning);
 }
 .error {
-  color: #991b1b;
+  color: var(--cf-danger);
 }
 .empty {
   padding: 2rem;
-  border: 1px solid #d9e0d8;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-lg);
   background: #fff;
+  box-shadow: var(--cf-shadow-sm);
 }
 .confirmation {
   margin: 1rem 0;
@@ -1062,6 +1291,40 @@ video {
 @media (min-width: 1600px) {
   .source-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 72rem) {
+  .summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .summary-strip article:nth-child(2) {
+    border-right: 0;
+  }
+  .summary-strip article:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--cf-border);
+  }
+}
+@media (max-width: 48rem) {
+  .workspace {
+    padding: 1.25rem 0.85rem 4rem;
+  }
+  .page-header {
+    align-items: stretch;
+  }
+  .page-header :deep(.p-button),
+  .page-header .action-link {
+    width: 100%;
+  }
+  .summary-strip,
+  .source-grid {
+    grid-template-columns: 1fr;
+  }
+  .summary-strip article {
+    border-right: 0;
+    border-bottom: 1px solid var(--cf-border);
+  }
+  .summary-strip article:last-child {
+    border-bottom: 0;
   }
 }
 </style>

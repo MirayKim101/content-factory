@@ -762,7 +762,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
               sizeBytes: thumbnail.sizeBytes,
               contentType: thumbnail.contentType,
               filename: thumbnail.originalFilename,
-              contentUrl: `/api/v1/projects/${cut.projectId}/editorial-assets/${thumbnail.id}/content`,
+              contentUrl: `/api/v1/projects/${cut.projectId}/editorial-assets/thumbnails/${thumbnail.id}/content`,
             },
           }
         : null;

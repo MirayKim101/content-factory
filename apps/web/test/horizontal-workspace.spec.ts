@@ -356,6 +356,53 @@ describe("HorizontalWorkspace cut confirmation", () => {
     ).toHaveLength(5);
   });
 
+  it.each([
+    ["SOURCE_PENDING", true, "Источник обрабатывается"],
+    ["FAILED_FINAL", true, "Ошибка источника"],
+    ["SOURCE_READY", false, "Права не подтверждены"],
+  ] as const)(
+    "shows the real source state for %s instead of a success badge",
+    async (status, usable, expected) => {
+      const value = project(projectA);
+      mocks.getProject.mockResolvedValueOnce({
+        ...value,
+        status,
+        source: {
+          ...value.source,
+          authorization: { ...value.source.authorization, usable },
+        },
+      });
+      const wrapper = mountWorkspace([projectA]);
+      await flushPromises();
+
+      expect(wrapper.get(".source-status").text()).toBe(expected);
+      expect(wrapper.get(".source-status").classes("ready")).toBe(
+        status === "SOURCE_READY" && usable,
+      );
+    },
+  );
+
+  it("guides a ready cut into editorial packaging, not a missing render", async () => {
+    mocks.listProjectJobs.mockResolvedValueOnce({
+      items: [
+        {
+          id: "00000000-0000-4000-8000-000000000551",
+          state: "READY",
+        },
+      ],
+    });
+    const wrapper = mountWorkspace([projectA]);
+    await flushPromises();
+
+    expect(wrapper.get(".summary-next").text()).toContain("Оформить нарезку");
+    expect(wrapper.get(".summary-next").text()).toContain(
+      "добавьте текст и обложку",
+    );
+    expect(wrapper.get(".summary-next").text()).not.toContain(
+      "готовую сборку",
+    );
+  });
+
   it("shows normalized 12:46–13:21 confirmation and sends that exact payload", async () => {
     const jobId = "00000000-0000-4000-8000-000000000201";
     mocks.createCuts.mockResolvedValue({ jobs: [{ id: jobId }] });

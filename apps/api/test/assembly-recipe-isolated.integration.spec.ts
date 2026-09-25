@@ -674,7 +674,13 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         cutPipelineJobId: candidate.cut.jobId,
         approvable: true,
         blockers: [],
-        editorial: { revision: 1, title: "Тестовый заголовок" },
+        editorial: {
+          revision: 1,
+          title: "Тестовый заголовок",
+          thumbnail: {
+            contentUrl: `/api/v1/projects/${candidate.cut.projectId}/editorial-assets/thumbnails/${candidate.thumbnailId}/content`,
+          },
+        },
         recipe: { revision: 1 },
         render: { id: candidate.renderId, resultId: candidate.resultId },
         processingMetrics: {

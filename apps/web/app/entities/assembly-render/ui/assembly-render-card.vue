@@ -116,20 +116,24 @@ function percent(render: AssemblyRender): number | undefined {
         <progress v-else aria-label="Сборка без измеримого прогресса" />
       </template>
       <template v-else-if="render.job.state === 'READY' && render.result">
-        <p>
-          Готовый MP4: {{ render.result.filename }} ·
-          {{ render.result.sizeBytes }} байт.
-        </p>
-        <a class="download" :href="render.result.downloadUrl"
-          >Скачать готовое видео</a
-        >
-        <Button
-          label="Проверить и подтвердить"
-          severity="secondary"
-          @click="
-            emit('review', { jobId: props.cutJobId, renderId: render.id })
-          "
-        />
+        <div class="render-result">
+          <div>
+            <span>Финальная сборка готова</span>
+            <p>{{ render.result.filename }}</p>
+          </div>
+          <span class="ready-check" aria-hidden="true">✓</span>
+        </div>
+        <div class="render-actions">
+          <Button
+            label="Проверить и подтвердить"
+            @click="
+              emit('review', { jobId: props.cutJobId, renderId: render.id })
+            "
+          />
+          <a class="secondary-download" :href="render.result.downloadUrl"
+            >Скачать видео</a
+          >
+        </div>
       </template>
       <div v-else-if="render.job.failure" class="error" role="alert">
         <p>{{ render.job.failure.message }}</p>
@@ -152,9 +156,9 @@ function percent(render: AssemblyRender): number | undefined {
   display: grid;
   gap: 0.55rem;
   padding: 0.8rem;
-  border: 1px solid #cfdad2;
+  border: 1px solid var(--cf-border);
   border-radius: 0.65rem;
-  background: #f8fbf8;
+  background: #fff;
 }
 .render-card p {
   margin: 0;
@@ -169,7 +173,8 @@ function percent(render: AssemblyRender): number | undefined {
 .status-tag {
   padding: 0.2rem 0.5rem;
   border-radius: 99px;
-  background: #e3eee5;
+  background: var(--cf-success-soft);
+  color: var(--cf-success);
   font-weight: 700;
   font-size: 0.85rem;
 }
@@ -177,20 +182,58 @@ progress {
   width: 100%;
   height: 0.85rem;
 }
-.download {
+.render-result {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-success-soft);
+}
+.render-result span:first-child {
+  color: var(--cf-success);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+.render-result p {
+  font-weight: 680;
+}
+.ready-check {
+  display: grid;
+  flex: 0 0 1.8rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cf-success);
+  color: #fff;
+  font-weight: 800;
+}
+.render-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.secondary-download {
   display: inline-flex;
   width: fit-content;
   padding: 0.6rem 0.8rem;
-  border-radius: 0.45rem;
-  background: #234d35;
-  color: #fff;
+  border: 1px solid var(--cf-border-strong);
+  border-radius: var(--cf-radius-sm);
+  background: #fff;
+  color: var(--cf-text);
   font-weight: 700;
   text-decoration: none;
 }
+.secondary-download:hover {
+  background: var(--cf-surface-muted);
+}
 .warning {
-  color: #7c4a03;
+  color: var(--cf-warning);
 }
 .error {
-  color: #991b1b;
+  color: var(--cf-danger);
 }
 </style>

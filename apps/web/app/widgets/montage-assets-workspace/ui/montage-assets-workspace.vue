@@ -82,7 +82,11 @@ void loadProjects();
   <main class="montage-workspace" aria-labelledby="montage-assets-title">
     <header class="montage-header">
       <div>
-        <p class="eyebrow">Content Factory · Этап 2</p>
+        <nav class="breadcrumbs" aria-label="Хлебные крошки">
+          <span>Производство</span><span aria-hidden="true">/</span
+          ><strong>Монтажные материалы</strong>
+        </nav>
+        <p class="eyebrow">Библиотека ресурсов · Этап 2</p>
         <h1 id="montage-assets-title">Монтажные материалы</h1>
         <p>
           Загрузите интро, аутро, рекламу и баннеры для будущей сборки ролика.
@@ -190,7 +194,7 @@ void loadProjects();
   box-sizing: border-box;
   max-width: 90rem;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2.25rem clamp(1rem, 3vw, 3rem) 5rem;
 }
 .montage-header,
 .assets-heading {
@@ -204,11 +208,30 @@ void loadProjects();
 .upload-panel h2 {
   margin: 0.2rem 0 0.45rem;
 }
+.montage-header h1 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  letter-spacing: -0.035em;
+}
 .montage-header p,
 .selected-project,
 .assets-heading p {
   margin: 0;
-  color: #4e5d53;
+  color: var(--cf-text-muted);
+}
+.breadcrumbs {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
+}
+.eyebrow {
+  margin: 0;
+  color: var(--cf-brand) !important;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .project-picker {
   display: grid;
@@ -221,10 +244,11 @@ void loadProjects();
 }
 .upload-panel,
 .assets-section {
-  border: 1px solid #d5ddd5;
-  border-radius: 0.75rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-lg);
   background: #fff;
   padding: 1.25rem;
+  box-shadow: var(--cf-shadow-sm);
 }
 .assets-section {
   margin-top: 1.25rem;
@@ -240,12 +264,25 @@ void loadProjects();
 .empty-assets {
   margin: 1.25rem 0;
   padding: 1.25rem;
-  border: 1px dashed #9ba9a0;
-  border-radius: 0.75rem;
+  border: 1px dashed var(--cf-border-strong);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-surface-subtle);
 }
 @media (max-width: 1100px) {
   .asset-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .montage-workspace {
+    padding: 1.25rem 0.85rem 4rem;
+  }
+  .montage-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .asset-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

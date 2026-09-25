@@ -50,6 +50,8 @@ const draftJobId = ref<string>();
 const idempotencyKey = ref<string>();
 const error = ref<string>();
 const exportError = ref<string>();
+const thumbnailPreviewFailed = ref(false);
+const videoPreviewFailed = ref(false);
 const now = ref(Date.now());
 let timer: ReturnType<typeof setInterval> | undefined;
 let foregroundStart: number | undefined;
@@ -83,6 +85,8 @@ const canApprove = computed(() =>
     (candidate.value.integratedReviewEnabled ||
       candidate.value.workflowMode === "MANUAL") &&
     !isCurrent.value &&
+    !thumbnailPreviewFailed.value &&
+    !videoPreviewFailed.value &&
     checked.value &&
     displayedAttention("PREPARATION") + displayedAttention("FINAL_REVIEW") <=
       28_800_000 &&
@@ -169,6 +173,8 @@ function hydrateDraft(value: EditorialReview | undefined): void {
   finalReviewForegroundMs.value = draft.finalReviewForegroundMs;
   idempotencyKey.value = draft.idempotencyKey;
   checked.value = false;
+  thumbnailPreviewFailed.value = false;
+  videoPreviewFailed.value = false;
   error.value = undefined;
   now.value = Date.now();
   if (isForeground() && !idempotencyKey.value) {
@@ -213,6 +219,16 @@ function modeLabel(value: "MANUAL" | "AI_ASSISTED" | "MIXED"): string {
     : value === "AI_ASSISTED"
       ? "AI без содержательных правок"
       : "Смешанный";
+}
+function staleReasonLabel(value: string): string {
+  return (
+    {
+      EDITORIAL_REVISION_CHANGED: "изменилось оформление",
+      RECIPE_REVISION_CHANGED: "изменился монтаж",
+      RENDER_CHANGED: "создана новая сборка",
+      LINEAGE_INVALID: "нарушена целостность версии",
+    }[value] ?? "версия больше не актуальна"
+  );
 }
 function requestApproval(): void {
   const value = candidate.value;
@@ -363,6 +379,8 @@ watch(
     finalReviewForegroundMs.value = 0;
     idempotencyKey.value = undefined;
     checked.value = false;
+    thumbnailPreviewFailed.value = false;
+    videoPreviewFailed.value = false;
     error.value = undefined;
     if (props.visible) startTimer();
   },
@@ -379,7 +397,15 @@ watch(checked, () => {
     :visible="visible"
     modal
     :draggable="false"
-    :style="{ width: 'min(72rem, calc(100vw - 2rem))' }"
+    :style="{ width: 'min(78rem, calc(100vw - 1.5rem))' }"
+    :pt="{
+      root: { class: 'review-dialog-root' },
+      mask: { class: 'review-dialog-mask' },
+      header: { class: 'review-dialog-header' },
+      title: { class: 'review-dialog-title' },
+      closeButton: { class: 'review-dialog-close' },
+      content: { class: 'review-dialog-content' },
+    }"
     :header="`Проверка версии · ${filename}`"
     @update:visible="(value) => value || close()"
   >
@@ -399,6 +425,25 @@ watch(checked, () => {
         />
       </template>
       <template v-else-if="candidate">
+        <header class="review-overview">
+          <div>
+            <p class="review-eyebrow">Финальная проверка</p>
+            <h2>{{ candidate.editorial?.title ?? "Редакционный пакет" }}</h2>
+            <p>
+              Revision {{ candidate.editorial?.revision ?? "—" }} · сборка
+              {{ candidate.recipe?.revision ?? "—" }} · после подтверждения
+              будет зафиксирована именно эта версия.
+            </p>
+          </div>
+          <span class="mode-badge" :data-mode="candidate.workflowMode">
+            {{ modeLabel(candidate.workflowMode) }}
+          </span>
+        </header>
+        <ol class="review-steps" aria-label="Этапы проверки">
+          <li class="active"><span>1</span>Контент</li>
+          <li><span>2</span>Происхождение</li>
+          <li><span>3</span>Подтверждение</li>
+        </ol>
         <section v-if="candidate.blockers.length" class="blockers" role="alert">
           <strong>Подтверждение пока недоступно</strong>
           <ul>
@@ -428,28 +473,45 @@ watch(checked, () => {
             создать ниже.
           </p>
           <p v-else>
-            Причины:
-            {{
-              (
-                candidate.currentApproval ?? candidate.latestApproval
-              )?.staleReasons.join(", ") ||
-              "версия больше не соответствует текущему пакету"
-            }}.
+            Ранее подтверждённая версия больше не действует. Проверьте текущую
+            revision и подтвердите её заново.
           </p>
+          <ul v-if="!candidate.currentApproval" class="stale-reasons">
+            <li
+              v-for="reason in candidate.latestApproval?.staleReasons ?? []"
+              :key="reason"
+            >
+              {{ staleReasonLabel(reason) }}
+            </li>
+          </ul>
         </section>
         <template
           v-if="candidate.editorial && candidate.recipe && candidate.render"
         >
           <div class="preview-grid">
-            <section>
-              <h3>Готовое горизонтальное видео</h3>
-              <video
-                class="review-video"
-                controls
-                preload="metadata"
-                :src="candidate.render.contentUrl"
-                aria-label="Предпросмотр готового горизонтального видео"
-              />
+            <section class="preview-card">
+              <div class="section-title-row">
+                <div>
+                  <span class="section-index">01</span>
+                  <h3>Готовое видео</h3>
+                </div>
+                <span>Обязательная проверка</span>
+              </div>
+              <div class="media-frame">
+                <video
+                  class="review-video"
+                  controls
+                  preload="metadata"
+                  :src="candidate.render.contentUrl"
+                  aria-label="Предпросмотр готового горизонтального видео"
+                  @loadeddata="videoPreviewFailed = false"
+                  @error="videoPreviewFailed = true"
+                />
+                <p v-if="videoPreviewFailed" class="preview-error" role="alert">
+                  Видео не загрузилось. Подтверждение заблокировано — обновите
+                  проверку или повторите позже.
+                </p>
+              </div>
               <dl class="facts">
                 <dt>Длительность</dt>
                 <dd>{{ formatDuration(candidate.render.durationMs) }}</dd>
@@ -457,14 +519,33 @@ watch(checked, () => {
                 <dd>{{ formatBytes(candidate.render.artifactSizeBytes) }}</dd>
               </dl>
             </section>
-            <section>
-              <h3>Обложка</h3>
-              <img
-                class="thumbnail"
-                :src="candidate.editorial.thumbnail.contentUrl"
-                :alt="`Обложка: ${candidate.editorial.thumbnail.filename}`"
-              />
-              <p>
+            <section class="preview-card">
+              <div class="section-title-row">
+                <div>
+                  <span class="section-index">02</span>
+                  <h3>Обложка</h3>
+                </div>
+                <span>16:9</span>
+              </div>
+              <div class="media-frame thumbnail-frame">
+                <img
+                  v-show="!thumbnailPreviewFailed"
+                  class="thumbnail"
+                  :src="candidate.editorial.thumbnail.contentUrl"
+                  :alt="`Обложка: ${candidate.editorial.thumbnail.filename}`"
+                  @load="thumbnailPreviewFailed = false"
+                  @error="thumbnailPreviewFailed = true"
+                />
+                <p
+                  v-if="thumbnailPreviewFailed"
+                  class="preview-error"
+                  role="alert"
+                >
+                  Обложка не загрузилась. Подтверждение заблокировано — файл
+                  должен быть виден перед финальным решением.
+                </p>
+              </div>
+              <p class="asset-caption">
                 {{ candidate.editorial.thumbnail.filename }} ·
                 {{ formatBytes(candidate.editorial.thumbnail.sizeBytes) }}
               </p>
@@ -479,6 +560,11 @@ watch(checked, () => {
               </li>
             </ol>
           </section>
+          <details class="technical-details">
+            <summary>
+              <span>Происхождение и стоимость</span>
+              <small>Режимы компонентов, citations и AI cost</small>
+            </summary>
           <section
             class="component-review"
             aria-label="Происхождение компонентов"
@@ -557,8 +643,9 @@ watch(checked, () => {
               }}. Электричество, оборудование и труд сюда не входят.
             </p>
           </section>
+          </details>
           <section class="revision">
-            <h3>Зафиксированная версия</h3>
+            <span class="revision-label">Точная версия</span>
             <p>
               Metadata revision {{ candidate.editorial.revision }} · рецепт
               revision {{ candidate.recipe.revision }} · render contract
@@ -566,7 +653,12 @@ watch(checked, () => {
             </p>
           </section>
         </template>
-        <section v-if="candidate.processingMetrics" class="metrics">
+        <details v-if="candidate.processingMetrics" class="technical-details">
+          <summary>
+            <span>Показатели обработки</span>
+            <small>Очередь, активная работа и повторные попытки</small>
+          </summary>
+        <section class="metrics">
           <h3>Показатели обработки</h3>
           <p>
             Календарно от старта нарезки до готовой сборки:
@@ -604,31 +696,38 @@ watch(checked, () => {
             и ручная работа здесь не оценены.
           </p>
         </section>
+        </details>
         <section v-else class="warning">
           <strong>Показатели обработки пока недоступны.</strong> Подтверждение
           безопасно заблокировано, пока сервер не вернёт полный набор данных.
         </section>
         <section v-if="!isCurrent" class="approval-action">
-          <p>
-            Подготовка:
-            <strong>{{
-              formatDuration(displayedAttention("PREPARATION"))
-            }}</strong>
-            · финальная проверка:
-            <strong>{{
-              formatDuration(displayedAttention("FINAL_REVIEW"))
-            }}</strong
-            >. При закрытии окна или переходе вкладки счётчики останавливаются и
-            сохраняется локально для этой точной версии.
-          </p>
+          <div class="approval-copy">
+            <span class="section-index">03</span>
+            <div>
+              <h3>Подтвердите точную версию</h3>
+              <p>
+                Убедитесь, что видео, обложка и metadata выше готовы к ручной
+                публикации. Любое последующее изменение отменит подтверждение.
+              </p>
+            </div>
+          </div>
+          <div class="attention-row" aria-label="Время проверки">
+            <span>Подготовка <strong>{{ formatDuration(displayedAttention("PREPARATION")) }}</strong></span>
+            <span>Финальная проверка <strong>{{ formatDuration(displayedAttention("FINAL_REVIEW")) }}</strong></span>
+            <small>Счётчики работают только в активной вкладке</small>
+          </div>
           <p v-if="idempotencyKey" class="warning" role="status">
             Предыдущий запрос ожидает безопасного повтора. Время проверки
             зафиксировано; повтор будет отправлен с теми же параметрами.
           </p>
-          <label class="confirm"
-            ><Checkbox v-model="checked" binary input-id="editorial-approve" />
-            <span>Проверил и подтверждаю эту версию</span></label
-          >
+          <label class="confirm">
+            <Checkbox v-model="checked" binary input-id="editorial-approve" />
+            <span>
+              <strong>Проверил и подтверждаю эту версию</strong>
+              <small>Видео воспроизводится, обложка видна, текст и теги корректны.</small>
+            </span>
+          </label>
           <p v-if="error" class="error" role="alert">{{ error }}</p>
           <Button
             label="Подтвердить версию"
@@ -664,34 +763,174 @@ watch(checked, () => {
 <style scoped>
 .review-dialog {
   display: grid;
+  gap: 0.9rem;
+  padding: 0 1.1rem 1.1rem;
+  background: var(--cf-bg);
+}
+.review-overview {
+  display: flex;
   gap: 1rem;
-  padding-bottom: 0.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-top: 1rem;
+}
+.review-overview h2 {
+  margin: 0.15rem 0 0.25rem;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.review-overview p {
+  margin: 0;
+  color: var(--cf-text-muted);
+}
+.review-eyebrow {
+  color: var(--cf-brand) !important;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mode-badge {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: var(--cf-info-soft);
+  color: var(--cf-info);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+.mode-badge[data-mode="MANUAL"] {
+  background: var(--cf-surface-muted);
+  color: var(--cf-text-muted);
+}
+.mode-badge[data-mode="AI_ASSISTED"] {
+  background: #eeeafd;
+  color: #6248a8;
+}
+.review-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: #fff;
+  list-style: none;
+}
+.review-steps li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.65rem 0.8rem;
+  border-right: 1px solid var(--cf-border);
+  color: var(--cf-text-muted);
+  font-size: 0.8rem;
+  font-weight: 680;
+}
+.review-steps li:last-child {
+  border-right: 0;
+}
+.review-steps span,
+.section-index {
+  display: grid;
+  flex: 0 0 1.65rem;
+  width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cf-surface-muted);
+  color: var(--cf-text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.review-steps .active {
+  color: var(--cf-brand-strong);
+}
+.review-steps .active span,
+.section-index {
+  background: var(--cf-brand);
+  color: #fff;
 }
 .preview-grid,
 .metric-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(14rem, 1fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+  gap: 0.8rem;
+}
+.preview-card {
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: #fff;
+}
+.section-title-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+.section-title-row > div {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+.section-title-row h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.section-title-row > span {
+  color: var(--cf-text-muted);
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+.media-frame {
+  position: relative;
+  display: grid;
+  min-height: 9rem;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 0.65rem;
+  background: #101615;
+}
+.thumbnail-frame {
+  aspect-ratio: 16 / 9;
 }
 .review-video,
 .thumbnail {
+  display: block;
   width: 100%;
-  max-height: 23rem;
+  max-height: 25rem;
   object-fit: contain;
-  border-radius: 0.6rem;
-  background: #111;
+  background: #101615;
 }
 .thumbnail {
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
+.preview-error {
+  max-width: 26rem;
+  margin: 0;
+  padding: 1rem;
+  color: #ffd8d4;
+  text-align: center;
+}
+.asset-caption {
+  margin: 0.55rem 0 0;
+  color: var(--cf-text-muted);
+  font-size: 0.76rem;
+}
 .facts {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.35rem 1rem;
+  gap: 0.25rem 1rem;
+  margin: 0.55rem 0 0;
+  font-size: 0.76rem;
 }
 .facts dt {
-  color: #52635a;
+  color: var(--cf-text-muted);
 }
 .facts dd {
   margin: 0;
@@ -699,20 +938,22 @@ watch(checked, () => {
 }
 .metadata,
 .revision,
-.metrics,
 .approval-action,
 .export-next,
 .blockers,
 .approval-state {
-  border: 1px solid #d5ddd7;
-  border-radius: 0.65rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
   padding: 0.85rem;
   background: #fff;
 }
-.metadata h3,
-.metrics h3,
-.revision h3 {
-  margin-top: 0;
+.metadata h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+}
+.metadata .description {
+  margin: 0;
+  color: var(--cf-text-muted);
 }
 .description {
   white-space: pre-wrap;
@@ -721,39 +962,272 @@ watch(checked, () => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+  margin-bottom: 0;
   padding: 0;
   list-style: none;
 }
 .tags li {
   padding: 0.25rem 0.55rem;
-  border-radius: 99px;
-  background: #e3eee5;
+  border-radius: 999px;
+  background: var(--cf-brand-soft);
+  color: var(--cf-brand-strong);
+  font-size: 0.75rem;
 }
 .blockers,
 .stale {
-  border-color: #e0ae67;
-  background: #fff9ee;
+  border-color: #efc171;
+  background: var(--cf-warning-soft);
+  color: var(--cf-warning);
 }
 .current {
-  border-color: #69a57e;
-  background: #eff9f1;
+  border-color: #81bd98;
+  background: var(--cf-success-soft);
+  color: var(--cf-success);
+}
+.approval-state p {
+  margin: 0.25rem 0 0;
+}
+.stale-reasons {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.stale-reasons li {
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(139 82 12 / 0.1);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.technical-details {
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: #fff;
+}
+.technical-details > summary {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+.technical-details > summary::-webkit-details-marker {
+  display: none;
+}
+.technical-details > summary::after {
+  content: "+";
+  display: grid;
+  flex: 0 0 1.6rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cf-surface-muted);
+  color: var(--cf-text-muted);
+}
+.technical-details[open] > summary::after {
+  content: "−";
+}
+.technical-details > summary span {
+  font-weight: 720;
+}
+.technical-details > summary small {
+  margin-left: auto;
+  color: var(--cf-text-muted);
+  font-size: 0.72rem;
+}
+.component-review,
+.metrics {
+  padding: 0 0.9rem 0.9rem;
+  border-top: 1px solid var(--cf-border);
+}
+.component-review h3,
+.metrics h3 {
+  margin-top: 0.85rem;
+}
+.revision {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  color: var(--cf-text-muted);
+  font-size: 0.76rem;
+}
+.revision p {
+  margin: 0;
+}
+.revision-label {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: var(--cf-surface-muted);
+  color: var(--cf-text);
+  font-weight: 700;
+}
+.approval-action,
+.export-next {
+  position: sticky;
+  bottom: -1px;
+  z-index: 3;
+  display: grid;
+  gap: 0.75rem;
+  border-color: #a8cdbd;
+  border-radius: var(--cf-radius-lg);
+  background: rgb(255 255 255 / 0.98);
+  box-shadow: 0 -12px 32px rgb(15 34 40 / 0.1);
+  backdrop-filter: blur(14px);
+}
+.approval-copy {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+}
+.approval-copy h3,
+.approval-copy p {
+  margin: 0;
+}
+.approval-copy p {
+  margin-top: 0.2rem;
+  color: var(--cf-text-muted);
+  font-size: 0.8rem;
+}
+.attention-row {
+  display: flex;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.7rem;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface-subtle);
+  color: var(--cf-text-muted);
+  font-size: 0.73rem;
+}
+.attention-row strong {
+  margin-left: 0.2rem;
+  color: var(--cf-text);
+  font-variant-numeric: tabular-nums;
+}
+.attention-row small {
+  margin-left: auto;
 }
 .confirm {
   display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-weight: 700;
+  gap: 0.7rem;
+  align-items: flex-start;
+  padding: 0.7rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface-subtle);
+  cursor: pointer;
+}
+.confirm > span {
+  display: grid;
+}
+.confirm strong {
+  font-size: 0.84rem;
+}
+.confirm small {
+  color: var(--cf-text-muted);
+  font-size: 0.72rem;
 }
 .error {
-  color: #991b1b;
+  color: var(--cf-danger);
 }
 .warning {
-  color: #7c4a03;
+  color: var(--cf-warning);
 }
 @media (max-width: 56rem) {
   .preview-grid,
   .metric-grid {
     grid-template-columns: 1fr;
   }
+  .review-overview {
+    flex-direction: column;
+  }
+  .technical-details > summary small {
+    display: none;
+  }
+  .attention-row small {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+@media (max-width: 34rem) {
+  .review-dialog {
+    padding: 0 0.7rem 0.7rem;
+  }
+  .review-steps li {
+    justify-content: center;
+    padding: 0.55rem;
+    font-size: 0.7rem;
+  }
+  .review-steps li > span {
+    display: none;
+  }
+}
+</style>
+
+<style>
+.review-dialog-root {
+  position: relative;
+  z-index: 1401;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 1.5rem);
+  overflow: hidden;
+  border: 1px solid var(--cf-border);
+  border-radius: 1rem;
+  background: var(--cf-bg);
+  box-shadow: var(--cf-shadow-lg);
+}
+.review-dialog-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1400 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgb(9 20 18 / 0.56);
+  backdrop-filter: blur(3px);
+}
+.review-dialog-header {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.7rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--cf-border);
+  background: #fff;
+}
+.review-dialog-title {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 730;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-dialog-close {
+  display: grid;
+  flex: 0 0 2.1rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--cf-surface-muted);
+  cursor: pointer;
+}
+.review-dialog-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
 }
 </style>
