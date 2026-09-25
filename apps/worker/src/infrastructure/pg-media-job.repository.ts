@@ -8,6 +8,8 @@ import {
   projectNoLikenessSafetyDecision,
   projectPublicApprovalCitations,
   projectPublicResearchFreshness,
+  framePolicyMaterial,
+  type FrameContextCapture,
   type MontageProbeResultV1,
 } from "@content-factory/contracts";
 
@@ -1848,7 +1850,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
     const researchLineageCurrent =
       row?.approvalContractVersion === "human-horizontal-approval-v2" &&
       projectedApprovalComponents
-        ? await this.approvalResearchLineageCurrent(client, row.approvalId)
+        ? await this.approvalAiLineageCurrent(client, row.approvalId)
         : row?.approvalContractVersion === "manual-horizontal-approval-v1";
     if (
       !row ||
@@ -1994,7 +1996,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
     if (lease.rowCount !== 1) throw new Error("JOB_LEASE_LOST");
   }
 
-  private async approvalResearchLineageCurrent(
+  private async approvalAiLineageCurrent(
     client: PoolClient,
     approvalId: string,
   ): Promise<boolean> {
@@ -2021,48 +2023,253 @@ export class PgMediaJobRepository implements MediaJobRepository {
     const row = result.rows[0];
     const citations = projectPublicApprovalCitations(row?.citations);
     if (!row || !citations) return false;
-    if (row.mode === "MANUAL")
-      return citations.length === 0 && row.freshness === null;
-    if (row.mode !== "AI_ASSISTED" && row.mode !== "MIXED") return false;
-    const freshness = projectPublicResearchFreshness(row.freshness);
-    const ids = stringArray(row.citationIds);
+    let researchSnapshotCurrent = false;
+    if (row.mode === "MANUAL") {
+      researchSnapshotCurrent =
+        citations.length === 0 && row.freshness === null;
+    } else if (row.mode === "AI_ASSISTED" || row.mode === "MIXED") {
+      const freshness = projectPublicResearchFreshness(row.freshness);
+      const ids = stringArray(row.citationIds);
+      if (
+        freshness &&
+        ids &&
+        new Set(ids).size === ids.length &&
+        row.researchIntentId &&
+        row.searchedAt &&
+        row.freshUntil
+      ) {
+        const authoritative = await client.query<{
+          id: string;
+          url: string;
+          title: string;
+          publisher: string;
+          publishedAt: string | null;
+          accessedAt: string;
+        }>(
+          `SELECT "id", "url", "title", "publisher",
+                  CASE WHEN "publishedAt" IS NULL THEN NULL
+                       ELSE to_char("publishedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') END AS "publishedAt",
+                  to_char("accessedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "accessedAt"
+             FROM "ResearchCitation" WHERE "intentId"=$1 ORDER BY "ordinal"`,
+          [row.researchIntentId],
+        );
+        const byId = new Map(
+          authoritative.rows.map((citation) => [citation.id, citation]),
+        );
+        const selected = projectPublicApprovalCitations(
+          ids.map((id) => byId.get(id)),
+        );
+        researchSnapshotCurrent =
+          selected !== null &&
+          canonicalJson(citations) === canonicalJson(selected) &&
+          freshness.searchedAt === row.searchedAt &&
+          freshness.freshUntil === row.freshUntil &&
+          freshness.freshness === "CURRENT";
+      }
+    }
+    return (
+      researchSnapshotCurrent &&
+      (await this.approvalAiRelationsCurrent(client, approvalId))
+    );
+  }
+
+  private async approvalAiRelationsCurrent(
+    client: PoolClient,
+    approvalId: string,
+  ): Promise<boolean> {
+    const assistedCount = await client.query<{ count: string }>(
+      `SELECT count(*)::text AS count
+         FROM "EditorialApprovalComponentSnapshot"
+        WHERE "approvalId"=$1 AND "mode"<>'MANUAL'`,
+      [approvalId],
+    );
+    if (assistedCount.rows[0]?.count === "0") return true;
+    const exact = await client.query(
+      `SELECT 1
+         FROM "EditorialApproval" a
+         JOIN "VideoSource" s ON s."id"=a."sourceId" AND s."projectId"=a."projectId"
+          AND s."sourceVersion"=a."sourceVersion" AND s."status"='READY'
+         JOIN "SourceAuthorization" auth ON auth."sourceId"=s."id" AND auth."sourceVersion"=s."sourceVersion"
+          AND auth."status"='CLEARED'
+         JOIN "PipelineJob" cut ON cut."id"=a."cutPipelineJobId" AND cut."projectId"=a."projectId"
+          AND cut."sourceId"=a."sourceId" AND cut."sourceVersion"=a."sourceVersion"
+          AND cut."type"='CUT_SEGMENT' AND cut."state"='READY'
+         JOIN "CutSegment" seg ON seg."jobId"=cut."id"
+         JOIN "MediaArtifact" art ON art."pipelineJobId"=cut."id" AND art."role"='CUT_RESULT'
+          AND art."status"='READY' AND art."projectId"=a."projectId" AND art."sourceId"=a."sourceId"
+          AND art."lineageSourceId"=a."sourceId" AND art."lineageSourceVersion"=a."sourceVersion"
+         JOIN "CutEditorialPrompt" cp ON cp."cutPipelineJobId"=cut."id"
+          AND cp."projectId"=a."projectId" AND cp."sourceId"=a."sourceId" AND cp."sourceVersion"=a."sourceVersion"
+          AND cp."cutResultArtifactId"=art."id" AND cp."cutResultSha256"=art."sha256"
+          AND cp."cutResultSizeBytes"=art."sizeBytes"
+         JOIN "CutEditorialPromptRevision" cpr ON cpr."promptId"=cp."id" AND cpr."revision"=cp."currentRevision"
+          AND cpr."projectId"=a."projectId" AND cpr."sourceId"=a."sourceId" AND cpr."sourceVersion"=a."sourceVersion"
+         JOIN "SourceEditorialContextRevision" scr ON scr."id"=cpr."sourceContextRevisionId"
+          AND scr."contextId"=cpr."sourceContextId" AND scr."revision"=cpr."sourceContextRevisionNo"
+          AND scr."projectId"=a."projectId" AND scr."sourceId"=a."sourceId" AND scr."sourceVersion"=a."sourceVersion"
+         JOIN "SourceEditorialContext" sc ON sc."id"=scr."contextId" AND sc."currentRevision"=scr."revision"
+         JOIN "CreatorProfile" profile ON profile."id"=scr."creatorProfileId"
+          AND profile."currentRevision"=scr."creatorProfileRevisionNo"
+         JOIN "EditorialPackageRevision" approved_revision ON approved_revision."id"=a."editorialPackageRevisionId"
+          AND approved_revision."packageId"=a."editorialPackageId" AND approved_revision."revision"=a."editorialRevision"
+          AND approved_revision."thumbnailAssetId"=a."thumbnailAssetId"
+         JOIN "EditorialAsset" selected_thumbnail ON selected_thumbnail."id"=approved_revision."thumbnailAssetId"
+          AND selected_thumbnail."projectId"=a."projectId" AND selected_thumbnail."type"='THUMBNAIL'
+          AND selected_thumbnail."status"='READY' AND selected_thumbnail."sha256"=a."thumbnailSha256"
+          AND selected_thumbnail."sizeBytes"=a."thumbnailSizeBytes"
+          AND selected_thumbnail."contentType"=a."thumbnailContentType"
+        WHERE a."id"=$1
+          AND NOT EXISTS (
+            SELECT 1
+              FROM "EditorialApprovalComponentSnapshot" cs
+              LEFT JOIN "ResearchSuggestionIntent" research ON research."id"=cs."researchIntentId"
+              LEFT JOIN "ResearchSuggestionSet" suggestion ON suggestion."id"=cs."suggestionSetId"
+               AND suggestion."intentId"=research."id"
+              LEFT JOIN "ResearchSuggestionAttempt" research_attempt ON research_attempt."id"=suggestion."attemptId"
+               AND research_attempt."intentId"=research."id"
+              LEFT JOIN "TranscriptEvidenceIntent" transcript ON transcript."id"=research."transcriptIntentId"
+              LEFT JOIN "TranscriptEvidenceArtifact" transcript_artifact ON transcript_artifact."id"=research."transcriptArtifactId"
+               AND transcript_artifact."intentId"=transcript."id"
+              LEFT JOIN "ImageSuggestionIntent" image_intent ON image_intent."id"=cs."imageIntentId"
+              LEFT JOIN "ImageSuggestionCandidate" image_candidate ON image_candidate."id"=cs."imageCandidateId"
+               AND image_candidate."intentId"=image_intent."id"
+              LEFT JOIN "ImageSuggestionAttempt" image_attempt ON image_attempt."id"=image_candidate."attemptId"
+               AND image_attempt."intentId"=image_intent."id"
+             WHERE cs."approvalId"=a."id" AND (
+               (cs."mode"='MANUAL' AND (cs."researchIntentId" IS NOT NULL OR cs."suggestionSetId" IS NOT NULL
+                 OR cs."imageIntentId" IS NOT NULL OR cs."imageCandidateId" IS NOT NULL
+                 OR cs."transcriptArtifactId" IS NOT NULL OR cs."transcriptSha256" IS NOT NULL))
+               OR (cs."component"='METADATA' AND cs."mode"<>'MANUAL' AND (
+                 research."id" IS NULL OR research."state"<>'READY'
+                 OR research."projectId"<>a."projectId" OR research."sourceId"<>a."sourceId"
+                 OR research."sourceVersion"<>a."sourceVersion" OR research."cutPipelineJobId"<>cut."id"
+                 OR research."cutResultArtifactId"<>art."id"
+                 OR research."creatorProfileRevisionId"<>scr."creatorProfileRevisionId"
+                 OR research."sourceContextRevisionId"<>scr."id" OR research."cutPromptRevisionId"<>cpr."id"
+                 OR research."transcriptArtifactId" IS DISTINCT FROM cs."transcriptArtifactId"
+                 OR research."transcriptSha256" IS DISTINCT FROM cs."transcriptSha256"
+                 OR suggestion."id" IS NULL OR research_attempt."id" IS NULL OR research_attempt."state"<>'READY'
+                 OR transcript."id" IS NULL OR transcript."state"<>'READY'
+                 OR transcript."projectId"<>a."projectId" OR transcript."sourceId"<>a."sourceId"
+                 OR transcript."sourceVersion"<>a."sourceVersion" OR transcript."sourceSha256"<>s."sha256"
+                 OR transcript."sourceAuthorizationRevision"<>auth."revision"
+                 OR transcript."sourceAuthorizationBasis" IS DISTINCT FROM auth."basis"::text
+                 OR transcript."sourceAuthorizationDeclarationVersion" IS DISTINCT FROM auth."declarationVersion"
+                 OR transcript."sourceAuthorizationDecidedAt" IS DISTINCT FROM auth."decidedAt"
+                 OR transcript."cutPipelineJobId"<>cut."id" OR transcript."cutResultArtifactId"<>art."id"
+                 OR transcript."cutResultSha256"<>art."sha256" OR transcript."cutResultSizeBytes"<>art."sizeBytes"
+                 OR transcript."cutStartMs"<>seg."startMs" OR transcript."cutEndMs"<>seg."endMs"
+                 OR transcript."creatorProfileId" IS DISTINCT FROM scr."creatorProfileId"
+                 OR transcript."creatorProfileRevisionId"<>scr."creatorProfileRevisionId"
+                 OR transcript."creatorProfileRevisionNo"<>scr."creatorProfileRevisionNo"
+                 OR transcript."sourceContextId" IS DISTINCT FROM scr."contextId"
+                 OR transcript."sourceContextRevisionId"<>scr."id" OR transcript."sourceContextRevisionNo"<>scr."revision"
+                 OR transcript."cutPromptId" IS DISTINCT FROM cp."id" OR transcript."cutPromptRevisionId"<>cpr."id"
+                 OR transcript."cutPromptRevisionNo"<>cpr."revision"
+                 OR transcript_artifact."id" IS NULL OR transcript_artifact."sha256"<>research."transcriptSha256"
+                 OR transcript_artifact."sizeBytes"<=0))
+               OR (cs."component"='THUMBNAIL' AND cs."mode"<>'MANUAL' AND (
+                 cs."mode"<>'AI_ASSISTED' OR image_intent."id" IS NULL OR image_intent."state"<>'READY'
+                 OR image_intent."projectId"<>a."projectId" OR image_intent."sourceId"<>a."sourceId"
+                 OR image_intent."sourceVersion"<>a."sourceVersion" OR image_intent."sourceSha256"<>s."sha256"
+                 OR image_intent."sourceAuthorizationRevision"<>auth."revision"
+                 OR image_intent."sourceAuthorizationBasis" IS DISTINCT FROM auth."basis"::text
+                 OR image_intent."sourceAuthorizationDeclarationVersion" IS DISTINCT FROM auth."declarationVersion"
+                 OR image_intent."sourceAuthorizationDecidedAt" IS DISTINCT FROM auth."decidedAt"
+                 OR image_intent."cutPipelineJobId"<>cut."id" OR image_intent."cutResultArtifactId"<>art."id"
+                 OR image_intent."cutResultSha256"<>art."sha256" OR image_intent."cutResultSizeBytes"<>art."sizeBytes"
+                 OR image_intent."cutStartMs"<>seg."startMs" OR image_intent."cutEndMs"<>seg."endMs"
+                 OR image_intent."creatorProfileId"<>scr."creatorProfileId"
+                 OR image_intent."creatorProfileRevisionId"<>scr."creatorProfileRevisionId"
+                 OR image_intent."creatorProfileRevisionNo"<>scr."creatorProfileRevisionNo"
+                 OR image_intent."sourceContextId"<>scr."contextId" OR image_intent."sourceContextRevisionId"<>scr."id"
+                 OR image_intent."sourceContextRevisionNo"<>scr."revision" OR image_intent."cutPromptId"<>cp."id"
+                 OR image_intent."cutPromptRevisionId"<>cpr."id" OR image_intent."cutPromptRevisionNo"<>cpr."revision"
+                 OR image_candidate."id" IS NULL OR image_attempt."id" IS NULL OR image_attempt."state"<>'READY'
+                 OR image_attempt."objectKey"<>image_candidate."objectKey" OR image_attempt."uploadSettledAt" IS NULL
+                 OR image_candidate."objectKey"<>selected_thumbnail."objectKey"
+                 OR image_candidate."sha256"<>selected_thumbnail."sha256"
+                 OR image_candidate."sizeBytes"<>selected_thumbnail."sizeBytes"
+                 OR image_candidate."contentType"<>selected_thumbnail."contentType"
+                 OR image_candidate."width"<>selected_thumbnail."width"
+                 OR image_candidate."height"<>selected_thumbnail."height"))
+               OR (cs."component"='METADATA' AND cs."mode" NOT IN ('MANUAL','AI_ASSISTED','MIXED'))
+               OR (cs."component"='THUMBNAIL' AND cs."mode" NOT IN ('MANUAL','AI_ASSISTED'))
+             ))`,
+      [approvalId],
+    );
+    if (exact.rowCount !== 1) return false;
+    const fingerprints = await client.query<{
+      component: "METADATA" | "THUMBNAIL";
+      contextPolicyFingerprint: string;
+      capture: FrameContextCapture | null;
+      researchAuthorizationRevision: number | null;
+      researchCreatorProfileRevisionId: string | null;
+      researchSourceContextRevisionId: string | null;
+      researchCutPromptRevisionId: string | null;
+    }>(
+      `SELECT cs."component", COALESCE(research."contextPolicyFingerprint", image_intent."contextPolicyFingerprint") AS "contextPolicyFingerprint",
+              CASE WHEN image_intent."id" IS NULL THEN NULL ELSE jsonb_build_object(
+                'projectId', image_intent."projectId", 'sourceId', image_intent."sourceId",
+                'sourceVersion', image_intent."sourceVersion", 'sourceSha256', image_intent."sourceSha256",
+                'sourceAuthorizationRevision', image_intent."sourceAuthorizationRevision",
+                'sourceAuthorizationBasis', image_intent."sourceAuthorizationBasis",
+                'sourceAuthorizationDeclarationVersion', image_intent."sourceAuthorizationDeclarationVersion",
+                'sourceAuthorizationDecidedAt', to_char(image_intent."sourceAuthorizationDecidedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+                'cutPipelineJobId', image_intent."cutPipelineJobId", 'cutResultArtifactId', image_intent."cutResultArtifactId",
+                'cutResultSha256', image_intent."cutResultSha256", 'cutResultSizeBytes', image_intent."cutResultSizeBytes"::text,
+                'cutStartMs', image_intent."cutStartMs", 'cutEndMs', image_intent."cutEndMs",
+                'creatorProfileId', image_intent."creatorProfileId", 'creatorProfileRevisionId', image_intent."creatorProfileRevisionId",
+                'creatorProfileRevisionNo', image_intent."creatorProfileRevisionNo", 'sourceContextId', image_intent."sourceContextId",
+                'sourceContextRevisionId', image_intent."sourceContextRevisionId", 'sourceContextRevisionNo', image_intent."sourceContextRevisionNo",
+                'cutPromptId', image_intent."cutPromptId", 'cutPromptRevisionId', image_intent."cutPromptRevisionId",
+                'cutPromptRevisionNo', image_intent."cutPromptRevisionNo") END AS capture,
+              transcript."sourceAuthorizationRevision" AS "researchAuthorizationRevision",
+              transcript."creatorProfileRevisionId" AS "researchCreatorProfileRevisionId",
+              transcript."sourceContextRevisionId" AS "researchSourceContextRevisionId",
+              transcript."cutPromptRevisionId" AS "researchCutPromptRevisionId"
+         FROM "EditorialApprovalComponentSnapshot" cs
+         LEFT JOIN "ResearchSuggestionIntent" research ON research."id"=cs."researchIntentId"
+         LEFT JOIN "TranscriptEvidenceIntent" transcript ON transcript."id"=research."transcriptIntentId"
+         LEFT JOIN "ImageSuggestionIntent" image_intent ON image_intent."id"=cs."imageIntentId"
+        WHERE cs."approvalId"=$1 AND cs."mode"<>'MANUAL'`,
+      [approvalId],
+    );
     if (
-      !freshness ||
-      !ids ||
-      new Set(ids).size !== ids.length ||
-      !row.researchIntentId ||
-      !row.searchedAt ||
-      !row.freshUntil
+      fingerprints.rows.length !== Number(assistedCount.rows[0]?.count ?? "0")
     )
       return false;
-    const authoritative = await client.query<{
-      id: string;
-      url: string;
-      title: string;
-      publisher: string;
-      publishedAt: string | null;
-      accessedAt: string;
-    }>(
-      `SELECT "id", "url", "title", "publisher",
-              CASE WHEN "publishedAt" IS NULL THEN NULL
-                   ELSE to_char("publishedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') END AS "publishedAt",
-              to_char("accessedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "accessedAt"
-         FROM "ResearchCitation" WHERE "intentId"=$1 ORDER BY "ordinal"`,
-      [row.researchIntentId],
-    );
-    const byId = new Map(
-      authoritative.rows.map((citation) => [citation.id, citation]),
-    );
-    const selected = projectPublicApprovalCitations(
-      ids.map((id) => byId.get(id)),
-    );
-    return (
-      selected !== null &&
-      canonicalJson(citations) === canonicalJson(selected) &&
-      freshness.searchedAt === row.searchedAt &&
-      freshness.freshUntil === row.freshUntil &&
-      freshness.freshness === "CURRENT"
-    );
+    return fingerprints.rows.every((row) => {
+      if (row.component === "METADATA") {
+        if (
+          row.researchAuthorizationRevision === null ||
+          !row.researchCreatorProfileRevisionId ||
+          !row.researchSourceContextRevisionId ||
+          !row.researchCutPromptRevisionId
+        )
+          return false;
+        return (
+          row.contextPolicyFingerprint ===
+          createHash("sha256")
+            .update(
+              JSON.stringify([
+                row.researchAuthorizationRevision,
+                row.researchCreatorProfileRevisionId,
+                row.researchSourceContextRevisionId,
+                row.researchCutPromptRevisionId,
+              ]),
+            )
+            .digest("hex")
+        );
+      }
+      return Boolean(
+        row.capture &&
+        row.contextPolicyFingerprint ===
+          createHash("sha256")
+            .update(framePolicyMaterial(row.capture))
+            .digest("hex"),
+      );
+    });
   }
 
   private async assertExportCurrent(
@@ -2298,7 +2505,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
           false,
         );
       if (
-        !(await this.approvalResearchLineageCurrent(
+        !(await this.approvalAiLineageCurrent(
           client,
           job.editorialExportPlan.approvalId,
         ))

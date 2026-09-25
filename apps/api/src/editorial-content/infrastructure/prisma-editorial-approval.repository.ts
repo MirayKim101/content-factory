@@ -7,6 +7,7 @@ import {
   LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
   LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
   THUMBNAIL_CONTRACT_VERSION,
+  framePolicyMaterial,
   projectNoLikenessSafetyDecision,
   projectPublicApprovalCitations,
   projectPublicApprovalEconomicsV2,
@@ -14,6 +15,7 @@ import {
   projectPublicComponentIncompleteReasons,
   projectPublicResearchFreshness,
   validPublicCitationText,
+  type FrameContextCapture,
 } from "@content-factory/contracts";
 
 import type { Prisma } from "../../generated/prisma/client.js";
@@ -63,15 +65,36 @@ const approvalInclude = {
     orderBy: { component: "asc" as const },
     include: {
       provenance: true,
-      suggestionSet: true,
+      suggestionSet: { include: { attempt: true } },
       researchIntent: {
-        include: { citations: { orderBy: { ordinal: "asc" } } },
+        include: {
+          citations: { orderBy: { ordinal: "asc" } },
+          transcriptIntent: { include: { artifact: true } },
+        },
       },
-      imageCandidate: true,
+      imageIntent: { include: { candidate: { include: { attempt: true } } } },
+      imageCandidate: { include: { attempt: true } },
     },
   },
   economicsV2: true,
   source: { include: { authorizations: true } },
+  cutPipelineJob: {
+    include: {
+      resultArtifact: true,
+      segment: true,
+      cutEditorialPrompt: {
+        include: {
+          revisions: {
+            include: {
+              sourceContextRevision: {
+                include: { context: true, creatorProfile: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   editorialPackage: { select: { currentRevision: true } },
   editorialPackageRevision: { include: { componentProvenance: true } },
   thumbnailAsset: true,
@@ -103,17 +126,30 @@ const cutInclude = {
               researchIntent: {
                 include: {
                   citations: { orderBy: { ordinal: "asc" as const } },
-                  suggestionSet: true,
+                  suggestionSet: { include: { attempt: true } },
                   transcriptIntent: { include: { artifact: true } },
                 },
               },
-              suggestionSet: true,
-              imageIntent: { include: { candidate: true } },
-              imageCandidate: true,
+              suggestionSet: { include: { attempt: true } },
+              imageIntent: {
+                include: { candidate: { include: { attempt: true } } },
+              },
+              imageCandidate: { include: { attempt: true } },
             },
           },
         },
         orderBy: { revision: "desc" as const },
+      },
+    },
+  },
+  cutEditorialPrompt: {
+    include: {
+      revisions: {
+        include: {
+          sourceContextRevision: {
+            include: { context: true, creatorProfile: true },
+          },
+        },
       },
     },
   },
@@ -144,6 +180,24 @@ type ApprovalRow = Prisma.EditorialApprovalGetPayload<{
   include: typeof approvalInclude;
 }>;
 type CutRow = Prisma.PipelineJobGetPayload<{ include: typeof cutInclude }>;
+type ApprovalSnapshotRow = ApprovalRow["componentSnapshots"][number];
+type ResearchIntentRow = NonNullable<ApprovalSnapshotRow["researchIntent"]>;
+type ResearchSuggestionRow = NonNullable<ApprovalSnapshotRow["suggestionSet"]>;
+type ImageIntentRow = NonNullable<ApprovalSnapshotRow["imageIntent"]>;
+type ImageCandidateRow = NonNullable<ApprovalSnapshotRow["imageCandidate"]>;
+type AiLineageCut = Pick<
+  CutRow,
+  | "id"
+  | "projectId"
+  | "sourceId"
+  | "sourceVersion"
+  | "type"
+  | "state"
+  | "resultArtifact"
+  | "segment"
+  | "cutEditorialPrompt"
+>;
+type AiLineageSource = CutRow["source"];
 
 @Injectable()
 export class PrismaEditorialApprovalRepository implements EditorialApprovalRepository {
@@ -982,7 +1036,8 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
         intent.transcriptIntent.sourceContextRevisionId !==
           intent.sourceContextRevisionId ||
         intent.transcriptIntent.cutPromptRevisionId !==
-          intent.cutPromptRevisionId
+          intent.cutPromptRevisionId ||
+        !researchLineageCurrent(intent, suggestion, cut, cut.source)
       )
         incompleteReasons.push("METADATA_LINEAGE_INVALID");
       const citations = selectSuggestionCitations(
@@ -1076,7 +1131,8 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
       candidate.adapterVersion !==
         LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION ||
       candidate.promptBasisVersion !== LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
-      !publicSafetyDecision
+      !publicSafetyDecision ||
+      !imageLineageCurrent(intent, candidate, cut, cut.source)
     )
       incompleteReasons.push("THUMBNAIL_LINEAGE_INVALID");
     return finalizeComponentSummary({
@@ -1811,6 +1867,304 @@ function publicVersion(value: string): boolean {
   );
 }
 
+function currentAiChain(
+  cut: AiLineageCut,
+  source: AiLineageSource,
+): {
+  creatorProfileId: string;
+  creatorProfileRevisionId: string;
+  creatorProfileRevisionNo: number;
+  sourceContextId: string;
+  sourceContextRevisionId: string;
+  sourceContextRevisionNo: number;
+  cutPromptId: string;
+  cutPromptRevisionId: string;
+  cutPromptRevisionNo: number;
+} | null {
+  const artifact = cut.resultArtifact;
+  const segment = cut.segment;
+  const prompt = cut.cutEditorialPrompt;
+  const promptRevision = prompt?.revisions.find(
+    (value) => value.revision === prompt.currentRevision,
+  );
+  const contextRevision = promptRevision?.sourceContextRevision;
+  if (
+    cut.type !== "CUT_SEGMENT" ||
+    cut.state !== "READY" ||
+    !artifact ||
+    artifact.status !== "READY" ||
+    artifact.role !== "CUT_RESULT" ||
+    artifact.projectId !== cut.projectId ||
+    artifact.sourceId !== cut.sourceId ||
+    artifact.lineageSourceId !== cut.sourceId ||
+    artifact.lineageSourceVersion !== cut.sourceVersion ||
+    artifact.pipelineJobId !== cut.id ||
+    artifact.sizeBytes <= 0n ||
+    !isSha256(artifact.sha256) ||
+    !segment ||
+    source.id !== cut.sourceId ||
+    source.projectId !== cut.projectId ||
+    source.sourceVersion !== cut.sourceVersion ||
+    source.status !== "READY" ||
+    !isSha256(source.sha256) ||
+    !prompt ||
+    prompt.cutPipelineJobId !== cut.id ||
+    prompt.projectId !== cut.projectId ||
+    prompt.sourceId !== cut.sourceId ||
+    prompt.sourceVersion !== cut.sourceVersion ||
+    prompt.cutResultArtifactId !== artifact.id ||
+    prompt.cutResultSha256 !== artifact.sha256 ||
+    prompt.cutResultSizeBytes !== artifact.sizeBytes ||
+    !promptRevision ||
+    promptRevision.promptId !== prompt.id ||
+    promptRevision.projectId !== cut.projectId ||
+    promptRevision.sourceId !== cut.sourceId ||
+    promptRevision.sourceVersion !== cut.sourceVersion ||
+    !contextRevision ||
+    contextRevision.id !== promptRevision.sourceContextRevisionId ||
+    contextRevision.contextId !== promptRevision.sourceContextId ||
+    contextRevision.revision !== promptRevision.sourceContextRevisionNo ||
+    contextRevision.projectId !== cut.projectId ||
+    contextRevision.sourceId !== cut.sourceId ||
+    contextRevision.sourceVersion !== cut.sourceVersion ||
+    contextRevision.context.currentRevision !== contextRevision.revision ||
+    contextRevision.creatorProfile.currentRevision !==
+      contextRevision.creatorProfileRevisionNo
+  )
+    return null;
+  return {
+    creatorProfileId: contextRevision.creatorProfileId,
+    creatorProfileRevisionId: contextRevision.creatorProfileRevisionId,
+    creatorProfileRevisionNo: contextRevision.creatorProfileRevisionNo,
+    sourceContextId: contextRevision.contextId,
+    sourceContextRevisionId: contextRevision.id,
+    sourceContextRevisionNo: contextRevision.revision,
+    cutPromptId: prompt.id,
+    cutPromptRevisionId: promptRevision.id,
+    cutPromptRevisionNo: promptRevision.revision,
+  };
+}
+
+function exactSourceAuthorization(
+  input: {
+    sourceAuthorizationRevision: number;
+    sourceAuthorizationBasis: string | null;
+    sourceAuthorizationDeclarationVersion: string | null;
+    sourceAuthorizationDecidedAt: Date | null;
+  },
+  source: AiLineageSource,
+): boolean {
+  const authorization = source.authorizations.find(
+    (value) => value.sourceVersion === source.sourceVersion,
+  );
+  return Boolean(
+    authorization &&
+    authorization.status === "CLEARED" &&
+    authorization.revision === input.sourceAuthorizationRevision &&
+    authorization.basis === input.sourceAuthorizationBasis &&
+    authorization.declarationVersion ===
+      input.sourceAuthorizationDeclarationVersion &&
+    authorization.decidedAt?.getTime() ===
+      input.sourceAuthorizationDecidedAt?.getTime(),
+  );
+}
+
+function researchLineageCurrent(
+  intent: ResearchIntentRow,
+  suggestion: ResearchSuggestionRow,
+  cut: AiLineageCut,
+  source: AiLineageSource,
+): boolean {
+  const chain = currentAiChain(cut, source);
+  const transcript = intent.transcriptIntent;
+  const artifact = transcript.artifact;
+  const cutArtifact = cut.resultArtifact;
+  const segment = cut.segment;
+  if (!chain || !artifact || !cutArtifact || !segment) return false;
+  const expectedContextFingerprint = createHash("sha256")
+    .update(
+      JSON.stringify([
+        transcript.sourceAuthorizationRevision,
+        transcript.creatorProfileRevisionId,
+        transcript.sourceContextRevisionId,
+        transcript.cutPromptRevisionId,
+      ]),
+    )
+    .digest("hex");
+  return (
+    intent.state === "READY" &&
+    intent.projectId === cut.projectId &&
+    intent.sourceId === cut.sourceId &&
+    intent.sourceVersion === cut.sourceVersion &&
+    intent.cutPipelineJobId === cut.id &&
+    intent.cutResultArtifactId === cutArtifact.id &&
+    intent.creatorProfileRevisionId === chain.creatorProfileRevisionId &&
+    intent.sourceContextRevisionId === chain.sourceContextRevisionId &&
+    intent.cutPromptRevisionId === chain.cutPromptRevisionId &&
+    intent.contextPolicyFingerprint === expectedContextFingerprint &&
+    intent.transcriptIntentId === transcript.id &&
+    intent.transcriptArtifactId === artifact.id &&
+    intent.transcriptSha256 === artifact.sha256 &&
+    suggestion.intentId === intent.id &&
+    suggestion.attemptId === suggestion.attempt.id &&
+    suggestion.attempt.intentId === intent.id &&
+    suggestion.attempt.state === "READY" &&
+    transcript.state === "READY" &&
+    transcript.projectId === cut.projectId &&
+    transcript.sourceId === cut.sourceId &&
+    transcript.sourceVersion === cut.sourceVersion &&
+    transcript.sourceSha256 === source.sha256 &&
+    exactSourceAuthorization(transcript, source) &&
+    transcript.cutPipelineJobId === cut.id &&
+    transcript.cutResultArtifactId === cutArtifact.id &&
+    transcript.cutResultSha256 === cutArtifact.sha256 &&
+    transcript.cutResultSizeBytes === cutArtifact.sizeBytes &&
+    transcript.cutStartMs === segment.startMs &&
+    transcript.cutEndMs === segment.endMs &&
+    transcript.creatorProfileId === chain.creatorProfileId &&
+    transcript.creatorProfileRevisionId === chain.creatorProfileRevisionId &&
+    transcript.creatorProfileRevisionNo === chain.creatorProfileRevisionNo &&
+    transcript.sourceContextId === chain.sourceContextId &&
+    transcript.sourceContextRevisionId === chain.sourceContextRevisionId &&
+    transcript.sourceContextRevisionNo === chain.sourceContextRevisionNo &&
+    transcript.cutPromptId === chain.cutPromptId &&
+    transcript.cutPromptRevisionId === chain.cutPromptRevisionId &&
+    transcript.cutPromptRevisionNo === chain.cutPromptRevisionNo &&
+    artifact.intentId === transcript.id &&
+    artifact.sizeBytes > 0n &&
+    isSha256(artifact.sha256)
+  );
+}
+
+function imageLineageCurrent(
+  intent: ImageIntentRow,
+  candidate: ImageCandidateRow,
+  cut: AiLineageCut,
+  source: AiLineageSource,
+  thumbnail?: {
+    objectKey: string;
+    contentType: string;
+    sizeBytes: bigint;
+    sha256: string;
+    width: number | null;
+    height: number | null;
+  },
+): boolean {
+  const chain = currentAiChain(cut, source);
+  const cutArtifact = cut.resultArtifact;
+  const segment = cut.segment;
+  if (!chain || !cutArtifact || !segment) return false;
+  const capture: FrameContextCapture = {
+    projectId: intent.projectId,
+    sourceId: intent.sourceId,
+    sourceVersion: intent.sourceVersion,
+    sourceSha256: intent.sourceSha256,
+    sourceAuthorizationRevision: intent.sourceAuthorizationRevision,
+    sourceAuthorizationBasis: intent.sourceAuthorizationBasis,
+    sourceAuthorizationDeclarationVersion:
+      intent.sourceAuthorizationDeclarationVersion,
+    sourceAuthorizationDecidedAt:
+      intent.sourceAuthorizationDecidedAt.toISOString(),
+    cutPipelineJobId: intent.cutPipelineJobId,
+    cutResultArtifactId: intent.cutResultArtifactId,
+    cutResultSha256: intent.cutResultSha256,
+    cutResultSizeBytes: intent.cutResultSizeBytes.toString(),
+    cutStartMs: intent.cutStartMs,
+    cutEndMs: intent.cutEndMs,
+    creatorProfileId: intent.creatorProfileId,
+    creatorProfileRevisionId: intent.creatorProfileRevisionId,
+    creatorProfileRevisionNo: intent.creatorProfileRevisionNo,
+    sourceContextId: intent.sourceContextId,
+    sourceContextRevisionId: intent.sourceContextRevisionId,
+    sourceContextRevisionNo: intent.sourceContextRevisionNo,
+    cutPromptId: intent.cutPromptId,
+    cutPromptRevisionId: intent.cutPromptRevisionId,
+    cutPromptRevisionNo: intent.cutPromptRevisionNo,
+  };
+  return (
+    intent.state === "READY" &&
+    intent.projectId === cut.projectId &&
+    intent.sourceId === cut.sourceId &&
+    intent.sourceVersion === cut.sourceVersion &&
+    intent.sourceSha256 === source.sha256 &&
+    exactSourceAuthorization(intent, source) &&
+    intent.cutPipelineJobId === cut.id &&
+    intent.cutResultArtifactId === cutArtifact.id &&
+    intent.cutResultSha256 === cutArtifact.sha256 &&
+    intent.cutResultSizeBytes === cutArtifact.sizeBytes &&
+    intent.cutStartMs === segment.startMs &&
+    intent.cutEndMs === segment.endMs &&
+    intent.creatorProfileId === chain.creatorProfileId &&
+    intent.creatorProfileRevisionId === chain.creatorProfileRevisionId &&
+    intent.creatorProfileRevisionNo === chain.creatorProfileRevisionNo &&
+    intent.sourceContextId === chain.sourceContextId &&
+    intent.sourceContextRevisionId === chain.sourceContextRevisionId &&
+    intent.sourceContextRevisionNo === chain.sourceContextRevisionNo &&
+    intent.cutPromptId === chain.cutPromptId &&
+    intent.cutPromptRevisionId === chain.cutPromptRevisionId &&
+    intent.cutPromptRevisionNo === chain.cutPromptRevisionNo &&
+    intent.contextPolicyFingerprint ===
+      createHash("sha256").update(framePolicyMaterial(capture)).digest("hex") &&
+    intent.candidate?.id === candidate.id &&
+    candidate.intentId === intent.id &&
+    candidate.attemptId === candidate.attempt.id &&
+    candidate.attempt.intentId === intent.id &&
+    candidate.attempt.state === "READY" &&
+    candidate.attempt.objectKey === candidate.objectKey &&
+    candidate.attempt.uploadSettledAt !== null &&
+    candidate.sizeBytes > 0n &&
+    isSha256(candidate.sha256) &&
+    (!thumbnail ||
+      (candidate.objectKey === thumbnail.objectKey &&
+        candidate.contentType === thumbnail.contentType &&
+        candidate.sizeBytes === thumbnail.sizeBytes &&
+        candidate.sha256 === thumbnail.sha256 &&
+        candidate.width === thumbnail.width &&
+        candidate.height === thumbnail.height))
+  );
+}
+
+function snapshotAiLineageCurrent(
+  snapshot: ApprovalSnapshotRow,
+  row: ApprovalRow,
+): boolean {
+  if (snapshot.mode === "MANUAL")
+    return (
+      snapshot.researchIntentId === null &&
+      snapshot.suggestionSetId === null &&
+      snapshot.imageIntentId === null &&
+      snapshot.imageCandidateId === null &&
+      snapshot.transcriptArtifactId === null &&
+      snapshot.transcriptSha256 === null
+    );
+  if (snapshot.component === "METADATA")
+    return Boolean(
+      snapshot.researchIntent &&
+      snapshot.suggestionSet &&
+      researchLineageCurrent(
+        snapshot.researchIntent,
+        snapshot.suggestionSet,
+        row.cutPipelineJob,
+        row.source,
+      ) &&
+      snapshot.transcriptArtifactId ===
+        snapshot.researchIntent.transcriptArtifactId &&
+      snapshot.transcriptSha256 === snapshot.researchIntent.transcriptSha256,
+    );
+  return Boolean(
+    snapshot.mode === "AI_ASSISTED" &&
+    snapshot.imageIntent &&
+    snapshot.imageCandidate &&
+    imageLineageCurrent(
+      snapshot.imageIntent,
+      snapshot.imageCandidate,
+      row.cutPipelineJob,
+      row.source,
+      row.thumbnailAsset,
+    ),
+  );
+}
+
 function snapshotResearchLineageExact(
   snapshot: ApprovalRow["componentSnapshots"][number],
   mapped: EditorialReviewComponentSummary,
@@ -1984,7 +2338,8 @@ function v2SnapshotExact(row: ApprovalRow): boolean {
         : row.fingerprintBasisVersion === LEGACY_APPROVAL_FINGERPRINT_BASIS
           ? snapshot.snapshotFingerprint !== legacyFingerprint
           : true) ||
-      !snapshotResearchLineageExact(snapshot, mapped)
+      !snapshotResearchLineageExact(snapshot, mapped) ||
+      !snapshotAiLineageCurrent(snapshot, row)
     )
       return false;
   }

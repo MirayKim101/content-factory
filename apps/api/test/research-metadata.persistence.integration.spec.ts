@@ -65,6 +65,12 @@ describe("persisted cited research and exact metadata apply", () => {
       "research-integration",
     );
     expect(transcriptClaim).not.toBeNull();
+    await expect(
+      prisma.transcriptEvidenceAttempt.findUniqueOrThrow({
+        where: { id: transcriptClaim!.attemptId },
+        select: { updatedAt: true },
+      }),
+    ).resolves.toEqual({ updatedAt: expect.any(Date) });
     await transcriptRepository.complete({
       claim: transcriptClaim!,
       artifact: {

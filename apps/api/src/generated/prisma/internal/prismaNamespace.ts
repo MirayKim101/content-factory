@@ -5897,10 +5897,21 @@ export const TranscriptEvidenceAttemptScalarFieldEnum = {
   leaseToken: 'leaseToken',
   leaseExpiresAt: 'leaseExpiresAt',
   workDeadlineAt: 'workDeadlineAt',
+  objectKey: 'objectKey',
+  uploadStartedAt: 'uploadStartedAt',
+  uploadSettledAt: 'uploadSettledAt',
+  cleanupStatus: 'cleanupStatus',
+  cleanupAttemptCount: 'cleanupAttemptCount',
+  cleanupLastErrorCode: 'cleanupLastErrorCode',
+  cleanupLeaseToken: 'cleanupLeaseToken',
+  cleanupLeaseExpiresAt: 'cleanupLeaseExpiresAt',
+  nextCleanupAt: 'nextCleanupAt',
+  cleanupCompletedAt: 'cleanupCompletedAt',
   startedAt: 'startedAt',
   finishedAt: 'finishedAt',
   failureCode: 'failureCode',
-  failureMessage: 'failureMessage'
+  failureMessage: 'failureMessage',
+  updatedAt: 'updatedAt'
 } as const
 
 export type TranscriptEvidenceAttemptScalarFieldEnum = (typeof TranscriptEvidenceAttemptScalarFieldEnum)[keyof typeof TranscriptEvidenceAttemptScalarFieldEnum]

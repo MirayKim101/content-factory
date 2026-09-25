@@ -1,6 +1,6 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-24. Продолжение сессии; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-09-25. Продолжение сессии; защищённые каталоги и их ресурсы не затрагивались.
 
 ## Главный результат
 
@@ -20,7 +20,7 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   полный браузерный сценарий и проверку ручного fallback. Evidence:
   `CREATOR-CONTEXT-UI-REVIEW.md`, `CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md`.
 - Stage 2B-2 реализован и прошёл независимые проверки кода и restored-runtime
-  live acceptance. Stage 2B-3…2B-6 и Stage 3 остаются впереди. Это принятый
+  live acceptance. Это принятый
   технический срез кадров; production admission остаётся feature-flagged.
   Контракт: `tasks/stage2b-sparse-frame-evidence.md`; independent approval:
   `SPARSE-FRAME-CONTRACT-REVIEW.md`.
@@ -48,19 +48,24 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   restart-safe worker/cleanup, bounded content, exact apply, asset reuse и
   immutable thumbnail provenance прошли disposable PostgreSQL + ContentFactory
   MinIO smoke и независимый CLEAN review. Admission остаётся выключен по
-  умолчанию; следующий срез — Stage 2B-6 integrated review/economics.
-- Stage 2B-6 integrated review/economics реализован в рабочем дереве:
+  умолчанию.
+- Stage 2B-6 integrated review/economics технически принят после независимого
+  `CLEAN` review:
   additive exact snapshots, review/approval/export v2, v1 worker compatibility,
   deterministic five-entry manifest v2, generated client и integrated UI.
   Feature flag `EDITORIAL_INTEGRATED_REVIEW_ENABLED=0` по умолчанию; legacy
   manual revisions без explicit provenance продолжают только v1 путь. Exact
   component lineage/bytes, composite revision/provenance FKs, snapshot and
   economics fingerprint recomputation are enforced; historical AI/MIXED v1 is
-  read-only and cannot enter a new export. Focused unit/UI/OpenAPI/ZIP checks
-  and the full 12-test disposable PostgreSQL worker harness pass on Node 24.15.
-  До
-  принятия остаются independent real-diff review и manual/assisted
-  object-storage E2E. Authority/evidence:
+  read-only and cannot enter a new export. Focused unit/UI/OpenAPI/ZIP checks,
+  API isolated PostgreSQL `24/24`, worker PostgreSQL + real MinIO `29/29`,
+  transcript isolated `4/4`, environment `9/9` и migration/schema parity
+  проходят на Node 24.15. Approval read, export admission, worker claim и
+  finalize повторно проверяют полную authoritative
+  research/transcript/image/candidate lineage. До полного продуктового
+  acceptance остаётся настоящий human operator benchmark одинакового
+  manual/assisted сценария; scripted proxy не является заявлением об экономии.
+  Authority/evidence:
   `tasks/stage2b-integrated-review-economics.md`.
   Re-review hardening additionally preserves the exact historical v1
   idempotency hash, snapshots only the declared citation subset in declared
@@ -82,8 +87,9 @@ render/export/recovery suite этой объединённой версии не
 
 ## Runtime и данные
 
-Изолированная восстановленная среда запущена 2026-09-16 и прошла независимую
-проверку. UI: `http://127.0.0.1:3000`, API: `127.0.0.1:3001`.
+Изолированная восстановленная среда прошла независимую проверку. Текущий UI:
+`http://127.0.0.1:3100`, API: `127.0.0.1:3001`. Порт 3000 зарезервирован
+владельцем для другого проекта и не используется Content Factory.
 Новые контейнеры, сеть и тома имеют префикс `content-factory-restored`.
 Порты зависимостей: 15432/16379/19000/19001. В новой базе применены 15 Mac миграций и additive migration
 `20260916090000_sparse_frame_evidence` (всего 16); рабочий `.env` содержит только новые credentials, ignored, mode 0600.
@@ -194,28 +200,21 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
 
 ## Следующий запуск и расстояние до MVP
 
-1. Сначала проверить admission-OFF runtime checkpoint ниже и актуальную квоту.
-2. Выполнить оставшиеся bounded recovery checks Stage 2B-2: worker restart/deadline,
-   Redis delivery loss, duplicate prevention и браузер/reload. Основной runtime
-   acceptance уже PASS; admission сейчас включён только в restored local runtime.
-3. После этих recovery checks можно объединять feature branch в main. Сейчас
-   main/origin/main остаются на `53d13a6`.
-4. Далее четыре среза: 2B-3 transcript/AI-worker; 2B-4 research/text;
-   2B-5 AI thumbnails; 2B-6 manual/AI/mixed approval/export и экономика.
-5. Stage 2B-3 REST/runtime checkpoint зафиксирован текущими commits
-   `af8f7a5`, `459fbf6`, `9e5b568`, `673104d`, `ae5fea1`; worker suite 117/117,
-   API focused transcript/research checks и restored AI/media worker logs
-   подтверждены. Нужен отдельный disposable-db smoke с реальным READY intent.
-6. Stage 2B-4a принят как bounded local slice: focused checks,
-   disposable-PostgreSQL reload/apply smoke и независимый review реального diff
-   прошли; admission по умолчанию остаётся выключен.
-7. Затем Stage 2B-5/2B-6: thumbnail candidates и единая проверка
-   manual/AI/mixed approval/export и экономика.
-8. Затем Stage 3: Twitch/resumable ingestion, vertical pipeline, connections и
-   scheduled publishing, analytics и восстановление без повторной публикации.
+1. Сохранить все AI/integrated admission flags выключенными до отдельного
+   rollout-решения; ручной Stage 2 путь остаётся рабочим.
+2. Владелец выполняет одинаковый bounded manual и assisted сценарий через UI и
+   фиксирует реальное foreground attention, wall clock, direct cost, mode и
+   acceptance. Это последний незакрытый pre-Twitch product-acceptance gate.
+3. Провести браузерный smoke текущего UI на порту 3100. Автоматизированный
+   Windows computer-use из этой WSL-сессии не подключился, поэтому HTTP health
+   и web `238/238` не заменяют визуальную операторскую проверку.
+4. После human benchmark принять rollout/merge решение. Stage 3
+   (Twitch/resumable ingestion, vertical pipeline, publishing и analytics)
+   остаётся за текущей pre-Twitch границей.
 
-Ручная реклама и ручные обложки уже существуют. Полный MVP требует сквозного
-сценария Stage 3 для 1–2 каналов; процент готовности и календарный срок не оценены.
+Ручная реклама, ручные обложки и полный локальный horizontal pipeline уже
+существуют. Техническая реализация pre-Twitch Stage 2B завершена; полный
+продуктовый acceptance ожидает только действия из пунктов 2–3.
 
 22 сентября остановленные ресурсы старого Compose-проекта `content-factory`
 удалены точными именами: пять контейнеров, четыре тома, сеть и три старых
@@ -232,7 +231,8 @@ review CLEAN. API session `26457`, PID `95151`, port 3001; root отдельно
 подтвердил health `{"status":"ok"}`. AI context и frame admission включены
 только в restored local runtime для acceptance. Profile/current prompt GET также
 проверены DevOps.
-Web session `57108`, port 3000, не останавливалась.
+Историческая web session использовала port 3000; этот checkpoint больше не
+является текущим. Актуальный UI работает на 3100, а порт 3000 не трогать.
 Worker healthy: container
 `7d71b253002ca48ab9be822e4e72d964065c784128eea144473e3f93405e900a`.
 Worker rebuilt from current frame code; API запускается native Node24. Новых

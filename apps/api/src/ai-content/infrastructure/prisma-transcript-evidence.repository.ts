@@ -226,6 +226,7 @@ export class PrismaTranscriptEvidenceRepository implements TranscriptEvidenceRep
           leaseToken,
           leaseExpiresAt,
           workDeadlineAt,
+          updatedAt: now,
         },
       });
       await tx.transcriptEvidenceIntent.update({

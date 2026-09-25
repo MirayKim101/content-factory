@@ -7,6 +7,7 @@ import { join, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { promisify } from "node:util";
 
+import { framePolicyMaterial } from "@content-factory/contracts";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -581,6 +582,159 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           state: "FAILED_FINAL",
           failureCode: "EXPORT_APPROVAL_STALE",
         });
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects a post-approval research intent mutation before claim without result writes", async () => {
+      const seeded = await seedAdmittedAssistedExport();
+      await prisma.researchSuggestionIntent.update({
+        where: { id: seeded.researchIntentId },
+        data: { state: "FAILED_FINAL" },
+      });
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(
+            seeded.exportJobId,
+            "worker-research-lineage-stale",
+            30_000,
+          ),
+        ).resolves.toBeNull();
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+          }),
+        ).resolves.toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+        });
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects image candidate storage identity drift before claim without a READY artifact", async () => {
+      const seeded = await seedAdmittedAssistedExport();
+      await mutateImageCandidateStorageIdentity(seeded.imageCandidateId);
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(
+            seeded.exportJobId,
+            "worker-image-candidate-stale",
+            30_000,
+          ),
+        ).resolves.toBeNull();
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+          }),
+        ).resolves.toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+        });
+        await expect(
+          Promise.all([
+            prisma.editorialExportResult.count({
+              where: { exportIntentId: seeded.exportIntentId },
+            }),
+            prisma.mediaArtifact.count({
+              where: { pipelineJobId: seeded.exportJobId, status: "READY" },
+            }),
+          ]),
+        ).resolves.toEqual([0, 0]);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects image candidate storage identity drift at finalize without artifact writes", async () => {
+      const seeded = await seedAdmittedAssistedExport();
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        const claimed = await repository.claim(
+          seeded.exportJobId,
+          "worker-image-candidate-finalize-stale",
+          30_000,
+        );
+        if (!claimed || claimed.type !== "EXPORT_EDITORIAL_PACKAGE")
+          throw new Error("ASSISTED_EXPORT_NOT_CLAIMED");
+        await mutateImageCandidateStorageIdentity(seeded.imageCandidateId);
+        const objectKey = `private/stale-image-candidate-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await expect(
+          repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "stale-image-candidate.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: {
+              manifestSchemaVersion: "editorial-export-manifest-v2",
+              approvalSnapshot: claimed.editorialExportPlan.approvalSnapshot,
+            },
+          }),
+        ).rejects.toMatchObject({ code: "EXPORT_APPROVAL_STALE" });
+        await expect(
+          Promise.all([
+            prisma.editorialExportResult.count({
+              where: { exportIntentId: seeded.exportIntentId },
+            }),
+            prisma.mediaArtifact.count({
+              where: { pipelineJobId: seeded.exportJobId },
+            }),
+          ]),
+        ).resolves.toEqual([0, 0]);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects a post-claim image intent mutation at finalize without artifact writes", async () => {
+      const seeded = await seedAdmittedAssistedExport();
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        const claimed = await repository.claim(
+          seeded.exportJobId,
+          "worker-image-lineage-stale",
+          30_000,
+        );
+        if (!claimed || claimed.type !== "EXPORT_EDITORIAL_PACKAGE")
+          throw new Error("ASSISTED_EXPORT_NOT_CLAIMED");
+        await prisma.imageSuggestionIntent.update({
+          where: { id: seeded.imageIntentId },
+          data: { state: "FAILED_FINAL" },
+        });
+        const objectKey = `private/stale-image-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await expect(
+          repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "stale-image.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: {
+              manifestSchemaVersion: "editorial-export-manifest-v2",
+              approvalSnapshot: claimed.editorialExportPlan.approvalSnapshot,
+            },
+          }),
+        ).rejects.toMatchObject({ code: "EXPORT_APPROVAL_STALE" });
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+        expect(
+          await prisma.mediaArtifact.count({
+            where: { pipelineJobId: seeded.exportJobId },
+          }),
+        ).toBe(0);
       } finally {
         await repository.close();
       }
@@ -2139,6 +2293,16 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
       const imageIntentId = randomUUID();
       const imageAttemptId = randomUUID();
       const imageCandidateId = randomUUID();
+      const authorization = await prisma.sourceAuthorization.findUniqueOrThrow({
+        where: {
+          sourceId_sourceVersion: {
+            sourceId: seeded.sourceId,
+            sourceVersion: 1,
+          },
+        },
+      });
+      if (!authorization.decidedAt)
+        throw new Error("SOURCE_AUTHORIZATION_DECISION_MISSING");
       const now = new Date();
       const later = new Date(Date.now() + 60_000);
       await prisma.creatorProfile.create({ data: { id: profileId } });
@@ -2234,7 +2398,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           sourceAuthorizationRevision: 1,
           sourceAuthorizationBasis: "OPERATOR_ATTESTATION",
           sourceAuthorizationDeclarationVersion: "source-authorization-v1",
-          sourceAuthorizationDecidedAt: now,
+          sourceAuthorizationDecidedAt: authorization.decidedAt,
           cutPipelineJobId: seeded.cutJobId,
           cutResultArtifactId: seeded.cutArtifactId,
           cutResultSha256: "b".repeat(64),
@@ -2282,6 +2446,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           state: "READY",
           startedAt: now,
           finishedAt: now,
+          updatedAt: now,
         },
       });
       await prisma.transcriptEvidenceArtifact.create({
@@ -2313,7 +2478,16 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           creatorProfileRevisionId: profileRevisionId,
           sourceContextRevisionId: contextRevisionId,
           cutPromptRevisionId: promptRevisionId,
-          contextPolicyFingerprint: "d".repeat(64),
+          contextPolicyFingerprint: createHash("sha256")
+            .update(
+              JSON.stringify([
+                1,
+                profileRevisionId,
+                contextRevisionId,
+                promptRevisionId,
+              ]),
+            )
+            .digest("hex"),
           transcriptArtifactId,
           transcriptSha256: "c".repeat(64),
           query: "fixture",
@@ -2377,7 +2551,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           sourceAuthorizationRevision: 1,
           sourceAuthorizationBasis: "OPERATOR_ATTESTATION",
           sourceAuthorizationDeclarationVersion: "source-authorization-v1",
-          sourceAuthorizationDecidedAt: now,
+          sourceAuthorizationDecidedAt: authorization.decidedAt,
           cutPipelineJobId: seeded.cutJobId,
           cutResultArtifactId: seeded.cutArtifactId,
           cutResultSha256: "b".repeat(64),
@@ -2393,7 +2567,37 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           cutPromptId: promptId,
           cutPromptRevisionId: promptRevisionId,
           cutPromptRevisionNo: 1,
-          contextPolicyFingerprint: "d".repeat(64),
+          contextPolicyFingerprint: createHash("sha256")
+            .update(
+              framePolicyMaterial({
+                projectId: seeded.projectId,
+                sourceId: seeded.sourceId,
+                sourceVersion: 1,
+                sourceSha256: "a".repeat(64),
+                sourceAuthorizationRevision: 1,
+                sourceAuthorizationBasis: "OPERATOR_ATTESTATION",
+                sourceAuthorizationDeclarationVersion:
+                  "source-authorization-v1",
+                sourceAuthorizationDecidedAt:
+                  authorization.decidedAt.toISOString(),
+                cutPipelineJobId: seeded.cutJobId,
+                cutResultArtifactId: seeded.cutArtifactId,
+                cutResultSha256: "b".repeat(64),
+                cutResultSizeBytes: "100",
+                cutStartMs: 0,
+                cutEndMs: 2000,
+                creatorProfileId: profileId,
+                creatorProfileRevisionId: profileRevisionId,
+                creatorProfileRevisionNo: 1,
+                sourceContextId: contextId,
+                sourceContextRevisionId: contextRevisionId,
+                sourceContextRevisionNo: 1,
+                cutPromptId: promptId,
+                cutPromptRevisionId: promptRevisionId,
+                cutPromptRevisionNo: 1,
+              }),
+            )
+            .digest("hex"),
           contractVersion: "image-suggestion-v1",
           adapterVersion: "local-no-likeness-png-v1",
           promptBasisVersion: "local-abstract-thumbnail-prompt-v1",
@@ -2492,6 +2696,8 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
         videoObjectKey,
         thumbnailObjectKey,
         citationId,
+        researchIntentId: researchId,
+        imageIntentId,
         imageCandidateId,
       };
     }
@@ -2532,6 +2738,32 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
         exportJobId: exported.delivery.jobId,
         exportIntentId: exported.view.id,
       };
+    }
+
+    async function mutateImageCandidateStorageIdentity(
+      imageCandidateId: string,
+    ): Promise<void> {
+      const candidate = await prisma.imageSuggestionCandidate.findUniqueOrThrow(
+        {
+          where: { id: imageCandidateId },
+          select: { attemptId: true, width: true, height: true },
+        },
+      );
+      const objectKey = `private/mutated-image-candidate-${randomUUID()}.png`;
+      await prisma.$transaction([
+        prisma.imageSuggestionAttempt.update({
+          where: { id: candidate.attemptId },
+          data: { objectKey },
+        }),
+        prisma.imageSuggestionCandidate.update({
+          where: { id: imageCandidateId },
+          data: {
+            objectKey,
+            width: candidate.width + 1,
+            height: candidate.height + 1,
+          },
+        }),
+      ]);
     }
 
     async function shiftApprovalCitationAccessedAt(approvalId: string) {

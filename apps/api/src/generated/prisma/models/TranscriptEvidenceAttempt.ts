@@ -28,10 +28,12 @@ export type AggregateTranscriptEvidenceAttempt = {
 
 export type TranscriptEvidenceAttemptAvgAggregateOutputType = {
   attemptNumber: number | null
+  cleanupAttemptCount: number | null
 }
 
 export type TranscriptEvidenceAttemptSumAggregateOutputType = {
   attemptNumber: number | null
+  cleanupAttemptCount: number | null
 }
 
 export type TranscriptEvidenceAttemptMinAggregateOutputType = {
@@ -43,10 +45,21 @@ export type TranscriptEvidenceAttemptMinAggregateOutputType = {
   leaseToken: string | null
   leaseExpiresAt: Date | null
   workDeadlineAt: Date | null
+  objectKey: string | null
+  uploadStartedAt: Date | null
+  uploadSettledAt: Date | null
+  cleanupStatus: $Enums.ArtifactCleanupStatus | null
+  cleanupAttemptCount: number | null
+  cleanupLastErrorCode: string | null
+  cleanupLeaseToken: string | null
+  cleanupLeaseExpiresAt: Date | null
+  nextCleanupAt: Date | null
+  cleanupCompletedAt: Date | null
   startedAt: Date | null
   finishedAt: Date | null
   failureCode: string | null
   failureMessage: string | null
+  updatedAt: Date | null
 }
 
 export type TranscriptEvidenceAttemptMaxAggregateOutputType = {
@@ -58,10 +71,21 @@ export type TranscriptEvidenceAttemptMaxAggregateOutputType = {
   leaseToken: string | null
   leaseExpiresAt: Date | null
   workDeadlineAt: Date | null
+  objectKey: string | null
+  uploadStartedAt: Date | null
+  uploadSettledAt: Date | null
+  cleanupStatus: $Enums.ArtifactCleanupStatus | null
+  cleanupAttemptCount: number | null
+  cleanupLastErrorCode: string | null
+  cleanupLeaseToken: string | null
+  cleanupLeaseExpiresAt: Date | null
+  nextCleanupAt: Date | null
+  cleanupCompletedAt: Date | null
   startedAt: Date | null
   finishedAt: Date | null
   failureCode: string | null
   failureMessage: string | null
+  updatedAt: Date | null
 }
 
 export type TranscriptEvidenceAttemptCountAggregateOutputType = {
@@ -73,20 +97,33 @@ export type TranscriptEvidenceAttemptCountAggregateOutputType = {
   leaseToken: number
   leaseExpiresAt: number
   workDeadlineAt: number
+  objectKey: number
+  uploadStartedAt: number
+  uploadSettledAt: number
+  cleanupStatus: number
+  cleanupAttemptCount: number
+  cleanupLastErrorCode: number
+  cleanupLeaseToken: number
+  cleanupLeaseExpiresAt: number
+  nextCleanupAt: number
+  cleanupCompletedAt: number
   startedAt: number
   finishedAt: number
   failureCode: number
   failureMessage: number
+  updatedAt: number
   _all: number
 }
 
 
 export type TranscriptEvidenceAttemptAvgAggregateInputType = {
   attemptNumber?: true
+  cleanupAttemptCount?: true
 }
 
 export type TranscriptEvidenceAttemptSumAggregateInputType = {
   attemptNumber?: true
+  cleanupAttemptCount?: true
 }
 
 export type TranscriptEvidenceAttemptMinAggregateInputType = {
@@ -98,10 +135,21 @@ export type TranscriptEvidenceAttemptMinAggregateInputType = {
   leaseToken?: true
   leaseExpiresAt?: true
   workDeadlineAt?: true
+  objectKey?: true
+  uploadStartedAt?: true
+  uploadSettledAt?: true
+  cleanupStatus?: true
+  cleanupAttemptCount?: true
+  cleanupLastErrorCode?: true
+  cleanupLeaseToken?: true
+  cleanupLeaseExpiresAt?: true
+  nextCleanupAt?: true
+  cleanupCompletedAt?: true
   startedAt?: true
   finishedAt?: true
   failureCode?: true
   failureMessage?: true
+  updatedAt?: true
 }
 
 export type TranscriptEvidenceAttemptMaxAggregateInputType = {
@@ -113,10 +161,21 @@ export type TranscriptEvidenceAttemptMaxAggregateInputType = {
   leaseToken?: true
   leaseExpiresAt?: true
   workDeadlineAt?: true
+  objectKey?: true
+  uploadStartedAt?: true
+  uploadSettledAt?: true
+  cleanupStatus?: true
+  cleanupAttemptCount?: true
+  cleanupLastErrorCode?: true
+  cleanupLeaseToken?: true
+  cleanupLeaseExpiresAt?: true
+  nextCleanupAt?: true
+  cleanupCompletedAt?: true
   startedAt?: true
   finishedAt?: true
   failureCode?: true
   failureMessage?: true
+  updatedAt?: true
 }
 
 export type TranscriptEvidenceAttemptCountAggregateInputType = {
@@ -128,10 +187,21 @@ export type TranscriptEvidenceAttemptCountAggregateInputType = {
   leaseToken?: true
   leaseExpiresAt?: true
   workDeadlineAt?: true
+  objectKey?: true
+  uploadStartedAt?: true
+  uploadSettledAt?: true
+  cleanupStatus?: true
+  cleanupAttemptCount?: true
+  cleanupLastErrorCode?: true
+  cleanupLeaseToken?: true
+  cleanupLeaseExpiresAt?: true
+  nextCleanupAt?: true
+  cleanupCompletedAt?: true
   startedAt?: true
   finishedAt?: true
   failureCode?: true
   failureMessage?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -230,10 +300,21 @@ export type TranscriptEvidenceAttemptGroupByOutputType = {
   leaseToken: string
   leaseExpiresAt: Date
   workDeadlineAt: Date
+  objectKey: string | null
+  uploadStartedAt: Date | null
+  uploadSettledAt: Date | null
+  cleanupStatus: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount: number
+  cleanupLastErrorCode: string | null
+  cleanupLeaseToken: string | null
+  cleanupLeaseExpiresAt: Date | null
+  nextCleanupAt: Date
+  cleanupCompletedAt: Date | null
   startedAt: Date
   finishedAt: Date | null
   failureCode: string | null
   failureMessage: string | null
+  updatedAt: Date
   _count: TranscriptEvidenceAttemptCountAggregateOutputType | null
   _avg: TranscriptEvidenceAttemptAvgAggregateOutputType | null
   _sum: TranscriptEvidenceAttemptSumAggregateOutputType | null
@@ -268,10 +349,21 @@ export type TranscriptEvidenceAttemptWhereInput = {
   leaseToken?: Prisma.StringFilter<"TranscriptEvidenceAttempt"> | string
   leaseExpiresAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   workDeadlineAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
+  objectKey?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  uploadStartedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  uploadSettledAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"TranscriptEvidenceAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFilter<"TranscriptEvidenceAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  cleanupLeaseToken?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  cleanupLeaseExpiresAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
+  cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   startedAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   failureCode?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  updatedAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   intent?: Prisma.XOR<Prisma.TranscriptEvidenceIntentScalarRelationFilter, Prisma.TranscriptEvidenceIntentWhereInput>
 }
 
@@ -284,16 +376,29 @@ export type TranscriptEvidenceAttemptOrderByWithRelationInput = {
   leaseToken?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
   workDeadlineAt?: Prisma.SortOrder
+  objectKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  uploadStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  uploadSettledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupLeaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupLeaseExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextCleanupAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
   failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   intent?: Prisma.TranscriptEvidenceIntentOrderByWithRelationInput
 }
 
 export type TranscriptEvidenceAttemptWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   leaseToken?: string
+  objectKey?: string
+  cleanupLeaseToken?: string
   intentId_attemptNumber?: Prisma.TranscriptEvidenceAttemptIntentIdAttemptNumberCompoundUniqueInput
   AND?: Prisma.TranscriptEvidenceAttemptWhereInput | Prisma.TranscriptEvidenceAttemptWhereInput[]
   OR?: Prisma.TranscriptEvidenceAttemptWhereInput[]
@@ -304,12 +409,21 @@ export type TranscriptEvidenceAttemptWhereUniqueInput = Prisma.AtLeast<{
   workerId?: Prisma.StringFilter<"TranscriptEvidenceAttempt"> | string
   leaseExpiresAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   workDeadlineAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
+  uploadStartedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  uploadSettledAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"TranscriptEvidenceAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFilter<"TranscriptEvidenceAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  cleanupLeaseExpiresAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
+  cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   startedAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   failureCode?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  updatedAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   intent?: Prisma.XOR<Prisma.TranscriptEvidenceIntentScalarRelationFilter, Prisma.TranscriptEvidenceIntentWhereInput>
-}, "id" | "leaseToken" | "intentId_attemptNumber">
+}, "id" | "leaseToken" | "objectKey" | "cleanupLeaseToken" | "intentId_attemptNumber">
 
 export type TranscriptEvidenceAttemptOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -320,10 +434,21 @@ export type TranscriptEvidenceAttemptOrderByWithAggregationInput = {
   leaseToken?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
   workDeadlineAt?: Prisma.SortOrder
+  objectKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  uploadStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  uploadSettledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupLeaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  cleanupLeaseExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextCleanupAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
   failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.TranscriptEvidenceAttemptCountOrderByAggregateInput
   _avg?: Prisma.TranscriptEvidenceAttemptAvgOrderByAggregateInput
   _max?: Prisma.TranscriptEvidenceAttemptMaxOrderByAggregateInput
@@ -343,10 +468,21 @@ export type TranscriptEvidenceAttemptScalarWhereWithAggregatesInput = {
   leaseToken?: Prisma.StringWithAggregatesFilter<"TranscriptEvidenceAttempt"> | string
   leaseExpiresAt?: Prisma.DateTimeWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string
   workDeadlineAt?: Prisma.DateTimeWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string
+  objectKey?: Prisma.StringNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | string | null
+  uploadStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  uploadSettledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusWithAggregatesFilter<"TranscriptEvidenceAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntWithAggregatesFilter<"TranscriptEvidenceAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | string | null
+  cleanupLeaseToken?: Prisma.StringNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | string | null
+  cleanupLeaseExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string
+  cleanupCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   startedAt?: Prisma.DateTimeWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   failureCode?: Prisma.StringNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | string | null
   failureMessage?: Prisma.StringNullableWithAggregatesFilter<"TranscriptEvidenceAttempt"> | string | null
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TranscriptEvidenceAttempt"> | Date | string
 }
 
 export type TranscriptEvidenceAttemptCreateInput = {
@@ -357,10 +493,21 @@ export type TranscriptEvidenceAttemptCreateInput = {
   leaseToken: string
   leaseExpiresAt: Date | string
   workDeadlineAt: Date | string
+  objectKey?: string | null
+  uploadStartedAt?: Date | string | null
+  uploadSettledAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupLeaseToken?: string | null
+  cleanupLeaseExpiresAt?: Date | string | null
+  nextCleanupAt?: Date | string
+  cleanupCompletedAt?: Date | string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
+  updatedAt?: Date | string
   intent: Prisma.TranscriptEvidenceIntentCreateNestedOneWithoutAttemptsInput
 }
 
@@ -373,10 +520,21 @@ export type TranscriptEvidenceAttemptUncheckedCreateInput = {
   leaseToken: string
   leaseExpiresAt: Date | string
   workDeadlineAt: Date | string
+  objectKey?: string | null
+  uploadStartedAt?: Date | string | null
+  uploadSettledAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupLeaseToken?: string | null
+  cleanupLeaseExpiresAt?: Date | string | null
+  nextCleanupAt?: Date | string
+  cleanupCompletedAt?: Date | string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
+  updatedAt?: Date | string
 }
 
 export type TranscriptEvidenceAttemptUpdateInput = {
@@ -387,10 +545,21 @@ export type TranscriptEvidenceAttemptUpdateInput = {
   leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
   leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workDeadlineAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  uploadSettledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   intent?: Prisma.TranscriptEvidenceIntentUpdateOneRequiredWithoutAttemptsNestedInput
 }
 
@@ -403,10 +572,21 @@ export type TranscriptEvidenceAttemptUncheckedUpdateInput = {
   leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
   leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workDeadlineAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  uploadSettledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TranscriptEvidenceAttemptCreateManyInput = {
@@ -418,10 +598,21 @@ export type TranscriptEvidenceAttemptCreateManyInput = {
   leaseToken: string
   leaseExpiresAt: Date | string
   workDeadlineAt: Date | string
+  objectKey?: string | null
+  uploadStartedAt?: Date | string | null
+  uploadSettledAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupLeaseToken?: string | null
+  cleanupLeaseExpiresAt?: Date | string | null
+  nextCleanupAt?: Date | string
+  cleanupCompletedAt?: Date | string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
+  updatedAt?: Date | string
 }
 
 export type TranscriptEvidenceAttemptUpdateManyMutationInput = {
@@ -432,10 +623,21 @@ export type TranscriptEvidenceAttemptUpdateManyMutationInput = {
   leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
   leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workDeadlineAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  uploadSettledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TranscriptEvidenceAttemptUncheckedUpdateManyInput = {
@@ -447,10 +649,21 @@ export type TranscriptEvidenceAttemptUncheckedUpdateManyInput = {
   leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
   leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workDeadlineAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  uploadSettledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TranscriptEvidenceAttemptListRelationFilter = {
@@ -477,14 +690,26 @@ export type TranscriptEvidenceAttemptCountOrderByAggregateInput = {
   leaseToken?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
   workDeadlineAt?: Prisma.SortOrder
+  objectKey?: Prisma.SortOrder
+  uploadStartedAt?: Prisma.SortOrder
+  uploadSettledAt?: Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrder
+  cleanupLeaseToken?: Prisma.SortOrder
+  cleanupLeaseExpiresAt?: Prisma.SortOrder
+  nextCleanupAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
   failureMessage?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type TranscriptEvidenceAttemptAvgOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
 }
 
 export type TranscriptEvidenceAttemptMaxOrderByAggregateInput = {
@@ -496,10 +721,21 @@ export type TranscriptEvidenceAttemptMaxOrderByAggregateInput = {
   leaseToken?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
   workDeadlineAt?: Prisma.SortOrder
+  objectKey?: Prisma.SortOrder
+  uploadStartedAt?: Prisma.SortOrder
+  uploadSettledAt?: Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrder
+  cleanupLeaseToken?: Prisma.SortOrder
+  cleanupLeaseExpiresAt?: Prisma.SortOrder
+  nextCleanupAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
   failureMessage?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type TranscriptEvidenceAttemptMinOrderByAggregateInput = {
@@ -511,14 +747,26 @@ export type TranscriptEvidenceAttemptMinOrderByAggregateInput = {
   leaseToken?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
   workDeadlineAt?: Prisma.SortOrder
+  objectKey?: Prisma.SortOrder
+  uploadStartedAt?: Prisma.SortOrder
+  uploadSettledAt?: Prisma.SortOrder
+  cleanupStatus?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
+  cleanupLastErrorCode?: Prisma.SortOrder
+  cleanupLeaseToken?: Prisma.SortOrder
+  cleanupLeaseExpiresAt?: Prisma.SortOrder
+  nextCleanupAt?: Prisma.SortOrder
+  cleanupCompletedAt?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
   failureMessage?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type TranscriptEvidenceAttemptSumOrderByAggregateInput = {
   attemptNumber?: Prisma.SortOrder
+  cleanupAttemptCount?: Prisma.SortOrder
 }
 
 export type TranscriptEvidenceAttemptCreateNestedManyWithoutIntentInput = {
@@ -575,10 +823,21 @@ export type TranscriptEvidenceAttemptCreateWithoutIntentInput = {
   leaseToken: string
   leaseExpiresAt: Date | string
   workDeadlineAt: Date | string
+  objectKey?: string | null
+  uploadStartedAt?: Date | string | null
+  uploadSettledAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupLeaseToken?: string | null
+  cleanupLeaseExpiresAt?: Date | string | null
+  nextCleanupAt?: Date | string
+  cleanupCompletedAt?: Date | string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
+  updatedAt?: Date | string
 }
 
 export type TranscriptEvidenceAttemptUncheckedCreateWithoutIntentInput = {
@@ -589,10 +848,21 @@ export type TranscriptEvidenceAttemptUncheckedCreateWithoutIntentInput = {
   leaseToken: string
   leaseExpiresAt: Date | string
   workDeadlineAt: Date | string
+  objectKey?: string | null
+  uploadStartedAt?: Date | string | null
+  uploadSettledAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupLeaseToken?: string | null
+  cleanupLeaseExpiresAt?: Date | string | null
+  nextCleanupAt?: Date | string
+  cleanupCompletedAt?: Date | string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
+  updatedAt?: Date | string
 }
 
 export type TranscriptEvidenceAttemptCreateOrConnectWithoutIntentInput = {
@@ -633,10 +903,21 @@ export type TranscriptEvidenceAttemptScalarWhereInput = {
   leaseToken?: Prisma.StringFilter<"TranscriptEvidenceAttempt"> | string
   leaseExpiresAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   workDeadlineAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
+  objectKey?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  uploadStartedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  uploadSettledAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFilter<"TranscriptEvidenceAttempt"> | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFilter<"TranscriptEvidenceAttempt"> | number
+  cleanupLastErrorCode?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  cleanupLeaseToken?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  cleanupLeaseExpiresAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
+  cleanupCompletedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   startedAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"TranscriptEvidenceAttempt"> | Date | string | null
   failureCode?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"TranscriptEvidenceAttempt"> | string | null
+  updatedAt?: Prisma.DateTimeFilter<"TranscriptEvidenceAttempt"> | Date | string
 }
 
 export type TranscriptEvidenceAttemptCreateManyIntentInput = {
@@ -647,10 +928,21 @@ export type TranscriptEvidenceAttemptCreateManyIntentInput = {
   leaseToken: string
   leaseExpiresAt: Date | string
   workDeadlineAt: Date | string
+  objectKey?: string | null
+  uploadStartedAt?: Date | string | null
+  uploadSettledAt?: Date | string | null
+  cleanupStatus?: $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: number
+  cleanupLastErrorCode?: string | null
+  cleanupLeaseToken?: string | null
+  cleanupLeaseExpiresAt?: Date | string | null
+  nextCleanupAt?: Date | string
+  cleanupCompletedAt?: Date | string | null
   startedAt?: Date | string
   finishedAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
+  updatedAt?: Date | string
 }
 
 export type TranscriptEvidenceAttemptUpdateWithoutIntentInput = {
@@ -661,10 +953,21 @@ export type TranscriptEvidenceAttemptUpdateWithoutIntentInput = {
   leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
   leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workDeadlineAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  uploadSettledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TranscriptEvidenceAttemptUncheckedUpdateWithoutIntentInput = {
@@ -675,10 +978,21 @@ export type TranscriptEvidenceAttemptUncheckedUpdateWithoutIntentInput = {
   leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
   leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workDeadlineAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  uploadSettledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentInput = {
@@ -689,10 +1003,21 @@ export type TranscriptEvidenceAttemptUncheckedUpdateManyWithoutIntentInput = {
   leaseToken?: Prisma.StringFieldUpdateOperationsInput | string
   leaseExpiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workDeadlineAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uploadStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  uploadSettledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cleanupStatus?: Prisma.EnumArtifactCleanupStatusFieldUpdateOperationsInput | $Enums.ArtifactCleanupStatus
+  cleanupAttemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  cleanupLastErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cleanupLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nextCleanupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cleanupCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -706,10 +1031,21 @@ export type TranscriptEvidenceAttemptSelect<ExtArgs extends runtime.Types.Extens
   leaseToken?: boolean
   leaseExpiresAt?: boolean
   workDeadlineAt?: boolean
+  objectKey?: boolean
+  uploadStartedAt?: boolean
+  uploadSettledAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupLeaseToken?: boolean
+  cleanupLeaseExpiresAt?: boolean
+  nextCleanupAt?: boolean
+  cleanupCompletedAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
+  updatedAt?: boolean
   intent?: boolean | Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transcriptEvidenceAttempt"]>
 
@@ -722,10 +1058,21 @@ export type TranscriptEvidenceAttemptSelectCreateManyAndReturn<ExtArgs extends r
   leaseToken?: boolean
   leaseExpiresAt?: boolean
   workDeadlineAt?: boolean
+  objectKey?: boolean
+  uploadStartedAt?: boolean
+  uploadSettledAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupLeaseToken?: boolean
+  cleanupLeaseExpiresAt?: boolean
+  nextCleanupAt?: boolean
+  cleanupCompletedAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
+  updatedAt?: boolean
   intent?: boolean | Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transcriptEvidenceAttempt"]>
 
@@ -738,10 +1085,21 @@ export type TranscriptEvidenceAttemptSelectUpdateManyAndReturn<ExtArgs extends r
   leaseToken?: boolean
   leaseExpiresAt?: boolean
   workDeadlineAt?: boolean
+  objectKey?: boolean
+  uploadStartedAt?: boolean
+  uploadSettledAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupLeaseToken?: boolean
+  cleanupLeaseExpiresAt?: boolean
+  nextCleanupAt?: boolean
+  cleanupCompletedAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
+  updatedAt?: boolean
   intent?: boolean | Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transcriptEvidenceAttempt"]>
 
@@ -754,13 +1112,24 @@ export type TranscriptEvidenceAttemptSelectScalar = {
   leaseToken?: boolean
   leaseExpiresAt?: boolean
   workDeadlineAt?: boolean
+  objectKey?: boolean
+  uploadStartedAt?: boolean
+  uploadSettledAt?: boolean
+  cleanupStatus?: boolean
+  cleanupAttemptCount?: boolean
+  cleanupLastErrorCode?: boolean
+  cleanupLeaseToken?: boolean
+  cleanupLeaseExpiresAt?: boolean
+  nextCleanupAt?: boolean
+  cleanupCompletedAt?: boolean
   startedAt?: boolean
   finishedAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
+  updatedAt?: boolean
 }
 
-export type TranscriptEvidenceAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "intentId" | "attemptNumber" | "state" | "workerId" | "leaseToken" | "leaseExpiresAt" | "workDeadlineAt" | "startedAt" | "finishedAt" | "failureCode" | "failureMessage", ExtArgs["result"]["transcriptEvidenceAttempt"]>
+export type TranscriptEvidenceAttemptOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "intentId" | "attemptNumber" | "state" | "workerId" | "leaseToken" | "leaseExpiresAt" | "workDeadlineAt" | "objectKey" | "uploadStartedAt" | "uploadSettledAt" | "cleanupStatus" | "cleanupAttemptCount" | "cleanupLastErrorCode" | "cleanupLeaseToken" | "cleanupLeaseExpiresAt" | "nextCleanupAt" | "cleanupCompletedAt" | "startedAt" | "finishedAt" | "failureCode" | "failureMessage" | "updatedAt", ExtArgs["result"]["transcriptEvidenceAttempt"]>
 export type TranscriptEvidenceAttemptInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   intent?: boolean | Prisma.TranscriptEvidenceIntentDefaultArgs<ExtArgs>
 }
@@ -785,10 +1154,21 @@ export type $TranscriptEvidenceAttemptPayload<ExtArgs extends runtime.Types.Exte
     leaseToken: string
     leaseExpiresAt: Date
     workDeadlineAt: Date
+    objectKey: string | null
+    uploadStartedAt: Date | null
+    uploadSettledAt: Date | null
+    cleanupStatus: $Enums.ArtifactCleanupStatus
+    cleanupAttemptCount: number
+    cleanupLastErrorCode: string | null
+    cleanupLeaseToken: string | null
+    cleanupLeaseExpiresAt: Date | null
+    nextCleanupAt: Date
+    cleanupCompletedAt: Date | null
     startedAt: Date
     finishedAt: Date | null
     failureCode: string | null
     failureMessage: string | null
+    updatedAt: Date
   }, ExtArgs["result"]["transcriptEvidenceAttempt"]>
   composites: {}
 }
@@ -1221,10 +1601,21 @@ export interface TranscriptEvidenceAttemptFieldRefs {
   readonly leaseToken: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'String'>
   readonly leaseExpiresAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
   readonly workDeadlineAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
+  readonly objectKey: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'String'>
+  readonly uploadStartedAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
+  readonly uploadSettledAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
+  readonly cleanupStatus: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'ArtifactCleanupStatus'>
+  readonly cleanupAttemptCount: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'Int'>
+  readonly cleanupLastErrorCode: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'String'>
+  readonly cleanupLeaseToken: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'String'>
+  readonly cleanupLeaseExpiresAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
+  readonly nextCleanupAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
+  readonly cleanupCompletedAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
   readonly startedAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
   readonly failureCode: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'String'>
   readonly failureMessage: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'String'>
+  readonly updatedAt: Prisma.FieldRef<"TranscriptEvidenceAttempt", 'DateTime'>
 }
     
 

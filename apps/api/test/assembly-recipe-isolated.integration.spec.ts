@@ -15,6 +15,7 @@ import {
 } from "@nestjs/common";
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { Pool } from "pg";
+import { framePolicyMaterial } from "@content-factory/contracts";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -1784,8 +1785,7 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
       if (!Array.isArray(originalCitations)) {
         throw new Error("EXPECTED_METADATA_CITATIONS_ARRAY");
       }
-      const originalCitationInput =
-        originalCitations as Prisma.InputJsonArray;
+      const originalCitationInput = originalCitations as Prisma.InputJsonArray;
       const shiftedCitations = originalCitations.map((citation, index) =>
         index === 0
           ? {
@@ -1980,6 +1980,78 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         }),
       ).rejects.toBeInstanceOf(EditorialExportApprovalStaleError);
     });
+
+    it.each(["RESEARCH", "IMAGE"] as const)(
+      "stales an assisted approval and rejects export without writes after %s intent mutation",
+      async (intentKind) => {
+        const candidate = await readyApprovalCandidate();
+        const assisted = await addAssistedProvenance(
+          candidate,
+          intentKind === "IMAGE" ? "AI_ASSISTED" : "MIXED",
+        );
+        const approvals = new PrismaEditorialApprovalRepository(prisma, true);
+        const review = await approvals.getReview(candidate.cut.jobId);
+        if (!review?.candidateFingerprint)
+          throw new Error("assisted review was not built");
+        const approval = await approvals.create({
+          approvalId: randomUUID(),
+          operationRequestId: randomUUID(),
+          renderId: candidate.renderId,
+          editorialRevision: 1,
+          candidateFingerprint: review.candidateFingerprint,
+          approvalContractVersion: "human-horizontal-approval-v2",
+          attention: {
+            schemaVersion: "operator-attention-v2",
+            preparationForegroundMs: 1,
+            finalReviewForegroundMs: 1,
+          },
+          idempotencyKey: randomUUID(),
+        });
+        if (intentKind === "RESEARCH") {
+          await prisma.researchSuggestionIntent.update({
+            where: { id: assisted.researchIntentId },
+            data: { state: "FAILED_FINAL" },
+          });
+        } else {
+          await prisma.imageSuggestionIntent.update({
+            where: { id: assisted.imageIntentId! },
+            data: { state: "FAILED_FINAL" },
+          });
+        }
+        const afterMutation = await approvals.getReview(candidate.cut.jobId);
+        expect(afterMutation).toMatchObject({
+          approvable: false,
+          currentApproval: null,
+          latestApproval: { id: approval.id, state: "STALE" },
+        });
+        const before = {
+          intents: await prisma.editorialExportIntent.count(),
+          operations: await prisma.editorialOperationRequest.count(),
+          jobs: await prisma.pipelineJob.count({
+            where: { type: "EXPORT_EDITORIAL_PACKAGE" },
+          }),
+        };
+        await expect(
+          new PrismaEditorialExportRepository(prisma).create({
+            intentId: randomUUID(),
+            operationRequestId: randomUUID(),
+            jobId: randomUUID(),
+            attemptId: randomUUID(),
+            approvalId: approval.id,
+            idempotencyKey: randomUUID(),
+          }),
+        ).rejects.toBeInstanceOf(EditorialExportApprovalStaleError);
+        await expect(
+          Promise.all([
+            prisma.editorialExportIntent.count(),
+            prisma.editorialOperationRequest.count(),
+            prisma.pipelineJob.count({
+              where: { type: "EXPORT_EDITORIAL_PACKAGE" },
+            }),
+          ]),
+        ).resolves.toEqual([before.intents, before.operations, before.jobs]);
+      },
+    );
 
     it("terminalizes a queued export whose exact processing template snapshot changed", async () => {
       const prepared = await readyApprovedExport();
@@ -2466,6 +2538,16 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
       });
       const researchIntentId = randomUUID();
       const citationIds = [randomUUID(), randomUUID(), randomUUID()];
+      const researchContextPolicyFingerprint = createHash("sha256")
+        .update(
+          JSON.stringify([
+            authorization.revision,
+            profileRevisionId,
+            contextRevisionId,
+            promptRevisionId,
+          ]),
+        )
+        .digest("hex");
       await prisma.researchSuggestionIntent.create({
         data: {
           id: researchIntentId,
@@ -2480,7 +2562,7 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           creatorProfileRevisionId: profileRevisionId,
           sourceContextRevisionId: contextRevisionId,
           cutPromptRevisionId: promptRevisionId,
-          contextPolicyFingerprint: "4".repeat(64),
+          contextPolicyFingerprint: researchContextPolicyFingerprint,
           transcriptArtifactId,
           transcriptSha256,
           query: "fixture",
@@ -2538,6 +2620,37 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         imageIntentId = randomUUID();
         const imageAttemptId = randomUUID();
         imageCandidateId = randomUUID();
+        const imageContextPolicyFingerprint = createHash("sha256")
+          .update(
+            framePolicyMaterial({
+              projectId: cut.projectId,
+              sourceId: cut.sourceId,
+              sourceVersion: cut.sourceVersion,
+              sourceSha256: source.sha256,
+              sourceAuthorizationRevision: authorization.revision,
+              sourceAuthorizationBasis: authorization.basis!,
+              sourceAuthorizationDeclarationVersion:
+                authorization.declarationVersion!,
+              sourceAuthorizationDecidedAt:
+                authorization.decidedAt!.toISOString(),
+              cutPipelineJobId: cut.id,
+              cutResultArtifactId: cut.resultArtifact!.id,
+              cutResultSha256: cut.resultArtifact!.sha256,
+              cutResultSizeBytes: cut.resultArtifact!.sizeBytes.toString(),
+              cutStartMs: cut.segment!.startMs,
+              cutEndMs: cut.segment!.endMs,
+              creatorProfileId: profileId,
+              creatorProfileRevisionId: profileRevisionId,
+              creatorProfileRevisionNo: 1,
+              sourceContextId: contextId,
+              sourceContextRevisionId: contextRevisionId,
+              sourceContextRevisionNo: 1,
+              cutPromptId: promptId,
+              cutPromptRevisionId: promptRevisionId,
+              cutPromptRevisionNo: 1,
+            }),
+          )
+          .digest("hex");
         await prisma.imageSuggestionIntent.create({
           data: {
             id: imageIntentId,
@@ -2567,7 +2680,7 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
             cutPromptId: promptId,
             cutPromptRevisionId: promptRevisionId,
             cutPromptRevisionNo: 1,
-            contextPolicyFingerprint: "4".repeat(64),
+            contextPolicyFingerprint: imageContextPolicyFingerprint,
             contractVersion: "image-suggestion-v1",
             adapterVersion: "local-no-likeness-png-v1",
             promptBasisVersion: "local-abstract-thumbnail-prompt-v1",
@@ -2640,7 +2753,12 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
           },
         ],
       });
-      return { citationIds };
+      return {
+        citationIds,
+        researchIntentId,
+        imageIntentId,
+        imageCandidateId,
+      };
     }
 
     async function tamperApprovalSnapshotCitation(

@@ -1,6 +1,7 @@
 # Stage 2B-6 — integrated editorial review and economics
 
-Статус: frozen; architecture approved 2026-09-24
+Статус: technical implementation accepted after independent CLEAN review;
+human operator benchmark pending
 
 Дата фиксации: 2026-09-24
 
@@ -249,10 +250,12 @@ restart-safe. V1 export создаёт manifest v1 без новых полей.
 tables/columns и historical v2 rows не удалять. Старый worker нельзя возвращать,
 пока существуют claimable v2 export jobs.
 
-## Implementation checkpoint — 2026-09-24
+## Implementation acceptance — 2026-09-25
 
-Срез реализован в рабочем дереве, но ещё не объявлен принятым: обязательны
-independent real-diff review и два object-storage E2E из раздела проверки.
+Срез реализован и технически принят: independent real-diff review завершён
+`CLEAN`, а disposable PostgreSQL + private object-storage E2E воспроизведён.
+Acceptance criterion 10 остаётся отдельным продуктовым действием владельца:
+реальный одинаковый manual/assisted operator benchmark ещё не выполнен.
 
 - additive migration хранит две exact component snapshot rows и одну economics
   row; nullable AI lineage защищён component/mode CHECK и составными FK;
@@ -283,6 +286,18 @@ Focused evidence:
   and rollback admission-off subprocess;
 - API/worker/web typecheck: PASS; Prisma validate/generate and OpenAPI
   export/client generation: PASS.
+- final corrective verification after independent review: API isolated
+  PostgreSQL `24/24`, worker PostgreSQL + real MinIO `29/29`, transcript
+  isolated PostgreSQL + storage `4/4`, environment `9/9`, migration/schema
+  parity, API/worker typecheck and lint: PASS;
+- approval read, export admission, worker claim and finalize now recompute the
+  complete authoritative research/transcript/image/candidate lineage. Both
+  pre-claim and post-claim candidate object-key/dimension mutation regressions
+  fail closed without a result or READY export artifact;
+- additive migration `20260925230000_transcript_attempt_updated_at_semantics`
+  restores Prisma migration/schema parity without rewriting deployed history;
+  project `.env` loading now includes the integrated-review flag while its
+  default remains off.
 
 Post-review hardening binds every v2 snapshot to both the approved revision and
 its exact component provenance with composite FKs. API and worker independently

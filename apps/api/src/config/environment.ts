@@ -53,6 +53,7 @@ const API_ENVIRONMENT_KEYS = [
   "MEDIA_QUEUE_DISABLED",
   "ASSEMBLY_RENDER_ENABLED",
   "EDITORIAL_APPROVAL_ENABLED",
+  "EDITORIAL_INTEGRATED_REVIEW_ENABLED",
   "EDITORIAL_EXPORT_ENABLED",
   "AI_CONTEXT_ENABLED",
   "EDITORIAL_FRAMES_ENABLED",
@@ -251,8 +252,9 @@ export function apiEnvironment(): ApiEnvironment {
       process.env.EDITORIAL_APPROVAL_ENABLED === "1" ||
       (process.env.EDITORIAL_APPROVAL_ENABLED === undefined &&
         authorization.deploymentProfile === "local"),
-    editorialIntegratedReviewEnabled:
-      process.env.EDITORIAL_INTEGRATED_REVIEW_ENABLED === "1",
+    editorialIntegratedReviewEnabled: editorialIntegratedReviewAdmissionEnabled(
+      process.env,
+    ),
     editorialExportEnabled: editorialExportAdmissionEnabled(process.env),
     aiContextEnabled: aiContextAdmissionEnabled(process.env),
     editorialFramesEnabled: process.env.EDITORIAL_FRAMES_ENABLED === "1",
@@ -266,6 +268,12 @@ export function editorialExportAdmissionEnabled(
   environment: NodeJS.ProcessEnv,
 ): boolean {
   return environment.EDITORIAL_EXPORT_ENABLED === "1";
+}
+
+export function editorialIntegratedReviewAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.EDITORIAL_INTEGRATED_REVIEW_ENABLED === "1";
 }
 
 export function aiContextAdmissionEnabled(

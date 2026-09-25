@@ -137,6 +137,7 @@ describe.runIf(process.env.TRANSCRIPT_WORKER_ISOLATED_TESTS === "1")(
             leaseToken: randomUUID(),
             leaseExpiresAt: new Date(Date.now() - 60_000),
             workDeadlineAt: new Date(Date.now() - 30_000),
+            updatedAt: new Date(),
           },
         }),
         prisma.transcriptEvidenceIntent.update({

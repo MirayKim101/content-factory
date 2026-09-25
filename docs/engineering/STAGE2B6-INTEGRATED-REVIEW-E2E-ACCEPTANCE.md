@@ -1,6 +1,6 @@
 # Stage 2B-6 integrated review — disposable E2E evidence
 
-Date: 2026-09-24
+Date: 2026-09-25
 
 ## Scope and isolation
 
@@ -42,7 +42,8 @@ PATH="$PWD/tmp/runtime/node-v24.15.0-linux-x64/bin:$PATH" \
   test/assembly-repository-isolated.integration.spec.ts
 ```
 
-Result: `1 passed`, `14 passed`, duration `19.74s`.
+Fresh result after final lineage hardening: `1 passed`, `29 passed`, with the
+two intentionally opt-in non-default cases skipped when their flags are absent.
 
 The new opt-in case uses a v2 approval snapshot, uploads exact render and
 thumbnail bytes to real private object storage, lets the worker claim and
@@ -96,7 +97,9 @@ PATH="$PWD/tmp/runtime/node-v24.15.0-linux-x64/bin:$PATH" \
   test/image-suggestion.persistence.integration.spec.ts
 ```
 
-Result: `2 passed`, duration `3.63s`. These tests prove local cited-research
+Fresh result: `2 passed`, duration `3.76s`. The disposable database was checked
+absent before creation and verified absent again after cleanup. These tests
+prove local cited-research
 exact apply and local no-likeness image exact apply, including reload,
 duplicate delivery, stale-context rejection, `AI_ASSISTED` provenance, and
 zero direct local cost. The image candidate was stored through the real MinIO
@@ -117,3 +120,21 @@ measurements are shown as unavailable rather than converted to zero.
 The rows are not comparable operator-time evidence because the assisted path
 has not yet been performed by a person through an approved v2 review. No claim
 about time or cost reduction is supported by this document.
+
+## Final independent review — 2026-09-25
+
+Independent review of the committed Stage 2B-6 range first found missing
+post-approval authoritative lineage checks. The corrective diff now recomputes
+research and image lineage at approval read, export admission, worker claim and
+worker finalize. Mutating research/image state, candidate identity, candidate
+object key or dimensions after approval fails closed with
+`EXPORT_APPROVAL_STALE`; no result or READY artifact is written.
+
+The final independent re-review is CLEAN. Its reproduced evidence includes API
+isolated PostgreSQL `24/24`, worker PostgreSQL + real MinIO `29/29`, transcript
+isolated PostgreSQL + storage `4/4`, environment `9/9`, API/worker typecheck and
+lint, Prisma validation, and migration-to-schema parity. A new additive repair
+migration removes the unintended transcript-attempt `updatedAt` database
+default without rewriting deployed migration history. Integrated-review
+admission remains default-off and can now be enabled through the standard
+project `.env` allowlist.
