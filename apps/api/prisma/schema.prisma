@@ -754,6 +754,7 @@ model EditorialApproval {
   renderArtifactSizeBytes      BigInt
   renderContractVersion        String
   approvalContractVersion      String                      @default("manual-horizontal-approval-v1")
+  fingerprintBasisVersion      String?
   candidateFingerprint         String
   approvedAt                   DateTime                    @default(now())
   metrics                      EditorialApprovalMetrics?

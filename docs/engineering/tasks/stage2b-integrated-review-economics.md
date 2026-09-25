@@ -47,7 +47,8 @@ authoritative read model. Для current revision он дополнительн�
 
 - `mode`: `MANUAL`, `AI_ASSISTED` или `MIXED`;
 - exact basis version и применимые intent/set/candidate identities;
-- bounded citations с server-owned IDs, HTTPS URL, title, publisher,
+- bounded citations с server-owned IDs, HTTPS URL и versioned
+  `public-citation-text-v1` (`title <= 500`, `publisher <= 300`),
   `publishedAt` и `accessedAt`;
 - research `searchedAt`, `freshUntil` и current freshness state;
 - image safety decision и likeness mode;
@@ -112,6 +113,9 @@ preparation/final-review/total operator attention, metadata/evidence/thumbnail
 USD-microunit costs, server-derived total, basis versions, nullable assistance
 timing и incomplete reasons. Snapshot fingerprint входит в v2
 candidate/approval identity. Approval metrics v1 сохраняются без изменения.
+Public API/OpenAPI публикует этот economics snapshot как закрытый typed DTO;
+`assistanceTiming` остаётся только `null`, пока отдельный versioned timing
+contract не определён, поэтому произвольный JSON не проходит currentness.
 Общая economics view различает operator attention,
 pipeline time, Stage 2 direct provider cost и Stage 2B AI direct cost, не
 складывая разные currencies/units в одно число.
@@ -292,6 +296,12 @@ admission and worker claim/finalize reject v1 revisions containing any
 Historical v1 same-key replay keeps the exact pre-migration canonical request
 hash. V2 manifest JSON uses canonical recursive key ordering, so semantically
 equal snapshot objects produce identical LF-terminated manifest and ZIP bytes.
+V2 approval fingerprints also persist their serialization basis. Historical
+rows use `editorial-approval-fingerprint-v2-date-object-legacy`; new approvals
+use `editorial-approval-fingerprint-v2-iso8601`, which binds citation and
+freshness timestamps as canonical ISO-8601 strings. A legacy row remains
+current/exportable only while those stored dates exactly match its
+authoritative research intent and citation rows.
 
 ### Scripted operator-attention proxy — 2026-09-24
 

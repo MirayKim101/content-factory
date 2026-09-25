@@ -1829,6 +1829,118 @@
         "required": ["clientSegmentId", "startMs", "endMs"],
         "type": "object"
       },
+      "EditorialApprovalAttentionV2ResponseDto": {
+        "properties": {
+          "finalReviewForegroundMs": {
+            "maximum": 28800000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "preparationForegroundMs": {
+            "maximum": 28800000,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "schemaVersion": {
+            "enum": ["operator-attention-v2"],
+            "type": "string"
+          },
+          "totalOperatorAttentionMs": {
+            "maximum": 28800000,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "preparationForegroundMs",
+          "finalReviewForegroundMs",
+          "totalOperatorAttentionMs"
+        ],
+        "type": "object"
+      },
+      "EditorialApprovalEconomicsV2ResponseDto": {
+        "properties": {
+          "assistanceTiming": {
+            "description": "Reserved and null until a versioned assistance-timing contract exists.",
+            "enum": [null],
+            "nullable": true,
+            "type": "number"
+          },
+          "attention": {
+            "$ref": "#/components/schemas/EditorialApprovalAttentionV2ResponseDto"
+          },
+          "combinedDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "currency": {
+            "enum": ["USD"],
+            "type": "string"
+          },
+          "evidenceCostBasisVersion": {
+            "type": "string"
+          },
+          "evidenceDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "incompleteReasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "metadataCostBasisVersion": {
+            "type": "string"
+          },
+          "metadataDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "schemaVersion": {
+            "enum": ["approval-economics-v2"],
+            "type": "string"
+          },
+          "snapshotFingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "thumbnailCostBasisVersion": {
+            "type": "string"
+          },
+          "thumbnailDirectCostMicrousd": {
+            "pattern": "^\\d+$",
+            "type": "string"
+          },
+          "unit": {
+            "enum": ["MICRO"],
+            "type": "string"
+          },
+          "workflowMode": {
+            "enum": ["MANUAL", "AI_ASSISTED", "MIXED"],
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "workflowMode",
+          "attention",
+          "metadataDirectCostMicrousd",
+          "evidenceDirectCostMicrousd",
+          "thumbnailDirectCostMicrousd",
+          "combinedDirectCostMicrousd",
+          "currency",
+          "unit",
+          "metadataCostBasisVersion",
+          "evidenceCostBasisVersion",
+          "thumbnailCostBasisVersion",
+          "assistanceTiming",
+          "incompleteReasons",
+          "snapshotFingerprint"
+        ],
+        "type": "object"
+      },
       "EditorialApprovalListResponseDto": {
         "properties": {
           "items": {
@@ -1963,7 +2075,11 @@
             "type": "string"
           },
           "economicsV2": {
-            "additionalProperties": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EditorialApprovalEconomicsV2ResponseDto"
+              }
+            ],
             "nullable": true,
             "type": "object"
           },
@@ -1978,6 +2094,14 @@
           "editorialRevision": {
             "minimum": 1,
             "type": "integer"
+          },
+          "fingerprintBasisVersion": {
+            "enum": [
+              "editorial-approval-fingerprint-v2-date-object-legacy",
+              "editorial-approval-fingerprint-v2-iso8601"
+            ],
+            "nullable": true,
+            "type": "string"
           },
           "id": {
             "format": "uuid",
@@ -2078,6 +2202,7 @@
           "renderArtifactSizeBytes",
           "renderContractVersion",
           "approvalContractVersion",
+          "fingerprintBasisVersion",
           "candidateFingerprint",
           "approvedAt",
           "state",
@@ -2190,9 +2315,11 @@
             "type": "string"
           },
           "publisher": {
+            "maxLength": 300,
             "type": "string"
           },
           "title": {
+            "maxLength": 500,
             "type": "string"
           },
           "url": {
@@ -2259,6 +2386,7 @@
             "type": "array"
           },
           "likeness": {
+            "enum": ["NONE"],
             "nullable": true,
             "type": "string"
           },
@@ -4566,9 +4694,11 @@
             "type": "string"
           },
           "publisher": {
+            "maxLength": 300,
             "type": "string"
           },
           "title": {
+            "maxLength": 500,
             "type": "string"
           },
           "url": {

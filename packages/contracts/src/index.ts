@@ -3,6 +3,7 @@ export * from "#frame-evidence";
 export * from "#frame-policy";
 export * from "#transcript";
 export * from "#research";
+export * from "#editorial-approval-snapshot";
 export * from "#thumbnail";
 export const MEDIA_JOB_SCHEMA_VERSION = 1 as const;
 

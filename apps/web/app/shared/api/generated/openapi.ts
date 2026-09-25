@@ -1500,6 +1500,38 @@ export interface components {
       endMs: number;
       startMs: number;
     };
+    EditorialApprovalAttentionV2ResponseDto: {
+      finalReviewForegroundMs: number;
+      preparationForegroundMs: number;
+      /** @enum {string} */
+      schemaVersion: "operator-attention-v2";
+      totalOperatorAttentionMs: number;
+    };
+    EditorialApprovalEconomicsV2ResponseDto: {
+      /**
+       * @description Reserved and null until a versioned assistance-timing contract exists.
+       * @enum {number|null}
+       */
+      assistanceTiming: null;
+      attention: components["schemas"]["EditorialApprovalAttentionV2ResponseDto"];
+      combinedDirectCostMicrousd: string;
+      /** @enum {string} */
+      currency: "USD";
+      evidenceCostBasisVersion: string;
+      evidenceDirectCostMicrousd: string;
+      incompleteReasons: string[];
+      metadataCostBasisVersion: string;
+      metadataDirectCostMicrousd: string;
+      /** @enum {string} */
+      schemaVersion: "approval-economics-v2";
+      snapshotFingerprint: string;
+      thumbnailCostBasisVersion: string;
+      thumbnailDirectCostMicrousd: string;
+      /** @enum {string} */
+      unit: "MICRO";
+      /** @enum {string} */
+      workflowMode: "MANUAL" | "AI_ASSISTED" | "MIXED";
+    };
     EditorialApprovalListResponseDto: {
       items: components["schemas"]["EditorialApprovalResponseDto"][];
       /** Format: uuid */
@@ -1544,14 +1576,18 @@ export interface components {
       configurationFingerprint: string;
       /** Format: uuid */
       cutPipelineJobId: string;
-      economicsV2: {
-        [key: string]: unknown;
-      } | null;
+      economicsV2:
+        components["schemas"]["EditorialApprovalEconomicsV2ResponseDto"] | null;
       /** Format: uuid */
       editorialPackageId: string;
       /** Format: uuid */
       editorialPackageRevisionId: string;
       editorialRevision: number;
+      /** @enum {string|null} */
+      fingerprintBasisVersion:
+        | "editorial-approval-fingerprint-v2-date-object-legacy"
+        | "editorial-approval-fingerprint-v2-iso8601"
+        | null;
       /** Format: uuid */
       id: string;
       metrics: components["schemas"]["EditorialApprovalMetricsResponseDto"];
@@ -1635,7 +1671,8 @@ export interface components {
       imageSafetyDecision:
         components["schemas"]["EditorialImageSafetyDecisionResponseDto"] | null;
       incompleteReasons: string[];
-      likeness: string | null;
+      /** @enum {string|null} */
+      likeness: "NONE" | null;
       /** @enum {string} */
       mode: "MANUAL" | "AI_ASSISTED" | "MIXED";
       /** Format: uuid */

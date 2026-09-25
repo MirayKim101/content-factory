@@ -2,15 +2,21 @@ import { createHash } from "node:crypto";
 
 import { Injectable } from "@nestjs/common";
 import {
+  ISO8601_APPROVAL_FINGERPRINT_BASIS,
+  LEGACY_APPROVAL_FINGERPRINT_BASIS,
   LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
   LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
   THUMBNAIL_CONTRACT_VERSION,
+  projectPublicApprovalEconomicsV2,
+  projectPublicApprovalProcessingMetrics,
+  projectPublicComponentIncompleteReasons,
+  projectPublicApprovalCitations,
+  projectPublicResearchFreshness,
   projectNoLikenessSafetyDecision,
 } from "@content-factory/contracts";
 
 import type { Prisma } from "../../generated/prisma/client.js";
 import { sourceAuthorizationRuntime } from "../../config/environment.js";
-import { normalizePublicCitationUrl } from "../../ai-content/research/public-citation-url.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import { isSourceAuthorizationCleared } from "../../projects/domain/source-authorization.js";
 import type { EditorialExportRepository } from "../application/editorial-export-repository.port.js";
@@ -35,9 +41,17 @@ import { montageRightsUsable } from "../domain/montage-asset.js";
 
 const approvalInclude = {
   componentSnapshots: {
-    include: { provenance: true, suggestionSet: true, imageCandidate: true },
+    include: {
+      provenance: true,
+      suggestionSet: true,
+      researchIntent: {
+        include: { citations: { orderBy: { ordinal: "asc" } } },
+      },
+      imageCandidate: true,
+    },
   },
   economicsV2: true,
+  metrics: true,
   source: { include: { authorizations: true } },
   cutPipelineJob: { include: { resultArtifact: true } },
   editorialPackage: true,
@@ -639,9 +653,64 @@ function approvalSnapshotCurrent(row: ApprovalRow): boolean {
     row.componentSnapshots.length !== 2 ||
     !metadata ||
     !thumbnail ||
-    !economics
+    !economics ||
+    !row.metrics
   )
     return false;
+  const projectedEconomics = projectPublicApprovalEconomicsV2({
+    schemaVersion: economics.schemaVersion,
+    workflowMode: economics.workflowMode,
+    attentionSchemaVersion: economics.attentionSchemaVersion,
+    preparationForegroundMs: economics.preparationForegroundMs,
+    finalReviewForegroundMs: economics.finalReviewForegroundMs,
+    totalOperatorAttentionMs: economics.totalOperatorAttentionMs,
+    metadataDirectCostMicrousd: economics.metadataDirectCostMicrousd.toString(),
+    evidenceDirectCostMicrousd: economics.evidenceDirectCostMicrousd.toString(),
+    thumbnailDirectCostMicrousd:
+      economics.thumbnailDirectCostMicrousd.toString(),
+    combinedDirectCostMicrousd: economics.combinedDirectCostMicrousd.toString(),
+    currency: economics.currency,
+    unit: economics.unit,
+    metadataCostBasisVersion: economics.metadataCostBasisVersion,
+    evidenceCostBasisVersion: economics.evidenceCostBasisVersion,
+    thumbnailCostBasisVersion: economics.thumbnailCostBasisVersion,
+    assistanceTiming: economics.assistanceTiming,
+    incompleteReasons: economics.incompleteReasons,
+    snapshotFingerprint: economics.snapshotFingerprint,
+  });
+  const metrics = row.metrics;
+  const projectedMetrics = projectPublicApprovalProcessingMetrics({
+    metricsSchemaVersion: metrics.metricsSchemaVersion,
+    timestampBasisVersion: metrics.timestampBasisVersion,
+    cut: {
+      initialQueueWaitMs: bigintNumber(metrics.cutInitialQueueWaitMs),
+      retryWaitMs: bigintNumber(metrics.cutRetryWaitMs),
+      firstStartToFinishMs: bigintNumber(metrics.cutFirstStartToFinishMs),
+      activeAttemptMs: bigintNumber(metrics.cutActiveAttemptMs),
+      attemptCount: metrics.cutAttemptCount,
+      retryCount: metrics.cutRetryCount,
+    },
+    assembly: {
+      initialQueueWaitMs: bigintNumber(metrics.assemblyInitialQueueWaitMs),
+      retryWaitMs: bigintNumber(metrics.assemblyRetryWaitMs),
+      firstStartToFinishMs: bigintNumber(metrics.assemblyFirstStartToFinishMs),
+      activeAttemptMs: bigintNumber(metrics.assemblyActiveAttemptMs),
+      attemptCount: metrics.assemblyAttemptCount,
+      retryCount: metrics.assemblyRetryCount,
+    },
+    cutToAssemblyReadyElapsedMs: bigintNumber(
+      metrics.cutToAssemblyReadyElapsedMs,
+    ),
+    outputDurationMs: metrics.outputDurationMs,
+    outputBytes: metrics.outputBytes.toString(),
+    manualAttentionMs: metrics.manualAttentionMs,
+    attentionMeasurementVersion: metrics.attentionMeasurementVersion,
+    directProviderCostMinor: metrics.directProviderCostMinor.toString(),
+    costCurrency: metrics.costCurrency,
+    costBasisVersion: metrics.costBasisVersion,
+    incompleteReasons: metrics.incompleteReasons,
+  });
+  if (!projectedEconomics || !projectedMetrics) return false;
   for (const snapshot of [metadata, thumbnail]) {
     const provenance = snapshot.provenance;
     if (
@@ -684,13 +753,24 @@ function approvalSnapshotCurrent(row: ApprovalRow): boolean {
         economics.thumbnailDirectCostMicrousd &&
     economics.metadataCostBasisVersion === metadata.costBasisVersion &&
     economics.thumbnailCostBasisVersion === thumbnail.costBasisVersion &&
-    validV2SnapshotFingerprints([metadata, thumbnail], economics)
+    validV2SnapshotFingerprints(
+      [metadata, thumbnail],
+      economics,
+      row.fingerprintBasisVersion,
+    )
   );
+}
+
+function bigintNumber(value: bigint | null): number | null {
+  if (value === null) return null;
+  const result = Number(value);
+  return Number.isSafeInteger(result) ? result : Number.NaN;
 }
 
 function validV2SnapshotFingerprints(
   components: ApprovalRow["componentSnapshots"],
   economics: NonNullable<ApprovalRow["economicsV2"]>,
+  fingerprintBasisVersion: string | null,
 ): boolean {
   const byComponent = new Map<
     "METADATA" | "THUMBNAIL",
@@ -698,66 +778,58 @@ function validV2SnapshotFingerprints(
   >();
   for (const component of components) {
     if (byComponent.has(component.component)) return false;
-    const citations = Array.isArray(component.citations)
-      ? component.citations.map((citation) => {
-          if (!citation || typeof citation !== "object") return citation;
-          const row = citation as Record<string, unknown>;
-          return {
-            ...row,
-            publishedAt:
-              typeof row.publishedAt === "string"
-                ? new Date(row.publishedAt)
-                : null,
-            accessedAt:
-              typeof row.accessedAt === "string"
-                ? new Date(row.accessedAt)
-                : row.accessedAt,
-          };
-        })
-      : component.citations;
-    if (
-      component.component === "METADATA" &&
-      (!Array.isArray(citations) ||
-        citations.some((citation) => !validPersistedPublicCitation(citation)))
-    )
+    const publicCitations = projectPublicApprovalCitations(component.citations);
+    if (!publicCitations) return false;
+    const citations = publicCitations.map((citation) => ({
+      ...citation,
+      publishedAt: citation.publishedAt ? new Date(citation.publishedAt) : null,
+      accessedAt: new Date(citation.accessedAt),
+    }));
+    if (component.component === "THUMBNAIL" && citations.length !== 0)
       return false;
-    const freshness =
-      component.freshness && typeof component.freshness === "object"
-        ? {
-            ...(component.freshness as Record<string, unknown>),
-            searchedAt: new Date(
-              String(
-                (component.freshness as Record<string, unknown>).searchedAt,
-              ),
-            ),
-            freshUntil: new Date(
-              String(
-                (component.freshness as Record<string, unknown>).freshUntil,
-              ),
-            ),
-          }
-        : null;
-    const incompleteReasons = Array.isArray(component.incompleteReasons)
-      ? [...new Set(component.incompleteReasons)]
-      : component.incompleteReasons;
+    const publicFreshness =
+      component.freshness === null
+        ? null
+        : projectPublicResearchFreshness(component.freshness);
+    if (component.freshness !== null && !publicFreshness) return false;
+    const freshness = publicFreshness
+      ? {
+          ...publicFreshness,
+          searchedAt: new Date(publicFreshness.searchedAt),
+          freshUntil: new Date(publicFreshness.freshUntil),
+        }
+      : null;
+    const incompleteReasons = projectPublicComponentIncompleteReasons(
+      component.incompleteReasons,
+    );
+    if (!incompleteReasons) return false;
     const publicSafetyDecision = projectNoLikenessSafetyDecision(
       component.imageSafetyDecision,
     );
     if (
       (component.component === "METADATA" &&
-        component.imageSafetyDecision !== null) ||
+        (component.imageSafetyDecision !== null ||
+          component.likeness !== null ||
+          (component.mode === "MANUAL"
+            ? component.freshness !== null || citations.length !== 0
+            : !freshness))) ||
       (component.component === "THUMBNAIL" &&
         component.mode === "MANUAL" &&
-        component.imageSafetyDecision !== null) ||
+        (component.imageSafetyDecision !== null ||
+          component.likeness !== null ||
+          component.freshness !== null)) ||
       (component.component === "THUMBNAIL" &&
         component.mode === "AI_ASSISTED" &&
         (!publicSafetyDecision ||
+          component.likeness !== "NONE" ||
+          component.freshness !== null ||
           component.imageCandidate?.contractVersion !==
             THUMBNAIL_CONTRACT_VERSION ||
           component.imageCandidate.adapterVersion !==
             LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION ||
           component.imageCandidate.promptBasisVersion !==
             LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
+          component.imageCandidate.likeness !== component.likeness ||
           !projectNoLikenessSafetyDecision(
             component.imageCandidate.safetyDecision,
           ) ||
@@ -784,8 +856,39 @@ function validV2SnapshotFingerprints(
       component.directCostMicrousd.toString(),
       component.costBasisVersion,
       canonicalJson(incompleteReasons),
+      ...(fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+        ? [ISO8601_APPROVAL_FINGERPRINT_BASIS]
+        : []),
     ]);
-    if (component.snapshotFingerprint !== expected) return false;
+    const legacyExpected = hashValues([
+      "editorial-approval-component-snapshot-v2",
+      component.component,
+      component.provenanceId,
+      component.mode,
+      component.basisVersion,
+      component.researchIntentId ?? "",
+      component.suggestionSetId ?? "",
+      component.imageIntentId ?? "",
+      component.imageCandidateId ?? "",
+      component.transcriptArtifactId ?? "",
+      component.transcriptSha256 ?? "",
+      legacyCanonicalJson(citations),
+      legacyCanonicalJson(freshness),
+      legacyCanonicalJson(publicSafetyDecision),
+      component.likeness ?? "",
+      component.directCostMicrousd.toString(),
+      component.costBasisVersion,
+      legacyCanonicalJson(incompleteReasons),
+    ]);
+    if (
+      (fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+        ? component.snapshotFingerprint !== expected
+        : fingerprintBasisVersion === LEGACY_APPROVAL_FINGERPRINT_BASIS
+          ? component.snapshotFingerprint !== legacyExpected
+          : true) ||
+      !exportResearchLineageExact(component, citations, freshness)
+    )
+      return false;
     byComponent.set(component.component, component);
   }
   const metadata = byComponent.get("METADATA");
@@ -802,34 +905,77 @@ function validV2SnapshotFingerprints(
     economics.evidenceDirectCostMicrousd.toString(),
     economics.thumbnailDirectCostMicrousd.toString(),
     economics.combinedDirectCostMicrousd.toString(),
+    ...(fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+      ? [ISO8601_APPROVAL_FINGERPRINT_BASIS]
+      : []),
   ]);
   return economics.snapshotFingerprint === expectedEconomics;
 }
 
-function validPersistedPublicCitation(value: unknown): boolean {
-  if (!value || typeof value !== "object") return false;
-  const citation = value as Record<string, unknown>;
-  return (
-    typeof citation.id === "string" &&
-    /^[0-9a-f-]{36}$/i.test(citation.id) &&
-    typeof citation.url === "string" &&
-    normalizePublicCitationUrl(citation.url) === citation.url &&
-    typeof citation.title === "string" &&
-    citation.title.length > 0 &&
-    citation.title.length <= 300 &&
-    typeof citation.publisher === "string" &&
-    citation.publisher.length > 0 &&
-    citation.publisher.length <= 200 &&
-    citation.accessedAt instanceof Date &&
-    Number.isFinite(citation.accessedAt.getTime()) &&
-    (citation.publishedAt === null ||
-      (citation.publishedAt instanceof Date &&
-        Number.isFinite(citation.publishedAt.getTime())))
+function legacyCanonicalJson(value: unknown): string {
+  if (value === undefined) return "null";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value))
+    return `[${value.map(legacyCanonicalJson).join(",")}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${legacyCanonicalJson(record[key])}`)
+    .join(",")}}`;
+}
+
+function exportResearchLineageExact(
+  component: ApprovalRow["componentSnapshots"][number],
+  citations: unknown,
+  freshness: unknown,
+): boolean {
+  if (component.component !== "METADATA" || component.mode === "MANUAL")
+    return (
+      Array.isArray(citations) && citations.length === 0 && freshness === null
+    );
+  const ids = component.suggestionSet
+    ? jsonStringArray(component.suggestionSet.citationIds)
+    : null;
+  if (!component.researchIntent || !ids || ids.length > 20) return false;
+  const byId = new Map(
+    component.researchIntent.citations.map((citation) => [
+      citation.id,
+      citation,
+    ]),
   );
+  const expected: unknown[] = [];
+  for (const id of ids) {
+    const citation = byId.get(id);
+    if (!citation) return false;
+    expected.push({
+      id: citation.id,
+      url: citation.url,
+      title: citation.title,
+      publisher: citation.publisher,
+      publishedAt: citation.publishedAt,
+      accessedAt: citation.accessedAt,
+    });
+  }
+  return (
+    canonicalJson(citations) === canonicalJson(expected) &&
+    canonicalJson(freshness) ===
+      canonicalJson({
+        searchedAt: component.researchIntent.searchedAt,
+        freshUntil: component.researchIntent.freshUntil,
+        freshness: "CURRENT",
+      })
+  );
+}
+
+function jsonStringArray(value: unknown): string[] | null {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+    ? value
+    : null;
 }
 
 function canonicalJson(value: unknown): string {
   if (value === undefined) return "null";
+  if (value instanceof Date) return JSON.stringify(value.toISOString());
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   const record = value as Record<string, unknown>;

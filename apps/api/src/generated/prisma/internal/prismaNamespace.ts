@@ -5157,6 +5157,7 @@ export const EditorialApprovalScalarFieldEnum = {
   renderArtifactSizeBytes: 'renderArtifactSizeBytes',
   renderContractVersion: 'renderContractVersion',
   approvalContractVersion: 'approvalContractVersion',
+  fingerprintBasisVersion: 'fingerprintBasisVersion',
   candidateFingerprint: 'candidateFingerprint',
   approvedAt: 'approvedAt'
 } as const

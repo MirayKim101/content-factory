@@ -108,6 +108,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@content-factory/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@primevue/nuxt-module':
         specifier: 4.5.5
         version: 4.5.5(@babel/parser@7.29.8)(magicast@0.5.4)(supports-color@10.2.2)(vue@3.5.42(typescript@6.0.3))

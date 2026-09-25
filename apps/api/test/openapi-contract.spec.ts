@@ -71,6 +71,15 @@ describe("authoritative OpenAPI export", () => {
           };
         }
       >;
+      components: {
+        schemas: Record<
+          string,
+          {
+            properties?: Record<string, unknown>;
+            required?: string[];
+          }
+        >;
+      };
     };
     expect(document).toMatchObject({
       openapi: "3.0.0",
@@ -97,6 +106,60 @@ describe("authoritative OpenAPI export", () => {
         },
       },
     });
+    expect(document).toMatchObject({
+      components: {
+        schemas: {
+          ResearchCitationDto: {
+            properties: {
+              title: { maxLength: 500 },
+              publisher: { maxLength: 300 },
+            },
+          },
+          EditorialCitationResponseDto: {
+            properties: {
+              title: { maxLength: 500 },
+              publisher: { maxLength: 300 },
+            },
+          },
+          EditorialComponentSummaryResponseDto: {
+            properties: {
+              likeness: {
+                enum: ["NONE"],
+                nullable: true,
+              },
+            },
+          },
+          EditorialImageSafetyDecisionResponseDto: {
+            properties: {
+              version: { enum: ["no-likeness-safety-v1"] },
+              realisticPersonRequested: { enum: [false] },
+              referenceImageUsed: { enum: [false] },
+              externalProviderUsed: { enum: [false] },
+            },
+          },
+          EditorialApprovalEconomicsV2ResponseDto: {
+            properties: {
+              schemaVersion: { enum: ["approval-economics-v2"] },
+              workflowMode: { enum: ["MANUAL", "AI_ASSISTED", "MIXED"] },
+              attention: {
+                $ref: "#/components/schemas/EditorialApprovalAttentionV2ResponseDto",
+              },
+              assistanceTiming: {
+                enum: [null],
+                nullable: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    expect(
+      document.components.schemas.EditorialApprovalResponseDto?.required,
+    ).toContain("fingerprintBasisVersion");
+    expect(
+      document.components.schemas.EditorialApprovalEconomicsV2ResponseDto
+        ?.properties?.assistanceTiming,
+    ).not.toMatchObject({ additionalProperties: true });
 
     const creatorContextMutationBodies = {
       "/api/v1/creator-profiles/{profileId}": "UpdateCreatorProfileDto",

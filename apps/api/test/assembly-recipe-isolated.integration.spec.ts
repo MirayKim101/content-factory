@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -20,6 +20,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { databaseUrl } from "../src/config/environment.js";
 import { PrismaService } from "../src/database/prisma.service.js";
+import type { Prisma } from "../src/generated/prisma/client.js";
 import { ASSEMBLY_RECIPE_REPOSITORY } from "../src/editorial-content/application/assembly-recipe-repository.port.js";
 import {
   ASSEMBLY_RENDER_ADMISSION_ENABLED,
@@ -1728,6 +1729,135 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
       ).toBe(0);
     });
 
+    it("preserves admitted citation bounds and rejects rows beyond them", async () => {
+      const candidate = await readyApprovalCandidate();
+      const assisted = await addAssistedProvenance(candidate, "MIXED");
+      await prisma.researchCitation.updateMany({
+        where: { id: { in: assisted.citationIds.slice(0, 2) } },
+        data: { title: "t".repeat(500), publisher: "p".repeat(300) },
+      });
+      const repository = new PrismaEditorialApprovalRepository(prisma, true);
+      const review = await repository.getReview(candidate.cut.jobId);
+      expect(review?.approvable).toBe(true);
+      if (!review?.candidateFingerprint)
+        throw new Error("boundary review was not built");
+      const approval = await repository.create({
+        approvalId: randomUUID(),
+        operationRequestId: randomUUID(),
+        renderId: candidate.renderId,
+        editorialRevision: 1,
+        candidateFingerprint: review.candidateFingerprint,
+        approvalContractVersion: "human-horizontal-approval-v2",
+        attention: {
+          schemaVersion: "operator-attention-v2",
+          preparationForegroundMs: 1,
+          finalReviewForegroundMs: 1,
+        },
+        idempotencyKey: randomUUID(),
+      });
+      await expect(
+        new PrismaEditorialExportRepository(prisma).create({
+          intentId: randomUUID(),
+          operationRequestId: randomUUID(),
+          jobId: randomUUID(),
+          attemptId: randomUUID(),
+          approvalId: approval.id,
+          idempotencyKey: randomUUID(),
+        }),
+      ).resolves.toMatchObject({ view: { approvalId: approval.id } });
+      const metadataSnapshot =
+        await prisma.editorialApprovalComponentSnapshot.findUniqueOrThrow({
+          where: {
+            approvalId_component: {
+              approvalId: approval.id,
+              component: "METADATA",
+            },
+          },
+        });
+      const originalCitations = metadataSnapshot.citations;
+      if (!Array.isArray(originalCitations)) {
+        throw new Error("EXPECTED_METADATA_CITATIONS_ARRAY");
+      }
+      const originalCitationInput =
+        originalCitations as Prisma.InputJsonArray;
+      const shiftedCitations = originalCitations.map((citation, index) =>
+        index === 0
+          ? {
+              ...(citation as Record<string, unknown>),
+              accessedAt: new Date(
+                new Date(
+                  String((citation as Record<string, unknown>).accessedAt),
+                ).getTime() + 1_000,
+              ).toISOString(),
+            }
+          : citation,
+      );
+      await prisma.editorialApprovalComponentSnapshot.update({
+        where: {
+          approvalId_component: {
+            approvalId: approval.id,
+            component: "METADATA",
+          },
+        },
+        data: { citations: shiftedCitations as Prisma.InputJsonValue },
+      });
+      await expect(
+        new PrismaEditorialExportRepository(prisma).create({
+          intentId: randomUUID(),
+          operationRequestId: randomUUID(),
+          jobId: randomUUID(),
+          attemptId: randomUUID(),
+          approvalId: approval.id,
+          idempotencyKey: randomUUID(),
+        }),
+      ).rejects.toBeInstanceOf(EditorialExportApprovalStaleError);
+      await prisma.editorialApprovalComponentSnapshot.update({
+        where: {
+          approvalId_component: {
+            approvalId: approval.id,
+            component: "METADATA",
+          },
+        },
+        data: { citations: originalCitationInput },
+      });
+      const secret = "must-not-escape-api-export-citation";
+      await tamperApprovalSnapshotCitation(approval.id, secret);
+      let staleRejection: unknown;
+      try {
+        await new PrismaEditorialExportRepository(prisma).create({
+          intentId: randomUUID(),
+          operationRequestId: randomUUID(),
+          jobId: randomUUID(),
+          attemptId: randomUUID(),
+          approvalId: approval.id,
+          idempotencyKey: randomUUID(),
+        });
+      } catch (error) {
+        staleRejection = error;
+      }
+      expect(staleRejection).toBeInstanceOf(EditorialExportApprovalStaleError);
+      expect(String(staleRejection)).not.toContain(secret);
+
+      const invalidCandidate = await readyApprovalCandidate();
+      const invalid = await addAssistedProvenance(invalidCandidate, "MIXED");
+      await prisma.researchCitation.update({
+        where: { id: invalid.citationIds[1]! },
+        data: { title: "t".repeat(501) },
+      });
+      const invalidReview = await repository.getReview(
+        invalidCandidate.cut.jobId,
+      );
+      expect(invalidReview).toMatchObject({
+        approvable: false,
+        components: {
+          metadata: {
+            citations: [],
+            incompleteReasons: expect.arrayContaining(["CITATIONS_INVALID"]),
+          },
+        },
+      });
+    });
+
     it("fails closed on private thumbnail safety data without exposing it", async () => {
       const secret = "must-not-escape-thumbnail-safety";
       const candidate = await readyApprovalCandidate();
@@ -1799,17 +1929,32 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         },
         idempotencyKey: randomUUID(),
       });
-      await prisma.editorialApprovalComponentSnapshot.update({
-        where: {
-          approvalId_component: {
-            approvalId: approval.id,
-            component: "THUMBNAIL",
+      await prisma.$transaction([
+        prisma.editorialApprovalComponentSnapshot.update({
+          where: {
+            approvalId_component: {
+              approvalId: approval.id,
+              component: "THUMBNAIL",
+            },
           },
-        },
-        data: {
-          imageSafetyDecision: { credentials: secret, prompt: "private prompt" },
-        },
-      });
+          data: {
+            imageSafetyDecision: {
+              credentials: secret,
+              prompt: "private prompt",
+            },
+            likeness: `secret-likeness-${secret}`,
+            incompleteReasons: [`secret-component-${secret}`],
+          },
+        }),
+        prisma.editorialApprovalEconomicsV2.update({
+          where: { approvalId: approval.id },
+          data: { incompleteReasons: [`secret-economics-${secret}`] },
+        }),
+        prisma.editorialApprovalMetrics.update({
+          where: { approvalId: approval.id },
+          data: { incompleteReasons: [`secret-metrics-${secret}`] },
+        }),
+      ]);
       const reloaded = await repository.getReview(historical.cut.jobId);
       const publicReload = JSON.stringify(reloaded, (_key, value) =>
         typeof value === "bigint" ? value.toString() : value,
@@ -2169,8 +2314,8 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         where: { id: candidate.thumbnailId },
       });
       const authorization = source.authorizations[0]!;
-      const now = new Date("2026-09-24T00:00:00.000Z");
-      const later = new Date("2026-09-25T00:00:00.000Z");
+      const now = new Date(Date.now() - 60_000);
+      const later = new Date(now.getTime() + 24 * 60 * 60 * 1_000);
       const profileId = randomUUID();
       const profileRevisionId = randomUUID();
       const identityId = randomUUID();
@@ -2490,6 +2635,111 @@ describe.runIf(process.env.ASSEMBLY_RECIPE_ISOLATED_TESTS === "1")(
         ],
       });
       return { citationIds };
+    }
+
+    async function tamperApprovalSnapshotCitation(
+      approvalId: string,
+      secret: string,
+    ): Promise<void> {
+      const [snapshots, economics] = await Promise.all([
+        prisma.editorialApprovalComponentSnapshot.findMany({
+          where: { approvalId },
+        }),
+        prisma.editorialApprovalEconomicsV2.findUniqueOrThrow({
+          where: { approvalId },
+        }),
+      ]);
+      const metadata = snapshots.find((row) => row.component === "METADATA")!;
+      const thumbnail = snapshots.find((row) => row.component === "THUMBNAIL")!;
+      const citations = (
+        metadata.citations as Array<Record<string, unknown>>
+      ).map((citation, index) =>
+        index === 0
+          ? { ...citation, credentials: secret, excerpt: "private excerpt" }
+          : citation,
+      );
+      const fingerprintCitations = citations.map((citation) => ({
+        ...citation,
+        publishedAt:
+          typeof citation.publishedAt === "string"
+            ? new Date(citation.publishedAt)
+            : null,
+        accessedAt: new Date(String(citation.accessedAt)),
+      }));
+      const rawFreshness = metadata.freshness as Record<string, unknown>;
+      const fingerprintFreshness = {
+        ...rawFreshness,
+        searchedAt: new Date(String(rawFreshness.searchedAt)),
+        freshUntil: new Date(String(rawFreshness.freshUntil)),
+      };
+      const metadataFingerprint = createHash("sha256")
+        .update(
+          [
+            "editorial-approval-component-snapshot-v2",
+            metadata.component,
+            metadata.provenanceId,
+            metadata.mode,
+            metadata.basisVersion,
+            metadata.researchIntentId ?? "",
+            metadata.suggestionSetId ?? "",
+            metadata.imageIntentId ?? "",
+            metadata.imageCandidateId ?? "",
+            metadata.transcriptArtifactId ?? "",
+            metadata.transcriptSha256 ?? "",
+            canonicalTestJson(fingerprintCitations),
+            canonicalTestJson(fingerprintFreshness),
+            "null",
+            metadata.likeness ?? "",
+            metadata.directCostMicrousd.toString(),
+            metadata.costBasisVersion,
+            canonicalTestJson(metadata.incompleteReasons),
+          ].join("\n"),
+        )
+        .digest("hex");
+      const economicsFingerprint = createHash("sha256")
+        .update(
+          [
+            "approval-economics-v2",
+            economics.workflowMode,
+            economics.preparationForegroundMs.toString(),
+            economics.finalReviewForegroundMs.toString(),
+            metadataFingerprint,
+            thumbnail.snapshotFingerprint,
+            economics.metadataDirectCostMicrousd.toString(),
+            economics.evidenceDirectCostMicrousd.toString(),
+            economics.thumbnailDirectCostMicrousd.toString(),
+            economics.combinedDirectCostMicrousd.toString(),
+          ].join("\n"),
+        )
+        .digest("hex");
+      await prisma.$transaction([
+        prisma.editorialApprovalComponentSnapshot.update({
+          where: {
+            approvalId_component: { approvalId, component: "METADATA" },
+          },
+          data: {
+            citations: citations as Prisma.InputJsonValue,
+            snapshotFingerprint: metadataFingerprint,
+          },
+        }),
+        prisma.editorialApprovalEconomicsV2.update({
+          where: { approvalId },
+          data: { snapshotFingerprint: economicsFingerprint },
+        }),
+      ]);
+    }
+
+    function canonicalTestJson(value: unknown): string {
+      if (value === undefined) return "null";
+      if (value === null || typeof value !== "object")
+        return JSON.stringify(value);
+      if (Array.isArray(value))
+        return `[${value.map(canonicalTestJson).join(",")}]`;
+      const row = value as Record<string, unknown>;
+      return `{${Object.keys(row)
+        .sort()
+        .map((key) => `${JSON.stringify(key)}:${canonicalTestJson(row[key])}`)
+        .join(",")}}`;
     }
 
     async function readyCut(existingSource?: {

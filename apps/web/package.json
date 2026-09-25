@@ -13,6 +13,7 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@content-factory/contracts": "workspace:*",
     "@primevue/nuxt-module": "4.5.5",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/vue-query": "5.102.8",

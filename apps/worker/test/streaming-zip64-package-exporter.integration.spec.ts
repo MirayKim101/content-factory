@@ -129,6 +129,7 @@ describe("streaming ZIP64 editorial package", () => {
     plan.approvalContractVersion = "human-horizontal-approval-v2";
     plan.exportContractVersion = "editorial-export-zip-v2";
     plan.approvalSnapshot = {
+      fingerprintBasisVersion: "editorial-approval-fingerprint-v2-iso8601",
       workflowMode: "MIXED",
       components: [
         {

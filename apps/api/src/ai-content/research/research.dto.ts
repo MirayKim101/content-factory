@@ -13,18 +13,25 @@ import {
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
+import {
+  PUBLIC_CITATION_PUBLISHER_MAX_LENGTH,
+  PUBLIC_CITATION_TITLE_MAX_LENGTH,
+} from "@content-factory/contracts";
 
 export class ResearchCitationDto {
   @IsUrl({ protocols: ["https"], require_protocol: true })
   @ApiProperty({ type: String, example: "https://example.com/source" })
   url!: string;
   @IsString()
-  @MaxLength(500)
-  @ApiProperty({ type: String })
+  @MaxLength(PUBLIC_CITATION_TITLE_MAX_LENGTH)
+  @ApiProperty({ type: String, maxLength: PUBLIC_CITATION_TITLE_MAX_LENGTH })
   title!: string;
   @IsString()
-  @MaxLength(300)
-  @ApiProperty({ type: String })
+  @MaxLength(PUBLIC_CITATION_PUBLISHER_MAX_LENGTH)
+  @ApiProperty({
+    type: String,
+    maxLength: PUBLIC_CITATION_PUBLISHER_MAX_LENGTH,
+  })
   publisher!: string;
   @IsOptional()
   @IsISO8601()

@@ -67,6 +67,7 @@ export type EditorialApprovalMinAggregateOutputType = {
   renderArtifactSizeBytes: bigint | null
   renderContractVersion: string | null
   approvalContractVersion: string | null
+  fingerprintBasisVersion: string | null
   candidateFingerprint: string | null
   approvedAt: Date | null
 }
@@ -96,6 +97,7 @@ export type EditorialApprovalMaxAggregateOutputType = {
   renderArtifactSizeBytes: bigint | null
   renderContractVersion: string | null
   approvalContractVersion: string | null
+  fingerprintBasisVersion: string | null
   candidateFingerprint: string | null
   approvedAt: Date | null
 }
@@ -125,6 +127,7 @@ export type EditorialApprovalCountAggregateOutputType = {
   renderArtifactSizeBytes: number
   renderContractVersion: number
   approvalContractVersion: number
+  fingerprintBasisVersion: number
   candidateFingerprint: number
   approvedAt: number
   _all: number
@@ -172,6 +175,7 @@ export type EditorialApprovalMinAggregateInputType = {
   renderArtifactSizeBytes?: true
   renderContractVersion?: true
   approvalContractVersion?: true
+  fingerprintBasisVersion?: true
   candidateFingerprint?: true
   approvedAt?: true
 }
@@ -201,6 +205,7 @@ export type EditorialApprovalMaxAggregateInputType = {
   renderArtifactSizeBytes?: true
   renderContractVersion?: true
   approvalContractVersion?: true
+  fingerprintBasisVersion?: true
   candidateFingerprint?: true
   approvedAt?: true
 }
@@ -230,6 +235,7 @@ export type EditorialApprovalCountAggregateInputType = {
   renderArtifactSizeBytes?: true
   renderContractVersion?: true
   approvalContractVersion?: true
+  fingerprintBasisVersion?: true
   candidateFingerprint?: true
   approvedAt?: true
   _all?: true
@@ -346,6 +352,7 @@ export type EditorialApprovalGroupByOutputType = {
   renderArtifactSizeBytes: bigint
   renderContractVersion: string
   approvalContractVersion: string
+  fingerprintBasisVersion: string | null
   candidateFingerprint: string
   approvedAt: Date
   _count: EditorialApprovalCountAggregateOutputType | null
@@ -398,6 +405,7 @@ export type EditorialApprovalWhereInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFilter<"EditorialApproval"> | bigint | number
   renderContractVersion?: Prisma.StringFilter<"EditorialApproval"> | string
   approvalContractVersion?: Prisma.StringFilter<"EditorialApproval"> | string
+  fingerprintBasisVersion?: Prisma.StringNullableFilter<"EditorialApproval"> | string | null
   candidateFingerprint?: Prisma.StringFilter<"EditorialApproval"> | string
   approvedAt?: Prisma.DateTimeFilter<"EditorialApproval"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
@@ -444,6 +452,7 @@ export type EditorialApprovalOrderByWithRelationInput = {
   renderArtifactSizeBytes?: Prisma.SortOrder
   renderContractVersion?: Prisma.SortOrder
   approvalContractVersion?: Prisma.SortOrder
+  fingerprintBasisVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   candidateFingerprint?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
@@ -497,6 +506,7 @@ export type EditorialApprovalWhereUniqueInput = Prisma.AtLeast<{
   renderArtifactSizeBytes?: Prisma.BigIntFilter<"EditorialApproval"> | bigint | number
   renderContractVersion?: Prisma.StringFilter<"EditorialApproval"> | string
   approvalContractVersion?: Prisma.StringFilter<"EditorialApproval"> | string
+  fingerprintBasisVersion?: Prisma.StringNullableFilter<"EditorialApproval"> | string | null
   candidateFingerprint?: Prisma.StringFilter<"EditorialApproval"> | string
   approvedAt?: Prisma.DateTimeFilter<"EditorialApproval"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
@@ -543,6 +553,7 @@ export type EditorialApprovalOrderByWithAggregationInput = {
   renderArtifactSizeBytes?: Prisma.SortOrder
   renderContractVersion?: Prisma.SortOrder
   approvalContractVersion?: Prisma.SortOrder
+  fingerprintBasisVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   candidateFingerprint?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
   _count?: Prisma.EditorialApprovalCountOrderByAggregateInput
@@ -580,6 +591,7 @@ export type EditorialApprovalScalarWhereWithAggregatesInput = {
   renderArtifactSizeBytes?: Prisma.BigIntWithAggregatesFilter<"EditorialApproval"> | bigint | number
   renderContractVersion?: Prisma.StringWithAggregatesFilter<"EditorialApproval"> | string
   approvalContractVersion?: Prisma.StringWithAggregatesFilter<"EditorialApproval"> | string
+  fingerprintBasisVersion?: Prisma.StringNullableWithAggregatesFilter<"EditorialApproval"> | string | null
   candidateFingerprint?: Prisma.StringWithAggregatesFilter<"EditorialApproval"> | string
   approvedAt?: Prisma.DateTimeWithAggregatesFilter<"EditorialApproval"> | Date | string
 }
@@ -594,6 +606,7 @@ export type EditorialApprovalCreateInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -640,6 +653,7 @@ export type EditorialApprovalUncheckedCreateInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -659,6 +673,7 @@ export type EditorialApprovalUpdateInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -705,6 +720,7 @@ export type EditorialApprovalUncheckedUpdateInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -739,6 +755,7 @@ export type EditorialApprovalCreateManyInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -753,6 +770,7 @@ export type EditorialApprovalUpdateManyMutationInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -782,6 +800,7 @@ export type EditorialApprovalUncheckedUpdateManyInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -849,6 +868,7 @@ export type EditorialApprovalCountOrderByAggregateInput = {
   renderArtifactSizeBytes?: Prisma.SortOrder
   renderContractVersion?: Prisma.SortOrder
   approvalContractVersion?: Prisma.SortOrder
+  fingerprintBasisVersion?: Prisma.SortOrder
   candidateFingerprint?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
 }
@@ -886,6 +906,7 @@ export type EditorialApprovalMaxOrderByAggregateInput = {
   renderArtifactSizeBytes?: Prisma.SortOrder
   renderContractVersion?: Prisma.SortOrder
   approvalContractVersion?: Prisma.SortOrder
+  fingerprintBasisVersion?: Prisma.SortOrder
   candidateFingerprint?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
 }
@@ -915,6 +936,7 @@ export type EditorialApprovalMinOrderByAggregateInput = {
   renderArtifactSizeBytes?: Prisma.SortOrder
   renderContractVersion?: Prisma.SortOrder
   approvalContractVersion?: Prisma.SortOrder
+  fingerprintBasisVersion?: Prisma.SortOrder
   candidateFingerprint?: Prisma.SortOrder
   approvedAt?: Prisma.SortOrder
 }
@@ -1523,6 +1545,7 @@ export type EditorialApprovalCreateWithoutProjectInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   source: Prisma.VideoSourceCreateNestedOneWithoutEditorialApprovalsInput
@@ -1567,6 +1590,7 @@ export type EditorialApprovalUncheckedCreateWithoutProjectInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -1630,6 +1654,7 @@ export type EditorialApprovalScalarWhereInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFilter<"EditorialApproval"> | bigint | number
   renderContractVersion?: Prisma.StringFilter<"EditorialApproval"> | string
   approvalContractVersion?: Prisma.StringFilter<"EditorialApproval"> | string
+  fingerprintBasisVersion?: Prisma.StringNullableFilter<"EditorialApproval"> | string | null
   candidateFingerprint?: Prisma.StringFilter<"EditorialApproval"> | string
   approvedAt?: Prisma.DateTimeFilter<"EditorialApproval"> | Date | string
 }
@@ -1644,6 +1669,7 @@ export type EditorialApprovalCreateWithoutSourceInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -1688,6 +1714,7 @@ export type EditorialApprovalUncheckedCreateWithoutSourceInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -1733,6 +1760,7 @@ export type EditorialApprovalCreateWithoutRenderArtifactInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -1777,6 +1805,7 @@ export type EditorialApprovalUncheckedCreateWithoutRenderArtifactInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -1822,6 +1851,7 @@ export type EditorialApprovalCreateWithoutCutPipelineJobInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -1863,6 +1893,7 @@ export type EditorialApprovalUncheckedCreateWithoutCutPipelineJobInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -1908,6 +1939,7 @@ export type EditorialApprovalCreateWithoutAssemblyRecipeInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -1952,6 +1984,7 @@ export type EditorialApprovalUncheckedCreateWithoutAssemblyRecipeInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -1997,6 +2030,7 @@ export type EditorialApprovalCreateWithoutRecipeRevisionRecordInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2039,6 +2073,7 @@ export type EditorialApprovalUncheckedCreateWithoutRecipeRevisionRecordInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2084,6 +2119,7 @@ export type EditorialApprovalCreateWithoutAssemblyRenderIntentInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2125,6 +2161,7 @@ export type EditorialApprovalUncheckedCreateWithoutAssemblyRenderIntentInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2170,6 +2207,7 @@ export type EditorialApprovalCreateWithoutAssemblyRenderResultInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2212,6 +2250,7 @@ export type EditorialApprovalUncheckedCreateWithoutAssemblyRenderResultInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2257,6 +2296,7 @@ export type EditorialApprovalCreateWithoutProcessingTemplateRevisionInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2301,6 +2341,7 @@ export type EditorialApprovalUncheckedCreateWithoutProcessingTemplateRevisionInp
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2346,6 +2387,7 @@ export type EditorialApprovalCreateWithoutThumbnailAssetInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2389,6 +2431,7 @@ export type EditorialApprovalUncheckedCreateWithoutThumbnailAssetInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2434,6 +2477,7 @@ export type EditorialApprovalCreateWithoutEditorialPackageInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2478,6 +2522,7 @@ export type EditorialApprovalUncheckedCreateWithoutEditorialPackageInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2523,6 +2568,7 @@ export type EditorialApprovalCreateWithoutEditorialPackageRevisionInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2565,6 +2611,7 @@ export type EditorialApprovalUncheckedCreateWithoutEditorialPackageRevisionInput
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2610,6 +2657,7 @@ export type EditorialApprovalCreateWithoutComponentSnapshotsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2655,6 +2703,7 @@ export type EditorialApprovalUncheckedCreateWithoutComponentSnapshotsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2689,6 +2738,7 @@ export type EditorialApprovalUpdateWithoutComponentSnapshotsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -2734,6 +2784,7 @@ export type EditorialApprovalUncheckedUpdateWithoutComponentSnapshotsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -2752,6 +2803,7 @@ export type EditorialApprovalCreateWithoutEconomicsV2Input = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2797,6 +2849,7 @@ export type EditorialApprovalUncheckedCreateWithoutEconomicsV2Input = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -2831,6 +2884,7 @@ export type EditorialApprovalUpdateWithoutEconomicsV2Input = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -2876,6 +2930,7 @@ export type EditorialApprovalUncheckedUpdateWithoutEconomicsV2Input = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -2894,6 +2949,7 @@ export type EditorialApprovalCreateWithoutMetricsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -2939,6 +2995,7 @@ export type EditorialApprovalUncheckedCreateWithoutMetricsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutApprovalInput
@@ -2973,6 +3030,7 @@ export type EditorialApprovalUpdateWithoutMetricsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3018,6 +3076,7 @@ export type EditorialApprovalUncheckedUpdateWithoutMetricsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutApprovalNestedInput
@@ -3036,6 +3095,7 @@ export type EditorialApprovalCreateWithoutOperationRequestsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -3081,6 +3141,7 @@ export type EditorialApprovalUncheckedCreateWithoutOperationRequestsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -3115,6 +3176,7 @@ export type EditorialApprovalUpdateWithoutOperationRequestsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3160,6 +3222,7 @@ export type EditorialApprovalUncheckedUpdateWithoutOperationRequestsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -3178,6 +3241,7 @@ export type EditorialApprovalCreateWithoutExportIntentsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
@@ -3223,6 +3287,7 @@ export type EditorialApprovalUncheckedCreateWithoutExportIntentsInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
@@ -3257,6 +3322,7 @@ export type EditorialApprovalUpdateWithoutExportIntentsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3302,6 +3368,7 @@ export type EditorialApprovalUncheckedUpdateWithoutExportIntentsInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -3334,6 +3401,7 @@ export type EditorialApprovalCreateManyProjectInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -3348,6 +3416,7 @@ export type EditorialApprovalUpdateWithoutProjectInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.VideoSourceUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3392,6 +3461,7 @@ export type EditorialApprovalUncheckedUpdateWithoutProjectInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -3425,6 +3495,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutProjectInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3453,6 +3524,7 @@ export type EditorialApprovalCreateManySourceInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -3467,6 +3539,7 @@ export type EditorialApprovalUpdateWithoutSourceInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3511,6 +3584,7 @@ export type EditorialApprovalUncheckedUpdateWithoutSourceInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -3544,6 +3618,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutSourceInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3572,6 +3647,7 @@ export type EditorialApprovalCreateManyRenderArtifactInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -3586,6 +3662,7 @@ export type EditorialApprovalUpdateWithoutRenderArtifactInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3630,6 +3707,7 @@ export type EditorialApprovalUncheckedUpdateWithoutRenderArtifactInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -3663,6 +3741,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3688,6 +3767,7 @@ export type EditorialApprovalCreateManyCutPipelineJobInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -3702,6 +3782,7 @@ export type EditorialApprovalUpdateWithoutCutPipelineJobInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3743,6 +3824,7 @@ export type EditorialApprovalUncheckedUpdateWithoutCutPipelineJobInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -3773,6 +3855,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3801,6 +3884,7 @@ export type EditorialApprovalCreateManyAssemblyRecipeInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -3815,6 +3899,7 @@ export type EditorialApprovalUpdateWithoutAssemblyRecipeInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3859,6 +3944,7 @@ export type EditorialApprovalUncheckedUpdateWithoutAssemblyRecipeInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -3892,6 +3978,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutAssemblyRecipeInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3918,6 +4005,7 @@ export type EditorialApprovalCreateManyRecipeRevisionRecordInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -3932,6 +4020,7 @@ export type EditorialApprovalUpdateWithoutRecipeRevisionRecordInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -3974,6 +4063,7 @@ export type EditorialApprovalUncheckedUpdateWithoutRecipeRevisionRecordInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -4005,6 +4095,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutRecipeRevisionRecordInput
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4030,6 +4121,7 @@ export type EditorialApprovalCreateManyAssemblyRenderIntentInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -4044,6 +4136,7 @@ export type EditorialApprovalUpdateWithoutAssemblyRenderIntentInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -4085,6 +4178,7 @@ export type EditorialApprovalUncheckedUpdateWithoutAssemblyRenderIntentInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -4115,6 +4209,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutAssemblyRenderIntentInput
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4141,6 +4236,7 @@ export type EditorialApprovalCreateManyAssemblyRenderResultInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -4155,6 +4251,7 @@ export type EditorialApprovalUpdateWithoutAssemblyRenderResultInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -4197,6 +4294,7 @@ export type EditorialApprovalUncheckedUpdateWithoutAssemblyRenderResultInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -4228,6 +4326,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutAssemblyRenderResultInput
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4256,6 +4355,7 @@ export type EditorialApprovalCreateManyProcessingTemplateRevisionInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -4270,6 +4370,7 @@ export type EditorialApprovalUpdateWithoutProcessingTemplateRevisionInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -4314,6 +4415,7 @@ export type EditorialApprovalUncheckedUpdateWithoutProcessingTemplateRevisionInp
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -4347,6 +4449,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutProcessingTemplateRevisio
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4374,6 +4477,7 @@ export type EditorialApprovalCreateManyThumbnailAssetInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -4388,6 +4492,7 @@ export type EditorialApprovalUpdateWithoutThumbnailAssetInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -4431,6 +4536,7 @@ export type EditorialApprovalUncheckedUpdateWithoutThumbnailAssetInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -4463,6 +4569,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutThumbnailAssetInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4491,6 +4598,7 @@ export type EditorialApprovalCreateManyEditorialPackageInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -4505,6 +4613,7 @@ export type EditorialApprovalUpdateWithoutEditorialPackageInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -4549,6 +4658,7 @@ export type EditorialApprovalUncheckedUpdateWithoutEditorialPackageInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -4582,6 +4692,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutEditorialPackageInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4608,6 +4719,7 @@ export type EditorialApprovalCreateManyEditorialPackageRevisionInput = {
   renderArtifactSizeBytes: bigint | number
   renderContractVersion: string
   approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
   candidateFingerprint: string
   approvedAt?: Date | string
 }
@@ -4622,6 +4734,7 @@ export type EditorialApprovalUpdateWithoutEditorialPackageRevisionInput = {
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
@@ -4664,6 +4777,7 @@ export type EditorialApprovalUncheckedUpdateWithoutEditorialPackageRevisionInput
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
@@ -4695,6 +4809,7 @@ export type EditorialApprovalUncheckedUpdateManyWithoutEditorialPackageRevisionI
   renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -4773,6 +4888,7 @@ export type EditorialApprovalSelect<ExtArgs extends runtime.Types.Extensions.Int
   renderArtifactSizeBytes?: boolean
   renderContractVersion?: boolean
   approvalContractVersion?: boolean
+  fingerprintBasisVersion?: boolean
   candidateFingerprint?: boolean
   approvedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -4820,6 +4936,7 @@ export type EditorialApprovalSelectCreateManyAndReturn<ExtArgs extends runtime.T
   renderArtifactSizeBytes?: boolean
   renderContractVersion?: boolean
   approvalContractVersion?: boolean
+  fingerprintBasisVersion?: boolean
   candidateFingerprint?: boolean
   approvedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -4861,6 +4978,7 @@ export type EditorialApprovalSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   renderArtifactSizeBytes?: boolean
   renderContractVersion?: boolean
   approvalContractVersion?: boolean
+  fingerprintBasisVersion?: boolean
   candidateFingerprint?: boolean
   approvedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -4902,11 +5020,12 @@ export type EditorialApprovalSelectScalar = {
   renderArtifactSizeBytes?: boolean
   renderContractVersion?: boolean
   approvalContractVersion?: boolean
+  fingerprintBasisVersion?: boolean
   candidateFingerprint?: boolean
   approvedAt?: boolean
 }
 
-export type EditorialApprovalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "sourceVersion" | "cutPipelineJobId" | "editorialPackageId" | "editorialPackageRevisionId" | "editorialRevision" | "processingTemplateRevisionId" | "thumbnailAssetId" | "thumbnailSha256" | "thumbnailSizeBytes" | "thumbnailContentType" | "assemblyRecipeId" | "recipeRevisionId" | "recipeRevision" | "configurationFingerprint" | "assemblyRenderIntentId" | "assemblyRenderResultId" | "renderArtifactId" | "renderArtifactSha256" | "renderArtifactSizeBytes" | "renderContractVersion" | "approvalContractVersion" | "candidateFingerprint" | "approvedAt", ExtArgs["result"]["editorialApproval"]>
+export type EditorialApprovalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "sourceVersion" | "cutPipelineJobId" | "editorialPackageId" | "editorialPackageRevisionId" | "editorialRevision" | "processingTemplateRevisionId" | "thumbnailAssetId" | "thumbnailSha256" | "thumbnailSizeBytes" | "thumbnailContentType" | "assemblyRecipeId" | "recipeRevisionId" | "recipeRevision" | "configurationFingerprint" | "assemblyRenderIntentId" | "assemblyRenderResultId" | "renderArtifactId" | "renderArtifactSha256" | "renderArtifactSizeBytes" | "renderContractVersion" | "approvalContractVersion" | "fingerprintBasisVersion" | "candidateFingerprint" | "approvedAt", ExtArgs["result"]["editorialApproval"]>
 export type EditorialApprovalInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
@@ -5002,6 +5121,7 @@ export type $EditorialApprovalPayload<ExtArgs extends runtime.Types.Extensions.I
     renderArtifactSizeBytes: bigint
     renderContractVersion: string
     approvalContractVersion: string
+    fingerprintBasisVersion: string | null
     candidateFingerprint: string
     approvedAt: Date
   }, ExtArgs["result"]["editorialApproval"]>
@@ -5468,6 +5588,7 @@ export interface EditorialApprovalFieldRefs {
   readonly renderArtifactSizeBytes: Prisma.FieldRef<"EditorialApproval", 'BigInt'>
   readonly renderContractVersion: Prisma.FieldRef<"EditorialApproval", 'String'>
   readonly approvalContractVersion: Prisma.FieldRef<"EditorialApproval", 'String'>
+  readonly fingerprintBasisVersion: Prisma.FieldRef<"EditorialApproval", 'String'>
   readonly candidateFingerprint: Prisma.FieldRef<"EditorialApproval", 'String'>
   readonly approvedAt: Prisma.FieldRef<"EditorialApproval", 'DateTime'>
 }

@@ -1,6 +1,13 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
+  ISO8601_APPROVAL_FINGERPRINT_BASIS,
+  LEGACY_APPROVAL_FINGERPRINT_BASIS,
+  projectPublicApprovalEconomicsV2,
+  projectPublicApprovalProcessingMetrics,
+  projectPublicComponentIncompleteReasons,
   projectNoLikenessSafetyDecision,
+  projectPublicApprovalCitations,
+  projectPublicResearchFreshness,
   type MontageProbeResultV1,
 } from "@content-factory/contracts";
 
@@ -87,6 +94,7 @@ interface ExportClaimRow {
   intentId: string;
   approvalId: string;
   approvalContractVersion: string;
+  fingerprintBasisVersion: string | null;
   exportContractVersion: string;
   candidateFingerprint: string;
   editorialPackageRevisionId: string;
@@ -115,93 +123,114 @@ interface ExportClaimRow {
   approvalProcessingMetrics: unknown;
 }
 
-function requireWorkflowMode(
-  value: unknown,
-): "MANUAL" | "AI_ASSISTED" | "MIXED" {
-  if (!value || typeof value !== "object")
-    throw new ControlledMediaError(
-      "EXPORT_APPROVAL_SNAPSHOT_INVALID",
-      "The v2 approval snapshot is incomplete.",
-      false,
-    );
-  const mode = (value as Record<string, unknown>).workflowMode;
-  if (mode !== "MANUAL" && mode !== "AI_ASSISTED" && mode !== "MIXED")
-    throw new ControlledMediaError(
-      "EXPORT_APPROVAL_SNAPSHOT_INVALID",
-      "The v2 approval workflow mode is invalid.",
-      false,
-    );
-  return mode;
-}
-
-function validV2SnapshotFingerprints(
+function projectV2SnapshotComponents(
   components: unknown[],
-  economicsValue: unknown,
-): boolean {
-  if (!economicsValue || typeof economicsValue !== "object") return false;
-  const economics = economicsValue as Record<string, unknown>;
+  economics: NonNullable<ReturnType<typeof projectPublicApprovalEconomicsV2>>,
+  fingerprintBasisVersion: string | null,
+): unknown[] | null {
+  const componentKeys = [
+    "basisVersion",
+    "citations",
+    "component",
+    "costBasisVersion",
+    "directCostMicrousd",
+    "freshness",
+    "imageCandidateId",
+    "imageIntentId",
+    "imageSafetyDecision",
+    "incompleteReasons",
+    "likeness",
+    "mode",
+    "provenanceId",
+    "researchIntentId",
+    "snapshotFingerprint",
+    "suggestionSetId",
+    "transcriptArtifactId",
+    "transcriptSha256",
+  ];
   const byComponent = new Map<string, Record<string, unknown>>();
+  const projected: Record<string, unknown>[] = [];
   for (const value of components) {
-    if (!value || typeof value !== "object") return false;
+    if (!value || typeof value !== "object") return null;
     const component = value as Record<string, unknown>;
     if (
+      Object.keys(component)
+        .sort()
+        .some((key, index) => key !== componentKeys[index]) ||
+      Object.keys(component).length !== componentKeys.length ||
       (component.component !== "METADATA" &&
         component.component !== "THUMBNAIL") ||
       byComponent.has(component.component)
     )
-      return false;
-    const citations = Array.isArray(component.citations)
-      ? component.citations.map((citation) => {
-          if (!citation || typeof citation !== "object") return citation;
-          const row = citation as Record<string, unknown>;
-          return {
-            ...row,
-            publishedAt:
-              typeof row.publishedAt === "string"
-                ? new Date(row.publishedAt)
-                : null,
-            accessedAt:
-              typeof row.accessedAt === "string"
-                ? new Date(row.accessedAt)
-                : row.accessedAt,
-          };
-        })
-      : component.citations;
-    const freshness =
-      component.freshness && typeof component.freshness === "object"
-        ? {
-            ...(component.freshness as Record<string, unknown>),
-            searchedAt: new Date(
-              String(
-                (component.freshness as Record<string, unknown>).searchedAt,
-              ),
-            ),
-            freshUntil: new Date(
-              String(
-                (component.freshness as Record<string, unknown>).freshUntil,
-              ),
-            ),
-          }
-        : null;
-    const incompleteReasons = Array.isArray(component.incompleteReasons)
-      ? [...new Set(component.incompleteReasons)]
-      : component.incompleteReasons;
+      return null;
+    if (
+      (component.mode !== "MANUAL" &&
+        component.mode !== "AI_ASSISTED" &&
+        !(component.component === "METADATA" && component.mode === "MIXED")) ||
+      typeof component.basisVersion !== "string" ||
+      component.basisVersion.length === 0 ||
+      component.basisVersion.length > 200 ||
+      typeof component.costBasisVersion !== "string" ||
+      component.costBasisVersion.length === 0 ||
+      component.costBasisVersion.length > 200 ||
+      typeof component.directCostMicrousd !== "string" ||
+      !/^(0|[1-9][0-9]{0,18})$/.test(component.directCostMicrousd) ||
+      typeof component.provenanceId !== "string" ||
+      !/^[0-9a-f-]{36}$/i.test(component.provenanceId) ||
+      typeof component.snapshotFingerprint !== "string" ||
+      !/^[a-f0-9]{64}$/.test(component.snapshotFingerprint)
+    )
+      return null;
+    const publicCitations = projectPublicApprovalCitations(component.citations);
+    if (!publicCitations) return null;
+    const citations = publicCitations.map((citation) => ({
+      ...citation,
+      publishedAt: citation.publishedAt ? new Date(citation.publishedAt) : null,
+      accessedAt: new Date(citation.accessedAt),
+    }));
+    if (component.component === "THUMBNAIL" && citations.length !== 0)
+      return null;
+    const publicFreshness =
+      component.freshness == null
+        ? null
+        : projectPublicResearchFreshness(component.freshness);
+    if (component.freshness != null && !publicFreshness) return null;
+    const freshness = publicFreshness
+      ? {
+          ...publicFreshness,
+          searchedAt: new Date(publicFreshness.searchedAt),
+          freshUntil: new Date(publicFreshness.freshUntil),
+        }
+      : null;
+    const incompleteReasons = projectPublicComponentIncompleteReasons(
+      component.incompleteReasons,
+    );
+    if (!incompleteReasons) return null;
     const publicSafetyDecision = projectNoLikenessSafetyDecision(
       component.imageSafetyDecision,
     );
     if (
       (component.component === "METADATA" &&
-        component.imageSafetyDecision != null) ||
+        (component.imageSafetyDecision != null ||
+          component.likeness != null ||
+          (component.mode === "MANUAL"
+            ? component.freshness != null || citations.length !== 0
+            : !freshness))) ||
       (component.component === "THUMBNAIL" &&
         component.mode === "MANUAL" &&
-        component.imageSafetyDecision != null) ||
+        (component.imageSafetyDecision != null ||
+          component.likeness != null ||
+          component.freshness != null)) ||
       (component.component === "THUMBNAIL" &&
-        component.mode === "AI_ASSISTED" && !publicSafetyDecision) ||
+        component.mode === "AI_ASSISTED" &&
+        (!publicSafetyDecision ||
+          component.likeness !== "NONE" ||
+          component.freshness != null)) ||
       (component.component === "THUMBNAIL" &&
         component.mode !== "MANUAL" &&
         component.mode !== "AI_ASSISTED")
     )
-      return false;
+      return null;
     const expected = hashValues([
       "editorial-approval-component-snapshot-v2",
       String(component.component),
@@ -221,36 +250,102 @@ function validV2SnapshotFingerprints(
       String(component.directCostMicrousd),
       String(component.costBasisVersion),
       canonicalJson(incompleteReasons),
+      ...(fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+        ? [ISO8601_APPROVAL_FINGERPRINT_BASIS]
+        : []),
     ]);
-    if (component.snapshotFingerprint !== expected) return false;
+    const legacyExpected = hashValues([
+      "editorial-approval-component-snapshot-v2",
+      String(component.component),
+      String(component.provenanceId ?? ""),
+      String(component.mode),
+      String(component.basisVersion),
+      String(component.researchIntentId ?? ""),
+      String(component.suggestionSetId ?? ""),
+      String(component.imageIntentId ?? ""),
+      String(component.imageCandidateId ?? ""),
+      String(component.transcriptArtifactId ?? ""),
+      String(component.transcriptSha256 ?? ""),
+      legacyCanonicalJson(citations),
+      legacyCanonicalJson(freshness),
+      legacyCanonicalJson(publicSafetyDecision),
+      String(component.likeness ?? ""),
+      String(component.directCostMicrousd),
+      String(component.costBasisVersion),
+      legacyCanonicalJson(incompleteReasons),
+    ]);
+    if (
+      fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+        ? component.snapshotFingerprint !== expected
+        : fingerprintBasisVersion === LEGACY_APPROVAL_FINGERPRINT_BASIS
+          ? component.snapshotFingerprint !== legacyExpected
+          : true
+    )
+      return null;
     byComponent.set(component.component, component);
+    projected.push({
+      component: component.component,
+      mode: component.mode,
+      basisVersion: component.basisVersion,
+      provenanceId: component.provenanceId ?? null,
+      researchIntentId: component.researchIntentId ?? null,
+      suggestionSetId: component.suggestionSetId ?? null,
+      imageIntentId: component.imageIntentId ?? null,
+      imageCandidateId: component.imageCandidateId ?? null,
+      transcriptArtifactId: component.transcriptArtifactId ?? null,
+      transcriptSha256: component.transcriptSha256 ?? null,
+      citations: publicCitations,
+      freshness: publicFreshness,
+      imageSafetyDecision: publicSafetyDecision,
+      likeness: component.likeness ?? null,
+      directCostMicrousd: String(component.directCostMicrousd),
+      costBasisVersion: component.costBasisVersion,
+      incompleteReasons,
+      snapshotFingerprint: component.snapshotFingerprint,
+    });
   }
   const metadata = byComponent.get("METADATA");
   const thumbnail = byComponent.get("THUMBNAIL");
-  if (!metadata || !thumbnail) return false;
+  if (!metadata || !thumbnail) return null;
   const expectedEconomics = hashValues([
     "approval-economics-v2",
-    String(economics.workflowMode),
+    economics.workflowMode,
     String(economics.preparationForegroundMs),
     String(economics.finalReviewForegroundMs),
     String(metadata.snapshotFingerprint),
     String(thumbnail.snapshotFingerprint),
-    String(economics.metadataDirectCostMicrousd),
-    String(economics.evidenceDirectCostMicrousd),
-    String(economics.thumbnailDirectCostMicrousd),
-    String(economics.combinedDirectCostMicrousd),
+    economics.metadataDirectCostMicrousd,
+    economics.evidenceDirectCostMicrousd,
+    economics.thumbnailDirectCostMicrousd,
+    economics.combinedDirectCostMicrousd,
+    ...(fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+      ? [ISO8601_APPROVAL_FINGERPRINT_BASIS]
+      : []),
   ]);
-  return economics.snapshotFingerprint === expectedEconomics;
+  return economics.snapshotFingerprint === expectedEconomics ? projected : null;
 }
 
 function canonicalJson(value: unknown): string {
   if (value === undefined) return "null";
+  if (value instanceof Date) return JSON.stringify(value.toISOString());
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
     .sort()
     .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
+    .join(",")}}`;
+}
+
+function legacyCanonicalJson(value: unknown): string {
+  if (value === undefined) return "null";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value))
+    return `[${value.map(legacyCanonicalJson).join(",")}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${legacyCanonicalJson(record[key])}`)
     .join(",")}}`;
 }
 
@@ -1538,7 +1633,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
       `SELECT j."id", j."state", j."projectId", j."sourceId", j."sourceVersion",
               j."attemptCount", j."retryBudget", j."recipeVersion", j."queuedAt",
               j."startedAt" AS "jobStartedAt", e."id" AS "intentId",
-              a."id" AS "approvalId", a."approvalContractVersion",
+              a."id" AS "approvalId", a."approvalContractVersion", a."fingerprintBasisVersion",
               e."exportContractVersion", a."candidateFingerprint",
               a."editorialPackageRevisionId", a."editorialRevision",
               a."processingTemplateRevisionId", a."recipeRevisionId", a."recipeRevision",
@@ -1699,12 +1794,13 @@ export class PgMediaJobRepository implements MediaJobRepository {
                 OR cp."imageIntentId" IS DISTINCT FROM cs."imageIntentId"
                 OR cp."imageCandidateId" IS DISTINCT FROM cs."imageCandidateId"
                 OR (cs."component"='METADATA' AND cs."mode"<>'MANUAL' AND (rs."id" IS NULL OR rs."directCostMicrousd"<>cs."directCostMicrousd" OR rs."costBasisVersion"<>cs."costBasisVersion"))
-                OR (cs."component"='THUMBNAIL' AND cs."mode"<>'MANUAL' AND (ic."id" IS NULL OR ic."directCostMicrousd"<>cs."directCostMicrousd" OR ic."costBasisVersion"<>cs."costBasisVersion" OR ic."contractVersion"<>'editorial-thumbnail-v1' OR ic."adapterVersion"<>'local-no-likeness-png-v1' OR ic."promptBasisVersion"<>'local-abstract-thumbnail-prompt-v1' OR ic."likeness"<>'NONE' OR ic."safetyDecision" IS DISTINCT FROM cs."imageSafetyDecision"))))
+                OR (cs."component"='THUMBNAIL' AND cs."mode"<>'MANUAL' AND (ic."id" IS NULL OR ic."directCostMicrousd"<>cs."directCostMicrousd" OR ic."costBasisVersion"<>cs."costBasisVersion" OR ic."contractVersion"<>'editorial-thumbnail-v1' OR ic."adapterVersion"<>'local-no-likeness-png-v1' OR ic."promptBasisVersion"<>'local-abstract-thumbnail-prompt-v1' OR ic."likeness"<>'NONE' OR ic."likeness" IS DISTINCT FROM cs."likeness" OR ic."safetyDecision" IS DISTINCT FROM cs."imageSafetyDecision"))))
             AND EXISTS (
               SELECT 1 FROM "EditorialApprovalEconomicsV2" ec
               JOIN "EditorialApprovalComponentSnapshot" ms ON ms."approvalId"=ec."approvalId" AND ms."component"='METADATA'
               JOIN "EditorialApprovalComponentSnapshot" ts ON ts."approvalId"=ec."approvalId" AND ts."component"='THUMBNAIL'
               WHERE ec."approvalId"=a."id"
+                AND ec."assistanceTiming" IS NULL
                 AND ec."metadataDirectCostMicrousd"=ms."directCostMicrousd"
                 AND ec."thumbnailDirectCostMicrousd"=ts."directCostMicrousd"
                 AND ec."combinedDirectCostMicrousd"=ec."metadataDirectCostMicrousd"+ec."evidenceDirectCostMicrousd"+ec."thumbnailDirectCostMicrousd"
@@ -1731,21 +1827,44 @@ export class PgMediaJobRepository implements MediaJobRepository {
     );
     const row = selected.rows[0];
     const tags = row ? stringArray(row.tags) : null;
+    const projectedApprovalEconomics =
+      row?.exportContractVersion === "editorial-export-zip-v2"
+        ? projectPublicApprovalEconomicsV2(row.approvalEconomics)
+        : null;
+    const projectedApprovalProcessingMetrics =
+      row?.exportContractVersion === "editorial-export-zip-v2"
+        ? projectPublicApprovalProcessingMetrics(row.approvalProcessingMetrics)
+        : null;
+    const projectedApprovalComponents =
+      row?.exportContractVersion === "editorial-export-zip-v2" &&
+      Array.isArray(row.approvalComponents) &&
+      projectedApprovalEconomics
+        ? projectV2SnapshotComponents(
+            row.approvalComponents,
+            projectedApprovalEconomics,
+            row.fingerprintBasisVersion,
+          )
+        : null;
+    const researchLineageCurrent =
+      row?.approvalContractVersion === "human-horizontal-approval-v2" &&
+      projectedApprovalComponents
+        ? await this.approvalResearchLineageCurrent(client, row.approvalId)
+        : row?.approvalContractVersion === "manual-horizontal-approval-v1";
     if (
       !row ||
       !tags ||
       tags.length === 0 ||
+      !researchLineageCurrent ||
       (row.exportContractVersion === "editorial-export-zip-v2" &&
         (!Array.isArray(row.approvalComponents) ||
           row.approvalComponents.length !== 2 ||
           !row.approvalEconomics ||
           typeof row.approvalEconomics !== "object" ||
-          !validV2SnapshotFingerprints(
-            row.approvalComponents,
-            row.approvalEconomics,
-          ) ||
+          !projectedApprovalEconomics ||
+          !projectedApprovalComponents ||
           !row.approvalProcessingMetrics ||
-          typeof row.approvalProcessingMetrics !== "object"))
+          typeof row.approvalProcessingMetrics !== "object" ||
+          !projectedApprovalProcessingMetrics))
     ) {
       await client.query(
         `UPDATE "PipelineJob" SET "state"='FAILED_FINAL', "failureCode"='EXPORT_APPROVAL_STALE',
@@ -1847,10 +1966,13 @@ export class PgMediaJobRepository implements MediaJobRepository {
         ...(row.exportContractVersion === "editorial-export-zip-v2"
           ? {
               approvalSnapshot: {
-                workflowMode: requireWorkflowMode(row.approvalEconomics),
-                components: row.approvalComponents as unknown[],
-                economics: row.approvalEconomics,
-                processingMetrics: row.approvalProcessingMetrics,
+                fingerprintBasisVersion: row.fingerprintBasisVersion as
+                  | typeof LEGACY_APPROVAL_FINGERPRINT_BASIS
+                  | typeof ISO8601_APPROVAL_FINGERPRINT_BASIS,
+                workflowMode: projectedApprovalEconomics!.workflowMode,
+                components: projectedApprovalComponents!,
+                economics: projectedApprovalEconomics!,
+                processingMetrics: projectedApprovalProcessingMetrics!,
               },
             }
           : {}),
@@ -1870,6 +1992,77 @@ export class PgMediaJobRepository implements MediaJobRepository {
       [job.id, job.leaseToken],
     );
     if (lease.rowCount !== 1) throw new Error("JOB_LEASE_LOST");
+  }
+
+  private async approvalResearchLineageCurrent(
+    client: PoolClient,
+    approvalId: string,
+  ): Promise<boolean> {
+    const result = await client.query<{
+      mode: string;
+      citations: unknown;
+      freshness: unknown;
+      searchedAt: string | null;
+      freshUntil: string | null;
+      citationIds: unknown;
+      researchIntentId: string | null;
+    }>(
+      `SELECT cs."mode", cs."citations", cs."freshness",
+              ri."id" AS "researchIntentId",
+              to_char(ri."searchedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "searchedAt",
+              to_char(ri."freshUntil", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "freshUntil",
+              rs."citationIds"
+         FROM "EditorialApprovalComponentSnapshot" cs
+         LEFT JOIN "ResearchSuggestionIntent" ri ON ri."id"=cs."researchIntentId"
+         LEFT JOIN "ResearchSuggestionSet" rs ON rs."id"=cs."suggestionSetId" AND rs."intentId"=ri."id"
+        WHERE cs."approvalId"=$1 AND cs."component"='METADATA'`,
+      [approvalId],
+    );
+    const row = result.rows[0];
+    const citations = projectPublicApprovalCitations(row?.citations);
+    if (!row || !citations) return false;
+    if (row.mode === "MANUAL")
+      return citations.length === 0 && row.freshness === null;
+    if (row.mode !== "AI_ASSISTED" && row.mode !== "MIXED") return false;
+    const freshness = projectPublicResearchFreshness(row.freshness);
+    const ids = stringArray(row.citationIds);
+    if (
+      !freshness ||
+      !ids ||
+      new Set(ids).size !== ids.length ||
+      !row.researchIntentId ||
+      !row.searchedAt ||
+      !row.freshUntil
+    )
+      return false;
+    const authoritative = await client.query<{
+      id: string;
+      url: string;
+      title: string;
+      publisher: string;
+      publishedAt: string | null;
+      accessedAt: string;
+    }>(
+      `SELECT "id", "url", "title", "publisher",
+              CASE WHEN "publishedAt" IS NULL THEN NULL
+                   ELSE to_char("publishedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') END AS "publishedAt",
+              to_char("accessedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "accessedAt"
+         FROM "ResearchCitation" WHERE "intentId"=$1 ORDER BY "ordinal"`,
+      [row.researchIntentId],
+    );
+    const byId = new Map(
+      authoritative.rows.map((citation) => [citation.id, citation]),
+    );
+    const selected = projectPublicApprovalCitations(
+      ids.map((id) => byId.get(id)),
+    );
+    return (
+      selected !== null &&
+      canonicalJson(citations) === canonicalJson(selected) &&
+      freshness.searchedAt === row.searchedAt &&
+      freshness.freshUntil === row.freshUntil &&
+      freshness.freshness === "CURRENT"
+    );
   }
 
   private async assertExportCurrent(
@@ -1956,6 +2149,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
           AND e."editorialPackageRevisionId"=$8 AND e."recipeRevisionId"=$9
           AND e."assemblyRenderResultId"=$10 AND e."exportContractVersion"=$11
           AND a."approvalContractVersion"=$12
+          AND a."fingerprintBasisVersion" IS NOT DISTINCT FROM $13
           AND (($12='manual-horizontal-approval-v1' AND NOT EXISTS (
             SELECT 1 FROM "EditorialComponentProvenance" vp
             WHERE vp."packageRevisionId"=a."editorialPackageRevisionId" AND vp."mode"<>'MANUAL')) OR (
@@ -1977,12 +2171,13 @@ export class PgMediaJobRepository implements MediaJobRepository {
                 OR cp."imageIntentId" IS DISTINCT FROM cs."imageIntentId"
                 OR cp."imageCandidateId" IS DISTINCT FROM cs."imageCandidateId"
                 OR (cs."component"='METADATA' AND cs."mode"<>'MANUAL' AND (rs."id" IS NULL OR rs."directCostMicrousd"<>cs."directCostMicrousd" OR rs."costBasisVersion"<>cs."costBasisVersion"))
-                OR (cs."component"='THUMBNAIL' AND cs."mode"<>'MANUAL' AND (ic."id" IS NULL OR ic."directCostMicrousd"<>cs."directCostMicrousd" OR ic."costBasisVersion"<>cs."costBasisVersion" OR ic."contractVersion"<>'editorial-thumbnail-v1' OR ic."adapterVersion"<>'local-no-likeness-png-v1' OR ic."promptBasisVersion"<>'local-abstract-thumbnail-prompt-v1' OR ic."likeness"<>'NONE' OR ic."safetyDecision" IS DISTINCT FROM cs."imageSafetyDecision"))))
+                OR (cs."component"='THUMBNAIL' AND cs."mode"<>'MANUAL' AND (ic."id" IS NULL OR ic."directCostMicrousd"<>cs."directCostMicrousd" OR ic."costBasisVersion"<>cs."costBasisVersion" OR ic."contractVersion"<>'editorial-thumbnail-v1' OR ic."adapterVersion"<>'local-no-likeness-png-v1' OR ic."promptBasisVersion"<>'local-abstract-thumbnail-prompt-v1' OR ic."likeness"<>'NONE' OR ic."likeness" IS DISTINCT FROM cs."likeness" OR ic."safetyDecision" IS DISTINCT FROM cs."imageSafetyDecision"))))
             AND EXISTS (
               SELECT 1 FROM "EditorialApprovalEconomicsV2" ec
               JOIN "EditorialApprovalComponentSnapshot" ms ON ms."approvalId"=ec."approvalId" AND ms."component"='METADATA'
               JOIN "EditorialApprovalComponentSnapshot" ts ON ts."approvalId"=ec."approvalId" AND ts."component"='THUMBNAIL'
               WHERE ec."approvalId"=a."id"
+                AND ec."assistanceTiming" IS NULL
                 AND ec."metadataDirectCostMicrousd"=ms."directCostMicrousd"
                 AND ec."thumbnailDirectCostMicrousd"=ts."directCostMicrousd"
                 AND ec."combinedDirectCostMicrousd"=ec."metadataDirectCostMicrousd"+ec."evidenceDirectCostMicrousd"+ec."thumbnailDirectCostMicrousd"
@@ -2015,6 +2210,8 @@ export class PgMediaJobRepository implements MediaJobRepository {
         job.editorialExportPlan.assemblyRenderResultId,
         job.editorialExportPlan.exportContractVersion,
         job.editorialExportPlan.approvalContractVersion,
+        job.editorialExportPlan.approvalSnapshot?.fingerprintBasisVersion ??
+          null,
       ],
     );
     if (current.rowCount !== 1)
@@ -2030,9 +2227,10 @@ export class PgMediaJobRepository implements MediaJobRepository {
       const snapshot = await client.query<{
         components: unknown;
         economics: unknown;
+        processingMetrics: unknown;
       }>(
         `SELECT
-           (SELECT jsonb_agg((to_jsonb(cs) - 'id' - 'approvalId' - 'createdAt') ||
+           (SELECT jsonb_agg((to_jsonb(cs) - 'id' - 'approvalId' - 'editorialPackageRevisionId' - 'createdAt') ||
              jsonb_build_object('directCostMicrousd', cs."directCostMicrousd"::text)
              ORDER BY cs."component")
             FROM "EditorialApprovalComponentSnapshot" cs WHERE cs."approvalId"=a."id") AS components,
@@ -2041,19 +2239,73 @@ export class PgMediaJobRepository implements MediaJobRepository {
              'evidenceDirectCostMicrousd', ec."evidenceDirectCostMicrousd"::text,
              'thumbnailDirectCostMicrousd', ec."thumbnailDirectCostMicrousd"::text,
              'combinedDirectCostMicrousd', ec."combinedDirectCostMicrousd"::text)
-            FROM "EditorialApprovalEconomicsV2" ec WHERE ec."approvalId"=a."id") AS economics
+            FROM "EditorialApprovalEconomicsV2" ec WHERE ec."approvalId"=a."id") AS economics,
+           (SELECT jsonb_build_object(
+             'metricsSchemaVersion', am."metricsSchemaVersion",
+             'timestampBasisVersion', am."timestampBasisVersion",
+             'cut', jsonb_build_object(
+               'initialQueueWaitMs', am."cutInitialQueueWaitMs", 'retryWaitMs', am."cutRetryWaitMs",
+               'firstStartToFinishMs', am."cutFirstStartToFinishMs", 'activeAttemptMs', am."cutActiveAttemptMs",
+               'attemptCount', am."cutAttemptCount", 'retryCount', am."cutRetryCount"),
+             'assembly', jsonb_build_object(
+               'initialQueueWaitMs', am."assemblyInitialQueueWaitMs", 'retryWaitMs', am."assemblyRetryWaitMs",
+               'firstStartToFinishMs', am."assemblyFirstStartToFinishMs", 'activeAttemptMs', am."assemblyActiveAttemptMs",
+               'attemptCount', am."assemblyAttemptCount", 'retryCount', am."assemblyRetryCount"),
+             'cutToAssemblyReadyElapsedMs', am."cutToAssemblyReadyElapsedMs",
+             'outputDurationMs', am."outputDurationMs", 'outputBytes', am."outputBytes"::text,
+             'manualAttentionMs', am."manualAttentionMs",
+             'attentionMeasurementVersion', am."attentionMeasurementVersion",
+             'directProviderCostMinor', am."directProviderCostMinor"::text,
+             'costCurrency', am."costCurrency", 'costBasisVersion', am."costBasisVersion",
+             'incompleteReasons', am."incompleteReasons")
+            FROM "EditorialApprovalMetrics" am WHERE am."approvalId"=a."id") AS "processingMetrics"
          FROM "EditorialApproval" a WHERE a."id"=$1`,
         [job.editorialExportPlan.approvalId],
       );
       const exact = snapshot.rows[0];
+      const projectedEconomics = projectPublicApprovalEconomicsV2(
+        exact?.economics,
+      );
+      const projectedMetrics = projectPublicApprovalProcessingMetrics(
+        exact?.processingMetrics,
+      );
+      const projectedComponents =
+        exact && Array.isArray(exact.components) && projectedEconomics
+          ? projectV2SnapshotComponents(
+              exact.components,
+              projectedEconomics,
+              job.editorialExportPlan.approvalSnapshot
+                ?.fingerprintBasisVersion ?? null,
+            )
+          : null;
+      const claimed = job.editorialExportPlan.approvalSnapshot;
       if (
         !exact ||
-        !Array.isArray(exact.components) ||
-        !validV2SnapshotFingerprints(exact.components, exact.economics)
+        !projectedComponents ||
+        !projectedEconomics ||
+        !projectedMetrics ||
+        !claimed ||
+        canonicalJson(projectedComponents) !==
+          canonicalJson(claimed.components) ||
+        canonicalJson(projectedEconomics) !==
+          canonicalJson(claimed.economics) ||
+        canonicalJson(projectedMetrics) !==
+          canonicalJson(claimed.processingMetrics)
       )
         throw new ControlledMediaError(
           "EXPORT_APPROVAL_STALE",
           "The exact v2 approval snapshot no longer matches its fingerprints.",
+          false,
+        );
+      if (
+        !(await this.approvalResearchLineageCurrent(
+          client,
+          job.editorialExportPlan.approvalId,
+        ))
+      )
+        throw new ControlledMediaError(
+          "EXPORT_APPROVAL_STALE",
+          "The exact approval research dates are no longer current.",
           false,
         );
     }

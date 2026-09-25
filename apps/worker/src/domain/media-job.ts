@@ -91,6 +91,9 @@ export interface EditorialExportPlan {
     tags: string[];
   };
   approvalSnapshot?: {
+    fingerprintBasisVersion:
+      | "editorial-approval-fingerprint-v2-date-object-legacy"
+      | "editorial-approval-fingerprint-v2-iso8601";
     workflowMode: "MANUAL" | "AI_ASSISTED" | "MIXED";
     components: unknown[];
     economics: unknown;

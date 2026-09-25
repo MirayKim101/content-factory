@@ -2,10 +2,18 @@ import { createHash, randomUUID } from "node:crypto";
 
 import { Inject, Injectable } from "@nestjs/common";
 import {
+  ISO8601_APPROVAL_FINGERPRINT_BASIS,
+  LEGACY_APPROVAL_FINGERPRINT_BASIS,
   LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION,
   LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION,
   THUMBNAIL_CONTRACT_VERSION,
   projectNoLikenessSafetyDecision,
+  projectPublicApprovalCitations,
+  projectPublicApprovalEconomicsV2,
+  projectPublicApprovalProcessingMetrics,
+  projectPublicComponentIncompleteReasons,
+  projectPublicResearchFreshness,
+  validPublicCitationText,
 } from "@content-factory/contracts";
 
 import type { Prisma } from "../../generated/prisma/client.js";
@@ -53,7 +61,14 @@ const approvalInclude = {
   metrics: true,
   componentSnapshots: {
     orderBy: { component: "asc" as const },
-    include: { provenance: true, suggestionSet: true, imageCandidate: true },
+    include: {
+      provenance: true,
+      suggestionSet: true,
+      researchIntent: {
+        include: { citations: { orderBy: { ordinal: "asc" } } },
+      },
+      imageCandidate: true,
+    },
   },
   economicsV2: true,
   source: { include: { authorizations: true } },
@@ -308,6 +323,11 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
                 renderArtifactSizeBytes: review.render.artifactSizeBytes,
                 renderContractVersion: review.render.renderContractVersion,
                 approvalContractVersion: input.approvalContractVersion,
+                fingerprintBasisVersion:
+                  input.approvalContractVersion ===
+                  EDITORIAL_APPROVAL_CONTRACT_V2
+                    ? ISO8601_APPROVAL_FINGERPRINT_BASIS
+                    : null,
                 candidateFingerprint: input.candidateFingerprint,
                 metrics: {
                   create: metricsCreate(
@@ -784,6 +804,32 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
             metadataSnapshotFingerprint: metadataSummary.snapshotFingerprint,
             thumbnailSnapshotFingerprint: thumbnailSummary.snapshotFingerprint,
             workflowMode,
+            fingerprintBasisVersion: ISO8601_APPROVAL_FINGERPRINT_BASIS,
+          })
+        : null;
+    const legacyV2CandidateFingerprint =
+      editorial && recipe && renderView && cutArtifact
+        ? candidateFingerprintFor({
+            projectId: cut.projectId,
+            sourceId: cut.sourceId,
+            sourceVersion: cut.sourceVersion,
+            cutPipelineJobId: cut.id,
+            cutResultArtifactId: cutArtifact.id,
+            cutResultSha256: cutArtifact.sha256,
+            cutResultSizeBytes: cutArtifact.sizeBytes,
+            editorial,
+            recipe,
+            render: renderView,
+            metadataSnapshotFingerprint: componentSummaryFingerprint(
+              withoutSnapshotFingerprint(metadataSummary),
+              legacyCanonicalJson,
+            ),
+            thumbnailSnapshotFingerprint: componentSummaryFingerprint(
+              withoutSnapshotFingerprint(thumbnailSummary),
+              legacyCanonicalJson,
+            ),
+            workflowMode,
+            fingerprintBasisVersion: null,
           })
         : null;
     const legacyCandidateFingerprint =
@@ -850,7 +896,10 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
             approval.candidateFingerprint ===
               (approval.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT
                 ? legacyCandidateFingerprint
-                : v2CandidateFingerprint),
+                : approval.fingerprintBasisVersion ===
+                    LEGACY_APPROVAL_FINGERPRINT_BASIS
+                  ? legacyV2CandidateFingerprint
+                  : v2CandidateFingerprint),
         ) ?? null,
       latestApproval: approvals[0] ?? null,
     };
@@ -1026,8 +1075,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
       candidate.contractVersion !== THUMBNAIL_CONTRACT_VERSION ||
       candidate.adapterVersion !==
         LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION ||
-      candidate.promptBasisVersion !==
-        LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
+      candidate.promptBasisVersion !== LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
       !publicSafetyDecision
     )
       incompleteReasons.push("THUMBNAIL_LINEAGE_INVALID");
@@ -1045,7 +1093,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
       citations: [],
       research: null,
       imageSafetyDecision: publicSafetyDecision,
-      likeness: candidate?.likeness ?? null,
+      likeness: candidate?.likeness === "NONE" ? "NONE" : null,
       directCostMicrousd: candidate?.directCostMicrousd ?? 0n,
       costBasisVersion:
         candidate?.costBasisVersion ?? "unknown-thumbnail-cost-basis",
@@ -1056,6 +1104,10 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
   private mapApproval(row: ApprovalRow): EditorialApprovalView {
     if (!row.metrics) throw new EditorialApprovalLineageInvalidError();
     const staleReasons = this.staleReasons(row);
+    const publicMetrics = projectPersistedMetrics(row.metrics);
+    const publicEconomics = row.economicsV2
+      ? projectPersistedEconomics(row.economicsV2)
+      : null;
     return {
       id: row.id,
       projectId: row.projectId,
@@ -1084,6 +1136,11 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
         row.approvalContractVersion === EDITORIAL_APPROVAL_CONTRACT_V2
           ? EDITORIAL_APPROVAL_CONTRACT_V2
           : EDITORIAL_APPROVAL_CONTRACT,
+      fingerprintBasisVersion:
+        row.fingerprintBasisVersion === LEGACY_APPROVAL_FINGERPRINT_BASIS ||
+        row.fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+          ? row.fingerprintBasisVersion
+          : null,
       candidateFingerprint: row.candidateFingerprint,
       approvedAt: row.approvedAt,
       state: staleReasons.length === 0 ? "CURRENT" : "STALE",
@@ -1125,9 +1182,7 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
         directProviderCostMinor: 0,
         costCurrency: "RUB",
         costBasisVersion: APPROVAL_COST_BASIS,
-        incompleteReasons: parseIncompleteReasons(
-          row.metrics.incompleteReasons,
-        ),
+        incompleteReasons: [...(publicMetrics?.incompleteReasons ?? [])],
       },
       componentSnapshots: row.componentSnapshots.map((snapshot) =>
         mapPersistedComponentSnapshot(snapshot),
@@ -1153,15 +1208,16 @@ export class PrismaEditorialApprovalRepository implements EditorialApprovalRepos
               row.economicsV2.combinedDirectCostMicrousd,
             currency: "USD",
             unit: "MICRO",
-            metadataCostBasisVersion: row.economicsV2.metadataCostBasisVersion,
-            evidenceCostBasisVersion: row.economicsV2.evidenceCostBasisVersion,
+            metadataCostBasisVersion:
+              publicEconomics?.metadataCostBasisVersion ?? "invalid",
+            evidenceCostBasisVersion:
+              publicEconomics?.evidenceCostBasisVersion ?? "invalid",
             thumbnailCostBasisVersion:
-              row.economicsV2.thumbnailCostBasisVersion,
-            assistanceTiming: row.economicsV2.assistanceTiming,
-            incompleteReasons: stringArray(
-              row.economicsV2.incompleteReasons,
-            ) ?? ["ECONOMICS_INCOMPLETE_REASONS_INVALID"],
-            snapshotFingerprint: row.economicsV2.snapshotFingerprint,
+              publicEconomics?.thumbnailCostBasisVersion ?? "invalid",
+            assistanceTiming: null,
+            incompleteReasons: [],
+            snapshotFingerprint:
+              publicEconomics?.snapshotFingerprint ?? "0".repeat(64),
           }
         : null,
     };
@@ -1309,6 +1365,7 @@ function candidateFingerprintFor(input: {
   metadataSnapshotFingerprint: string;
   thumbnailSnapshotFingerprint: string;
   workflowMode: string;
+  fingerprintBasisVersion: string | null;
 }): string {
   return hashFixed([
     EDITORIAL_REVIEW_CONTRACT_V2,
@@ -1340,6 +1397,7 @@ function candidateFingerprintFor(input: {
     input.metadataSnapshotFingerprint,
     input.thumbnailSnapshotFingerprint,
     input.workflowMode,
+    ...(input.fingerprintBasisVersion ? [input.fingerprintBasisVersion] : []),
     EDITORIAL_APPROVAL_CONTRACT_V2,
   ]);
 }
@@ -1427,7 +1485,24 @@ function finalizeComponentSummary(
 ): EditorialReviewComponentSummary {
   if (value.directCostMicrousd < 0n)
     value.incompleteReasons.push("DIRECT_COST_INVALID");
-  const fingerprint = hashFixed([
+  const fingerprint = componentSummaryFingerprint(
+    value,
+    canonicalJson,
+    ISO8601_APPROVAL_FINGERPRINT_BASIS,
+  );
+  return {
+    ...value,
+    incompleteReasons: unique(value.incompleteReasons),
+    snapshotFingerprint: fingerprint,
+  };
+}
+
+function componentSummaryFingerprint(
+  value: Omit<EditorialReviewComponentSummary, "snapshotFingerprint">,
+  serialize: (value: unknown) => string,
+  fingerprintBasisVersion: string | null = null,
+): string {
+  return hashFixed([
     "editorial-approval-component-snapshot-v2",
     value.component,
     value.provenanceId ?? "",
@@ -1439,19 +1514,22 @@ function finalizeComponentSummary(
     value.imageCandidateId ?? "",
     value.transcriptArtifactId ?? "",
     value.transcriptSha256 ?? "",
-    canonicalJson(value.citations),
-    canonicalJson(value.research),
-    canonicalJson(value.imageSafetyDecision),
+    serialize(value.citations),
+    serialize(value.research),
+    serialize(value.imageSafetyDecision),
     value.likeness ?? "",
     value.directCostMicrousd,
     value.costBasisVersion,
-    canonicalJson(unique(value.incompleteReasons)),
+    serialize(unique(value.incompleteReasons)),
+    ...(fingerprintBasisVersion ? [fingerprintBasisVersion] : []),
   ]);
-  return {
-    ...value,
-    incompleteReasons: unique(value.incompleteReasons),
-    snapshotFingerprint: fingerprint,
-  };
+}
+
+function withoutSnapshotFingerprint(
+  value: EditorialReviewComponentSummary,
+): Omit<EditorialReviewComponentSummary, "snapshotFingerprint"> {
+  const { snapshotFingerprint: _snapshotFingerprint, ...input } = value;
+  return input;
 }
 
 type SnapshotCitation = {
@@ -1495,10 +1573,7 @@ function validPublicCitation(value: SnapshotCitation): boolean {
     return (
       /^[0-9a-f-]{36}$/i.test(value.id) &&
       normalizedUrl === value.url &&
-      value.title.length > 0 &&
-      value.title.length <= 300 &&
-      value.publisher.length > 0 &&
-      value.publisher.length <= 200 &&
+      validPublicCitationText(value) &&
       Number.isFinite(value.accessedAt.getTime()) &&
       (value.publishedAt === null ||
         Number.isFinite(value.publishedAt.getTime()))
@@ -1510,12 +1585,25 @@ function validPublicCitation(value: SnapshotCitation): boolean {
 
 function canonicalJson(value: unknown): string {
   if (value === undefined) return "null";
+  if (value instanceof Date) return JSON.stringify(value.toISOString());
   if (value === null || typeof value !== "object") return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
   const record = value as Record<string, unknown>;
   return `{${Object.keys(record)
     .sort()
     .map((key) => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
+    .join(",")}}`;
+}
+
+function legacyCanonicalJson(value: unknown): string {
+  if (value === undefined) return "null";
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value))
+    return `[${value.map(legacyCanonicalJson).join(",")}]`;
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${legacyCanonicalJson(record[key])}`)
     .join(",")}}`;
 }
 
@@ -1588,6 +1676,7 @@ function v2ApprovalSnapshotCreate(
     review.economicsPreview.evidenceDirectCostMicrousd,
     review.economicsPreview.thumbnailDirectCostMicrousd,
     review.economicsPreview.combinedDirectCostMicrousd,
+    ISO8601_APPROVAL_FINGERPRINT_BASIS,
   ]);
   return {
     componentSnapshots: {
@@ -1654,37 +1743,181 @@ function v2ApprovalSnapshotCreate(
 function mapPersistedComponentSnapshot(
   row: ApprovalRow["componentSnapshots"][number],
 ): EditorialReviewComponentSummary {
-  const citations = parseSnapshotCitations(row.citations);
-  const research = parseSnapshotFreshness(row.freshness);
+  const publicCitations = projectPublicApprovalCitations(row.citations);
+  const citations = (publicCitations ?? []).map((citation) => ({
+    ...citation,
+    publishedAt: citation.publishedAt ? new Date(citation.publishedAt) : null,
+    accessedAt: new Date(citation.accessedAt),
+  }));
+  const publicFreshness =
+    row.freshness === null
+      ? null
+      : projectPublicResearchFreshness(row.freshness);
+  const research = publicFreshness
+    ? {
+        ...publicFreshness,
+        searchedAt: new Date(publicFreshness.searchedAt),
+        freshUntil: new Date(publicFreshness.freshUntil),
+      }
+    : null;
   const imageSafetyDecision = projectNoLikenessSafetyDecision(
     row.imageSafetyDecision,
   );
+  const incompleteReasons = projectPublicComponentIncompleteReasons(
+    row.incompleteReasons,
+  );
+  const publicJsonValid =
+    publicCitations !== null &&
+    (row.freshness === null || publicFreshness !== null) &&
+    incompleteReasons !== null &&
+    (row.imageSafetyDecision === null || imageSafetyDecision !== null) &&
+    (row.likeness === null || row.likeness === "NONE") &&
+    publicVersion(row.basisVersion) &&
+    publicVersion(row.costBasisVersion) &&
+    /^[a-f0-9]{64}$/.test(row.snapshotFingerprint) &&
+    (row.transcriptSha256 === null ||
+      /^[a-f0-9]{64}$/.test(row.transcriptSha256));
   return {
     component: row.component,
     provenanceId: row.provenanceId,
     mode: row.mode,
-    basisVersion: row.basisVersion,
+    basisVersion: publicJsonValid ? row.basisVersion : "invalid",
     researchIntentId: row.researchIntentId,
     suggestionSetId: row.suggestionSetId,
     imageIntentId: row.imageIntentId,
     imageCandidateId: row.imageCandidateId,
     transcriptArtifactId: row.transcriptArtifactId,
-    transcriptSha256: row.transcriptSha256,
-    citations,
-    research,
-    imageSafetyDecision,
-    likeness: row.likeness,
+    transcriptSha256: publicJsonValid ? row.transcriptSha256 : null,
+    citations: publicJsonValid ? citations : [],
+    research: publicJsonValid ? research : null,
+    imageSafetyDecision: publicJsonValid ? imageSafetyDecision : null,
+    likeness: publicJsonValid && row.likeness === "NONE" ? "NONE" : null,
     directCostMicrousd: row.directCostMicrousd,
-    costBasisVersion: row.costBasisVersion,
-    incompleteReasons: stringArray(row.incompleteReasons) ?? [
-      "SNAPSHOT_INVALID",
-    ],
-    snapshotFingerprint: row.snapshotFingerprint,
+    costBasisVersion: publicJsonValid ? row.costBasisVersion : "invalid",
+    incompleteReasons: publicJsonValid
+      ? incompleteReasons
+      : ["SNAPSHOT_INVALID"],
+    snapshotFingerprint: publicJsonValid
+      ? row.snapshotFingerprint
+      : "0".repeat(64),
   };
 }
 
+function publicVersion(value: string): boolean {
+  return (
+    value.length > 0 &&
+    value.length <= 200 &&
+    /^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(value)
+  );
+}
+
+function snapshotResearchLineageExact(
+  snapshot: ApprovalRow["componentSnapshots"][number],
+  mapped: EditorialReviewComponentSummary,
+): boolean {
+  if (snapshot.component !== "METADATA" || snapshot.mode === "MANUAL")
+    return mapped.citations.length === 0 && mapped.research === null;
+  const intent = snapshot.researchIntent;
+  const suggestion = snapshot.suggestionSet;
+  const citationIds = suggestion ? stringArray(suggestion.citationIds) : null;
+  if (!intent || !suggestion || !citationIds || citationIds.length > 20)
+    return false;
+  const byId = new Map(
+    intent.citations.map((citation) => [citation.id, citation]),
+  );
+  const citations: SnapshotCitation[] = [];
+  for (const id of citationIds) {
+    const citation = byId.get(id);
+    if (!citation || !validPublicCitation(citation)) return false;
+    citations.push({
+      id: citation.id,
+      url: citation.url,
+      title: citation.title,
+      publisher: citation.publisher,
+      publishedAt: citation.publishedAt,
+      accessedAt: citation.accessedAt,
+    });
+  }
+  return (
+    canonicalJson(mapped.citations) === canonicalJson(citations) &&
+    canonicalJson(mapped.research) ===
+      canonicalJson({
+        searchedAt: intent.searchedAt,
+        freshUntil: intent.freshUntil,
+        freshness: "CURRENT",
+      })
+  );
+}
+
+function projectPersistedMetrics(metrics: NonNullable<ApprovalRow["metrics"]>) {
+  return projectPublicApprovalProcessingMetrics({
+    metricsSchemaVersion: metrics.metricsSchemaVersion,
+    timestampBasisVersion: metrics.timestampBasisVersion,
+    cut: {
+      initialQueueWaitMs: safeNumber(metrics.cutInitialQueueWaitMs),
+      retryWaitMs: safeNumber(metrics.cutRetryWaitMs),
+      firstStartToFinishMs: safeNumber(metrics.cutFirstStartToFinishMs),
+      activeAttemptMs: safeNumber(metrics.cutActiveAttemptMs),
+      attemptCount: metrics.cutAttemptCount,
+      retryCount: metrics.cutRetryCount,
+    },
+    assembly: {
+      initialQueueWaitMs: safeNumber(metrics.assemblyInitialQueueWaitMs),
+      retryWaitMs: safeNumber(metrics.assemblyRetryWaitMs),
+      firstStartToFinishMs: safeNumber(metrics.assemblyFirstStartToFinishMs),
+      activeAttemptMs: safeNumber(metrics.assemblyActiveAttemptMs),
+      attemptCount: metrics.assemblyAttemptCount,
+      retryCount: metrics.assemblyRetryCount,
+    },
+    cutToAssemblyReadyElapsedMs: safeNumber(
+      metrics.cutToAssemblyReadyElapsedMs,
+    ),
+    outputDurationMs: metrics.outputDurationMs,
+    outputBytes: metrics.outputBytes.toString(),
+    manualAttentionMs: metrics.manualAttentionMs,
+    attentionMeasurementVersion: metrics.attentionMeasurementVersion,
+    directProviderCostMinor: metrics.directProviderCostMinor.toString(),
+    costCurrency: metrics.costCurrency,
+    costBasisVersion: metrics.costBasisVersion,
+    incompleteReasons: metrics.incompleteReasons,
+  });
+}
+
+function projectPersistedEconomics(
+  economics: NonNullable<ApprovalRow["economicsV2"]>,
+) {
+  return projectPublicApprovalEconomicsV2({
+    schemaVersion: economics.schemaVersion,
+    workflowMode: economics.workflowMode,
+    attentionSchemaVersion: economics.attentionSchemaVersion,
+    preparationForegroundMs: economics.preparationForegroundMs,
+    finalReviewForegroundMs: economics.finalReviewForegroundMs,
+    totalOperatorAttentionMs: economics.totalOperatorAttentionMs,
+    metadataDirectCostMicrousd: economics.metadataDirectCostMicrousd.toString(),
+    evidenceDirectCostMicrousd: economics.evidenceDirectCostMicrousd.toString(),
+    thumbnailDirectCostMicrousd:
+      economics.thumbnailDirectCostMicrousd.toString(),
+    combinedDirectCostMicrousd: economics.combinedDirectCostMicrousd.toString(),
+    currency: economics.currency,
+    unit: economics.unit,
+    metadataCostBasisVersion: economics.metadataCostBasisVersion,
+    evidenceCostBasisVersion: economics.evidenceCostBasisVersion,
+    thumbnailCostBasisVersion: economics.thumbnailCostBasisVersion,
+    assistanceTiming: economics.assistanceTiming,
+    incompleteReasons: economics.incompleteReasons,
+    snapshotFingerprint: economics.snapshotFingerprint,
+  });
+}
+
 function v2SnapshotExact(row: ApprovalRow): boolean {
-  if (row.componentSnapshots.length !== 2 || !row.economicsV2) return false;
+  if (
+    row.componentSnapshots.length !== 2 ||
+    !row.economicsV2 ||
+    !row.metrics ||
+    !projectPersistedEconomics(row.economicsV2) ||
+    !projectPersistedMetrics(row.metrics)
+  )
+    return false;
   const metadata = row.componentSnapshots.find(
     (value) => value.component === "METADATA",
   );
@@ -1710,19 +1943,23 @@ function v2SnapshotExact(row: ApprovalRow): boolean {
     const mapped = mapPersistedComponentSnapshot(snapshot);
     if (
       (snapshot.component === "METADATA" &&
-        snapshot.imageSafetyDecision !== null) ||
+        (snapshot.imageSafetyDecision !== null ||
+          snapshot.likeness !== null)) ||
       (snapshot.component === "THUMBNAIL" &&
         snapshot.mode === "MANUAL" &&
-        snapshot.imageSafetyDecision !== null) ||
+        (snapshot.imageSafetyDecision !== null ||
+          snapshot.likeness !== null)) ||
       (snapshot.component === "THUMBNAIL" &&
         snapshot.mode === "AI_ASSISTED" &&
         (!mapped.imageSafetyDecision ||
+          snapshot.likeness !== "NONE" ||
           snapshot.imageCandidate?.contractVersion !==
             THUMBNAIL_CONTRACT_VERSION ||
           snapshot.imageCandidate.adapterVersion !==
             LOCAL_NO_LIKENESS_THUMBNAIL_ADAPTER_VERSION ||
           snapshot.imageCandidate.promptBasisVersion !==
             LOCAL_NO_LIKENESS_PROMPT_BASIS_VERSION ||
+          snapshot.imageCandidate.likeness !== snapshot.likeness ||
           !projectNoLikenessSafetyDecision(
             snapshot.imageCandidate.safetyDecision,
           ) ||
@@ -1732,9 +1969,22 @@ function v2SnapshotExact(row: ApprovalRow): boolean {
       return false;
     const { snapshotFingerprint: _storedFingerprint, ...fingerprintInput } =
       mapped;
+    const currentFingerprint = componentSummaryFingerprint(
+      fingerprintInput,
+      canonicalJson,
+      ISO8601_APPROVAL_FINGERPRINT_BASIS,
+    );
+    const legacyFingerprint = componentSummaryFingerprint(
+      fingerprintInput,
+      legacyCanonicalJson,
+    );
     if (
-      finalizeComponentSummary(fingerprintInput).snapshotFingerprint !==
-      snapshot.snapshotFingerprint
+      (row.fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+        ? snapshot.snapshotFingerprint !== currentFingerprint
+        : row.fingerprintBasisVersion === LEGACY_APPROVAL_FINGERPRINT_BASIS
+          ? snapshot.snapshotFingerprint !== legacyFingerprint
+          : true) ||
+      !snapshotResearchLineageExact(snapshot, mapped)
     )
       return false;
   }
@@ -1750,6 +2000,7 @@ function v2SnapshotExact(row: ApprovalRow): boolean {
   )
     return false;
   const economics = row.economicsV2;
+  if (economics.assistanceTiming !== null) return false;
   const workflow = workflowModeFor(metadata.mode, thumbnail.mode);
   const expectedEconomicsFingerprint = hashFixed([
     APPROVAL_ECONOMICS_SCHEMA_V2,
@@ -1764,6 +2015,9 @@ function v2SnapshotExact(row: ApprovalRow): boolean {
     metadata.directCostMicrousd +
       economics.evidenceDirectCostMicrousd +
       thumbnail.directCostMicrousd,
+    ...(row.fingerprintBasisVersion === ISO8601_APPROVAL_FINGERPRINT_BASIS
+      ? [ISO8601_APPROVAL_FINGERPRINT_BASIS]
+      : []),
   ]);
   return (
     economics.workflowMode === workflow &&
@@ -1779,64 +2033,6 @@ function v2SnapshotExact(row: ApprovalRow): boolean {
     economics.thumbnailCostBasisVersion === thumbnail.costBasisVersion &&
     economics.snapshotFingerprint === expectedEconomicsFingerprint
   );
-}
-
-function parseSnapshotCitations(
-  value: unknown,
-): EditorialReviewComponentSummary["citations"] {
-  if (!Array.isArray(value) || value.length > 20)
-    throw new EditorialApprovalLineageInvalidError();
-  return value.map((item) => {
-    if (!item || typeof item !== "object")
-      throw new EditorialApprovalLineageInvalidError();
-    const row = item as Record<string, unknown>;
-    if (
-      typeof row.id !== "string" ||
-      typeof row.url !== "string" ||
-      typeof row.title !== "string" ||
-      typeof row.publisher !== "string" ||
-      typeof row.accessedAt !== "string"
-    )
-      throw new EditorialApprovalLineageInvalidError();
-    const citation = {
-      id: row.id,
-      url: row.url,
-      title: row.title,
-      publisher: row.publisher,
-      publishedAt:
-        typeof row.publishedAt === "string" ? new Date(row.publishedAt) : null,
-      accessedAt: new Date(row.accessedAt),
-    };
-    if (!validPublicCitation(citation))
-      throw new EditorialApprovalLineageInvalidError();
-    return citation;
-  });
-}
-
-function parseSnapshotFreshness(
-  value: unknown,
-): EditorialReviewComponentSummary["research"] {
-  if (value === null) return null;
-  if (!value || typeof value !== "object")
-    throw new EditorialApprovalLineageInvalidError();
-  const row = value as Record<string, unknown>;
-  if (
-    typeof row.searchedAt !== "string" ||
-    typeof row.freshUntil !== "string" ||
-    (row.freshness !== "CURRENT" && row.freshness !== "EXPIRED")
-  )
-    throw new EditorialApprovalLineageInvalidError();
-  const result = {
-    searchedAt: new Date(row.searchedAt),
-    freshUntil: new Date(row.freshUntil),
-    freshness: row.freshness as "CURRENT" | "EXPIRED",
-  };
-  if (
-    !Number.isFinite(result.searchedAt.getTime()) ||
-    !Number.isFinite(result.freshUntil.getTime())
-  )
-    throw new EditorialApprovalLineageInvalidError();
-  return result;
 }
 
 function cryptoRandomUuid(): string {
@@ -1960,12 +2156,6 @@ function stringTags(
 ): string[] | null {
   if (!Array.isArray(value) || value.length === 0) return null;
   return value.every((item) => typeof item === "string") ? value : null;
-}
-
-function parseIncompleteReasons(value: Prisma.JsonValue) {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string"))
-    throw new EditorialApprovalLineageInvalidError();
-  return value as EditorialApprovalView["metrics"]["incompleteReasons"];
 }
 
 function isSha256(value: string): boolean {

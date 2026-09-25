@@ -11,6 +11,10 @@ import {
   ValidateNested,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  PUBLIC_CITATION_PUBLISHER_MAX_LENGTH,
+  PUBLIC_CITATION_TITLE_MAX_LENGTH,
+} from "@content-factory/contracts";
 
 export class OperatorAttentionV2Dto {
   @ApiProperty({ enum: ["operator-attention-v2"] })
@@ -131,8 +135,13 @@ export class EditorialApprovalMetricsResponseDto extends ApprovalProcessingMetri
 export class EditorialCitationResponseDto {
   @ApiProperty({ type: String, format: "uuid" }) id!: string;
   @ApiProperty({ type: String, format: "uri" }) url!: string;
-  @ApiProperty({ type: String }) title!: string;
-  @ApiProperty({ type: String }) publisher!: string;
+  @ApiProperty({ type: String, maxLength: PUBLIC_CITATION_TITLE_MAX_LENGTH })
+  title!: string;
+  @ApiProperty({
+    type: String,
+    maxLength: PUBLIC_CITATION_PUBLISHER_MAX_LENGTH,
+  })
+  publisher!: string;
   @ApiProperty({ type: String, format: "date-time", nullable: true })
   publishedAt!: string | null;
   @ApiProperty({ type: String, format: "date-time" }) accessedAt!: string;
@@ -181,7 +190,7 @@ export class EditorialComponentSummaryResponseDto {
     nullable: true,
   })
   imageSafetyDecision!: EditorialImageSafetyDecisionResponseDto | null;
-  @ApiProperty({ type: String, nullable: true }) likeness!: string | null;
+  @ApiProperty({ enum: ["NONE"], nullable: true }) likeness!: "NONE" | null;
   @ApiProperty({ type: String, pattern: "^\\d+$" })
   directCostMicrousd!: string;
   @ApiProperty({ type: String }) costBasisVersion!: string;
@@ -204,6 +213,49 @@ export class EditorialEconomicsPreviewResponseDto {
   @ApiProperty({ enum: ["USD"] }) currency!: string;
   @ApiProperty({ enum: ["MICRO"] }) unit!: string;
   @ApiProperty({ type: [String] }) incompleteReasons!: string[];
+}
+
+export class EditorialApprovalAttentionV2ResponseDto {
+  @ApiProperty({ enum: ["operator-attention-v2"] })
+  schemaVersion!: "operator-attention-v2";
+  @ApiProperty({ type: "integer", minimum: 0, maximum: 28_800_000 })
+  preparationForegroundMs!: number;
+  @ApiProperty({ type: "integer", minimum: 0, maximum: 28_800_000 })
+  finalReviewForegroundMs!: number;
+  @ApiProperty({ type: "integer", minimum: 0, maximum: 28_800_000 })
+  totalOperatorAttentionMs!: number;
+}
+
+export class EditorialApprovalEconomicsV2ResponseDto {
+  @ApiProperty({ enum: ["approval-economics-v2"] })
+  schemaVersion!: "approval-economics-v2";
+  @ApiProperty({ enum: ["MANUAL", "AI_ASSISTED", "MIXED"] })
+  workflowMode!: "MANUAL" | "AI_ASSISTED" | "MIXED";
+  @ApiProperty({ type: EditorialApprovalAttentionV2ResponseDto })
+  attention!: EditorialApprovalAttentionV2ResponseDto;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  metadataDirectCostMicrousd!: string;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  evidenceDirectCostMicrousd!: string;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  thumbnailDirectCostMicrousd!: string;
+  @ApiProperty({ type: String, pattern: "^\\d+$" })
+  combinedDirectCostMicrousd!: string;
+  @ApiProperty({ enum: ["USD"] }) currency!: "USD";
+  @ApiProperty({ enum: ["MICRO"] }) unit!: "MICRO";
+  @ApiProperty({ type: String }) metadataCostBasisVersion!: string;
+  @ApiProperty({ type: String }) evidenceCostBasisVersion!: string;
+  @ApiProperty({ type: String }) thumbnailCostBasisVersion!: string;
+  @ApiProperty({
+    enum: [null] as unknown as string[],
+    nullable: true,
+    description:
+      "Reserved and null until a versioned assistance-timing contract exists.",
+  })
+  assistanceTiming!: null;
+  @ApiProperty({ type: [String] }) incompleteReasons!: string[];
+  @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
+  snapshotFingerprint!: string;
 }
 
 export class EditorialReviewComponentsResponseDto {
@@ -252,6 +304,17 @@ export class EditorialApprovalResponseDto {
     enum: ["manual-horizontal-approval-v1", "human-horizontal-approval-v2"],
   })
   approvalContractVersion!: string;
+  @ApiProperty({
+    enum: [
+      "editorial-approval-fingerprint-v2-date-object-legacy",
+      "editorial-approval-fingerprint-v2-iso8601",
+    ],
+    nullable: true,
+  })
+  fingerprintBasisVersion!:
+    | "editorial-approval-fingerprint-v2-date-object-legacy"
+    | "editorial-approval-fingerprint-v2-iso8601"
+    | null;
   @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" })
   candidateFingerprint!: string;
   @ApiProperty({ type: String, format: "date-time" }) approvedAt!: string;
@@ -261,8 +324,11 @@ export class EditorialApprovalResponseDto {
   metrics!: EditorialApprovalMetricsResponseDto;
   @ApiProperty({ type: [EditorialComponentSummaryResponseDto] })
   componentSnapshots!: EditorialComponentSummaryResponseDto[];
-  @ApiProperty({ type: "object", additionalProperties: true, nullable: true })
-  economicsV2!: Record<string, unknown> | null;
+  @ApiProperty({
+    type: EditorialApprovalEconomicsV2ResponseDto,
+    nullable: true,
+  })
+  economicsV2!: EditorialApprovalEconomicsV2ResponseDto | null;
 }
 
 export class EditorialApprovalListResponseDto {

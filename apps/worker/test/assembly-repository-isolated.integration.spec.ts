@@ -12,6 +12,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { databaseUrl } from "../../api/src/config/environment.js";
 import { PrismaService } from "../../api/src/database/prisma.service.js";
+import type { Prisma } from "../../api/src/generated/prisma/client.js";
 import { PrismaPipelineRepository } from "../../api/src/media-pipeline/infrastructure/prisma-pipeline.repository.js";
 import { PrismaEditorialExportRepository } from "../../api/src/editorial-content/infrastructure/prisma-editorial-export.repository.js";
 import { EditorialExportApprovalStaleError } from "../../api/src/editorial-content/domain/editorial-export.js";
@@ -361,6 +362,270 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             },
           },
         });
+        if (!claimed || claimed.type !== "EXPORT_EDITORIAL_PACKAGE")
+          throw new Error("V2_EXPORT_NOT_CLAIMED");
+        const objectKey = `private/valid-v2-finalize-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await expect(
+          repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "valid-v2.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: {
+              manifestSchemaVersion: "editorial-export-manifest-v2",
+              approvalSnapshot: claimed.editorialExportPlan.approvalSnapshot,
+            },
+          }),
+        ).resolves.toBeUndefined();
+        await expect(
+          prisma.editorialExportResult.findUniqueOrThrow({
+            where: { exportIntentId: seeded.exportIntentId },
+            include: { artifact: true },
+          }),
+        ).resolves.toMatchObject({ artifact: { objectKey } });
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("keeps an unchanged legacy-basis v2 approval claimable", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      const snapshots =
+        await prisma.editorialApprovalComponentSnapshot.findMany({
+          where: { approvalId: seeded.approvalId },
+        });
+      const metadata = snapshots.find((row) => row.component === "METADATA")!;
+      const thumbnail = snapshots.find((row) => row.component === "THUMBNAIL")!;
+      const metadataFingerprint = manualSnapshotFingerprint(
+        "METADATA",
+        metadata.provenanceId,
+        "null",
+        "[]",
+        "legacy",
+      );
+      const thumbnailFingerprint = manualSnapshotFingerprint(
+        "THUMBNAIL",
+        thumbnail.provenanceId,
+        "null",
+        "[]",
+        "legacy",
+      );
+      const economicsFingerprint = createHash("sha256")
+        .update(
+          [
+            "approval-economics-v2",
+            "MANUAL",
+            "1000",
+            "2000",
+            metadataFingerprint,
+            thumbnailFingerprint,
+            "0",
+            "0",
+            "0",
+            "0",
+          ].join("\n"),
+        )
+        .digest("hex");
+      await prisma.$transaction([
+        prisma.editorialApproval.update({
+          where: { id: seeded.approvalId },
+          data: {
+            fingerprintBasisVersion:
+              "editorial-approval-fingerprint-v2-date-object-legacy",
+          },
+        }),
+        prisma.editorialApprovalComponentSnapshot.update({
+          where: {
+            approvalId_component: {
+              approvalId: seeded.approvalId,
+              component: "METADATA",
+            },
+          },
+          data: { snapshotFingerprint: metadataFingerprint },
+        }),
+        prisma.editorialApprovalComponentSnapshot.update({
+          where: {
+            approvalId_component: {
+              approvalId: seeded.approvalId,
+              component: "THUMBNAIL",
+            },
+          },
+          data: { snapshotFingerprint: thumbnailFingerprint },
+        }),
+        prisma.editorialApprovalEconomicsV2.update({
+          where: { approvalId: seeded.approvalId },
+          data: { snapshotFingerprint: economicsFingerprint },
+        }),
+      ]);
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(seeded.exportJobId, "worker-legacy-basis", 30_000),
+        ).resolves.toMatchObject({
+          editorialExportPlan: {
+            approvalSnapshot: {
+              fingerprintBasisVersion:
+                "editorial-approval-fingerprint-v2-date-object-legacy",
+            },
+          },
+        });
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects private assistance timing before v2 claim", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      const secret = "must-not-escape-assistance-timing-claim";
+      await prisma.editorialApprovalEconomicsV2.update({
+        where: { approvalId: seeded.approvalId },
+        data: { assistanceTiming: { credentials: secret, prompt: "private" } },
+      });
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(seeded.exportJobId, "worker-private-timing", 30_000),
+        ).resolves.toBeNull();
+        const job = await prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: seeded.exportJobId },
+        });
+        expect(job).toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+        });
+        expect(JSON.stringify(job)).not.toContain(secret);
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects an arbitrary economics incomplete reason before v2 claim", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      const secret = "must-not-escape-economics-reason";
+      await prisma.editorialApprovalEconomicsV2.update({
+        where: { approvalId: seeded.approvalId },
+        data: { incompleteReasons: [secret] },
+      });
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(
+            seeded.exportJobId,
+            "worker-private-economics",
+            30_000,
+          ),
+        ).resolves.toBeNull();
+        const job = await prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: seeded.exportJobId },
+        });
+        expect(job).toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+        });
+        expect(JSON.stringify(job)).not.toContain(secret);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects a fingerprint-consistent private citation before v2 claim", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      const secret = "must-not-escape-citation-claim";
+      await tamperApprovalCitation(prisma, seeded.approvalId, secret);
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(
+            seeded.exportJobId,
+            "worker-private-citation",
+            30_000,
+          ),
+        ).resolves.toBeNull();
+        const job = await prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: seeded.exportJobId },
+        });
+        expect(job).toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+        });
+        expect(JSON.stringify(job)).not.toContain(secret);
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects a citation date-only mutation before v2 claim", async () => {
+      const seeded = await seedAdmittedAssistedExport();
+      await shiftApprovalCitationAccessedAt(seeded.approvalId);
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(seeded.exportJobId, "worker-date-tamper", 30_000),
+        ).resolves.toBeNull();
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+          }),
+        ).resolves.toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+        });
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("fails malformed citation and freshness JSON at claim without a poison retry", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      await prisma.editorialApprovalComponentSnapshot.update({
+        where: {
+          approvalId_component: {
+            approvalId: seeded.approvalId,
+            component: "METADATA",
+          },
+        },
+        data: {
+          citations: {},
+          freshness: {
+            searchedAt: "not-a-date",
+            freshUntil: "also-not-a-date",
+            freshness: "CURRENT",
+          },
+        },
+      });
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        await expect(
+          repository.claim(seeded.exportJobId, "worker-malformed-json", 30_000),
+        ).resolves.toBeNull();
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+            include: { attempts: true, resultArtifact: true },
+          }),
+        ).resolves.toMatchObject({
+          state: "FAILED_FINAL",
+          failureCode: "EXPORT_APPROVAL_STALE",
+          nextAttemptAt: null,
+          attempts: [
+            expect.objectContaining({
+              state: "QUEUED",
+              outputObjectKey: null,
+            }),
+          ],
+          resultArtifact: null,
+        });
       } finally {
         await repository.close();
       }
@@ -396,6 +661,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             "0",
             "0",
             "0",
+            "editorial-approval-fingerprint-v2-iso8601",
           ].join("\n"),
         )
         .digest("hex");
@@ -499,6 +765,14 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             new StreamingZip64PackageExporter(),
           ).execute(seeded.exportJobId);
 
+          const completedJob = await prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: seeded.exportJobId },
+            include: { attempts: true },
+          });
+          expect(completedJob, JSON.stringify(completedJob)).toMatchObject({
+            state: "READY",
+            attempts: [expect.objectContaining({ state: "READY" })],
+          });
           const result = await prisma.editorialExportResult.findUniqueOrThrow({
             where: { exportIntentId: seeded.exportIntentId },
             include: { artifact: true },
@@ -875,6 +1149,208 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             },
           ],
         });
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects private assistance timing introduced after v2 claim", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      const secret = "must-not-escape-assistance-timing-finalize";
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        const claimed = (await repository.claim(
+          seeded.exportJobId,
+          "worker-private-timing-finalize",
+          30_000,
+        )) as Extract<ClaimedMediaJob, { type: "EXPORT_EDITORIAL_PACKAGE" }>;
+        expect(
+          JSON.stringify(claimed, (_key, value) =>
+            typeof value === "bigint" ? value.toString() : value,
+          ),
+        ).not.toContain(secret);
+        const objectKey = `private/private-timing-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await prisma.editorialApprovalEconomicsV2.update({
+          where: { approvalId: seeded.approvalId },
+          data: {
+            assistanceTiming: { credentials: secret, prompt: "private" },
+          },
+        });
+        let rejection: unknown;
+        try {
+          await repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "must-not-exist.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: {
+              manifestSchemaVersion: "editorial-export-manifest-v2",
+              approvalSnapshot: claimed.editorialExportPlan.approvalSnapshot,
+            },
+          });
+        } catch (error) {
+          rejection = error;
+        }
+        expect(rejection).toMatchObject({ code: "EXPORT_APPROVAL_STALE" });
+        expect(String(rejection)).not.toContain(secret);
+        await expect(
+          repository.fail(
+            claimed,
+            "EXPORT_APPROVAL_STALE",
+            "The exact editorial approval is no longer current.",
+            false,
+          ),
+        ).resolves.toBe("FAILED_FINAL");
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+        expect(
+          await prisma.mediaArtifact.count({
+            where: { pipelineJobId: seeded.exportJobId },
+          }),
+        ).toBe(0);
+        const job = await prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: seeded.exportJobId },
+        });
+        expect(JSON.stringify(job)).not.toContain(secret);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects a fingerprint-consistent private citation after v2 claim", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      const secret = "must-not-escape-citation-finalize";
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        const claimed = (await repository.claim(
+          seeded.exportJobId,
+          "worker-private-citation-finalize",
+          30_000,
+        )) as Extract<ClaimedMediaJob, { type: "EXPORT_EDITORIAL_PACKAGE" }>;
+        const objectKey = `private/private-citation-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await tamperApprovalCitation(prisma, seeded.approvalId, secret);
+        let rejection: unknown;
+        try {
+          await repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "must-not-exist.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: {
+              manifestSchemaVersion: "editorial-export-manifest-v2",
+              approvalSnapshot: claimed.editorialExportPlan.approvalSnapshot,
+            },
+          });
+        } catch (error) {
+          rejection = error;
+        }
+        expect(rejection).toMatchObject({ code: "EXPORT_APPROVAL_STALE" });
+        expect(String(rejection)).not.toContain(secret);
+        await expect(
+          repository.fail(
+            claimed,
+            "EXPORT_APPROVAL_STALE",
+            "The exact editorial approval is no longer current.",
+            false,
+          ),
+        ).resolves.toBe("FAILED_FINAL");
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+        expect(
+          await prisma.mediaArtifact.count({
+            where: { pipelineJobId: seeded.exportJobId },
+          }),
+        ).toBe(0);
+        expect(
+          JSON.stringify(
+            await prisma.pipelineJob.findUniqueOrThrow({
+              where: { id: seeded.exportJobId },
+            }),
+          ),
+        ).not.toContain(secret);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects an arbitrary processing-metric reason introduced after v2 claim", async () => {
+      const seeded = await seedExport({ contractVersion: "v2" });
+      const secret = "must-not-escape-processing-reason";
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        const claimed = (await repository.claim(
+          seeded.exportJobId,
+          "worker-private-metrics-finalize",
+          30_000,
+        )) as Extract<ClaimedMediaJob, { type: "EXPORT_EDITORIAL_PACKAGE" }>;
+        const objectKey = `private/private-metrics-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await prisma.editorialApprovalMetrics.update({
+          where: { approvalId: seeded.approvalId },
+          data: { incompleteReasons: [secret] },
+        });
+        await expect(
+          repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "must-not-exist.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: {
+              manifestSchemaVersion: "editorial-export-manifest-v2",
+              approvalSnapshot: claimed.editorialExportPlan.approvalSnapshot,
+            },
+          }),
+        ).rejects.toMatchObject({ code: "EXPORT_APPROVAL_STALE" });
+        expect(
+          await prisma.editorialExportResult.count({
+            where: { exportIntentId: seeded.exportIntentId },
+          }),
+        ).toBe(0);
+        expect(
+          JSON.stringify(
+            await prisma.pipelineJob.findUniqueOrThrow({
+              where: { id: seeded.exportJobId },
+            }),
+          ),
+        ).not.toContain(secret);
+      } finally {
+        await repository.close();
+      }
+    });
+
+    it("rejects a citation date-only mutation after v2 claim", async () => {
+      const seeded = await seedAdmittedAssistedExport();
+      const repository = new PgMediaJobRepository(isolatedUrl, "local-auto");
+      try {
+        const claimed = (await repository.claim(
+          seeded.exportJobId,
+          "worker-date-tamper-finalize",
+          30_000,
+        )) as Extract<ClaimedMediaJob, { type: "EXPORT_EDITORIAL_PACKAGE" }>;
+        expect(claimed).not.toBeNull();
+        const objectKey = `private/date-tamper-${claimed.id}.zip`;
+        await repository.prepareAttemptOutput(claimed, objectKey);
+        await shiftApprovalCitationAccessedAt(seeded.approvalId);
+        await expect(
+          repository.completeEditorialExport(claimed, {
+            objectKey,
+            filename: "must-not-exist.zip",
+            sizeBytes: 1_256n,
+            sha256: "a".repeat(64),
+            manifest: {
+              manifestSchemaVersion: "editorial-export-manifest-v2",
+              approvalSnapshot: claimed.editorialExportPlan.approvalSnapshot,
+            },
+          }),
+        ).rejects.toMatchObject({ code: "EXPORT_APPROVAL_STALE" });
       } finally {
         await repository.close();
       }
@@ -2020,6 +2496,69 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
       };
     }
 
+    async function seedAdmittedAssistedExport() {
+      const seeded = await seedAssistedExport();
+      const approvals = await integratedApprovalRepository(prisma);
+      const review = await approvals.getReview(seeded.cutJobId);
+      if (!review?.candidateFingerprint)
+        throw new Error("ASSISTED_REVIEW_MISSING");
+      const approval = await approvals.create({
+        approvalId: randomUUID(),
+        operationRequestId: randomUUID(),
+        renderId: seeded.intentId,
+        editorialRevision: 1,
+        candidateFingerprint: review.candidateFingerprint,
+        approvalContractVersion: "human-horizontal-approval-v2",
+        attention: {
+          schemaVersion: "operator-attention-v2",
+          preparationForegroundMs: 1_100,
+          finalReviewForegroundMs: 2_200,
+        },
+        idempotencyKey: randomUUID(),
+      });
+      const exported = await new PrismaEditorialExportRepository(prisma).create(
+        {
+          intentId: randomUUID(),
+          operationRequestId: randomUUID(),
+          jobId: randomUUID(),
+          attemptId: randomUUID(),
+          approvalId: approval.id,
+          idempotencyKey: randomUUID(),
+        },
+      );
+      return {
+        ...seeded,
+        approvalId: approval.id,
+        exportJobId: exported.delivery.jobId,
+        exportIntentId: exported.view.id,
+      };
+    }
+
+    async function shiftApprovalCitationAccessedAt(approvalId: string) {
+      const metadata =
+        await prisma.editorialApprovalComponentSnapshot.findUniqueOrThrow({
+          where: {
+            approvalId_component: { approvalId, component: "METADATA" },
+          },
+        });
+      const citations = (
+        metadata.citations as Array<Record<string, unknown>>
+      ).map((citation, index) =>
+        index === 0
+          ? {
+              ...citation,
+              accessedAt: new Date(
+                new Date(String(citation.accessedAt)).getTime() + 1_000,
+              ).toISOString(),
+            }
+          : citation,
+      );
+      await prisma.editorialApprovalComponentSnapshot.update({
+        where: { approvalId_component: { approvalId, component: "METADATA" } },
+        data: { citations: citations as Prisma.InputJsonValue },
+      });
+    }
+
     async function seedExport(input?: {
       realInputBytes?: boolean;
       contractVersion?: "v1" | "v2";
@@ -2055,6 +2594,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             "0",
             "0",
             "0",
+            "editorial-approval-fingerprint-v2-iso8601",
           ].join("\n"),
         )
         .digest("hex");
@@ -2223,6 +2763,10 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             input?.contractVersion === "v2"
               ? "human-horizontal-approval-v2"
               : "manual-horizontal-approval-v1",
+          fingerprintBasisVersion:
+            input?.contractVersion === "v2"
+              ? "editorial-approval-fingerprint-v2-iso8601"
+              : null,
           candidateFingerprint: "e".repeat(64),
           ...(input?.contractVersion === "v2"
             ? {
@@ -2382,6 +2926,8 @@ function manualSnapshotFingerprint(
   component: "METADATA" | "THUMBNAIL",
   provenanceId: string,
   imageSafetyDecision = "null",
+  citations = "[]",
+  basis: "iso" | "legacy" = "iso",
 ): string {
   return createHash("sha256")
     .update(
@@ -2397,16 +2943,92 @@ function manualSnapshotFingerprint(
         "",
         "",
         "",
-        "[]",
+        citations,
         imageSafetyDecision,
         "null",
         "",
         "0",
         "manual-editorial-v1",
         "[]",
+        ...(basis === "iso"
+          ? ["editorial-approval-fingerprint-v2-iso8601"]
+          : []),
       ].join("\n"),
     )
     .digest("hex");
+}
+
+async function tamperApprovalCitation(
+  prisma: PrismaService,
+  approvalId: string,
+  secret: string,
+): Promise<void> {
+  const [snapshots, economics] = await Promise.all([
+    prisma.editorialApprovalComponentSnapshot.findMany({
+      where: { approvalId },
+    }),
+    prisma.editorialApprovalEconomicsV2.findUniqueOrThrow({
+      where: { approvalId },
+    }),
+  ]);
+  const metadata = snapshots.find((row) => row.component === "METADATA")!;
+  const thumbnail = snapshots.find((row) => row.component === "THUMBNAIL")!;
+  const citations = [
+    {
+      id: randomUUID(),
+      url: "https://example.com/source",
+      title: "Public title",
+      publisher: "Public publisher",
+      publishedAt: null,
+      accessedAt: "2026-09-25T00:00:00.000Z",
+      credentials: secret,
+      excerpt: "private excerpt",
+    },
+  ];
+  const metadataFingerprint = manualSnapshotFingerprint(
+    "METADATA",
+    metadata.provenanceId,
+    "null",
+    canonicalTestJson(citations),
+  );
+  const economicsFingerprint = createHash("sha256")
+    .update(
+      [
+        "approval-economics-v2",
+        economics.workflowMode,
+        economics.preparationForegroundMs.toString(),
+        economics.finalReviewForegroundMs.toString(),
+        metadataFingerprint,
+        thumbnail.snapshotFingerprint,
+        economics.metadataDirectCostMicrousd.toString(),
+        economics.evidenceDirectCostMicrousd.toString(),
+        economics.thumbnailDirectCostMicrousd.toString(),
+        economics.combinedDirectCostMicrousd.toString(),
+        "editorial-approval-fingerprint-v2-iso8601",
+      ].join("\n"),
+    )
+    .digest("hex");
+  await prisma.$transaction([
+    prisma.editorialApprovalComponentSnapshot.update({
+      where: { approvalId_component: { approvalId, component: "METADATA" } },
+      data: { citations, snapshotFingerprint: metadataFingerprint },
+    }),
+    prisma.editorialApprovalEconomicsV2.update({
+      where: { approvalId },
+      data: { snapshotFingerprint: economicsFingerprint },
+    }),
+  ]);
+}
+
+function canonicalTestJson(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value))
+    return `[${value.map(canonicalTestJson).join(",")}]`;
+  const row = value as Record<string, unknown>;
+  return `{${Object.keys(row)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${canonicalTestJson(row[key])}`)
+    .join(",")}}`;
 }
 
 function realStorage(): S3WorkerObjectStorage {

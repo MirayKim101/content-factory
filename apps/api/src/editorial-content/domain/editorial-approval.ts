@@ -132,7 +132,7 @@ export interface EditorialReviewComponentSummary {
     freshness: "CURRENT" | "EXPIRED";
   } | null;
   imageSafetyDecision: NoLikenessSafetyDecision | null;
-  likeness: string | null;
+  likeness: "NONE" | null;
   directCostMicrousd: bigint;
   costBasisVersion: string;
   incompleteReasons: string[];
@@ -157,7 +157,8 @@ export interface EditorialApprovalEconomicsV2View {
   metadataCostBasisVersion: string;
   evidenceCostBasisVersion: string;
   thumbnailCostBasisVersion: string;
-  assistanceTiming: unknown | null;
+  /** Reserved until a versioned assistance-timing contract is introduced. */
+  assistanceTiming: null;
   incompleteReasons: string[];
   snapshotFingerprint: string;
 }
@@ -188,6 +189,10 @@ export interface EditorialApprovalView {
   renderContractVersion: string;
   approvalContractVersion:
     typeof EDITORIAL_APPROVAL_CONTRACT | typeof EDITORIAL_APPROVAL_CONTRACT_V2;
+  fingerprintBasisVersion:
+    | "editorial-approval-fingerprint-v2-date-object-legacy"
+    | "editorial-approval-fingerprint-v2-iso8601"
+    | null;
   candidateFingerprint: string;
   approvedAt: Date;
   state: EditorialApprovalState;

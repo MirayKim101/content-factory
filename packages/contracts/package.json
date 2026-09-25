@@ -23,6 +23,7 @@
     "#frame-policy": "./src/frame-policy.ts",
     "#transcript": "./src/transcript.ts",
     "#research": "./src/research.ts",
+    "#editorial-approval-snapshot": "./src/editorial-approval-snapshot.ts",
     "#thumbnail": "./src/thumbnail.ts"
   }
 }

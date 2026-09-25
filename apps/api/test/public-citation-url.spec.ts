@@ -1,4 +1,8 @@
 import { describe, expect, it } from "vitest";
+import {
+  PUBLIC_APPROVAL_CITATION_MAX_COUNT,
+  projectPublicApprovalCitations,
+} from "@content-factory/contracts";
 
 import {
   normalizePublicCitationUrl,
@@ -8,6 +12,37 @@ import { PrismaResearchSuggestionRepository } from "../src/ai-content/infrastruc
 import type { PrismaService } from "../src/database/prisma.service.js";
 
 describe(PUBLIC_CITATION_URL_POLICY_VERSION, () => {
+  const publicCitation = {
+    id: "00000000-0000-4000-8000-000000000001",
+    url: "https://example.com/source",
+    title: "Source",
+    publisher: "Example",
+    publishedAt: null,
+    accessedAt: "2026-09-25T00:00:00.000Z",
+  } as const;
+
+  it("projects only exact bounded public approval citation fields", () => {
+    expect(projectPublicApprovalCitations([publicCitation])).toEqual([
+      publicCitation,
+    ]);
+    expect(
+      projectPublicApprovalCitations([
+        { ...publicCitation, credentials: "secret", excerpt: "private" },
+      ]),
+    ).toBeNull();
+    expect(
+      projectPublicApprovalCitations(
+        Array.from(
+          { length: PUBLIC_APPROVAL_CITATION_MAX_COUNT + 1 },
+          (_, index) => ({
+            ...publicCitation,
+            id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+          }),
+        ),
+      ),
+    ).toBeNull();
+  });
+
   it("normalizes bounded public query strings without removing them", () => {
     expect(
       normalizePublicCitationUrl(

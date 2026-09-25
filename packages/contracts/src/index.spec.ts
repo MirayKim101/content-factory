@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   NO_LIKENESS_SAFETY_DECISION_VERSION,
+  PUBLIC_CITATION_PUBLISHER_MAX_LENGTH,
+  PUBLIC_CITATION_TITLE_MAX_LENGTH,
   parseMediaJobReference,
   projectNoLikenessSafetyDecision,
+  validPublicCitationText,
 } from "./index.js";
 
 describe("MediaJobReferenceV1", () => {
@@ -26,6 +29,32 @@ describe("MediaJobReferenceV1", () => {
         jobId: "00000000-0000-4000-8000-000000000001",
       }),
     ).toThrow("JOB_PAYLOAD_INVALID");
+  });
+});
+
+describe("PublicCitationTextV1", () => {
+  it("accepts the authoritative admission boundaries", () => {
+    expect(
+      validPublicCitationText({
+        title: "t".repeat(PUBLIC_CITATION_TITLE_MAX_LENGTH),
+        publisher: "p".repeat(PUBLIC_CITATION_PUBLISHER_MAX_LENGTH),
+      }),
+    ).toBe(true);
+  });
+
+  it("rejects either field beyond its authoritative boundary", () => {
+    expect(
+      validPublicCitationText({
+        title: "t".repeat(PUBLIC_CITATION_TITLE_MAX_LENGTH + 1),
+        publisher: "publisher",
+      }),
+    ).toBe(false);
+    expect(
+      validPublicCitationText({
+        title: "title",
+        publisher: "p".repeat(PUBLIC_CITATION_PUBLISHER_MAX_LENGTH + 1),
+      }),
+    ).toBe(false);
   });
 });
 

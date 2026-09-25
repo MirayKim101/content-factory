@@ -4,9 +4,12 @@ import { Injectable } from "@nestjs/common";
 import {
   LOCAL_RESEARCH_ADAPTER_VERSION,
   LOCAL_RESEARCH_COST_BASIS_VERSION,
+  PUBLIC_CITATION_PUBLISHER_MAX_LENGTH,
+  PUBLIC_CITATION_TITLE_MAX_LENGTH,
   RESEARCH_CONTRACT_VERSION,
   RESEARCH_FRESHNESS_POLICY_VERSION,
   frameContextBlockers,
+  validPublicCitationText,
   type FrameContextCapture,
   type ResearchCitation,
   type ResearchSuggestionView,
@@ -530,7 +533,7 @@ function normalizeCitation(
   const title = input.title.trim();
   const publisher = input.publisher.trim();
   const excerpt = input.excerpt.trim();
-  if (!title || !publisher || !excerpt)
+  if (!validPublicCitationText({ title, publisher }) || !excerpt)
     throw new ResearchSuggestionContextRejectedError(
       "RESEARCH_CITATION_INVALID",
     );
@@ -543,8 +546,8 @@ function normalizeCitation(
     id: randomUUID(),
     ordinal,
     url,
-    title: title.slice(0, 500),
-    publisher: publisher.slice(0, 300),
+    title: title.slice(0, PUBLIC_CITATION_TITLE_MAX_LENGTH),
+    publisher: publisher.slice(0, PUBLIC_CITATION_PUBLISHER_MAX_LENGTH),
     publishedAt,
     accessedAt,
     excerpt: excerpt.slice(0, 4_000),
