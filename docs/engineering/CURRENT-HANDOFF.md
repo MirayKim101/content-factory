@@ -91,8 +91,11 @@ render/export/recovery suite этой объединённой версии не
 `http://127.0.0.1:3100`, API: `127.0.0.1:3001`. Порт 3000 зарезервирован
 владельцем для другого проекта и не используется Content Factory.
 Новые контейнеры, сеть и тома имеют префикс `content-factory-restored`.
-Порты зависимостей: 15432/16379/19000/19001. В новой базе применены 15 Mac миграций и additive migration
-`20260916090000_sparse_frame_evidence` (всего 16); рабочий `.env` содержит только новые credentials, ignored, mode 0600.
+Порты зависимостей: 15432/16379/19000/19001. В рабочей базе применены все 29
+миграций, включая transcript recovery и additive repair semantics для
+`updatedAt`; Prisma status сообщает schema up to date. Перед rollout сделан и
+полноценно восстановлен в disposable DB свежий backup; evidence:
+`STAGE2B6-LOCAL-ROLLOUT.md`. Рабочий `.env` ignored, mode 0600.
 Инструкция запуска и остановки: `docs/infrastructure/restored-runtime.md`.
 
 Legacy PostgreSQL/Redis/MinIO и volumes сохранены. Старые API/web/WSL worker
