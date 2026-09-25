@@ -207,7 +207,8 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
    rollout-решения; ручной Stage 2 путь остаётся рабочим.
 2. Владелец выполняет одинаковый bounded manual и assisted сценарий через UI и
    фиксирует реальное foreground attention, wall clock, direct cost, mode и
-   acceptance. Это последний незакрытый pre-Twitch product-acceptance gate.
+   acceptance. Точный пошаговый лист: `STAGE2B6-OPERATOR-ACCEPTANCE.md`. Это
+   последний незакрытый pre-Twitch product-acceptance gate.
 3. Провести браузерный smoke текущего UI на порту 3100. Автоматизированный
    Windows computer-use из этой WSL-сессии не подключился, поэтому HTTP health
    и web `238/238` не заменяют визуальную операторскую проверку.
