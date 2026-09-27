@@ -172,6 +172,21 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     return result.rowCount === 1;
   }
 
+  async releaseClaim(claim: PublicationClaim, now: Date): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "PublicationIntent"
+          SET "state" = 'QUEUED',
+              "attemptCount" = GREATEST("attemptCount" - 1, 0),
+              "startedAt" = NULL, "nextAttemptAt" = NULL,
+              "failureCode" = NULL, "failureMessage" = NULL,
+              "updatedAt" = $3
+        WHERE "id" = $1 AND "state" = 'PROCESSING'
+          AND "attemptCount" = $2`,
+      [claim.id, claim.attemptNumber, now],
+    );
+    return result.rowCount === 1;
+  }
+
   async finalizeDryRun(
     claim: PublicationClaim,
     result: PublicationAdapterResult,

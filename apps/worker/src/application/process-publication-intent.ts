@@ -9,8 +9,12 @@ import { createAbortDeadline } from "./abort-deadline.js";
 const PUBLICATION_HEARTBEAT_INTERVAL_MS = 60_000;
 const PUBLICATION_ATTEMPT_TIMEOUT_MS = 30 * 60_000;
 class PublicationLeaseLostError extends Error {}
+class PublicationShutdownError extends Error {}
 
 export class ProcessPublicationIntent {
+  private readonly activeControllers = new Set<AbortController>();
+  private stopping = false;
+
   constructor(
     private readonly repository: PublicationWorkerRepository,
     private readonly providers: readonly PublicationProvider[],
@@ -18,10 +22,24 @@ export class ProcessPublicationIntent {
     private readonly attemptTimeoutMs = PUBLICATION_ATTEMPT_TIMEOUT_MS,
   ) {}
 
+  abortAll(): void {
+    this.stopping = true;
+    for (const controller of this.activeControllers)
+      controller.abort(new PublicationShutdownError());
+  }
+
   async execute(intentId: string): Promise<boolean> {
+    if (this.stopping) return false;
     const claim = await this.repository.claim(intentId, this.clock());
     if (!claim) return false;
+    if (this.stopping) {
+      await this.repository
+        .releaseClaim(claim, this.clock())
+        .catch(() => false);
+      return false;
+    }
     const abortController = new AbortController();
+    this.activeControllers.add(abortController);
     const heartbeat = this.startHeartbeat(claim, abortController);
     const deadline = createAbortDeadline(
       abortController.signal,
@@ -33,6 +51,7 @@ export class ProcessPublicationIntent {
     } finally {
       deadline.dispose();
       clearInterval(heartbeat);
+      this.activeControllers.delete(abortController);
     }
   }
 
@@ -90,6 +109,10 @@ export class ProcessPublicationIntent {
           this.clock(),
         );
         return true;
+      }
+      if (signal.reason instanceof PublicationShutdownError) {
+        await this.repository.releaseClaim(claim, this.clock());
+        return false;
       }
       if (
         claim.platform !== "LOCAL_DRY_RUN" &&

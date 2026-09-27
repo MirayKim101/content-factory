@@ -30,6 +30,7 @@ function repository(): PublicationWorkerRepository {
   return {
     claim: vi.fn().mockResolvedValueOnce(claim).mockResolvedValue(null),
     heartbeat: vi.fn().mockResolvedValue(true),
+    releaseClaim: vi.fn().mockResolvedValue(true),
     finalizeDryRun: vi.fn(),
     finalizePublishedDirect: vi.fn(),
     releaseForRetry: vi.fn(),
@@ -137,6 +138,92 @@ describe("ProcessPublicationIntent", () => {
     expect(repo.finalizeDryRun).not.toHaveBeenCalled();
     expect(repo.releaseForRetry).not.toHaveBeenCalled();
     expect(repo.failFinal).not.toHaveBeenCalled();
+  });
+
+  it("releases a safe active attempt without recording failure during shutdown", async () => {
+    const repo = repository();
+    const publish = vi.fn(
+      (_claim: PublicationClaim, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          signal?.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          });
+        }),
+    );
+    const process = new ProcessPublicationIntent(repo, [
+      { platform: "LOCAL_DRY_RUN", publish },
+    ]);
+
+    const processing = process.execute(claim.id);
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+    process.abortAll();
+
+    await expect(processing).resolves.toBe(false);
+    expect(repo.releaseClaim).toHaveBeenCalledWith(claim, expect.any(Date));
+    expect(repo.failFinal).not.toHaveBeenCalled();
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
+  });
+
+  it("releases a claim returned after shutdown without calling provider", async () => {
+    const repo = repository();
+    const deferred = Promise.withResolvers<PublicationClaim | null>();
+    vi.mocked(repo.claim).mockReset().mockReturnValue(deferred.promise);
+    const publish = vi.fn();
+    const process = new ProcessPublicationIntent(repo, [
+      { platform: "LOCAL_DRY_RUN", publish },
+    ]);
+
+    const processing = process.execute(claim.id);
+    await vi.waitFor(() => expect(repo.claim).toHaveBeenCalledOnce());
+    process.abortAll();
+    deferred.resolve(claim);
+
+    await expect(processing).resolves.toBe(false);
+    expect(repo.releaseClaim).toHaveBeenCalledWith(claim, expect.any(Date));
+    expect(publish).not.toHaveBeenCalled();
+  });
+
+  it("keeps an ambiguous remote shutdown outcome quarantined", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    const publish = vi.fn(
+      (_claim: PublicationClaim, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          signal?.addEventListener(
+            "abort",
+            () =>
+              reject(
+                new PublicationOutcomeUnknownError(
+                  "YOUTUBE_SHUTDOWN_OUTCOME_UNKNOWN",
+                  "Shutdown interrupted a remotely accepted upload.",
+                  "video-42",
+                  "processing",
+                ),
+              ),
+            { once: true },
+          );
+        }),
+    );
+    const process = new ProcessPublicationIntent(repo, [
+      { platform: "YOUTUBE", publish },
+    ]);
+
+    const processing = process.execute(remoteClaim.id);
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+    process.abortAll();
+
+    await expect(processing).resolves.toBe(true);
+    expect(repo.markUnknownRemoteState).toHaveBeenCalledWith(
+      remoteClaim,
+      "YOUTUBE_SHUTDOWN_OUTCOME_UNKNOWN",
+      expect.any(String),
+      "video-42",
+      "processing",
+      expect.any(Date),
+    );
+    expect(repo.releaseClaim).not.toHaveBeenCalled();
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
   });
 
   it("quarantines a timed-out external attempt instead of retrying its POST", async () => {

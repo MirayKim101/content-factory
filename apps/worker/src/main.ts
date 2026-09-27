@@ -522,6 +522,7 @@ async function startPublicationWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(recoveryTimer);
+    processor.abortAll();
     shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);
       await worker.close().catch(() => undefined);

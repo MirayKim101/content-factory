@@ -27,6 +27,7 @@ function repository(): PublicationWorkerRepository {
   return {
     claim: vi.fn(),
     heartbeat: vi.fn().mockResolvedValue(true),
+    releaseClaim: vi.fn().mockResolvedValue(true),
     finalizeDryRun: vi.fn(),
     finalizePublishedDirect: vi.fn(),
     releaseForRetry: vi.fn(),

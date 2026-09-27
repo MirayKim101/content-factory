@@ -126,13 +126,17 @@
 - Vertical worker применяет тот же shutdown contract к pending claim и
   активным download/FFmpeg/upload: I/O abort-ится, job и attempt атомарно
   возвращаются в очередь без ложной ошибки и расхода retry budget.
+- Publication shutdown abort-ит pending provider calls и безопасные attempts
+  возвращает в `QUEUED` без расхода retry budget. Если adapter уже пересёк
+  remote commit boundary, его `PublicationOutcomeUnknownError` имеет приоритет:
+  intent остаётся в quarantine для reconciliation и не повторяет POST.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  280/280 unit tests
+Worker:  283/283 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
