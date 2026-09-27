@@ -68,3 +68,24 @@ export class ListPublicationChannels {
     return this.repository.listChannels(projectId);
   }
 }
+
+@Injectable()
+export class GetPublishingCapabilities {
+  constructor(
+    @Inject(PUBLISHING_ADMISSION_ENABLED)
+    private readonly admissionEnabled: boolean,
+    @Inject(YOUTUBE_PUBLISHING_ADMISSION_ENABLED)
+    private readonly youtubeAdmissionEnabled: boolean,
+    @Inject(TIKTOK_PUBLISHING_ADMISSION_ENABLED)
+    private readonly tiktokAdmissionEnabled: boolean,
+  ) {}
+
+  execute() {
+    return {
+      publishingEnabled: this.admissionEnabled,
+      localDryRunEnabled: this.admissionEnabled,
+      youtubeEnabled: this.admissionEnabled && this.youtubeAdmissionEnabled,
+      tiktokEnabled: this.admissionEnabled && this.tiktokAdmissionEnabled,
+    };
+  }
+}

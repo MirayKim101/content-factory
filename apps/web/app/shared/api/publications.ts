@@ -98,6 +98,13 @@ const tiktokCreatorInfoSchema = z.object({
   fetchedAt: z.iso.datetime(),
 });
 export type TikTokCreatorInfo = z.infer<typeof tiktokCreatorInfoSchema>;
+const capabilitiesSchema = z.object({
+  publishingEnabled: z.boolean(),
+  localDryRunEnabled: z.boolean(),
+  youtubeEnabled: z.boolean(),
+  tiktokEnabled: z.boolean(),
+});
+export type PublishingCapabilities = z.infer<typeof capabilitiesSchema>;
 
 export class PublicationsApiError extends Error {
   constructor(
@@ -116,6 +123,13 @@ export function createPublicationsApi(
 ) {
   const basePath = parseApiBasePath(apiBasePath);
   return {
+    capabilities: () =>
+      request(
+        fetchImplementation,
+        `${basePath}/publishing/capabilities`,
+        {},
+        capabilitiesSchema,
+      ),
     listChannels: (projectId: string) =>
       request(
         fetchImplementation,

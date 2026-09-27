@@ -7,6 +7,7 @@ import { GetTikTokCreatorInfo } from "./application/get-tiktok-creator-info.js";
 import { RetryPublicationIntent } from "./application/retry-publication-intent.js";
 import {
   CreatePublicationChannel,
+  GetPublishingCapabilities,
   ListPublicationChannels,
 } from "./application/publication-channel-commands.js";
 import {
@@ -39,6 +40,7 @@ import {
     CreatePublicationIntent,
     GetTikTokCreatorInfo,
     CreatePublicationChannel,
+    GetPublishingCapabilities,
     ListPublicationChannels,
     GetPublicationIntent,
     ListPublicationIntents,

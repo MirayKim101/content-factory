@@ -18,13 +18,16 @@
   TikTok Direct Post, unknown-remote reconciliation и metrics snapshots.
 - UI показывает Twitch import progress, vertical review, расписание и provider
   statuses. При выключенном auto-ingest явно сохраняет ручную привязку.
+- Publishing UI получает эффективные server-side capabilities без секретов;
+  выключенные provider paths не выглядят доступными, а история остаётся
+  читаемой в fail-closed режиме.
 
 ## Воспроизведённые проверки
 
 ```text
-API:     226/226 unit tests
+API:     232/232 unit tests
 Worker:  239/239 unit tests
-Web:     245/245 tests
+Web:     248/248 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 42/42, 73 public tables, 0 unvalidated constraints

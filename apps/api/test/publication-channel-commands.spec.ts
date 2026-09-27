@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { CreatePublicationChannel } from "../src/publishing/application/publication-channel-commands.js";
+import {
+  CreatePublicationChannel,
+  GetPublishingCapabilities,
+} from "../src/publishing/application/publication-channel-commands.js";
 import type { PublicationRepository } from "../src/publishing/application/publication-repository.port.js";
 import {
   PublicationMetadataInvalidError,
@@ -100,5 +103,22 @@ describe("CreatePublicationChannel", () => {
     expect(repo.createChannel).toHaveBeenCalledWith(
       expect.objectContaining({ platform: "TIKTOK" }),
     );
+  });
+});
+
+describe("GetPublishingCapabilities", () => {
+  it("reports effective provider admission without exposing configuration", () => {
+    expect(new GetPublishingCapabilities(true, true, false).execute()).toEqual({
+      publishingEnabled: true,
+      localDryRunEnabled: true,
+      youtubeEnabled: true,
+      tiktokEnabled: false,
+    });
+    expect(new GetPublishingCapabilities(false, true, true).execute()).toEqual({
+      publishingEnabled: false,
+      localDryRunEnabled: false,
+      youtubeEnabled: false,
+      tiktokEnabled: false,
+    });
   });
 });

@@ -24,6 +24,34 @@ function channel() {
 }
 
 describe("publications api", () => {
+  it("loads effective publishing capabilities without provider secrets", async () => {
+    const payload = {
+      publishingEnabled: true,
+      localDryRunEnabled: true,
+      youtubeEnabled: false,
+      tiktokEnabled: false,
+    };
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+
+    const result = await createPublicationsApi(
+      "/api/v1",
+      fetchMock as typeof fetch,
+    ).capabilities();
+
+    expect(result).toEqual(payload);
+    expect(result).not.toHaveProperty("credentials");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/v1/publishing/capabilities",
+      {},
+    );
+  });
+
   it("requests a publication retry without creating a second intent", async () => {
     const failed = {
       ...channel(),

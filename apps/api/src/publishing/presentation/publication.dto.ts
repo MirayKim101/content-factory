@@ -17,6 +17,13 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 const platforms = ["LOCAL_DRY_RUN", "YOUTUBE", "TIKTOK"] as const;
 const contentKinds = ["EDITORIAL_EXPORT", "VERTICAL_RESULT"] as const;
 
+export class PublishingCapabilitiesResponseDto {
+  @ApiProperty({ type: Boolean }) publishingEnabled!: boolean;
+  @ApiProperty({ type: Boolean }) localDryRunEnabled!: boolean;
+  @ApiProperty({ type: Boolean }) youtubeEnabled!: boolean;
+  @ApiProperty({ type: Boolean }) tiktokEnabled!: boolean;
+}
+
 export class CreatePublicationChannelDto {
   @ApiProperty({ enum: platforms })
   @IsIn(platforms)

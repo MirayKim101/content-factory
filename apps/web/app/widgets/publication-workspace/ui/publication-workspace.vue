@@ -15,6 +15,7 @@ import {
   createPublicationsApi,
   type PublicationChannel,
   type PublicationIntent,
+  type PublishingCapabilities,
   type TikTokCreatorInfo,
 } from "~/shared/api/publications";
 import {
@@ -36,6 +37,12 @@ const projects = ref<ProjectOption[]>([]);
 const projectId = ref("");
 const channels = ref<PublicationChannel[]>([]);
 const publications = ref<PublicationIntent[]>([]);
+const capabilities = ref<PublishingCapabilities>({
+  publishingEnabled: false,
+  localDryRunEnabled: false,
+  youtubeEnabled: false,
+  tiktokEnabled: false,
+});
 const exports = ref<EditorialExport[]>([]);
 const verticals = ref<VerticalRender[]>([]);
 const loading = ref(true);
@@ -89,7 +96,9 @@ const readyVerticals = computed(() =>
   ),
 );
 const activeChannels = computed(() =>
-  channels.value.filter((item) => item.state === "ENABLED"),
+  channels.value.filter(
+    (item) => item.state === "ENABLED" && platformEnabled(item.platform),
+  ),
 );
 const activeChannel = computed(() =>
   activeChannels.value.find((item) => item.id === channelId.value),
@@ -122,6 +131,14 @@ const grouped = computed(() => ({
     ["UNKNOWN_REMOTE_STATE", "FAILED_FINAL", "CANCELED"].includes(item.state),
   ),
 }));
+
+function platformEnabled(platform: PublicationChannel["platform"]): boolean {
+  return platform === "LOCAL_DRY_RUN"
+    ? capabilities.value.localDryRunEnabled
+    : platform === "YOUTUBE"
+      ? capabilities.value.youtubeEnabled
+      : capabilities.value.tiktokEnabled;
+}
 
 async function loadProjects(): Promise<void> {
   const page = await projectsApi.listProjects!({ limit: 100 });
@@ -478,6 +495,11 @@ watch(activeChannel, (channel) => {
 });
 onMounted(async () => {
   try {
+    try {
+      capabilities.value = await publicationsApi.capabilities();
+    } catch {
+      // Capabilities fail closed, while read-only history remains available.
+    }
     await loadProjects();
     initialized.value = true;
     await loadWorkspace();
@@ -525,6 +547,10 @@ onUnmounted(() => {
 
     <p v-if="error" class="message error" role="alert">{{ error }}</p>
     <p v-if="notice" class="message success" role="status">{{ notice }}</p>
+    <p v-if="!capabilities.publishingEnabled" class="message" role="status">
+      Планирование отключено администратором. История и статусы доступны только
+      для просмотра.
+    </p>
 
     <section class="summary" aria-label="Сводка публикаций">
       <article>
@@ -668,11 +694,13 @@ onUnmounted(() => {
             <h2 id="composer-title">Запланировать</h2>
           </div>
           <span class="safe-badge">{{
-            activeChannel?.platform === "YOUTUBE"
-              ? "YouTube"
-              : activeChannel?.platform === "TIKTOK"
-                ? "TikTok"
-                : "Dry run"
+            !capabilities.publishingEnabled
+              ? "Только просмотр"
+              : activeChannel?.platform === "YOUTUBE"
+                ? "YouTube"
+                : activeChannel?.platform === "TIKTOK"
+                  ? "TikTok"
+                  : "Dry run"
           }}</span>
         </div>
         <template v-if="!projectId"
@@ -680,56 +708,80 @@ onUnmounted(() => {
         >
         <template v-else-if="!activeChannel">
           <div class="channel-callout">
-            <strong>Подключите безопасный канал</strong>
-            <p>
-              Dry run проверит расписание и пакет, но ничего не отправит наружу.
-            </p>
-            <Button :loading="saving" @click="createChannel"
-              >Подключить dry run</Button
-            >
-            <details class="channel-connector">
-              <summary>Подключить YouTube</summary>
+            <template v-if="!capabilities.publishingEnabled">
+              <strong>Планирование сейчас недоступно</strong>
               <p>
-                Доступно, когда OAuth-канал разрешён администратором сервера.
+                Администратор отключил создание публикаций. История и статусы
+                остаются доступны для просмотра.
               </p>
-              <InputText
-                v-model="youtubeChannelRef"
-                placeholder="ID канала: UC…"
-              />
-              <InputText
-                v-model="youtubeDisplayName"
-                placeholder="Название канала"
-                maxlength="120"
-              />
+            </template>
+            <template v-else>
+              <strong>Подключите безопасный канал</strong>
+              <p>
+                Dry run проверит расписание и пакет, но ничего не отправит
+                наружу.
+              </p>
               <Button
-                type="button"
-                severity="secondary"
-                :disabled="
-                  !/^UC[A-Za-z0-9_-]{20,40}$/.test(youtubeChannelRef.trim())
-                "
+                v-if="capabilities.localDryRunEnabled"
                 :loading="saving"
-                @click="createYoutubeChannel"
-                >Подключить YouTube</Button
+                @click="createChannel"
+                >Подключить dry run</Button
               >
-            </details>
-            <details class="channel-connector">
-              <summary>Подключить TikTok</summary>
-              <p>Укажите immutable open_id из OAuth-настройки сервера.</p>
-              <InputText v-model="tiktokOpenId" placeholder="TikTok open_id" />
-              <InputText
-                v-model="tiktokDisplayName"
-                placeholder="Название аккаунта"
-                maxlength="120"
-              />
-              <Button
-                type="button"
-                severity="secondary"
-                :disabled="!/^[A-Za-z0-9._-]{1,128}$/.test(tiktokOpenId.trim())"
-                :loading="saving"
-                @click="createTikTokChannel"
-                >Подключить TikTok</Button
+              <details
+                v-if="capabilities.youtubeEnabled"
+                class="channel-connector"
               >
-            </details>
+                <summary>Подключить YouTube</summary>
+                <p>
+                  Доступно, когда OAuth-канал разрешён администратором сервера.
+                </p>
+                <InputText
+                  v-model="youtubeChannelRef"
+                  placeholder="ID канала: UC…"
+                />
+                <InputText
+                  v-model="youtubeDisplayName"
+                  placeholder="Название канала"
+                  maxlength="120"
+                />
+                <Button
+                  type="button"
+                  severity="secondary"
+                  :disabled="
+                    !/^UC[A-Za-z0-9_-]{20,40}$/.test(youtubeChannelRef.trim())
+                  "
+                  :loading="saving"
+                  @click="createYoutubeChannel"
+                  >Подключить YouTube</Button
+                >
+              </details>
+              <details
+                v-if="capabilities.tiktokEnabled"
+                class="channel-connector"
+              >
+                <summary>Подключить TikTok</summary>
+                <p>Укажите immutable open_id из OAuth-настройки сервера.</p>
+                <InputText
+                  v-model="tiktokOpenId"
+                  placeholder="TikTok open_id"
+                />
+                <InputText
+                  v-model="tiktokDisplayName"
+                  placeholder="Название аккаунта"
+                  maxlength="120"
+                />
+                <Button
+                  type="button"
+                  severity="secondary"
+                  :disabled="
+                    !/^[A-Za-z0-9._-]{1,128}$/.test(tiktokOpenId.trim())
+                  "
+                  :loading="saving"
+                  @click="createTikTokChannel"
+                  >Подключить TikTok</Button
+                >
+              </details>
+            </template>
           </div>
         </template>
         <form v-else class="schedule-form" @submit.prevent="schedule">
@@ -909,7 +961,7 @@ onUnmounted(() => {
             :loading="saving"
             >Добавить в расписание</Button
           >
-          <details class="channel-connector">
+          <details v-if="capabilities.youtubeEnabled" class="channel-connector">
             <summary>Добавить YouTube-канал</summary>
             <p>Введите официальный ID канала, начинающийся с UC.</p>
             <InputText
@@ -932,7 +984,7 @@ onUnmounted(() => {
               >Подключить</Button
             >
           </details>
-          <details class="channel-connector">
+          <details v-if="capabilities.tiktokEnabled" class="channel-connector">
             <summary>Добавить TikTok-аккаунт</summary>
             <p>
               Используется open_id, связанный с OAuth credential на сервере.

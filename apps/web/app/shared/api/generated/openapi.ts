@@ -1025,6 +1025,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/publishing/capabilities": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["PublicationController_capabilities"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/research-suggestions/{researchIntentId}": {
     parameters: {
       query?: never;
@@ -2774,6 +2790,12 @@ export interface components {
       verticalApprovalId: string | null;
       /** Format: uuid */
       verticalResultId: string | null;
+    };
+    PublishingCapabilitiesResponseDto: {
+      localDryRunEnabled: boolean;
+      publishingEnabled: boolean;
+      tiktokEnabled: boolean;
+      youtubeEnabled: boolean;
     };
     PutCutEditorialPromptDto: {
       cta: string;
@@ -6473,6 +6495,25 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PublicationIntentResponseDto"];
+        };
+      };
+    };
+  };
+  PublicationController_capabilities: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublishingCapabilitiesResponseDto"];
         };
       };
     };

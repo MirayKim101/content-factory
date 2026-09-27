@@ -4800,6 +4800,29 @@
         ],
         "type": "object"
       },
+      "PublishingCapabilitiesResponseDto": {
+        "properties": {
+          "localDryRunEnabled": {
+            "type": "boolean"
+          },
+          "publishingEnabled": {
+            "type": "boolean"
+          },
+          "tiktokEnabled": {
+            "type": "boolean"
+          },
+          "youtubeEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "publishingEnabled",
+          "localDryRunEnabled",
+          "youtubeEnabled",
+          "tiktokEnabled"
+        ],
+        "type": "object"
+      },
       "PutCutEditorialPromptDto": {
         "properties": {
           "cta": {
@@ -11042,6 +11065,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicationIntentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      }
+    },
+    "/api/v1/publishing/capabilities": {
+      "get": {
+        "operationId": "PublicationController_capabilities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishingCapabilitiesResponseDto"
                 }
               }
             },

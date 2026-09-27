@@ -28,6 +28,7 @@ import { GetTikTokCreatorInfo } from "../application/get-tiktok-creator-info.js"
 import { RetryPublicationIntent } from "../application/retry-publication-intent.js";
 import {
   CreatePublicationChannel,
+  GetPublishingCapabilities,
   ListPublicationChannels,
 } from "../application/publication-channel-commands.js";
 import {
@@ -56,6 +57,7 @@ import {
   PublicationIntentListResponseDto,
   PublicationIntentResponseDto,
   PublicationListQueryDto,
+  PublishingCapabilitiesResponseDto,
   TikTokCreatorInfoResponseDto,
 } from "./publication.dto.js";
 import {
@@ -68,6 +70,7 @@ import {
 export class PublicationController {
   constructor(
     private readonly createChannel: CreatePublicationChannel,
+    private readonly getCapabilities: GetPublishingCapabilities,
     private readonly listChannels: ListPublicationChannels,
     private readonly createIntent: CreatePublicationIntent,
     private readonly getIntent: GetPublicationIntent,
@@ -76,6 +79,12 @@ export class PublicationController {
     private readonly retryIntent: RetryPublicationIntent,
     private readonly getTikTokCreatorInfo: GetTikTokCreatorInfo,
   ) {}
+
+  @Get("publishing/capabilities")
+  @ApiOkResponse({ type: PublishingCapabilitiesResponseDto })
+  capabilities() {
+    return this.getCapabilities.execute();
+  }
 
   @Post("projects/:projectId/publication-channels")
   @ApiResponse({ status: 201, type: PublicationChannelResponseDto })

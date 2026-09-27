@@ -328,6 +328,13 @@ Unsafe retry имеет отдельный API-код `PUBLICATION_RETRY_UNSAFE`
 очищает старый remote status и reconciliation/metrics lease-маркеры, но только
 после fail-closed проверки отсутствия remote ID, результата и provider session.
 
-После изменения прошли API `231/231`, web `247/247`, typecheck, lint, production
+API теперь публикует эффективные runtime-возможности через
+`GET /api/v1/publishing/capabilities`: общий admission flag имеет приоритет над
+provider-specific flags, секреты и конфигурация наружу не выдаются. UI
+фильтрует каналы по этим возможностям, при выключенной публикации остаётся в
+режиме просмотра и fail-closed сохраняет историю даже при недоступном
+capability endpoint.
+
+После изменения прошли API `232/232`, web `248/248`, typecheck, lint, production
 build и двусторонняя проверка OpenAPI drift. Локально API работает на 3001, UI
 на 3100; порт 3000 не использовался.
