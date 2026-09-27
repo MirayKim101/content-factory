@@ -205,6 +205,13 @@ enum ImageSuggestionAttemptState {
   FAILED_FINAL
 }
 
+enum ClipGenerationIntentState {
+  QUEUED
+  PROCESSING
+  READY
+  FAILED_FINAL
+}
+
 enum EditorialComponentType {
   METADATA
   THUMBNAIL
@@ -285,6 +292,7 @@ model Project {
   publicationIntents         PublicationIntent[]
   twitchVodImport            TwitchVodCandidate?
   verticalRenderIntents      VerticalRenderIntent[]
+  clipGenerationIntents      ClipGenerationIntent[]
 }
 
 model VideoSource {
@@ -311,6 +319,7 @@ model VideoSource {
   editorialExportIntents  EditorialExportIntent[]
   sourceEditorialContexts SourceEditorialContext[]
   verticalRenderIntents   VerticalRenderIntent[]
+  clipGenerationIntents   ClipGenerationIntent[]
 
   @@unique([id, projectId, sourceVersion], map: "VideoSource_ai_exact_source_key")
 }
@@ -2002,6 +2011,60 @@ model VerticalApproval {
   approvedAt         DateTime             @default(now())
   createdAt          DateTime             @default(now())
   publicationIntents PublicationIntent[]
+}
+
+model ClipGenerationIntent {
+  id                      String                     @id @db.Uuid
+  idempotencyKey          String                     @unique
+  requestFingerprint      String
+  projectId               String                     @db.Uuid
+  project                 Project                    @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId                String                     @db.Uuid
+  sourceVersion           Int
+  source                  VideoSource                @relation(fields: [sourceId, projectId, sourceVersion], references: [id, projectId, sourceVersion], onDelete: Restrict, map: "ClipGenerationIntent_exact_source")
+  sourceTitle             String
+  sourceDurationMs        Int
+  transcript              Json
+  transcriptSha256        String
+  language                String
+  maximumSuggestions      Int
+  minimumClipDurationMs   Int
+  maximumClipDurationMs   Int
+  externalTransferAllowed Boolean
+  provider                String
+  model                   String
+  contractVersion         String
+  promptVersion           String
+  state                   ClipGenerationIntentState  @default(QUEUED)
+  providerRequestId       String?
+  failureCode             String?
+  failureMessage          String?
+  leaseToken              String?                    @unique
+  leaseExpiresAt          DateTime?
+  attemptCount            Int                        @default(0)
+  createdAt               DateTime                   @default(now())
+  updatedAt               DateTime                   @updatedAt
+  suggestions             ClipGenerationSuggestion[]
+
+  @@unique([id, projectId, sourceId, sourceVersion])
+  @@index([state, leaseExpiresAt, createdAt, id])
+  @@index([projectId, createdAt, id])
+}
+
+model ClipGenerationSuggestion {
+  id                    String               @id @db.Uuid
+  intentId              String               @db.Uuid
+  intent                ClipGenerationIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  ordinal               Int
+  startMs               Int
+  endMs                 Int
+  title                 String
+  rationale             String
+  confidenceBasisPoints Int
+  createdAt             DateTime             @default(now())
+
+  @@unique([intentId, ordinal])
+  @@index([intentId, startMs, endMs])
 }
 
 enum PublicationContentKind {
