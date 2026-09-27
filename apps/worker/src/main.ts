@@ -17,7 +17,7 @@ import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.j
 import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
 import {
   openAiClipGenerationConfig,
-  twitchVodMediaGatewayConfig,
+  twitchVodAutoIngestConfig,
   tiktokPublishingConfig,
   workerConfig,
   youtubePublishingConfig,
@@ -210,7 +210,7 @@ async function startTwitchWorker(): Promise<void> {
     : undefined;
   const workerId = `twitch-worker-${randomUUID()}`;
   const repository = new PgTwitchIngestionWorkerRepository(config.databaseUrl);
-  const mediaGateway = twitchVodMediaGatewayConfig(process.env);
+  const mediaGateway = twitchVodAutoIngestConfig(process.env);
   const ingestStorage = mediaGateway
     ? new S3WorkerObjectStorage(config.storage.bucket, config.storage)
     : undefined;

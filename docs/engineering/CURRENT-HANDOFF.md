@@ -42,6 +42,9 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   heartbeat. Ошибка БД или потеря lease отменяет HTTP/storage signal и не
   переводит чужую попытку в retry/failure; это закрывает зависание на медленном
   gateway между 8 MiB progress checkpoints.
+- Worker data plane имеет собственный `TWITCH_VOD_AUTO_INGEST_ENABLED` gate и
+  compose передаёт его явно. Одного включённого gateway больше недостаточно:
+  auto-ingest запускается только при обоих флагах и валидной конфигурации.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

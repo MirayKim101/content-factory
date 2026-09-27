@@ -23,7 +23,7 @@
 
 ```text
 API:     225/225 unit tests
-Worker:  236/236 unit tests
+Worker:  238/238 unit tests
 Web:     244/244 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { twitchVodMediaGatewayConfig } from "../src/config.js";
+import {
+  twitchVodAutoIngestConfig,
+  twitchVodMediaGatewayConfig,
+} from "../src/config.js";
 
 describe("twitchVodMediaGatewayConfig", () => {
   it("is default-off and requires secrets only when enabled", () => {
@@ -26,5 +29,31 @@ describe("twitchVodMediaGatewayConfig", () => {
         DEPLOYMENT_PROFILE: "local",
       }),
     ).toMatchObject({ baseUrl: "http://127.0.0.1:9999" });
+  });
+});
+
+describe("twitchVodAutoIngestConfig", () => {
+  it("keeps the worker data plane off unless its dedicated gate is enabled", () => {
+    expect(
+      twitchVodAutoIngestConfig({
+        TWITCH_VOD_MEDIA_GATEWAY_ENABLED: "1",
+        TWITCH_VOD_MEDIA_GATEWAY_BASE_URL: "https://media.example.test",
+        TWITCH_VOD_MEDIA_GATEWAY_TOKEN: "secret",
+      }),
+    ).toBeNull();
+  });
+
+  it("requires the media gateway gate and configuration when auto ingest is enabled", () => {
+    expect(() =>
+      twitchVodAutoIngestConfig({ TWITCH_VOD_AUTO_INGEST_ENABLED: "1" }),
+    ).toThrow("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_REQUIRED");
+    expect(
+      twitchVodAutoIngestConfig({
+        TWITCH_VOD_AUTO_INGEST_ENABLED: "1",
+        TWITCH_VOD_MEDIA_GATEWAY_ENABLED: "1",
+        TWITCH_VOD_MEDIA_GATEWAY_BASE_URL: "https://media.example.test",
+        TWITCH_VOD_MEDIA_GATEWAY_TOKEN: "secret",
+      }),
+    ).toMatchObject({ baseUrl: "https://media.example.test" });
   });
 });

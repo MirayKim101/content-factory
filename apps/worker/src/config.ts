@@ -102,6 +102,15 @@ export interface TwitchVodMediaGatewayConfig {
   timeoutMs: number;
 }
 
+export function twitchVodAutoIngestConfig(
+  environment: NodeJS.ProcessEnv,
+): TwitchVodMediaGatewayConfig | null {
+  if (environment.TWITCH_VOD_AUTO_INGEST_ENABLED?.trim() !== "1") return null;
+  const gateway = twitchVodMediaGatewayConfig(environment);
+  if (!gateway) throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_REQUIRED");
+  return gateway;
+}
+
 export function twitchVodMediaGatewayConfig(
   environment: NodeJS.ProcessEnv,
 ): TwitchVodMediaGatewayConfig | null {
