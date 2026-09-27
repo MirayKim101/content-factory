@@ -62,6 +62,7 @@
 
 ```text
 API:     234/234 unit tests
+Publication real disposable PostgreSQL: 1/1
 Worker:  259/259 unit tests
 Web:     251/251 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
@@ -73,6 +74,12 @@ Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints
 drift checks, API/worker/web typecheck и lint, API/worker/web production builds,
 Docker Compose config validation и runtime health на API 3001/UI 3100. Порт
 3000 не используется.
+
+Publication repository дополнительно воспроизведён на отдельной базе, созданной
+из всех migration SQL: exact idempotent replay/conflict, atomic channel revoke,
+session cleanup при operator-confirmed absence, retry reset и запрет ручного
+absence-resolution при наличии remote ID. База удалена guarded teardown после
+теста; restored runtime database не была test target.
 
 ## Fresh migration proof
 

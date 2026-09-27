@@ -434,6 +434,12 @@ TikTok Direct Post initiation защищён от дублирующего POST 
 `UNKNOWN_REMOTE_STATE`; HTTP 4xx остаётся доказанно pre-commit retry. Worker
 `259/259`; операторский recovery для случая без remote ID уже доступен в UI.
 
+Закрыт отсутствовавший в Stage 3A evidence gate: новый guarded integration test
+поднимает disposable PostgreSQL из всех migrations и проверяет реальный
+publication repository — replay/conflict, revoke/cancel, encrypted-session
+cleanup, operator resolution, retry и remote-ID fence. Проверка `1/1` прошла,
+одноразовая база удалена, restored DB не менялась.
+
 Добавлен bounded operator resolution для timeout без remote ID:
 `POST /api/v1/publications/:id/confirm-remote-absent` принимает только явное
 `remoteAbsenceConfirmed: true`. Serializable update разрешён исключительно из
