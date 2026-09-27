@@ -62,6 +62,16 @@ export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerR
     }
   }
 
+  async promoteReady(now: Date): Promise<number> {
+    const result = await this.pool.query(
+      `UPDATE "TwitchVodCandidate"
+          SET "state" = 'READY_FOR_INGEST', "updatedAt" = $1
+        WHERE "state" = 'WAITING_DELAY' AND "availableForIngestAt" <= $1`,
+      [now],
+    );
+    return result.rowCount ?? 0;
+  }
+
   async dueChannels(limit = 25): Promise<TwitchChannelReconciliationTarget[]> {
     const result = await this.pool.query<{
       id: string;

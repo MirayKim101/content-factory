@@ -16,6 +16,7 @@ export class ReconcileTwitchIngestion {
     failedChannels: string[];
   }> {
     const events = await this.repository.processInbox();
+    await this.repository.promoteReady(this.clock());
     const channels = await this.repository.dueChannels();
     const failedChannels: string[] = [];
     for (const channel of channels) {

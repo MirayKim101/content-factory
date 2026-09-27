@@ -29,6 +29,7 @@ export interface TwitchVideoProvider {
 
 export interface TwitchIngestionWorkerRepository {
   processInbox(limit?: number): Promise<number>;
+  promoteReady(now: Date): Promise<number>;
   dueChannels(limit?: number): Promise<TwitchChannelReconciliationTarget[]>;
   applyVodPage(
     channel: TwitchChannelReconciliationTarget,

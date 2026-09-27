@@ -44,6 +44,13 @@ describe("Twitch reconciliation", () => {
     const sql = String(query.mock.calls[0]![0]);
     expect(sql).not.toContain('"lastOfflineAt" IS NOT NULL');
     expect(sql).toContain("\"state\" = 'ENABLED'");
+    query.mockResolvedValueOnce({ rowCount: 2 });
+    const now = new Date("2026-09-28T00:00:00.000Z");
+    await expect(repository.promoteReady(now)).resolves.toBe(2);
+    expect(String(query.mock.calls[1]![0])).toContain(
+      '"availableForIngestAt" <= $1',
+    );
+    expect(query.mock.calls[1]![1]).toEqual([now]);
     await originalPool.end();
   });
 
@@ -110,6 +117,7 @@ describe("Twitch reconciliation", () => {
     const healthy = { ...failed, id: "channel-2", broadcasterId: "7331" };
     const repository: TwitchIngestionWorkerRepository = {
       processInbox: vi.fn(async () => 1),
+      promoteReady: vi.fn(async () => 0),
       dueChannels: vi.fn(async () => [failed, healthy]),
       applyVodPage: vi.fn(),
       close: vi.fn(),
