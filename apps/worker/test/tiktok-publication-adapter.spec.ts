@@ -86,8 +86,9 @@ describe("TikTokPublicationAdapter", () => {
       deps.transport,
       () => new Date("2026-09-28T00:02:00.000Z"),
     );
+    const controller = new AbortController();
     const error = await adapter
-      .publish(claim)
+      .publish(claim, controller.signal)
       .catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(PublicationOutcomeUnknownError);
     expect(error).toMatchObject({
@@ -98,6 +99,16 @@ describe("TikTokPublicationAdapter", () => {
       deps.transport.uploadChunk,
     );
     expect(deps.sessions.save.mock.calls[0]![0].expiresAt).toBeNull();
+    expect(deps.transport.creatorInfo).toHaveBeenCalledWith(
+      "access-token",
+      controller.signal,
+    );
+    expect(deps.transport.initiate).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
+    );
+    expect(deps.transport.uploadChunk).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
+    );
   });
 
   it("rejects stale consent when current creator capabilities changed", async () => {

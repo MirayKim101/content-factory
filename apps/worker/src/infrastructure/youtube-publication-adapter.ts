@@ -75,6 +75,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
         sessionUrl,
         accessToken,
         totalBytes: identity.sizeBytes,
+        signal,
       });
       signal?.throwIfAborted();
       if (progress.state === "COMPLETE")
@@ -96,6 +97,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
         totalBytes: identity.sizeBytes,
         contentType: identity.contentType,
         metadata: youtubeMetadata(claim.metadataSnapshot),
+        signal,
       });
       signal?.throwIfAborted();
       offset = 0n;
@@ -131,6 +133,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
         offset,
         totalBytes: identity.sizeBytes,
         contentType: identity.contentType,
+        signal,
       });
       if (progress.state === "COMPLETE")
         return this.result(progress.videoId, identity.sha256);

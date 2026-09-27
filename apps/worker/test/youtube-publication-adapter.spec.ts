@@ -66,7 +66,8 @@ describe("YoutubePublicationAdapter", () => {
       256 * 1024,
     );
 
-    await expect(adapter.publish(claim)).resolves.toEqual({
+    const controller = new AbortController();
+    await expect(adapter.publish(claim, controller.signal)).resolves.toEqual({
       adapterVersion: "youtube-resumable-v1",
       providerReceipt: { videoId: "video_42", mediaSha256: "a".repeat(64) },
       publicUrl: "https://www.youtube.com/watch?v=video_42",
@@ -80,6 +81,12 @@ describe("YoutubePublicationAdapter", () => {
     expect(saved.ciphertext.toString()).not.toContain("googleapis.com");
     expect(deps.sessions.advanceOffset).toHaveBeenCalledWith(
       expect.objectContaining({ expectedOffset: 0n, nextOffset: 3n }),
+    );
+    expect(deps.transport.initiate).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
+    );
+    expect(deps.transport.uploadChunk).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
     );
   });
 

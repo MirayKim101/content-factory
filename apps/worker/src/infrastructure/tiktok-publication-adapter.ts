@@ -56,7 +56,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
     });
-    const creator = await this.transport.creatorInfo(accessToken);
+    const creator = await this.transport.creatorInfo(accessToken, signal);
     signal?.throwIfAborted();
     const metadata = requireTikTokMetadata(claim.metadataSnapshot, creator);
 
@@ -80,7 +80,11 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       publishId = payload.publishId;
       uploadUrl = payload.uploadUrl;
       chunkSize = payload.chunkSize;
-      const remote = await this.transport.status({ accessToken, publishId });
+      const remote = await this.transport.status({
+        accessToken,
+        publishId,
+        signal,
+      });
       signal?.throwIfAborted();
       if (remote.status === "PUBLISH_COMPLETE")
         return this.result(publishId, identity.sha256, remote.postIds);
@@ -106,6 +110,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
         accessToken,
         totalBytes: identity.sizeBytes,
         ...metadata,
+        signal,
       });
       signal?.throwIfAborted();
       publishId = initialized.publishId;
@@ -155,6 +160,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
         contentType: identity.contentType as
           "video/mp4" | "video/quicktime" | "video/webm",
         final,
+        signal,
       });
       if (
         progress.nextOffset <= offset ||
