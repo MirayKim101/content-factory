@@ -159,6 +159,15 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     }
   }
 
+  async heartbeat(claim: PublicationClaim, now: Date): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "PublicationIntent" SET "startedAt" = $3, "updatedAt" = $3
+        WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $2`,
+      [claim.id, claim.attemptNumber, now],
+    );
+    return result.rowCount === 1;
+  }
+
   async finalizeDryRun(
     claim: PublicationClaim,
     result: PublicationAdapterResult,

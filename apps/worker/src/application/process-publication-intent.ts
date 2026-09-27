@@ -1,8 +1,11 @@
 import type {
+  PublicationClaim,
   PublicationProvider,
   PublicationWorkerRepository,
 } from "./publication.port.js";
 import { PublicationOutcomeUnknownError } from "./publication.port.js";
+
+const PUBLICATION_HEARTBEAT_INTERVAL_MS = 60_000;
 
 export class ProcessPublicationIntent {
   constructor(
@@ -14,6 +17,15 @@ export class ProcessPublicationIntent {
   async execute(intentId: string): Promise<boolean> {
     const claim = await this.repository.claim(intentId, this.clock());
     if (!claim) return false;
+    const heartbeat = this.startHeartbeat(claim);
+    try {
+      return await this.processClaim(claim);
+    } finally {
+      clearInterval(heartbeat);
+    }
+  }
+
+  private async processClaim(claim: PublicationClaim): Promise<boolean> {
     const provider = this.providers.find(
       (candidate) => candidate.platform === claim.platform,
     );
@@ -81,6 +93,24 @@ export class ProcessPublicationIntent {
       );
       throw error;
     }
+  }
+
+  private startHeartbeat(
+    claim: PublicationClaim,
+  ): ReturnType<typeof setInterval> {
+    let running = false;
+    const timer = setInterval(() => {
+      if (running) return;
+      running = true;
+      void this.repository
+        .heartbeat(claim, this.clock())
+        .catch(() => false)
+        .finally(() => {
+          running = false;
+        });
+    }, PUBLICATION_HEARTBEAT_INTERVAL_MS);
+    timer.unref();
+    return timer;
   }
 }
 

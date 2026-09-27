@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProcessPublicationIntent } from "../src/application/process-publication-intent.js";
 import type {
@@ -29,6 +29,7 @@ const claim: PublicationClaim = {
 function repository(): PublicationWorkerRepository {
   return {
     claim: vi.fn().mockResolvedValueOnce(claim).mockResolvedValue(null),
+    heartbeat: vi.fn().mockResolvedValue(true),
     finalizeDryRun: vi.fn(),
     finalizePublishedDirect: vi.fn(),
     releaseForRetry: vi.fn(),
@@ -41,7 +42,46 @@ function repository(): PublicationWorkerRepository {
   };
 }
 
+afterEach(() => vi.useRealTimers());
+
 describe("ProcessPublicationIntent", () => {
+  it("heartbeats a long-running publication claim until provider work settles", async () => {
+    vi.useFakeTimers();
+    const repo = repository();
+    let complete!: (value: {
+      adapterVersion: string;
+      providerReceipt: Record<string, unknown>;
+      publicUrl: null;
+    }) => void;
+    const publish = vi.fn(
+      () =>
+        new Promise<{
+          adapterVersion: string;
+          providerReceipt: Record<string, unknown>;
+          publicUrl: null;
+        }>((resolve) => {
+          complete = resolve;
+        }),
+    );
+    const processing = new ProcessPublicationIntent(repo, [
+      { platform: "LOCAL_DRY_RUN", publish },
+    ]).execute(claim.id);
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(repo.heartbeat).toHaveBeenCalledWith(claim, expect.any(Date));
+    complete({
+      adapterVersion: "local-test-v1",
+      providerReceipt: { externalWritePerformed: false },
+      publicUrl: null,
+    });
+    await expect(processing).resolves.toBe(true);
+
+    vi.mocked(repo.heartbeat).mockClear();
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(repo.heartbeat).not.toHaveBeenCalled();
+  });
+
   it("turns duplicate delivery into one durable dry-run result", async () => {
     const repo = repository();
     const process = new ProcessPublicationIntent(
