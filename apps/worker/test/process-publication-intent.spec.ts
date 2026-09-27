@@ -138,6 +138,39 @@ describe("ProcessPublicationIntent", () => {
     expect(repo.failFinal).not.toHaveBeenCalled();
   });
 
+  it("releases a hung publication attempt after its bounded deadline", async () => {
+    vi.useFakeTimers();
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    const publish = vi.fn(
+      (_claim: PublicationClaim, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          signal?.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          });
+        }),
+    );
+    const processing = new ProcessPublicationIntent(
+      repo,
+      [{ platform: "YOUTUBE", publish }],
+      undefined,
+      1_000,
+    ).execute(remoteClaim.id);
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await expect(processing).resolves.toBe(true);
+    expect(repo.releaseForRetry).toHaveBeenCalledWith(
+      remoteClaim,
+      "PUBLICATION_PROVIDER_ATTEMPT_FAILED",
+      "PUBLICATION_ATTEMPT_TIMEOUT",
+      expect.any(Date),
+    );
+    expect(repo.finalizePublishedDirect).not.toHaveBeenCalled();
+  });
+
   it("turns duplicate delivery into one durable dry-run result", async () => {
     const repo = repository();
     const process = new ProcessPublicationIntent(

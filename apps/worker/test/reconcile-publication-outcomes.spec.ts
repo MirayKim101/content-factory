@@ -205,6 +205,46 @@ describe("ReconcilePublicationOutcomes", () => {
     }
   });
 
+  it("releases a hung reconciliation claim after its bounded deadline", async () => {
+    vi.useFakeTimers();
+    try {
+      const repo = repository();
+      const onFailure = vi.fn();
+      const provider = {
+        platform: "YOUTUBE" as const,
+        publish: vi.fn(),
+        reconcile: vi.fn(
+          (_claim: PublicationReconciliationClaim, signal?: AbortSignal) =>
+            new Promise<never>((_resolve, reject) => {
+              signal?.addEventListener("abort", () => reject(signal.reason), {
+                once: true,
+              });
+            }),
+        ),
+      };
+      const execution = new ReconcilePublicationOutcomes(
+        repo,
+        [provider],
+        undefined,
+        onFailure,
+        1_000,
+      ).execute();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+
+      await expect(execution).resolves.toBe(0);
+      expect(repo.releaseReconciliationClaim).toHaveBeenCalledWith(claim);
+      expect(onFailure).toHaveBeenCalledWith(
+        claim.id,
+        expect.objectContaining({
+          message: "PUBLICATION_RECONCILIATION_TIMEOUT",
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("does not report reconciliation after a fenced update loses the lease", async () => {
     const repo = repository();
     vi.mocked(repo.refreshUnknownRemoteState).mockResolvedValue(false);

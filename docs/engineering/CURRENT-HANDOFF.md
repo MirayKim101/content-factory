@@ -345,3 +345,11 @@ provider flags: сохранённый, но выключенный внешни
 creator-info и capability response, поэтому read/write трактуют rollout flags
 одинаково. Коммиты `789be77`, `75a3936`, `ca56bde` запушены; локальный HEAD и
 origin подтверждены как `ca56bde6b0bd09308a70a814465410c1f6402e6a`.
+
+Publication worker больше не может бесконечно удерживать lease при зависшем
+provider request: upload attempt ограничен 30 минутами, reconciliation request
+— 60 секундами. Deadline использует тот же abort signal, что и lease fencing;
+при lease loss старый worker ничего не освобождает и не финализирует, а при
+обычном timeout resumable upload возвращается в bounded retry, reconciliation
+claim освобождается. После изменения прошли worker `241/241`, typecheck, lint и
+production build.

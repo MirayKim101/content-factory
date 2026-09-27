@@ -3,8 +3,10 @@ import type {
   PublicationProvider,
   PublicationWorkerRepository,
 } from "./publication.port.js";
+import { createAbortDeadline } from "./abort-deadline.js";
 
 const RECONCILIATION_HEARTBEAT_INTERVAL_MS = 30_000;
+const RECONCILIATION_ATTEMPT_TIMEOUT_MS = 60_000;
 class ReconciliationLeaseLostError extends Error {}
 
 export class ReconcilePublicationOutcomes {
@@ -16,6 +18,7 @@ export class ReconcilePublicationOutcomes {
       intentId: string,
       error: unknown,
     ) => void = () => undefined,
+    private readonly attemptTimeoutMs = RECONCILIATION_ATTEMPT_TIMEOUT_MS,
   ) {}
 
   async execute(limit = 100): Promise<number> {
@@ -37,8 +40,13 @@ export class ReconcilePublicationOutcomes {
       }
       const abortController = new AbortController();
       const heartbeat = this.startHeartbeat(claim, abortController);
+      const deadline = createAbortDeadline(
+        abortController.signal,
+        this.attemptTimeoutMs,
+        "PUBLICATION_RECONCILIATION_TIMEOUT",
+      );
       try {
-        const result = await provider.reconcile(claim, abortController.signal);
+        const result = await provider.reconcile(claim, deadline.signal);
         let applied: boolean;
         if (result.state === "PENDING")
           applied = await this.repository.refreshUnknownRemoteState(
@@ -60,15 +68,14 @@ export class ReconcilePublicationOutcomes {
           );
         if (applied) reconciled += 1;
       } catch (error) {
-        if (
-          abortController.signal.reason instanceof ReconciliationLeaseLostError
-        )
+        if (deadline.signal.reason instanceof ReconciliationLeaseLostError)
           continue;
         await this.repository
           .releaseReconciliationClaim(claim)
           .catch(() => undefined);
         this.onFailure(claim.id, error);
       } finally {
+        deadline.dispose();
         clearInterval(heartbeat);
       }
     }

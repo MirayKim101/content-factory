@@ -21,12 +21,15 @@
 - Publishing UI получает эффективные server-side capabilities без секретов;
   выключенные provider paths не выглядят доступными, а история остаётся
   читаемой в fail-closed режиме.
+- Publication uploads имеют 30-минутный bounded attempt deadline, status
+  reconciliation — 60-секундный deadline; lease-loss по-прежнему имеет
+  приоритет и не позволяет старому worker менять durable state.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     232/232 unit tests
-Worker:  239/239 unit tests
+Worker:  241/241 unit tests
 Web:     248/248 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

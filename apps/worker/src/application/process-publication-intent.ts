@@ -4,8 +4,10 @@ import type {
   PublicationWorkerRepository,
 } from "./publication.port.js";
 import { PublicationOutcomeUnknownError } from "./publication.port.js";
+import { createAbortDeadline } from "./abort-deadline.js";
 
 const PUBLICATION_HEARTBEAT_INTERVAL_MS = 60_000;
+const PUBLICATION_ATTEMPT_TIMEOUT_MS = 30 * 60_000;
 class PublicationLeaseLostError extends Error {}
 
 export class ProcessPublicationIntent {
@@ -13,6 +15,7 @@ export class ProcessPublicationIntent {
     private readonly repository: PublicationWorkerRepository,
     private readonly providers: readonly PublicationProvider[],
     private readonly clock: () => Date = () => new Date(),
+    private readonly attemptTimeoutMs = PUBLICATION_ATTEMPT_TIMEOUT_MS,
   ) {}
 
   async execute(intentId: string): Promise<boolean> {
@@ -20,9 +23,15 @@ export class ProcessPublicationIntent {
     if (!claim) return false;
     const abortController = new AbortController();
     const heartbeat = this.startHeartbeat(claim, abortController);
+    const deadline = createAbortDeadline(
+      abortController.signal,
+      this.attemptTimeoutMs,
+      "PUBLICATION_ATTEMPT_TIMEOUT",
+    );
     try {
-      return await this.processClaim(claim, abortController.signal);
+      return await this.processClaim(claim, deadline.signal);
     } finally {
+      deadline.dispose();
       clearInterval(heartbeat);
     }
   }
@@ -69,7 +78,7 @@ export class ProcessPublicationIntent {
       }
       return true;
     } catch (error) {
-      if (error instanceof PublicationLeaseLostError) return false;
+      if (signal.reason instanceof PublicationLeaseLostError) return false;
       if (externalWriteConfirmed) throw error;
       if (error instanceof PublicationOutcomeUnknownError) {
         await this.repository.markUnknownRemoteState(
