@@ -189,4 +189,35 @@ describe("CollectPublicationMetrics", () => {
       vi.useRealTimers();
     }
   });
+
+  it("aborts and releases active metrics collection during shutdown", async () => {
+    const repo = repository();
+    const onFailure = vi.fn();
+    const provider = {
+      platform: "YOUTUBE" as const,
+      publish: vi.fn(),
+      metrics: vi.fn(
+        (_claim: PublicationMetricsClaim, signal?: AbortSignal) =>
+          new Promise<never>((_resolve, reject) => {
+            signal?.addEventListener("abort", () => reject(signal.reason), {
+              once: true,
+            });
+          }),
+      ),
+    };
+    const collector = new CollectPublicationMetrics(
+      repo,
+      [provider],
+      undefined,
+      onFailure,
+    );
+
+    const execution = collector.execute();
+    await vi.waitFor(() => expect(provider.metrics).toHaveBeenCalledOnce());
+    collector.abortAll();
+
+    await expect(execution).resolves.toBe(0);
+    expect(repo.releaseMetricsClaim).toHaveBeenCalledWith(claim);
+    expect(onFailure).not.toHaveBeenCalled();
+  });
 });

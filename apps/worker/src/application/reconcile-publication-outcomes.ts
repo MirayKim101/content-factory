@@ -8,8 +8,12 @@ import { createAbortDeadline } from "./abort-deadline.js";
 const RECONCILIATION_HEARTBEAT_INTERVAL_MS = 30_000;
 const RECONCILIATION_ATTEMPT_TIMEOUT_MS = 60_000;
 class ReconciliationLeaseLostError extends Error {}
+class ReconciliationShutdownError extends Error {}
 
 export class ReconcilePublicationOutcomes {
+  private readonly activeControllers = new Set<AbortController>();
+  private stopping = false;
+
   constructor(
     private readonly repository: PublicationWorkerRepository,
     private readonly providers: readonly PublicationProvider[],
@@ -21,11 +25,26 @@ export class ReconcilePublicationOutcomes {
     private readonly attemptTimeoutMs = RECONCILIATION_ATTEMPT_TIMEOUT_MS,
   ) {}
 
+  abortAll(): void {
+    this.stopping = true;
+    for (const controller of this.activeControllers)
+      controller.abort(new ReconciliationShutdownError());
+  }
+
   async execute(limit = 100): Promise<number> {
+    if (this.stopping) return 0;
     const claims = await this.repository.unknownRemoteOutcomes(
       this.clock(),
       limit,
     );
+    if (this.stopping) {
+      await Promise.allSettled(
+        claims.map((claim) =>
+          this.repository.releaseReconciliationClaim(claim),
+        ),
+      );
+      return 0;
+    }
     let reconciled = 0;
     const pending: Array<{
       claim: PublicationReconciliationClaim;
@@ -45,6 +64,7 @@ export class ReconcilePublicationOutcomes {
         continue;
       }
       const abortController = new AbortController();
+      this.activeControllers.add(abortController);
       const heartbeat = this.startHeartbeat(claim, abortController);
       pending.push({
         claim,
@@ -85,6 +105,12 @@ export class ReconcilePublicationOutcomes {
       } catch (error) {
         if (deadline.signal.reason instanceof ReconciliationLeaseLostError)
           continue;
+        if (deadline.signal.reason instanceof ReconciliationShutdownError) {
+          await this.repository
+            .releaseReconciliationClaim(claim)
+            .catch(() => undefined);
+          continue;
+        }
         await this.repository
           .releaseReconciliationClaim(claim)
           .catch(() => undefined);
@@ -92,6 +118,7 @@ export class ReconcilePublicationOutcomes {
       } finally {
         deadline.dispose();
         clearInterval(heartbeat);
+        this.activeControllers.delete(abortController);
       }
     }
     return reconciled;

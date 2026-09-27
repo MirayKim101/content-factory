@@ -523,6 +523,8 @@ async function startPublicationWorker(): Promise<void> {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(recoveryTimer);
     processor.abortAll();
+    outcomeReconciler.abortAll();
+    metricsCollector.abortAll();
     shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);
       await worker.close().catch(() => undefined);

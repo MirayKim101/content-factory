@@ -253,6 +253,37 @@ describe("ReconcilePublicationOutcomes", () => {
     }
   });
 
+  it("aborts and releases active reconciliation during shutdown", async () => {
+    const repo = repository();
+    const onFailure = vi.fn();
+    const provider = {
+      platform: "YOUTUBE" as const,
+      publish: vi.fn(),
+      reconcile: vi.fn(
+        (_claim: PublicationReconciliationClaim, signal?: AbortSignal) =>
+          new Promise<never>((_resolve, reject) => {
+            signal?.addEventListener("abort", () => reject(signal.reason), {
+              once: true,
+            });
+          }),
+      ),
+    };
+    const reconciler = new ReconcilePublicationOutcomes(
+      repo,
+      [provider],
+      undefined,
+      onFailure,
+    );
+
+    const execution = reconciler.execute();
+    await vi.waitFor(() => expect(provider.reconcile).toHaveBeenCalledOnce());
+    reconciler.abortAll();
+
+    await expect(execution).resolves.toBe(0);
+    expect(repo.releaseReconciliationClaim).toHaveBeenCalledWith(claim);
+    expect(onFailure).not.toHaveBeenCalled();
+  });
+
   it("releases a hung reconciliation claim after its bounded deadline", async () => {
     vi.useFakeTimers();
     try {

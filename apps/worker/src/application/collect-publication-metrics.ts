@@ -7,8 +7,12 @@ import { createAbortDeadline } from "./abort-deadline.js";
 const METRICS_REQUEST_TIMEOUT_MS = 30_000;
 const METRICS_HEARTBEAT_INTERVAL_MS = 30_000;
 class MetricsLeaseLostError extends Error {}
+class MetricsShutdownError extends Error {}
 
 export class CollectPublicationMetrics {
+  private readonly activeControllers = new Set<AbortController>();
+  private stopping = false;
+
   constructor(
     private readonly repository: PublicationWorkerRepository,
     private readonly providers: readonly PublicationProvider[],
@@ -20,11 +24,24 @@ export class CollectPublicationMetrics {
     private readonly requestTimeoutMs = METRICS_REQUEST_TIMEOUT_MS,
   ) {}
 
+  abortAll(): void {
+    this.stopping = true;
+    for (const controller of this.activeControllers)
+      controller.abort(new MetricsShutdownError());
+  }
+
   async execute(limit = 50): Promise<number> {
+    if (this.stopping) return 0;
     const claims = await this.repository.claimPublishedForMetrics(
       this.clock(),
       limit,
     );
+    if (this.stopping) {
+      await Promise.allSettled(
+        claims.map((claim) => this.repository.releaseMetricsClaim(claim)),
+      );
+      return 0;
+    }
     let collected = 0;
     const pending: Array<{
       claim: (typeof claims)[number];
@@ -42,6 +59,7 @@ export class CollectPublicationMetrics {
         continue;
       }
       const abortController = new AbortController();
+      this.activeControllers.add(abortController);
       const heartbeat = this.startHeartbeat(claim, abortController);
       pending.push({
         claim,
@@ -64,11 +82,18 @@ export class CollectPublicationMetrics {
           collected += 1;
       } catch (error) {
         if (deadline.signal.reason instanceof MetricsLeaseLostError) continue;
+        if (deadline.signal.reason instanceof MetricsShutdownError) {
+          await this.repository
+            .releaseMetricsClaim(claim)
+            .catch(() => undefined);
+          continue;
+        }
         await this.repository.releaseMetricsClaim(claim).catch(() => undefined);
         this.onFailure(claim.id, error);
       } finally {
         deadline.dispose();
         clearInterval(heartbeat);
+        this.activeControllers.delete(abortController);
       }
     }
     return collected;

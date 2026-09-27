@@ -130,13 +130,16 @@
   возвращает в `QUEUED` без расхода retry budget. Если adapter уже пересёк
   remote commit boundary, его `PublicationOutcomeUnknownError` имеет приоритет:
   intent остаётся в quarantine для reconciliation и не повторяет POST.
+- Status reconciliation и metrics collection также имеют внешний shutdown
+  abort: read-only provider calls завершаются, все удерживаемые claims
+  освобождаются, а worker не ждёт последовательные 30/60-секундные deadlines.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  283/283 unit tests
+Worker:  285/285 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
