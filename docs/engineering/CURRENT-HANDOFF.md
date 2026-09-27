@@ -408,3 +408,10 @@ Serializable-транзакция переводит канал в `REVOKED` и 
 outcome/reconciliation контуре. Повторное создание того же exact channel
 является явной реактивацией, отменённые intents при этом не оживают. API
 `233/233`, web `250/250`; OpenAPI regenerated.
+
+Исправлен важный unknown-outcome инвариант ADR-010: общий deadline внешнего
+YouTube/TikTok attempt больше не переводит intent в автоматический retry.
+Timeout теперь фиксирует `UNKNOWN_REMOTE_STATE` даже без remote ID и блокирует
+повторный POST до provider/operator reconciliation. Обычные доказанно
+pre-commit transient failures продолжают использовать bounded backoff. Worker
+`256/256`, typecheck, lint и production build прошли.

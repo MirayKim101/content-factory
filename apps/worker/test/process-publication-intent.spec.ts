@@ -138,7 +138,7 @@ describe("ProcessPublicationIntent", () => {
     expect(repo.failFinal).not.toHaveBeenCalled();
   });
 
-  it("releases a hung publication attempt after its bounded deadline", async () => {
+  it("quarantines a timed-out external attempt instead of retrying its POST", async () => {
     vi.useFakeTimers();
     const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
     const repo = repository();
@@ -162,12 +162,15 @@ describe("ProcessPublicationIntent", () => {
     await vi.advanceTimersByTimeAsync(1_000);
 
     await expect(processing).resolves.toBe(true);
-    expect(repo.releaseForRetry).toHaveBeenCalledWith(
+    expect(repo.markUnknownRemoteState).toHaveBeenCalledWith(
       remoteClaim,
-      "PUBLICATION_PROVIDER_ATTEMPT_FAILED",
       "PUBLICATION_ATTEMPT_TIMEOUT",
+      expect.stringContaining("reconciliation"),
+      null,
+      "attempt_timeout",
       expect.any(Date),
     );
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
     expect(repo.finalizePublishedDirect).not.toHaveBeenCalled();
   });
 

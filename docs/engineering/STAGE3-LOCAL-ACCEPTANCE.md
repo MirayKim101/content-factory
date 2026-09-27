@@ -24,6 +24,9 @@
 - Publication uploads имеют 30-минутный bounded attempt deadline, status
   reconciliation — 60-секундный deadline; lease-loss по-прежнему имеет
   приоритет и не позволяет старому worker менять durable state.
+- Timeout внешнего publication attempt всегда переходит в
+  `UNKNOWN_REMOTE_STATE`, а не повторяет POST; новый вызов блокируется до
+  provider reconciliation даже когда remote ID ещё неизвестен.
 - YouTube и TikTok работают через независимые abort-aware provider pools с
   concurrency 1; очередь одного provider не потребляет permit другого. После
   трёх последовательных transient/network/5xx ошибок circuit открывается на

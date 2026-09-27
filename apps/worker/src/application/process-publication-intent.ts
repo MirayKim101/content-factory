@@ -91,6 +91,21 @@ export class ProcessPublicationIntent {
         );
         return true;
       }
+      if (
+        claim.platform !== "LOCAL_DRY_RUN" &&
+        signal.reason instanceof Error &&
+        signal.reason.message === "PUBLICATION_ATTEMPT_TIMEOUT"
+      ) {
+        await this.repository.markUnknownRemoteState(
+          claim,
+          "PUBLICATION_ATTEMPT_TIMEOUT",
+          "Provider attempt timed out; remote outcome requires reconciliation.",
+          null,
+          "attempt_timeout",
+          this.clock(),
+        );
+        return true;
+      }
       if (claim.platform !== "LOCAL_DRY_RUN") {
         await this.repository.releaseForRetry(
           claim,
