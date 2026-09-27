@@ -4,6 +4,14 @@ type VerticalRenderAvailability = Pick<VerticalRender, "cutPipelineJobId"> & {
   job: Pick<VerticalRender["job"], "state">;
 };
 
+const ACTIVE_RENDER_STATES = new Set(["QUEUED", "PROCESSING", "RETRY_WAIT"]);
+
+export function hasActiveVerticalRender(
+  renders: readonly VerticalRenderAvailability[],
+): boolean {
+  return renders.some((render) => ACTIVE_RENDER_STATES.has(render.job.state));
+}
+
 export function hasBlockingVerticalRender(
   cutPipelineJobId: string,
   renders: readonly VerticalRenderAvailability[],

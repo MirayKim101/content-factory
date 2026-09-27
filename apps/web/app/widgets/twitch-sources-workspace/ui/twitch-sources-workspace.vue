@@ -11,6 +11,7 @@ import {
   type TwitchSourceChannel,
   type TwitchVodCandidate,
 } from "~/shared/api/twitch-sources";
+import { hasActiveTwitchImport } from "~/widgets/twitch-sources-workspace/model/status";
 
 const config = useRuntimeConfig();
 const api = createTwitchSourcesApi(config.public.apiBasePath);
@@ -26,6 +27,7 @@ const selectedProjects = ref<Record<string, string>>({});
 const sourceMatchConfirmations = ref<Record<string, boolean>>({});
 const importNames = ref<Record<string, string>>({});
 const loading = ref(true);
+const refreshing = ref(false);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const notice = ref<string | null>(null);
@@ -53,6 +55,21 @@ const valid = computed(
     delayMinutes.value <= 1440,
 );
 
+function applyVodCandidates(
+  nextVodCandidates: TwitchVodCandidate[],
+  allProjects: Array<{ id: string; name: string }>,
+) {
+  vodCandidates.value = nextVodCandidates;
+  const linkedProjectIds = new Set(
+    nextVodCandidates.flatMap((candidate) =>
+      candidate.importedProjectId ? [candidate.importedProjectId] : [],
+    ),
+  );
+  sourceReadyProjects.value = allProjects
+    .filter((project) => !linkedProjectIds.has(project.id))
+    .map((project) => ({ label: project.name, value: project.id }));
+}
+
 async function load() {
   loading.value = true;
   error.value = null;
@@ -67,18 +84,7 @@ async function load() {
     ingestionEnabled.value = capabilities.ingestionEnabled;
     autoIngestEnabled.value = capabilities.autoIngestEnabled;
     channels.value = nextChannels;
-    vodCandidates.value = nextVodCandidates;
-    const linkedProjectIds = new Set(
-      nextVodCandidates.flatMap((candidate) =>
-        candidate.importedProjectId ? [candidate.importedProjectId] : [],
-      ),
-    );
-    sourceReadyProjects.value = allProjects
-      .filter((project) => !linkedProjectIds.has(project.id))
-      .map((project) => ({
-        label: project.name,
-        value: project.id,
-      }));
+    applyVodCandidates(nextVodCandidates, allProjects);
   } catch (cause) {
     error.value =
       cause instanceof Error
@@ -86,6 +92,22 @@ async function load() {
         : "Не удалось загрузить источники.";
   } finally {
     loading.value = false;
+  }
+}
+async function refreshImports() {
+  if (loading.value || saving.value || refreshing.value || document.hidden)
+    return;
+  refreshing.value = true;
+  try {
+    const [nextVodCandidates, allProjects] = await Promise.all([
+      api.listVodCandidates(),
+      listAllProjects(projectsApi, { status: "SOURCE_READY" }),
+    ]);
+    applyVodCandidates(nextVodCandidates, allProjects);
+  } catch {
+    // Background refresh stays silent; manual refresh surfaces errors.
+  } finally {
+    refreshing.value = false;
   }
 }
 async function linkProject(item: TwitchVodCandidate) {
@@ -262,17 +284,7 @@ let pollTimer: ReturnType<typeof setInterval> | undefined;
 onMounted(() => {
   void load();
   pollTimer = setInterval(() => {
-    if (
-      !saving.value &&
-      vodCandidates.value.some(
-        (item) =>
-          item.ingestIntent &&
-          ["QUEUED", "DOWNLOADING", "UPLOADING", "RETRY_WAIT"].includes(
-            item.ingestIntent.state,
-          ),
-      )
-    )
-      void load();
+    if (hasActiveTwitchImport(vodCandidates.value)) void refreshImports();
   }, 5000);
 });
 onUnmounted(() => pollTimer && clearInterval(pollTimer));

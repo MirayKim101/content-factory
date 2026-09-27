@@ -80,7 +80,7 @@
 API:     235/235 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  266/266 unit tests
-Web:     255/255 tests
+Web:     262/262 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints

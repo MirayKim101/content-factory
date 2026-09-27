@@ -490,3 +490,9 @@ link-local ranges, IPv6 loopback/ULA/mapped addresses и чужой path зак�
 fail-closed до обращения к Twitch. Невалидная URL также нормализуется в
 контролируемую config-ошибку. Worker `266/266`, typecheck, lint и build
 прошли.
+
+Vertical и Twitch workspaces теперь тихо обновляют активные фоновые задачи раз
+в пять секунд. Polling не показывает общий loading state, не запускает
+параллельные запросы, приостанавливается в скрытой вкладке и прекращается после
+terminal state. Ручное обновление по-прежнему показывает ошибки. Web `262/262`,
+typecheck, lint и production build прошли.

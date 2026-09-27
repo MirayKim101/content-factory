@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { hasBlockingVerticalRender } from "~/widgets/vertical-workspace/model/availability";
+import {
+  hasActiveVerticalRender,
+  hasBlockingVerticalRender,
+} from "~/widgets/vertical-workspace/model/availability";
 
-function render(state: "QUEUED" | "READY" | "FAILED_FINAL") {
+function render(
+  state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL",
+) {
   return {
     cutPipelineJobId: "cut-1",
     job: { state },
@@ -20,5 +25,17 @@ describe("vertical render availability", () => {
       false,
     );
     expect(hasBlockingVerticalRender("cut-2", [render("READY")])).toBe(false);
+  });
+
+  it("polls while a render can still change state", () => {
+    expect(hasActiveVerticalRender([render("QUEUED")])).toBe(true);
+    expect(hasActiveVerticalRender([render("PROCESSING")])).toBe(true);
+    expect(hasActiveVerticalRender([render("RETRY_WAIT")])).toBe(true);
+  });
+
+  it("stops polling after every render reaches a terminal state", () => {
+    expect(
+      hasActiveVerticalRender([render("READY"), render("FAILED_FINAL")]),
+    ).toBe(false);
   });
 });

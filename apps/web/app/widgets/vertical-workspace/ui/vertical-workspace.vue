@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Select from "primevue/select";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import {
   createMediaPipelineApi,
@@ -12,7 +12,10 @@ import {
   createVerticalRendersApi,
   type VerticalRender,
 } from "~/shared/api/vertical-renders";
-import { hasBlockingVerticalRender } from "~/widgets/vertical-workspace/model/availability";
+import {
+  hasActiveVerticalRender,
+  hasBlockingVerticalRender,
+} from "~/widgets/vertical-workspace/model/availability";
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -28,6 +31,7 @@ const renders = ref<VerticalRender[]>([]);
 const renderEnabled = ref(false);
 const selectedCutId = ref("");
 const loading = ref(true);
+const refreshing = ref(false);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const notice = ref<string | null>(null);
@@ -84,6 +88,33 @@ async function loadWorkspace() {
         : "Не удалось загрузить вертикальные ролики.";
   } finally {
     loading.value = false;
+  }
+}
+async function refreshWorkspace() {
+  const selectedProjectId = projectId.value;
+  if (
+    !selectedProjectId ||
+    loading.value ||
+    saving.value ||
+    refreshing.value ||
+    document.hidden
+  )
+    return;
+  refreshing.value = true;
+  try {
+    const [jobs, items] = await Promise.all([
+      cutsApi.listProjectJobs(selectedProjectId),
+      verticalApi.list(selectedProjectId),
+    ]);
+    if (projectId.value !== selectedProjectId) return;
+    cuts.value = jobs.items;
+    renders.value = items;
+    if (!availableCuts.value.some((cut) => cut.id === selectedCutId.value))
+      selectedCutId.value = availableCuts.value[0]?.id ?? "";
+  } catch {
+    // Background refresh stays silent; manual refresh surfaces errors.
+  } finally {
+    refreshing.value = false;
   }
 }
 async function createRender() {
@@ -165,6 +196,7 @@ function formatBytes(value?: string) {
 watch(projectId, () => {
   if (initialized.value) void loadWorkspace();
 });
+let refreshTimer: ReturnType<typeof setInterval> | undefined;
 onMounted(async () => {
   try {
     const [capabilities] = await Promise.all([
@@ -179,6 +211,12 @@ onMounted(async () => {
       cause instanceof Error ? cause.message : "Не удалось загрузить проекты.";
     loading.value = false;
   }
+  refreshTimer = setInterval(() => {
+    if (hasActiveVerticalRender(renders.value)) void refreshWorkspace();
+  }, 5000);
+});
+onUnmounted(() => {
+  if (refreshTimer) clearInterval(refreshTimer);
 });
 </script>
 
