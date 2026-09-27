@@ -482,3 +482,10 @@ Twitch ingestion/auto-ingest/media-gateway и vertical admission остаютс�
 key и audit row; активный/готовый render всё ещё блокирует дубликат. Поведение
 вынесено в тестируемую availability policy; web `255/255`, typecheck, lint и
 production build прошли.
+
+Ужесточена конфигурация Twitch EventSub callback. Раньше проверка HTTPS
+пропускала private IP и произвольный path; теперь разрешены только публичный
+host, порт 443 и точный `/api/v1/twitch/eventsub`. Localhost, RFC1918/shared/
+link-local ranges, IPv6 loopback/ULA/mapped addresses и чужой path закрыты
+fail-closed до обращения к Twitch. Worker `265/265`, typecheck, lint и build
+прошли.

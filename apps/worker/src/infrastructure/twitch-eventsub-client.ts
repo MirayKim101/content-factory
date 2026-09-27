@@ -1,3 +1,5 @@
+import { isIP } from "node:net";
+
 import type { TwitchEventSubProvider } from "../application/reconcile-twitch-eventsub.js";
 import type { TwitchAccessTokenProvider } from "./twitch-helix-client.js";
 
@@ -163,6 +165,7 @@ function parseSubscriptionPage(value: unknown): {
 
 function requirePublicHttpsCallback(value: string): string {
   const url = new URL(value);
+  const hostname = url.hostname.replace(/^\[|\]$/g, "").toLowerCase();
   if (
     url.protocol !== "https:" ||
     (url.port && url.port !== "443") ||
@@ -170,10 +173,40 @@ function requirePublicHttpsCallback(value: string): string {
     url.password ||
     url.search ||
     url.hash ||
-    !url.hostname ||
-    url.hostname === "localhost" ||
-    url.hostname === "127.0.0.1"
+    !hostname ||
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    isNonPublicIp(hostname) ||
+    url.pathname !== "/api/v1/twitch/eventsub"
   )
     throw new Error("CONFIG_TWITCH_EVENTSUB_CALLBACK_URL_INVALID");
   return url.toString();
+}
+
+function isNonPublicIp(hostname: string): boolean {
+  const version = isIP(hostname);
+  if (version === 0) return false;
+  if (version === 6) {
+    return (
+      hostname === "::" ||
+      hostname === "::1" ||
+      /^f[cd]/.test(hostname) ||
+      /^fe[89ab]/.test(hostname) ||
+      hostname.startsWith("::ffff:")
+    );
+  }
+  const octets = hostname.split(".").map(Number);
+  const first = octets[0] ?? -1;
+  const second = octets[1] ?? -1;
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
+  );
 }

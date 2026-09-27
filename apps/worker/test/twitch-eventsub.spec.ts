@@ -86,13 +86,21 @@ describe("Twitch EventSub reconciliation", () => {
     expect(request.mock.calls[2]![1]?.method).toBe("DELETE");
   });
 
-  it("rejects callbacks that are not public HTTPS on the default port", () => {
+  it.each([
+    "http://127.0.0.1:3001/api/v1/twitch/eventsub",
+    "https://10.0.0.5/api/v1/twitch/eventsub",
+    "https://172.20.0.5/api/v1/twitch/eventsub",
+    "https://192.168.1.5/api/v1/twitch/eventsub",
+    "https://[::1]/api/v1/twitch/eventsub",
+    "https://[fd00::1]/api/v1/twitch/eventsub",
+    "https://content.example.com/not-our-webhook",
+  ])("rejects a non-public or incorrectly routed callback: %s", (url) => {
     expect(
       () =>
         new TwitchEventSubClient(
           "client-id",
           { resolve: async () => "token" },
-          "http://127.0.0.1:3001/api/v1/twitch/eventsub",
+          url,
           "eventsub-secret-value",
         ),
     ).toThrow("CONFIG_TWITCH_EVENTSUB_CALLBACK_URL_INVALID");

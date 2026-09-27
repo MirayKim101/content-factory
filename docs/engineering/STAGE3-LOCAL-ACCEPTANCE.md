@@ -6,6 +6,9 @@
 
 - Twitch control plane: allowlist, signed EventSub inbox, reconciliation,
   delayed VOD candidates и revoke без удаления истории.
+- EventSub subscription callback допускает только HTTPS:443 на публичном host
+  и точном `/api/v1/twitch/eventsub`; localhost, private/shared/link-local IP,
+  IPv6 loopback/ULA и другой path отклоняются до provider request.
 - VOD data plane: default-off admission, idempotent durable intent, fenced
   lease/retry, persistent scratch, HTTP Range resume, byte fence, MP4 `ftyp`,
   SHA-256, multipart object upload и атомарный finalize.
@@ -76,7 +79,7 @@
 ```text
 API:     235/235 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  259/259 unit tests
+Worker:  265/265 unit tests
 Web:     255/255 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
