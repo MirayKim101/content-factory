@@ -61,6 +61,29 @@ export interface ProjectListQuery {
   cursor?: string;
   limit?: number;
 }
+
+export async function listAllProjects(
+  api: ProjectsApi,
+  query: Omit<ProjectListQuery, "cursor" | "limit"> = {},
+  signal?: AbortSignal,
+): Promise<LibraryPage["items"]> {
+  if (!api.listProjects) return [];
+  const projects: LibraryPage["items"] = [];
+  const seenCursors = new Set<string>();
+  let cursor: string | undefined;
+  do {
+    const page = await api.listProjects(
+      { ...query, cursor, limit: 50 },
+      signal,
+    );
+    projects.push(...page.items);
+    cursor = page.nextCursor ?? undefined;
+    if (!cursor) break;
+    if (seenCursors.has(cursor)) throw new Error("PROJECT_CURSOR_REPEATED");
+    seenCursors.add(cursor);
+  } while (cursor);
+  return projects;
+}
 interface CreateProjectsApiOptions {
   apiBasePath: unknown;
   fetchImplementation?: typeof fetch;

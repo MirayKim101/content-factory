@@ -10,7 +10,7 @@ import {
   createEditorialExportsApi,
   type EditorialExport,
 } from "~/shared/api/editorial-exports";
-import { createProjectsApi } from "~/shared/api/projects";
+import { createProjectsApi, listAllProjects } from "~/shared/api/projects";
 import {
   createPublicationsApi,
   type PublicationChannel,
@@ -144,8 +144,8 @@ function platformEnabled(platform: PublicationChannel["platform"]): boolean {
 }
 
 async function loadProjects(): Promise<void> {
-  const page = await projectsApi.listProjects!({ limit: 100 });
-  projects.value = page.items.map(({ id, name }) => ({ id, name }));
+  const allProjects = await listAllProjects(projectsApi);
+  projects.value = allProjects.map(({ id, name }) => ({ id, name }));
   const requested =
     typeof route.query.projectId === "string" ? route.query.projectId : "";
   projectId.value = projects.value.some((item) => item.id === requested)
@@ -1160,6 +1160,8 @@ onUnmounted(() => {
 
 <style scoped>
 .publication-page {
+  width: 100%;
+  min-width: 0;
   max-width: 92rem;
   min-height: 100vh;
   margin: 0 auto;
@@ -1195,6 +1197,7 @@ h1 {
   line-height: 1.08;
 }
 .intro {
+  width: 100%;
   max-width: 44rem;
   margin: 0;
   color: var(--cf-text-muted);
@@ -1202,8 +1205,24 @@ h1 {
 }
 .project-switcher {
   display: grid;
+  width: 100%;
   min-width: min(22rem, 100%);
+  max-width: 22rem;
   gap: 0.35rem;
+}
+.project-switcher :deep(.p-select),
+.schedule-form :deep(.p-select),
+.schedule-form :deep(.p-inputtext),
+.schedule-form :deep(.p-textarea) {
+  width: 100%;
+  min-width: 0;
+}
+.project-switcher :deep(.p-select-label),
+.schedule-form :deep(.p-select-label) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .project-switcher > span,
 .schedule-form label > span {
@@ -1248,7 +1267,8 @@ h1 {
 }
 .summary article {
   display: grid;
-  grid-template-columns: 1fr auto;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.1rem 1rem;
   padding: 1rem 1.1rem;
   border: 1px solid var(--cf-border);
@@ -1274,6 +1294,9 @@ h1 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(19rem, 24rem);
   gap: 1rem;
+}
+.workspace-grid > * {
+  min-width: 0;
 }
 .queue-panel,
 .composer {
@@ -1517,11 +1540,15 @@ h2 {
   }
 }
 @media (max-width: 700px) {
+  .publication-page {
+    padding-inline: 1rem;
+  }
   .page-header {
     display: grid;
   }
   .project-switcher {
     min-width: 0;
+    max-width: 100%;
   }
   .summary {
     grid-template-columns: 1fr;
@@ -1532,6 +1559,18 @@ h2 {
   .publication-card time {
     display: flex;
     justify-content: space-between;
+  }
+  .section-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+  .section-heading > :last-child {
+    justify-self: start;
+  }
+  .channel-management article {
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
   .title-row {
     display: grid;

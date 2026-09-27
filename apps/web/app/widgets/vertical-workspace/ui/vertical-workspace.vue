@@ -7,7 +7,7 @@ import {
   createMediaPipelineApi,
   type PipelineJob,
 } from "~/shared/api/media-pipeline";
-import { createProjectsApi } from "~/shared/api/projects";
+import { createProjectsApi, listAllProjects } from "~/shared/api/projects";
 import {
   createVerticalRendersApi,
   type VerticalRender,
@@ -52,8 +52,8 @@ const summary = computed(() => ({
 }));
 
 async function loadProjects() {
-  const page = await projectsApi.listProjects!({ limit: 100 });
-  projects.value = page.items.map(({ id, name }) => ({ id, name }));
+  const allProjects = await listAllProjects(projectsApi);
+  projects.value = allProjects.map(({ id, name }) => ({ id, name }));
   const requested =
     typeof route.query.projectId === "string" ? route.query.projectId : "";
   projectId.value = projects.value.some((item) => item.id === requested)

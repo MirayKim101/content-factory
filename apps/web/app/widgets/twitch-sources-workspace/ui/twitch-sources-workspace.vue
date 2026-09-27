@@ -5,7 +5,7 @@ import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
-import { createProjectsApi } from "~/shared/api/projects";
+import { createProjectsApi, listAllProjects } from "~/shared/api/projects";
 import {
   createTwitchSourcesApi,
   type TwitchSourceChannel,
@@ -56,12 +56,12 @@ async function load() {
   loading.value = true;
   error.value = null;
   try {
-    const [capabilities, nextChannels, nextVodCandidates, projectPage] =
+    const [capabilities, nextChannels, nextVodCandidates, allProjects] =
       await Promise.all([
         api.capabilities(),
         api.list(),
         api.listVodCandidates(),
-        projectsApi.listProjects!({ status: "SOURCE_READY", limit: 100 }),
+        listAllProjects(projectsApi, { status: "SOURCE_READY" }),
       ]);
     autoIngestEnabled.value = capabilities.autoIngestEnabled;
     channels.value = nextChannels;
@@ -71,7 +71,7 @@ async function load() {
         candidate.importedProjectId ? [candidate.importedProjectId] : [],
       ),
     );
-    sourceReadyProjects.value = projectPage.items
+    sourceReadyProjects.value = allProjects
       .filter((project) => !linkedProjectIds.has(project.id))
       .map((project) => ({
         label: project.name,

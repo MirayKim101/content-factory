@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createProjectsApi } from "~/shared/api/projects";
+import { createProjectsApi, listAllProjects } from "~/shared/api/projects";
 
 const readyProject = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -16,6 +16,7 @@ const readyProject = {
     id: "00000000-0000-4000-8000-000000000002",
     status: "READY",
     sourceVersion: 1,
+    addedAt: "2026-09-01T00:00:00.000Z",
     originalFilename: "x.mp4",
     contentType: "video/mp4",
     sizeBytes: "1",
@@ -30,6 +31,7 @@ const readyProject = {
       revision: 1,
     },
   },
+  cutJobCounts: { total: 0, ready: 0, failed: 0 },
   artifact: {
     id: "00000000-0000-4000-8000-000000000003",
     role: "SOURCE",
@@ -116,6 +118,52 @@ describe("projects API adapter", () => {
           attested: true,
         }),
       }),
+    );
+  });
+
+  it("loads project selectors through contract-sized cursor pages", async () => {
+    const secondProject = {
+      ...readyProject,
+      id: "00000000-0000-4000-8000-000000000011",
+      source: {
+        ...readyProject.source,
+        id: "00000000-0000-4000-8000-000000000012",
+      },
+      artifact: {
+        ...readyProject.artifact,
+        id: "00000000-0000-4000-8000-000000000013",
+        lineageSourceId: "00000000-0000-4000-8000-000000000012",
+      },
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [readyProject], nextCursor: "next-page" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [secondProject], nextCursor: null }),
+      });
+    const api = createProjectsApi({
+      apiBasePath: "/api/v1",
+      fetchImplementation: fetchMock,
+    });
+
+    await expect(
+      listAllProjects(api, { status: "SOURCE_READY" }),
+    ).resolves.toHaveLength(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "/api/v1/projects?status=SOURCE_READY&limit=50",
+      expect.any(Object),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/v1/projects?status=SOURCE_READY&cursor=next-page&limit=50",
+      expect.any(Object),
     );
   });
 });
