@@ -10930,6 +10930,25 @@
         "tags": ["twitch-ingestion"]
       }
     },
+    "/api/v1/twitch/channels/{id}/revoke": {
+      "post": {
+        "operationId": "TwitchIngestionController_revoke",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwitchIngestChannelResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
+      }
+    },
     "/api/v1/twitch/eventsub": {
       "post": {
         "operationId": "TwitchIngestionController_event",

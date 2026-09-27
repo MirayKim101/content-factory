@@ -19,15 +19,16 @@ const navigation = [
     label: "Производство",
     items: [
       { to: "/horizontal", label: "Контент-план", marker: "01" },
-      { to: "/library", label: "Медиатека", marker: "02" },
-      { to: "/montage-assets", label: "Материалы", marker: "03" },
-      { to: "/vertical", label: "Вертикальные", marker: "04" },
-      { to: "/publications", label: "Публикации", marker: "05" },
+      { to: "/sources", label: "Источники Twitch", marker: "02" },
+      { to: "/library", label: "Медиатека", marker: "03" },
+      { to: "/montage-assets", label: "Материалы", marker: "04" },
+      { to: "/vertical", label: "Вертикальные", marker: "05" },
+      { to: "/publications", label: "Публикации", marker: "06" },
     ],
   },
   {
     label: "Настройки",
-    items: [{ to: "/creator-context", label: "Профиль автора", marker: "06" }],
+    items: [{ to: "/creator-context", label: "Профиль автора", marker: "07" }],
   },
 ] as const;
 function close(restoreFocus = false): void {

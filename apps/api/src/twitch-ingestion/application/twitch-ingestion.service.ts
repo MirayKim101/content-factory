@@ -59,6 +59,16 @@ export class TwitchIngestionService {
     });
   }
 
+  async revokeChannel(id: string) {
+    const updated = await this.prisma.twitchIngestChannel.updateMany({
+      where: { id, state: "ENABLED" },
+      data: { state: "REVOKED" },
+    });
+    if (updated.count === 0)
+      return this.prisma.twitchIngestChannel.findUnique({ where: { id } });
+    return this.prisma.twitchIngestChannel.findUnique({ where: { id } });
+  }
+
   async receive(
     headers: TwitchHeaders,
     rawBody: Buffer | undefined,

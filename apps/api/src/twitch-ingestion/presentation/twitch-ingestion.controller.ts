@@ -8,6 +8,9 @@ import {
   Header,
   HttpCode,
   Post,
+  Param,
+  ParseUUIDPipe,
+  NotFoundException,
   Req,
   ServiceUnavailableException,
   UnprocessableEntityException,
@@ -42,6 +45,15 @@ export class TwitchIngestionController {
   @ApiResponse({ status: 201, type: TwitchIngestChannelResponseDto })
   channel(@Body() body: CreateTwitchIngestChannelDto) {
     return this.service.createChannel(body);
+  }
+
+  @Post("channels/:id/revoke")
+  @ApiOkResponse({ type: TwitchIngestChannelResponseDto })
+  async revoke(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
+    const channel = await this.service.revokeChannel(id);
+    if (!channel)
+      throw new NotFoundException({ code: "TWITCH_CHANNEL_NOT_FOUND" });
+    return channel;
   }
 
   @Post("eventsub")

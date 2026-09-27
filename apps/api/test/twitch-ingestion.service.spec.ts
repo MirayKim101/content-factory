@@ -29,6 +29,7 @@ function repository(existingHash?: string) {
       findUnique: vi.fn(async () => ({ id: "channel-1", state: "ENABLED" })),
       findMany: vi.fn(),
       upsert: vi.fn(),
+      updateMany: vi.fn(async () => ({ count: 1 })),
     },
     twitchEventInbox: {
       findUnique: vi.fn(async () =>
@@ -125,5 +126,23 @@ describe("TwitchIngestionService", () => {
         now,
       ),
     ).rejects.toBeInstanceOf(TwitchEventConflictError);
+  });
+
+  it("revokes admission without deleting channel history", async () => {
+    const prisma = repository();
+    prisma.twitchIngestChannel.findUnique.mockResolvedValue({
+      id: "channel-1",
+      state: "REVOKED",
+    });
+    const service = new TwitchIngestionService(prisma as never);
+
+    await expect(service.revokeChannel("channel-1")).resolves.toEqual({
+      id: "channel-1",
+      state: "REVOKED",
+    });
+    expect(prisma.twitchIngestChannel.updateMany).toHaveBeenCalledWith({
+      where: { id: "channel-1", state: "ENABLED" },
+      data: { state: "REVOKED" },
+    });
   });
 });
