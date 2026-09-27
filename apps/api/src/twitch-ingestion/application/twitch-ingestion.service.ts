@@ -78,6 +78,58 @@ export class TwitchIngestionService {
     return candidate;
   }
 
+  async linkVodCandidateToProject(id: string, projectId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const [candidate, project] = await Promise.all([
+        tx.twitchVodCandidate.findUnique({ where: { id } }),
+        tx.project.findUnique({
+          where: { id: projectId },
+          include: { source: { select: { status: true } } },
+        }),
+      ]);
+      if (!candidate) return null;
+      if (
+        candidate.state === "IMPORTED" &&
+        candidate.importedProjectId === projectId
+      )
+        return tx.twitchVodCandidate.findUnique({
+          where: { id },
+          include: {
+            channel: {
+              select: {
+                broadcasterLogin: true,
+                broadcasterDisplayName: true,
+              },
+            },
+          },
+        });
+      if (
+        candidate.state !== "READY_FOR_INGEST" ||
+        candidate.importedProjectId ||
+        !project ||
+        project.status !== "SOURCE_READY" ||
+        project.source?.status !== "READY"
+      )
+        throw new TwitchVodConflictError();
+      const linked = await tx.twitchVodCandidate.updateMany({
+        where: { id, state: "READY_FOR_INGEST", importedProjectId: null },
+        data: { state: "IMPORTED", importedProjectId: projectId },
+      });
+      if (linked.count !== 1) throw new TwitchVodConflictError();
+      return tx.twitchVodCandidate.findUnique({
+        where: { id },
+        include: {
+          channel: {
+            select: {
+              broadcasterLogin: true,
+              broadcasterDisplayName: true,
+            },
+          },
+        },
+      });
+    });
+  }
+
   createChannel(input: {
     broadcasterId: string;
     broadcasterLogin: string;

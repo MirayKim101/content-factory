@@ -1,5 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsInt, IsString, Length, Matches, Max, Min } from "class-validator";
+import {
+  IsInt,
+  IsString,
+  IsUUID,
+  Length,
+  Matches,
+  Max,
+  Min,
+} from "class-validator";
 
 export class CreateTwitchIngestChannelDto {
   @ApiProperty()
@@ -66,4 +74,10 @@ export class TwitchVodCandidateResponseDto {
   importedProjectId!: string | null;
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: Date;
   @ApiProperty({ type: String, format: "date-time" }) updatedAt!: Date;
+}
+
+export class LinkTwitchVodProjectDto {
+  @ApiProperty({ type: String, format: "uuid" })
+  @IsUUID("4")
+  projectId!: string;
 }

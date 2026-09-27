@@ -24,7 +24,7 @@ const body = {
 const rawBody = Buffer.from(JSON.stringify(body));
 
 function repository(existingHash?: string) {
-  return {
+  const prisma = {
     twitchIngestChannel: {
       findUnique: vi.fn(async () => ({ id: "channel-1", state: "ENABLED" })),
       findMany: vi.fn(),
@@ -42,9 +42,25 @@ function repository(existingHash?: string) {
     twitchVodCandidate: {
       findMany: vi.fn(async () => []),
       updateMany: vi.fn(async () => ({ count: 1 })),
-      findUnique: vi.fn(async () => ({ id: "vod-1", state: "IGNORED" })),
+      findUnique: vi.fn(async () => ({
+        id: "vod-1",
+        state: "IGNORED",
+        importedProjectId: null as string | null,
+      })),
+    },
+    project: {
+      findUnique: vi.fn(async () => ({
+        id: "project-1",
+        status: "SOURCE_READY",
+        source: { status: "READY" },
+      })),
     },
   };
+  return Object.assign(prisma, {
+    $transaction: vi.fn(async (work: (tx: typeof prisma) => unknown) =>
+      work(prisma),
+    ),
+  });
 }
 
 function headers(signature = sign(rawBody)) {
@@ -175,6 +191,7 @@ describe("TwitchIngestionService", () => {
     await expect(service.ignoreVodCandidate("vod-1")).resolves.toEqual({
       id: "vod-1",
       state: "IGNORED",
+      importedProjectId: null,
     });
     expect(prisma.twitchVodCandidate.updateMany).toHaveBeenCalledWith({
       where: {
@@ -182,6 +199,37 @@ describe("TwitchIngestionService", () => {
         state: { in: ["WAITING_DELAY", "READY_FOR_INGEST"] },
       },
       data: { state: "IGNORED" },
+    });
+  });
+
+  it("links a ready VOD to an existing source-ready project", async () => {
+    const prisma = repository();
+    prisma.twitchVodCandidate.findUnique
+      .mockResolvedValueOnce({
+        id: "vod-1",
+        state: "READY_FOR_INGEST",
+        importedProjectId: null,
+      })
+      .mockResolvedValueOnce({
+        id: "vod-1",
+        state: "IMPORTED",
+        importedProjectId: "project-1",
+      });
+    const service = new TwitchIngestionService(prisma as never);
+    await expect(
+      service.linkVodCandidateToProject("vod-1", "project-1"),
+    ).resolves.toEqual({
+      id: "vod-1",
+      state: "IMPORTED",
+      importedProjectId: "project-1",
+    });
+    expect(prisma.twitchVodCandidate.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "vod-1",
+        state: "READY_FOR_INGEST",
+        importedProjectId: null,
+      },
+      data: { state: "IMPORTED", importedProjectId: "project-1" },
     });
   });
 });

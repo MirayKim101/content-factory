@@ -28,6 +28,7 @@ import {
 } from "../domain/twitch-ingestion.js";
 import {
   CreateTwitchIngestChannelDto,
+  LinkTwitchVodProjectDto,
   TwitchIngestChannelResponseDto,
   TwitchVodCandidateResponseDto,
 } from "./twitch-ingestion.dto.js";
@@ -67,6 +68,33 @@ export class TwitchIngestionController {
         throw new ConflictException({
           code: "TWITCH_VOD_CONFLICT",
           message: "Imported Twitch VOD cannot be ignored.",
+        });
+      throw error;
+    }
+  }
+
+  @Post("vod-candidates/:id/link-project")
+  @ApiOkResponse({ type: TwitchVodCandidateResponseDto })
+  async linkVodProject(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body() body: LinkTwitchVodProjectDto,
+  ) {
+    try {
+      const candidate = await this.service.linkVodCandidateToProject(
+        id,
+        body.projectId,
+      );
+      if (!candidate)
+        throw new NotFoundException({
+          code: "TWITCH_VOD_NOT_FOUND",
+          message: "Twitch VOD candidate was not found.",
+        });
+      return candidate;
+    } catch (error) {
+      if (error instanceof TwitchVodConflictError)
+        throw new ConflictException({
+          code: "TWITCH_VOD_LINK_CONFLICT",
+          message: "Only a ready VOD and a source-ready project can be linked.",
         });
       throw error;
     }

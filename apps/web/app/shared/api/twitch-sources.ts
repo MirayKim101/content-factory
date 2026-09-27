@@ -87,6 +87,17 @@ export function createTwitchSourcesApi(
         { method: "POST" },
         vodCandidateSchema,
       ),
+    linkVodProject: (id: string, projectId: string) =>
+      request(
+        fetcher,
+        `${base}/twitch/vod-candidates/${encodeURIComponent(id)}/link-project`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId }),
+        },
+        vodCandidateSchema,
+      ),
   };
 }
 
