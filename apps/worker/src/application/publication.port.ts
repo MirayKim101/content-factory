@@ -26,6 +26,7 @@ export interface PublicationAdapterResult {
 
 export interface PublicationReconciliationClaim extends PublicationClaim {
   remotePublicationId: string;
+  reconciliationLeaseToken: string;
 }
 
 export type PublicationReconciliationResult =
@@ -98,6 +99,9 @@ export interface PublicationWorkerRepository {
     claim: PublicationReconciliationClaim,
     result: Extract<PublicationReconciliationResult, { state: "FAILED" }>,
     now: Date,
+  ): Promise<void>;
+  releaseReconciliationClaim(
+    claim: PublicationReconciliationClaim,
   ): Promise<void>;
 }
 

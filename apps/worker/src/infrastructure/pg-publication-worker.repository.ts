@@ -369,56 +369,90 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     now: Date,
     limit = 100,
   ): Promise<PublicationReconciliationClaim[]> {
-    const result = await this.pool.query<{
-      id: string;
-      channelId: string;
-      externalChannelRef: string;
-      platform: PublicationClaim["platform"];
-      contentKind: PublicationClaim["contentKind"];
-      contentId: string;
-      contentObjectKey: string;
-      contentSizeBytes: string;
-      contentSha256: string;
-      contentType: string;
-      metadataSnapshot: Record<string, unknown>;
-      attemptCount: number;
-      remotePublicationId: string;
-    }>(
-      `SELECT i."id", i."channelId", c."externalChannelRef",
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const boundedLimit = Math.max(1, Math.min(500, Math.trunc(limit)));
+      const selected = await client.query<{ id: string }>(
+        `SELECT "id" FROM "PublicationIntent"
+          WHERE "state" = 'UNKNOWN_REMOTE_STATE'
+            AND "remotePublicationId" IS NOT NULL
+            AND "updatedAt" <= $1::timestamp - interval '30 seconds'
+            AND ("reconciliationLeaseExpiresAt" IS NULL OR "reconciliationLeaseExpiresAt" <= $1)
+          ORDER BY "updatedAt" ASC, "id" ASC
+          LIMIT $2 FOR UPDATE SKIP LOCKED`,
+        [now, boundedLimit],
+      );
+      if (selected.rows.length === 0) {
+        await client.query("COMMIT");
+        return [];
+      }
+      const ids = selected.rows.map((row) => row.id);
+      await client.query(
+        `UPDATE "PublicationIntent"
+            SET "reconciliationLeaseToken" = gen_random_uuid()::text,
+                "reconciliationLeaseExpiresAt" = $2::timestamp + interval '2 minutes'
+          WHERE "id" = ANY($1::uuid[])`,
+        [ids, now],
+      );
+      const result = await client.query<{
+        id: string;
+        channelId: string;
+        externalChannelRef: string;
+        platform: PublicationClaim["platform"];
+        contentKind: PublicationClaim["contentKind"];
+        contentId: string;
+        contentObjectKey: string;
+        contentSizeBytes: string;
+        contentSha256: string;
+        contentType: string;
+        metadataSnapshot: Record<string, unknown>;
+        attemptCount: number;
+        remotePublicationId: string;
+        reconciliationLeaseToken: string;
+      }>(
+        `SELECT i."id", i."channelId", c."externalChannelRef",
               i."platform", i."contentKind",
               COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
               COALESCE(ar."objectKey", vr."objectKey") AS "contentObjectKey",
               COALESCE(ar."sizeBytes", vr."sizeBytes")::text AS "contentSizeBytes",
               COALESCE(ar."sha256", vr."sha256") AS "contentSha256",
               COALESCE(ar."contentType", vr."contentType") AS "contentType",
-              i."metadataSnapshot", i."attemptCount", i."remotePublicationId"
+              i."metadataSnapshot", i."attemptCount", i."remotePublicationId",
+              i."reconciliationLeaseToken"
          FROM "PublicationIntent" i
          JOIN "PublicationChannel" c ON c."id" = i."channelId"
          LEFT JOIN "EditorialExportResult" er ON er."id" = i."exportResultId"
          LEFT JOIN "MediaArtifact" ar ON ar."id" = er."artifactId"
          LEFT JOIN "VerticalRenderResult" var ON var."id" = i."verticalResultId"
          LEFT JOIN "MediaArtifact" vr ON vr."id" = var."artifactId"
-        WHERE i."state" = 'UNKNOWN_REMOTE_STATE'
-          AND i."remotePublicationId" IS NOT NULL
-          AND i."updatedAt" <= $1::timestamp - interval '30 seconds'
-        ORDER BY i."updatedAt" ASC, i."id" ASC LIMIT $2`,
-      [now, Math.max(1, Math.min(500, Math.trunc(limit)))],
-    );
-    return result.rows.map((row) => ({
-      id: row.id,
-      channelId: row.channelId,
-      externalChannelRef: row.externalChannelRef,
-      platform: row.platform,
-      contentKind: row.contentKind,
-      contentId: row.contentId,
-      contentObjectKey: row.contentObjectKey,
-      contentSizeBytes: BigInt(row.contentSizeBytes),
-      contentSha256: row.contentSha256,
-      contentType: row.contentType,
-      metadataSnapshot: row.metadataSnapshot,
-      attemptNumber: row.attemptCount,
-      remotePublicationId: row.remotePublicationId,
-    }));
+        WHERE i."id" = ANY($1::uuid[])
+        ORDER BY i."updatedAt" ASC, i."id" ASC`,
+        [ids],
+      );
+      await client.query("COMMIT");
+      return result.rows.map((row) => ({
+        id: row.id,
+        channelId: row.channelId,
+        externalChannelRef: row.externalChannelRef,
+        platform: row.platform,
+        contentKind: row.contentKind,
+        contentId: row.contentId,
+        contentObjectKey: row.contentObjectKey,
+        contentSizeBytes: BigInt(row.contentSizeBytes),
+        contentSha256: row.contentSha256,
+        contentType: row.contentType,
+        metadataSnapshot: row.metadataSnapshot,
+        attemptNumber: row.attemptCount,
+        remotePublicationId: row.remotePublicationId,
+        reconciliationLeaseToken: row.reconciliationLeaseToken,
+      }));
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async refreshUnknownRemoteState(
@@ -427,15 +461,18 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     now: Date,
   ): Promise<void> {
     await this.pool.query(
-      `UPDATE "PublicationIntent" SET "remoteStatus" = $2, "updatedAt" = $3
+      `UPDATE "PublicationIntent" SET "remoteStatus" = $2, "updatedAt" = $3,
+              "reconciliationLeaseToken" = NULL, "reconciliationLeaseExpiresAt" = NULL
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
-          AND "attemptCount" = $4 AND "remotePublicationId" = $5`,
+          AND "attemptCount" = $4 AND "remotePublicationId" = $5
+          AND "reconciliationLeaseToken" = $6`,
       [
         claim.id,
         remoteStatus.slice(0, 120),
         now,
         claim.attemptNumber,
         claim.remotePublicationId,
+        claim.reconciliationLeaseToken,
       ],
     );
   }
@@ -452,15 +489,18 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         `UPDATE "PublicationIntent"
             SET "state" = 'PUBLISHED', "remoteStatus" = $2,
                 "failureCode" = NULL, "failureMessage" = NULL,
-                "finishedAt" = $3, "updatedAt" = $3
+                "finishedAt" = $3, "updatedAt" = $3,
+                "reconciliationLeaseToken" = NULL, "reconciliationLeaseExpiresAt" = NULL
           WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
-            AND "attemptCount" = $4 AND "remotePublicationId" = $5`,
+            AND "attemptCount" = $4 AND "remotePublicationId" = $5
+            AND "reconciliationLeaseToken" = $6`,
         [
           claim.id,
           result.remoteStatus.slice(0, 120),
           now,
           claim.attemptNumber,
           claim.remotePublicationId,
+          claim.reconciliationLeaseToken,
         ],
       );
       if (updated.rowCount === 1)
@@ -502,9 +542,11 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         UPDATE "PublicationIntent"
           SET "state" = 'FAILED_FINAL', "remoteStatus" = $2,
               "failureCode" = $3, "failureMessage" = $4,
-              "finishedAt" = $5, "updatedAt" = $5
+              "finishedAt" = $5, "updatedAt" = $5,
+              "reconciliationLeaseToken" = NULL, "reconciliationLeaseExpiresAt" = NULL
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
           AND "attemptCount" = $6 AND "remotePublicationId" = $7
+          AND "reconciliationLeaseToken" = $8
         RETURNING "id"
        )
        DELETE FROM "PublicationProviderSession" s
@@ -517,7 +559,20 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         now,
         claim.attemptNumber,
         claim.remotePublicationId,
+        claim.reconciliationLeaseToken,
       ],
+    );
+  }
+
+  async releaseReconciliationClaim(
+    claim: PublicationReconciliationClaim,
+  ): Promise<void> {
+    await this.pool.query(
+      `UPDATE "PublicationIntent"
+          SET "reconciliationLeaseToken" = NULL, "reconciliationLeaseExpiresAt" = NULL
+        WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
+          AND "reconciliationLeaseToken" = $2`,
+      [claim.id, claim.reconciliationLeaseToken],
     );
   }
 

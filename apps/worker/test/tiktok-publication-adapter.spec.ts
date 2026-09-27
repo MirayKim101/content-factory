@@ -132,7 +132,11 @@ describe("TikTokPublicationAdapter", () => {
         deps.sessions,
         deps.cipher,
         deps.transport,
-      ).reconcile({ ...claim, remotePublicationId: "publish_42" }),
+      ).reconcile({
+        ...claim,
+        remotePublicationId: "publish_42",
+        reconciliationLeaseToken: "lease-42",
+      }),
     ).resolves.toMatchObject({
       state: "PUBLISHED",
       providerReceipt: { publishId: "publish_42", postIds: ["123"] },

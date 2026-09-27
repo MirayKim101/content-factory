@@ -1035,6 +1035,8 @@ model PublicationIntent {
   state               PublicationIntentState @default(SCHEDULED)
   remotePublicationId String?                @unique
   remoteStatus        String?
+  reconciliationLeaseToken     String?       @unique
+  reconciliationLeaseExpiresAt DateTime?
   attemptCount        Int                    @default(0)
   retryBudget         Int                    @default(3)
   failureCode         String?
@@ -1053,6 +1055,7 @@ model PublicationIntent {
   @@unique([channelId, verticalResultId, platform], map: "PublicationIntent_vertical_target_key")
   @@index([projectId, scheduledAt, id])
   @@index([state, scheduledAt, id])
+  @@index([state, reconciliationLeaseExpiresAt, updatedAt, id])
   @@index([channelId, createdAt, id])
 }
 

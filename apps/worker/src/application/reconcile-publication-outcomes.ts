@@ -44,6 +44,9 @@ export class ReconcilePublicationOutcomes {
           );
         reconciled += 1;
       } catch (error) {
+        await this.repository
+          .releaseReconciliationClaim(claim)
+          .catch(() => undefined);
         this.onFailure(claim.id, error);
       }
     }

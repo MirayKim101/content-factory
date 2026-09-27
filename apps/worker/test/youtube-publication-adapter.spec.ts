@@ -136,7 +136,11 @@ describe("YoutubePublicationAdapter", () => {
     );
 
     await expect(
-      adapter.reconcile({ ...claim, remotePublicationId: "video_42" }),
+      adapter.reconcile({
+        ...claim,
+        remotePublicationId: "video_42",
+        reconciliationLeaseToken: "lease-42",
+      }),
     ).resolves.toMatchObject({
       state: "PUBLISHED",
       remoteStatus: "processed",

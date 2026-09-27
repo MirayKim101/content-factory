@@ -20,6 +20,7 @@ const claim: PublicationReconciliationClaim = {
   metadataSnapshot: { title: "Release" },
   attemptNumber: 1,
   remotePublicationId: "youtube-video-42",
+  reconciliationLeaseToken: "00000000-0000-4000-8000-000000000004",
 };
 
 function repository(): PublicationWorkerRepository {
@@ -35,6 +36,7 @@ function repository(): PublicationWorkerRepository {
     refreshUnknownRemoteState: vi.fn(),
     finalizePublished: vi.fn(),
     failUnknownRemoteState: vi.fn(),
+    releaseReconciliationClaim: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -124,6 +126,7 @@ describe("ReconcilePublicationOutcomes", () => {
     ).resolves.toBe(1);
 
     expect(onFailure).toHaveBeenCalledWith(claim.id, expect.any(Error));
+    expect(repo.releaseReconciliationClaim).toHaveBeenCalledWith(claim);
     expect(repo.refreshUnknownRemoteState).toHaveBeenCalledWith(
       second,
       "processing",
