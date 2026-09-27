@@ -1030,6 +1030,57 @@ export type EnumTranscriptAttemptStateWithAggregatesFilter<$PrismaModel = never>
   _max?: Prisma.NestedEnumTranscriptAttemptStateFilter<$PrismaModel>
 }
 
+export type EnumTwitchIngestChannelStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchIngestChannelState | Prisma.EnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchIngestChannelStateFilter<$PrismaModel> | $Enums.TwitchIngestChannelState
+}
+
+export type EnumTwitchIngestChannelStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchIngestChannelState | Prisma.EnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchIngestChannelStateWithAggregatesFilter<$PrismaModel> | $Enums.TwitchIngestChannelState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTwitchIngestChannelStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTwitchIngestChannelStateFilter<$PrismaModel>
+}
+
+export type EnumTwitchEventInboxStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchEventInboxState | Prisma.EnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchEventInboxStateFilter<$PrismaModel> | $Enums.TwitchEventInboxState
+}
+
+export type EnumTwitchEventInboxStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchEventInboxState | Prisma.EnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchEventInboxStateWithAggregatesFilter<$PrismaModel> | $Enums.TwitchEventInboxState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTwitchEventInboxStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTwitchEventInboxStateFilter<$PrismaModel>
+}
+
+export type EnumTwitchVodCandidateStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchVodCandidateState | Prisma.EnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel> | $Enums.TwitchVodCandidateState
+}
+
+export type EnumTwitchVodCandidateStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchVodCandidateState | Prisma.EnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchVodCandidateStateWithAggregatesFilter<$PrismaModel> | $Enums.TwitchVodCandidateState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1988,6 +2039,57 @@ export type NestedEnumTranscriptAttemptStateWithAggregatesFilter<$PrismaModel = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTranscriptAttemptStateFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTranscriptAttemptStateFilter<$PrismaModel>
+}
+
+export type NestedEnumTwitchIngestChannelStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchIngestChannelState | Prisma.EnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchIngestChannelStateFilter<$PrismaModel> | $Enums.TwitchIngestChannelState
+}
+
+export type NestedEnumTwitchIngestChannelStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchIngestChannelState | Prisma.EnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchIngestChannelState[] | Prisma.ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchIngestChannelStateWithAggregatesFilter<$PrismaModel> | $Enums.TwitchIngestChannelState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTwitchIngestChannelStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTwitchIngestChannelStateFilter<$PrismaModel>
+}
+
+export type NestedEnumTwitchEventInboxStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchEventInboxState | Prisma.EnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchEventInboxStateFilter<$PrismaModel> | $Enums.TwitchEventInboxState
+}
+
+export type NestedEnumTwitchEventInboxStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchEventInboxState | Prisma.EnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchEventInboxState[] | Prisma.ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchEventInboxStateWithAggregatesFilter<$PrismaModel> | $Enums.TwitchEventInboxState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTwitchEventInboxStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTwitchEventInboxStateFilter<$PrismaModel>
+}
+
+export type NestedEnumTwitchVodCandidateStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchVodCandidateState | Prisma.EnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel> | $Enums.TwitchVodCandidateState
+}
+
+export type NestedEnumTwitchVodCandidateStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TwitchVodCandidateState | Prisma.EnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  in?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TwitchVodCandidateState[] | Prisma.ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTwitchVodCandidateStateWithAggregatesFilter<$PrismaModel> | $Enums.TwitchVodCandidateState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel>
 }
 
 

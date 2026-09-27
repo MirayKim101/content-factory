@@ -110,7 +110,10 @@ export const ModelName = {
   ImageSuggestionAttempt: 'ImageSuggestionAttempt',
   ImageSuggestionCandidate: 'ImageSuggestionCandidate',
   TranscriptEvidenceAttempt: 'TranscriptEvidenceAttempt',
-  TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact'
+  TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact',
+  TwitchIngestChannel: 'TwitchIngestChannel',
+  TwitchEventInbox: 'TwitchEventInbox',
+  TwitchVodCandidate: 'TwitchVodCandidate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1390,6 +1393,65 @@ export const TranscriptEvidenceArtifactScalarFieldEnum = {
 } as const
 
 export type TranscriptEvidenceArtifactScalarFieldEnum = (typeof TranscriptEvidenceArtifactScalarFieldEnum)[keyof typeof TranscriptEvidenceArtifactScalarFieldEnum]
+
+
+export const TwitchIngestChannelScalarFieldEnum = {
+  id: 'id',
+  broadcasterId: 'broadcasterId',
+  broadcasterLogin: 'broadcasterLogin',
+  broadcasterDisplayName: 'broadcasterDisplayName',
+  state: 'state',
+  ingestDelaySeconds: 'ingestDelaySeconds',
+  reconciliationCursor: 'reconciliationCursor',
+  lastReconciledAt: 'lastReconciledAt',
+  lastOnlineAt: 'lastOnlineAt',
+  lastOfflineAt: 'lastOfflineAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchIngestChannelScalarFieldEnum = (typeof TwitchIngestChannelScalarFieldEnum)[keyof typeof TwitchIngestChannelScalarFieldEnum]
+
+
+export const TwitchEventInboxScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  channelId: 'channelId',
+  subscriptionType: 'subscriptionType',
+  subscriptionVersion: 'subscriptionVersion',
+  streamId: 'streamId',
+  messageTimestamp: 'messageTimestamp',
+  payloadSha256: 'payloadSha256',
+  payload: 'payload',
+  state: 'state',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  processedAt: 'processedAt',
+  receivedAt: 'receivedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchEventInboxScalarFieldEnum = (typeof TwitchEventInboxScalarFieldEnum)[keyof typeof TwitchEventInboxScalarFieldEnum]
+
+
+export const TwitchVodCandidateScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  providerVideoId: 'providerVideoId',
+  streamId: 'streamId',
+  title: 'title',
+  vodType: 'vodType',
+  durationSeconds: 'durationSeconds',
+  startedAt: 'startedAt',
+  publishedAt: 'publishedAt',
+  availableForIngestAt: 'availableForIngestAt',
+  state: 'state',
+  importedProjectId: 'importedProjectId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchVodCandidateScalarFieldEnum = (typeof TwitchVodCandidateScalarFieldEnum)[keyof typeof TwitchVodCandidateScalarFieldEnum]
 
 
 export const SortOrder = {

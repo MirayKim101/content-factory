@@ -5841,6 +5841,72 @@
         "required": ["ordinal", "startMs", "endMs", "text"],
         "type": "object"
       },
+      "TwitchIngestChannelResponseDto": {
+        "properties": {
+          "broadcasterDisplayName": {
+            "type": "string"
+          },
+          "broadcasterId": {
+            "type": "string"
+          },
+          "broadcasterLogin": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "ingestDelaySeconds": {
+            "type": "number"
+          },
+          "lastOfflineAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "lastOnlineAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "lastReconciledAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "reconciliationCursor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "enum": ["ENABLED", "REVOKED"],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "broadcasterId",
+          "broadcasterLogin",
+          "broadcasterDisplayName",
+          "state",
+          "ingestDelaySeconds",
+          "reconciliationCursor",
+          "lastReconciledAt",
+          "lastOnlineAt",
+          "lastOfflineAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "UpdateCreatorProfileDto": {
         "properties": {
           "canonicalDisplayName": {
@@ -10610,6 +10676,57 @@
           }
         },
         "tags": ["research-text"]
+      }
+    },
+    "/api/v1/twitch/channels": {
+      "get": {
+        "operationId": "TwitchIngestionController_channels",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TwitchIngestChannelResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
+      },
+      "post": {
+        "operationId": "TwitchIngestionController_channel",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwitchIngestChannelResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
+      }
+    },
+    "/api/v1/twitch/eventsub": {
+      "post": {
+        "operationId": "TwitchIngestionController_event",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
       }
     }
   },

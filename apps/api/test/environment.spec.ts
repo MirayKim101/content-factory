@@ -5,6 +5,8 @@ import {
   editorialExportAdmissionEnabled,
   editorialIntegratedReviewAdmissionEnabled,
   publishingAdmissionEnabled,
+  twitchIngestionAdmissionEnabled,
+  twitchEventSubSecret,
 } from "../src/config/environment.js";
 
 describe("editorial export rollout flag", () => {
@@ -24,6 +26,22 @@ describe("publishing rollout flag", () => {
     [{ PUBLISHING_ENABLED: "1" }, true],
   ] as const)("resolves %o to %s", (environment, expected) => {
     expect(publishingAdmissionEnabled(environment)).toBe(expected);
+  });
+});
+
+describe("twitch ingestion rollout flag", () => {
+  it("is default-off and requires a bounded secret when enabled", () => {
+    expect(twitchIngestionAdmissionEnabled({})).toBe(false);
+    expect(twitchEventSubSecret({})).toBeNull();
+    expect(() =>
+      twitchEventSubSecret({ TWITCH_INGESTION_ENABLED: "1" }),
+    ).toThrow("CONFIG_TWITCH_EVENTSUB_SECRET_INVALID");
+    expect(
+      twitchEventSubSecret({
+        TWITCH_INGESTION_ENABLED: "1",
+        TWITCH_EVENTSUB_SECRET: "0123456789abcdef",
+      }),
+    ).toBe("0123456789abcdef");
   });
 });
 

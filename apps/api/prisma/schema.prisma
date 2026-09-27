@@ -232,6 +232,24 @@ enum PublicationIntentState {
   CANCELED
 }
 
+enum TwitchIngestChannelState {
+  ENABLED
+  REVOKED
+}
+
+enum TwitchEventInboxState {
+  RECEIVED
+  PROCESSED
+  REJECTED
+}
+
+enum TwitchVodCandidateState {
+  WAITING_DELAY
+  READY_FOR_INGEST
+  IMPORTED
+  IGNORED
+}
+
 model Project {
   id                         String                      @id @db.Uuid
   idempotencyKey             String                      @unique
@@ -259,6 +277,7 @@ model Project {
   sourceEditorialContexts    SourceEditorialContext[]
   publicationChannels        PublicationChannel[]
   publicationIntents         PublicationIntent[]
+  twitchVodImports           TwitchVodCandidate[]
 }
 
 model VideoSource {
@@ -1796,4 +1815,69 @@ model TranscriptEvidenceArtifact {
   segments                   Json
   createdAt                  DateTime                             @default(now())
   approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
+}
+
+/// Allowlisted Twitch broadcaster. OAuth credentials remain outside this model.
+model TwitchIngestChannel {
+  id                     String                   @id @db.Uuid
+  broadcasterId          String                   @unique
+  broadcasterLogin       String
+  broadcasterDisplayName String
+  state                  TwitchIngestChannelState @default(ENABLED)
+  ingestDelaySeconds     Int                      @default(300)
+  reconciliationCursor   String?
+  lastReconciledAt       DateTime?
+  lastOnlineAt           DateTime?
+  lastOfflineAt          DateTime?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  events                 TwitchEventInbox[]
+  vodCandidates          TwitchVodCandidate[]
+
+  @@index([state, updatedAt, id])
+}
+
+/// Durable, deduplicated EventSub envelope. Payload is validated before processing.
+model TwitchEventInbox {
+  id                  String                @id @db.Uuid
+  messageId           String                @unique
+  channelId           String                @db.Uuid
+  channel             TwitchIngestChannel   @relation(fields: [channelId], references: [id], onDelete: Restrict)
+  subscriptionType    String
+  subscriptionVersion String
+  streamId            String?
+  messageTimestamp    DateTime
+  payloadSha256       String
+  payload             Json
+  state               TwitchEventInboxState @default(RECEIVED)
+  failureCode         String?
+  failureMessage      String?
+  processedAt         DateTime?
+  receivedAt          DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@index([state, receivedAt, id])
+  @@index([channelId, messageTimestamp, id])
+}
+
+/// Provider metadata discovered by reconciliation; media bytes are ingested in Stage 3C.
+model TwitchVodCandidate {
+  id                   String                  @id @db.Uuid
+  channelId            String                  @db.Uuid
+  channel              TwitchIngestChannel     @relation(fields: [channelId], references: [id], onDelete: Restrict)
+  providerVideoId      String                  @unique
+  streamId             String?
+  title                String
+  vodType              String
+  durationSeconds      Int
+  startedAt            DateTime
+  publishedAt          DateTime
+  availableForIngestAt DateTime
+  state                TwitchVodCandidateState @default(WAITING_DELAY)
+  importedProjectId    String?                 @db.Uuid
+  importedProject      Project?                @relation(fields: [importedProjectId], references: [id], onDelete: Restrict)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@index([channelId, state, availableForIngestAt, id])
 }

@@ -331,3 +331,30 @@ export const PublicationIntentState = {
 } as const
 
 export type PublicationIntentState = (typeof PublicationIntentState)[keyof typeof PublicationIntentState]
+
+
+export const TwitchIngestChannelState = {
+  ENABLED: 'ENABLED',
+  REVOKED: 'REVOKED'
+} as const
+
+export type TwitchIngestChannelState = (typeof TwitchIngestChannelState)[keyof typeof TwitchIngestChannelState]
+
+
+export const TwitchEventInboxState = {
+  RECEIVED: 'RECEIVED',
+  PROCESSED: 'PROCESSED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type TwitchEventInboxState = (typeof TwitchEventInboxState)[keyof typeof TwitchEventInboxState]
+
+
+export const TwitchVodCandidateState = {
+  WAITING_DELAY: 'WAITING_DELAY',
+  READY_FOR_INGEST: 'READY_FOR_INGEST',
+  IMPORTED: 'IMPORTED',
+  IGNORED: 'IGNORED'
+} as const
+
+export type TwitchVodCandidateState = (typeof TwitchVodCandidateState)[keyof typeof TwitchVodCandidateState]

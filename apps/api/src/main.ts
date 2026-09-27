@@ -27,7 +27,7 @@ loadEnvironment();
 
 export async function createApp(): Promise<INestApplication> {
   sourceAuthorizationRuntime();
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   app.enableCors({ origin: "http://localhost:3000" });
   app.useGlobalPipes(
     new ValidationPipe({

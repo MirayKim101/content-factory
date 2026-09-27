@@ -317,3 +317,18 @@ export type TranscriptEvidenceAttempt = Prisma.TranscriptEvidenceAttemptModel
  * Private immutable transcript bytes and normalized timestamp metadata.
  */
 export type TranscriptEvidenceArtifact = Prisma.TranscriptEvidenceArtifactModel
+/**
+ * Model TwitchIngestChannel
+ * Allowlisted Twitch broadcaster. OAuth credentials remain outside this model.
+ */
+export type TwitchIngestChannel = Prisma.TwitchIngestChannelModel
+/**
+ * Model TwitchEventInbox
+ * Durable, deduplicated EventSub envelope. Payload is validated before processing.
+ */
+export type TwitchEventInbox = Prisma.TwitchEventInboxModel
+/**
+ * Model TwitchVodCandidate
+ * Provider metadata discovered by reconciliation; media bytes are ingested in Stage 3C.
+ */
+export type TwitchVodCandidate = Prisma.TwitchVodCandidateModel

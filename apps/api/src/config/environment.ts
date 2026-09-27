@@ -60,6 +60,8 @@ const API_ENVIRONMENT_KEYS = [
   "RESEARCH_TEXT_ENABLED",
   "THUMBNAIL_SUGGESTIONS_ENABLED",
   "PUBLISHING_ENABLED",
+  "TWITCH_INGESTION_ENABLED",
+  "TWITCH_EVENTSUB_SECRET",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -177,6 +179,8 @@ export interface ApiEnvironment {
   researchTextEnabled: boolean;
   thumbnailSuggestionsEnabled: boolean;
   publishingEnabled: boolean;
+  twitchIngestionEnabled: boolean;
+  twitchEventSubSecret: string | null;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -264,6 +268,8 @@ export function apiEnvironment(): ApiEnvironment {
     thumbnailSuggestionsEnabled:
       process.env.THUMBNAIL_SUGGESTIONS_ENABLED === "1",
     publishingEnabled: publishingAdmissionEnabled(process.env),
+    twitchIngestionEnabled: twitchIngestionAdmissionEnabled(process.env),
+    twitchEventSubSecret: twitchEventSubSecret(process.env),
   };
 }
 
@@ -289,4 +295,20 @@ export function publishingAdmissionEnabled(
   environment: NodeJS.ProcessEnv,
 ): boolean {
   return environment.PUBLISHING_ENABLED === "1";
+}
+
+export function twitchIngestionAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.TWITCH_INGESTION_ENABLED === "1";
+}
+
+export function twitchEventSubSecret(
+  environment: NodeJS.ProcessEnv,
+): string | null {
+  if (!twitchIngestionAdmissionEnabled(environment)) return null;
+  const secret = environment.TWITCH_EVENTSUB_SECRET?.trim();
+  if (!secret || secret.length < 10 || secret.length > 100)
+    throw new Error("CONFIG_TWITCH_EVENTSUB_SECRET_INVALID");
+  return secret;
 }

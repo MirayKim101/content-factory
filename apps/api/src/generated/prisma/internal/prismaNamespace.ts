@@ -456,7 +456,10 @@ export const ModelName = {
   ImageSuggestionAttempt: 'ImageSuggestionAttempt',
   ImageSuggestionCandidate: 'ImageSuggestionCandidate',
   TranscriptEvidenceAttempt: 'TranscriptEvidenceAttempt',
-  TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact'
+  TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact',
+  TwitchIngestChannel: 'TwitchIngestChannel',
+  TwitchEventInbox: 'TwitchEventInbox',
+  TwitchVodCandidate: 'TwitchVodCandidate'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -472,7 +475,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact" | "twitchIngestChannel" | "twitchEventInbox" | "twitchVodCandidate"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -4916,6 +4919,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TwitchIngestChannel: {
+      payload: Prisma.$TwitchIngestChannelPayload<ExtArgs>
+      fields: Prisma.TwitchIngestChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TwitchIngestChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TwitchIngestChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.TwitchIngestChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TwitchIngestChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>
+        }
+        findMany: {
+          args: Prisma.TwitchIngestChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>[]
+        }
+        create: {
+          args: Prisma.TwitchIngestChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>
+        }
+        createMany: {
+          args: Prisma.TwitchIngestChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TwitchIngestChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.TwitchIngestChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>
+        }
+        update: {
+          args: Prisma.TwitchIngestChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.TwitchIngestChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TwitchIngestChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TwitchIngestChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.TwitchIngestChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchIngestChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.TwitchIngestChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTwitchIngestChannel>
+        }
+        groupBy: {
+          args: Prisma.TwitchIngestChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchIngestChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TwitchIngestChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchIngestChannelCountAggregateOutputType> | number
+        }
+      }
+    }
+    TwitchEventInbox: {
+      payload: Prisma.$TwitchEventInboxPayload<ExtArgs>
+      fields: Prisma.TwitchEventInboxFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TwitchEventInboxFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TwitchEventInboxFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>
+        }
+        findFirst: {
+          args: Prisma.TwitchEventInboxFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TwitchEventInboxFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>
+        }
+        findMany: {
+          args: Prisma.TwitchEventInboxFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>[]
+        }
+        create: {
+          args: Prisma.TwitchEventInboxCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>
+        }
+        createMany: {
+          args: Prisma.TwitchEventInboxCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TwitchEventInboxCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>[]
+        }
+        delete: {
+          args: Prisma.TwitchEventInboxDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>
+        }
+        update: {
+          args: Prisma.TwitchEventInboxUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>
+        }
+        deleteMany: {
+          args: Prisma.TwitchEventInboxDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TwitchEventInboxUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TwitchEventInboxUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>[]
+        }
+        upsert: {
+          args: Prisma.TwitchEventInboxUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventInboxPayload>
+        }
+        aggregate: {
+          args: Prisma.TwitchEventInboxAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTwitchEventInbox>
+        }
+        groupBy: {
+          args: Prisma.TwitchEventInboxGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchEventInboxGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TwitchEventInboxCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchEventInboxCountAggregateOutputType> | number
+        }
+      }
+    }
+    TwitchVodCandidate: {
+      payload: Prisma.$TwitchVodCandidatePayload<ExtArgs>
+      fields: Prisma.TwitchVodCandidateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TwitchVodCandidateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TwitchVodCandidateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>
+        }
+        findFirst: {
+          args: Prisma.TwitchVodCandidateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TwitchVodCandidateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>
+        }
+        findMany: {
+          args: Prisma.TwitchVodCandidateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>[]
+        }
+        create: {
+          args: Prisma.TwitchVodCandidateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>
+        }
+        createMany: {
+          args: Prisma.TwitchVodCandidateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TwitchVodCandidateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>[]
+        }
+        delete: {
+          args: Prisma.TwitchVodCandidateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>
+        }
+        update: {
+          args: Prisma.TwitchVodCandidateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>
+        }
+        deleteMany: {
+          args: Prisma.TwitchVodCandidateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TwitchVodCandidateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TwitchVodCandidateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>[]
+        }
+        upsert: {
+          args: Prisma.TwitchVodCandidateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchVodCandidatePayload>
+        }
+        aggregate: {
+          args: Prisma.TwitchVodCandidateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTwitchVodCandidate>
+        }
+        groupBy: {
+          args: Prisma.TwitchVodCandidateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchVodCandidateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TwitchVodCandidateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchVodCandidateCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -6218,6 +6443,65 @@ export const TranscriptEvidenceArtifactScalarFieldEnum = {
 export type TranscriptEvidenceArtifactScalarFieldEnum = (typeof TranscriptEvidenceArtifactScalarFieldEnum)[keyof typeof TranscriptEvidenceArtifactScalarFieldEnum]
 
 
+export const TwitchIngestChannelScalarFieldEnum = {
+  id: 'id',
+  broadcasterId: 'broadcasterId',
+  broadcasterLogin: 'broadcasterLogin',
+  broadcasterDisplayName: 'broadcasterDisplayName',
+  state: 'state',
+  ingestDelaySeconds: 'ingestDelaySeconds',
+  reconciliationCursor: 'reconciliationCursor',
+  lastReconciledAt: 'lastReconciledAt',
+  lastOnlineAt: 'lastOnlineAt',
+  lastOfflineAt: 'lastOfflineAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchIngestChannelScalarFieldEnum = (typeof TwitchIngestChannelScalarFieldEnum)[keyof typeof TwitchIngestChannelScalarFieldEnum]
+
+
+export const TwitchEventInboxScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  channelId: 'channelId',
+  subscriptionType: 'subscriptionType',
+  subscriptionVersion: 'subscriptionVersion',
+  streamId: 'streamId',
+  messageTimestamp: 'messageTimestamp',
+  payloadSha256: 'payloadSha256',
+  payload: 'payload',
+  state: 'state',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  processedAt: 'processedAt',
+  receivedAt: 'receivedAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchEventInboxScalarFieldEnum = (typeof TwitchEventInboxScalarFieldEnum)[keyof typeof TwitchEventInboxScalarFieldEnum]
+
+
+export const TwitchVodCandidateScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  providerVideoId: 'providerVideoId',
+  streamId: 'streamId',
+  title: 'title',
+  vodType: 'vodType',
+  durationSeconds: 'durationSeconds',
+  startedAt: 'startedAt',
+  publishedAt: 'publishedAt',
+  availableForIngestAt: 'availableForIngestAt',
+  state: 'state',
+  importedProjectId: 'importedProjectId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchVodCandidateScalarFieldEnum = (typeof TwitchVodCandidateScalarFieldEnum)[keyof typeof TwitchVodCandidateScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -6824,6 +7108,48 @@ export type EnumTranscriptAttemptStateFieldRefInput<$PrismaModel> = FieldRefInpu
 export type ListEnumTranscriptAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TranscriptAttemptState[]'>
     
 
+
+/**
+ * Reference to a field of type 'TwitchIngestChannelState'
+ */
+export type EnumTwitchIngestChannelStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TwitchIngestChannelState'>
+    
+
+
+/**
+ * Reference to a field of type 'TwitchIngestChannelState[]'
+ */
+export type ListEnumTwitchIngestChannelStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TwitchIngestChannelState[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TwitchEventInboxState'
+ */
+export type EnumTwitchEventInboxStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TwitchEventInboxState'>
+    
+
+
+/**
+ * Reference to a field of type 'TwitchEventInboxState[]'
+ */
+export type ListEnumTwitchEventInboxStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TwitchEventInboxState[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TwitchVodCandidateState'
+ */
+export type EnumTwitchVodCandidateStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TwitchVodCandidateState'>
+    
+
+
+/**
+ * Reference to a field of type 'TwitchVodCandidateState[]'
+ */
+export type ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TwitchVodCandidateState[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -7035,6 +7361,9 @@ export type GlobalOmitConfig = {
   imageSuggestionCandidate?: Prisma.ImageSuggestionCandidateOmit
   transcriptEvidenceAttempt?: Prisma.TranscriptEvidenceAttemptOmit
   transcriptEvidenceArtifact?: Prisma.TranscriptEvidenceArtifactOmit
+  twitchIngestChannel?: Prisma.TwitchIngestChannelOmit
+  twitchEventInbox?: Prisma.TwitchEventInboxOmit
+  twitchVodCandidate?: Prisma.TwitchVodCandidateOmit
 }
 
 /* Types for Logging */

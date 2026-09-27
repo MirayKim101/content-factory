@@ -1,0 +1,129 @@
+import { createHmac } from "node:crypto";
+
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { TwitchIngestionService } from "../src/twitch-ingestion/application/twitch-ingestion.service.js";
+import {
+  TwitchEventConflictError,
+  TwitchIngestionDisabledError,
+  TwitchSignatureInvalidError,
+} from "../src/twitch-ingestion/domain/twitch-ingestion.js";
+
+const now = new Date("2026-09-27T12:00:00.000Z");
+const secret = "test-eventsub-secret";
+const body = {
+  subscription: { type: "stream.online", version: "1" },
+  event: {
+    id: "stream-1",
+    broadcaster_user_id: "1337",
+    broadcaster_user_login: "creator",
+    broadcaster_user_name: "Creator",
+    started_at: "2026-09-27T11:58:00.000Z",
+  },
+};
+const rawBody = Buffer.from(JSON.stringify(body));
+
+function repository(existingHash?: string) {
+  return {
+    twitchIngestChannel: {
+      findUnique: vi.fn(async () => ({ id: "channel-1", state: "ENABLED" })),
+      findMany: vi.fn(),
+      upsert: vi.fn(),
+    },
+    twitchEventInbox: {
+      findUnique: vi.fn(async () =>
+        existingHash ? { payloadSha256: existingHash } : null,
+      ),
+      create: vi.fn(
+        async (_input: { data: { payloadSha256: string } }) => undefined,
+      ),
+    },
+  };
+}
+
+function headers(signature = sign(rawBody)) {
+  return {
+    messageId: "opaque-message-1",
+    messageTimestamp: now.toISOString(),
+    messageType: "notification",
+    signature,
+    subscriptionType: "stream.online",
+    subscriptionVersion: "1",
+  };
+}
+
+function sign(bytes: Buffer): string {
+  return `sha256=${createHmac("sha256", secret)
+    .update("opaque-message-1")
+    .update(now.toISOString())
+    .update(bytes)
+    .digest("hex")}`;
+}
+
+describe("TwitchIngestionService", () => {
+  const originalEnabled = process.env.TWITCH_INGESTION_ENABLED;
+  const originalSecret = process.env.TWITCH_EVENTSUB_SECRET;
+
+  beforeEach(() => {
+    process.env.TWITCH_INGESTION_ENABLED = "1";
+    process.env.TWITCH_EVENTSUB_SECRET = secret;
+  });
+  afterEach(() => {
+    if (originalEnabled === undefined)
+      delete process.env.TWITCH_INGESTION_ENABLED;
+    else process.env.TWITCH_INGESTION_ENABLED = originalEnabled;
+    if (originalSecret === undefined) delete process.env.TWITCH_EVENTSUB_SECRET;
+    else process.env.TWITCH_EVENTSUB_SECRET = originalSecret;
+  });
+
+  it("fails before persistence when admission is disabled or HMAC is invalid", async () => {
+    const prisma = repository();
+    const service = new TwitchIngestionService(prisma as never);
+    process.env.TWITCH_INGESTION_ENABLED = "0";
+    await expect(
+      service.receive(headers(), rawBody, body, now),
+    ).rejects.toBeInstanceOf(TwitchIngestionDisabledError);
+    process.env.TWITCH_INGESTION_ENABLED = "1";
+    await expect(
+      service.receive(headers("sha256=invalid"), rawBody, body, now),
+    ).rejects.toBeInstanceOf(TwitchSignatureInvalidError);
+    expect(prisma.twitchEventInbox.create).not.toHaveBeenCalled();
+  });
+
+  it("persists one validated envelope and treats exact replay as duplicate", async () => {
+    const prisma = repository();
+    const service = new TwitchIngestionService(prisma as never);
+    await expect(
+      service.receive(headers(), rawBody, body, now),
+    ).resolves.toEqual({
+      duplicate: false,
+      messageId: "opaque-message-1",
+    });
+    expect(prisma.twitchEventInbox.create).toHaveBeenCalledOnce();
+
+    const hash =
+      prisma.twitchEventInbox.create.mock.calls[0]![0].data.payloadSha256;
+    const replay = repository(hash);
+    await expect(
+      new TwitchIngestionService(replay as never).receive(
+        headers(),
+        rawBody,
+        body,
+        now,
+      ),
+    ).resolves.toEqual({ duplicate: true, messageId: "opaque-message-1" });
+    expect(replay.twitchEventInbox.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects a reused message id with different raw bytes", async () => {
+    const prisma = repository("0".repeat(64));
+    await expect(
+      new TwitchIngestionService(prisma as never).receive(
+        headers(),
+        rawBody,
+        body,
+        now,
+      ),
+    ).rejects.toBeInstanceOf(TwitchEventConflictError);
+  });
+});
