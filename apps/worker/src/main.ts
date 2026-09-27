@@ -15,7 +15,11 @@ import { ProcessMediaJob } from "./application/process-media-job.js";
 import { ProcessFrameJob } from "./application/process-frame-job.js";
 import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.js";
 import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
-import { workerConfig, youtubePublishingConfig } from "./config.js";
+import {
+  tiktokPublishingConfig,
+  workerConfig,
+  youtubePublishingConfig,
+} from "./config.js";
 import { FfmpegMediaProcessor } from "./infrastructure/ffmpeg-media-processor.js";
 import { FfmpegAssemblyRenderer } from "./infrastructure/ffmpeg-assembly-renderer.js";
 import { LocalSourceCache } from "./infrastructure/local-source-cache.js";
@@ -44,6 +48,9 @@ import { PublicationSessionCipher } from "./infrastructure/publication-session-c
 import { YoutubeResumableTransport } from "./infrastructure/youtube-resumable-transport.js";
 import { YoutubePublicationAdapter } from "./infrastructure/youtube-publication-adapter.js";
 import { GoogleOAuthAccessTokenResolver } from "./infrastructure/google-oauth-access-token-resolver.js";
+import { TikTokOAuthAccessTokenResolver } from "./infrastructure/tiktok-oauth-access-token-resolver.js";
+import { TikTokDirectPostTransport } from "./infrastructure/tiktok-direct-post-transport.js";
+import { TikTokPublicationAdapter } from "./infrastructure/tiktok-publication-adapter.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -265,6 +272,33 @@ async function startPublicationWorker(): Promise<void> {
         sessionRepository,
         new PublicationSessionCipher(youtube.currentKeyVersion, youtube.keys),
         new YoutubeResumableTransport(),
+      ),
+    );
+    externalClosers.push(
+      () => sessionRepository.close(),
+      () => storage.close(),
+    );
+  }
+  const tiktok = tiktokPublishingConfig(process.env);
+  if (tiktok) {
+    const sessionRepository = new PgPublicationSessionRepository(
+      config.databaseUrl,
+    );
+    const storage = new S3WorkerObjectStorage(
+      config.storage.bucket,
+      config.storage,
+    );
+    providers.push(
+      new TikTokPublicationAdapter(
+        new TikTokOAuthAccessTokenResolver(
+          tiktok.clientKey,
+          tiktok.clientSecret,
+          tiktok.credentials,
+        ),
+        storage,
+        sessionRepository,
+        new PublicationSessionCipher(tiktok.currentKeyVersion, tiktok.keys),
+        new TikTokDirectPostTransport(),
       ),
     );
     externalClosers.push(

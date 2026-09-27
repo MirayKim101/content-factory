@@ -79,6 +79,35 @@ export interface YoutubePublishingConfig extends PublicationSessionKeyConfig {
   }>;
 }
 
+export interface TikTokPublishingConfig extends PublicationSessionKeyConfig {
+  clientKey: string;
+  clientSecret: string;
+  credentials: Array<{
+    channelId?: string;
+    externalChannelRef: string;
+    refreshToken: string;
+  }>;
+}
+
+export function tiktokPublishingConfig(
+  environment: NodeJS.ProcessEnv,
+): TikTokPublishingConfig | null {
+  if (environment.TIKTOK_PUBLISHING_ENABLED?.trim() !== "1") return null;
+  const clientKey = environment.TIKTOK_CLIENT_KEY?.trim();
+  const clientSecret = environment.TIKTOK_CLIENT_SECRET?.trim();
+  const rawCredentials = environment.TIKTOK_CHANNEL_CREDENTIALS_JSON?.trim();
+  if (!clientKey) throw new Error("CONFIG_TIKTOK_CLIENT_KEY_REQUIRED");
+  if (!clientSecret) throw new Error("CONFIG_TIKTOK_CLIENT_SECRET_REQUIRED");
+  if (!rawCredentials)
+    throw new Error("CONFIG_TIKTOK_CHANNEL_CREDENTIALS_JSON_REQUIRED");
+  return {
+    clientKey,
+    clientSecret,
+    credentials: parseChannelCredentials(rawCredentials, "TIKTOK"),
+    ...publicationSessionKeyConfig(environment),
+  };
+}
+
 export function youtubePublishingConfig(
   environment: NodeJS.ProcessEnv,
 ): YoutubePublishingConfig | null {
@@ -91,17 +120,34 @@ export function youtubePublishingConfig(
     throw new Error("CONFIG_YOUTUBE_OAUTH_CLIENT_SECRET_REQUIRED");
   if (!rawCredentials)
     throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_REQUIRED");
+  const credentials = parseChannelCredentials(rawCredentials, "YOUTUBE");
+  return {
+    clientId,
+    clientSecret,
+    credentials,
+    ...publicationSessionKeyConfig(environment),
+  };
+}
+
+function parseChannelCredentials(
+  serialized: string,
+  provider: "YOUTUBE" | "TIKTOK",
+): Array<{
+  channelId?: string;
+  externalChannelRef: string;
+  refreshToken: string;
+}> {
+  const code = `CONFIG_${provider}_CHANNEL_CREDENTIALS_JSON_INVALID`;
   let parsed: unknown;
   try {
-    parsed = JSON.parse(rawCredentials);
+    parsed = JSON.parse(serialized);
   } catch {
-    throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
+    throw new Error(code);
   }
-  if (!Array.isArray(parsed) || !parsed.length)
-    throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
-  const credentials = parsed.map((item) => {
+  if (!Array.isArray(parsed) || !parsed.length) throw new Error(code);
+  return parsed.map((item) => {
     if (!item || typeof item !== "object" || Array.isArray(item))
-      throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
+      throw new Error(code);
     const value = item as Record<string, unknown>;
     if (
       Object.keys(value).some(
@@ -112,7 +158,7 @@ export function youtubePublishingConfig(
       typeof value.externalChannelRef !== "string" ||
       typeof value.refreshToken !== "string"
     )
-      throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
+      throw new Error(code);
     return {
       ...(typeof value.channelId === "string"
         ? { channelId: value.channelId }
@@ -121,12 +167,6 @@ export function youtubePublishingConfig(
       refreshToken: value.refreshToken,
     };
   });
-  return {
-    clientId,
-    clientSecret,
-    credentials,
-    ...publicationSessionKeyConfig(environment),
-  };
 }
 
 export function publicationSessionKeyConfig(

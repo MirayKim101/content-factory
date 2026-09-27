@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   publicationSessionKeyConfig,
+  tiktokPublishingConfig,
   youtubePublishingConfig,
 } from "../src/config.js";
 
@@ -32,6 +33,32 @@ describe("publicationSessionKeyConfig", () => {
     },
   ])("fails closed for invalid key configuration", (environment) => {
     expect(() => publicationSessionKeyConfig(environment)).toThrow(/^CONFIG_/);
+  });
+});
+
+describe("tiktokPublishingConfig", () => {
+  it("stays disabled without requiring provider secrets", () => {
+    expect(
+      tiktokPublishingConfig({ TIKTOK_PUBLISHING_ENABLED: "0" }),
+    ).toBeNull();
+  });
+
+  it("loads bound refresh credentials and shared session keys", () => {
+    const config = tiktokPublishingConfig({
+      TIKTOK_PUBLISHING_ENABLED: "1",
+      TIKTOK_CLIENT_KEY: "client-key",
+      TIKTOK_CLIENT_SECRET: "client-secret",
+      TIKTOK_CHANNEL_CREDENTIALS_JSON: JSON.stringify([
+        {
+          externalChannelRef: "723f24d7-e717-40f8-a2b6-cb8464cd23b4",
+          refreshToken: "refresh-token",
+        },
+      ]),
+      PUBLICATION_SESSION_CURRENT_KEY_VERSION: "v1",
+      PUBLICATION_SESSION_KEYS: `v1:${Buffer.alloc(32, 9).toString("base64")}`,
+    });
+    expect(config?.credentials).toHaveLength(1);
+    expect(config?.keys.get("v1")).toEqual(Buffer.alloc(32, 9));
   });
 });
 
