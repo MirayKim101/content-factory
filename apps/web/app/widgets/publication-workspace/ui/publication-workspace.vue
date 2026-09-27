@@ -68,12 +68,13 @@ const title = ref("");
 const description = ref("");
 const scheduledLocal = ref(defaultSchedule());
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+const currentTime = ref(Date.now());
 const minimumScheduledLocal = computed(() =>
-  localDateTime(Date.now() + 60_000),
+  localDateTime(Math.ceil((currentTime.value + 60_000) / 60_000) * 60_000),
 );
 const scheduleIsValid = computed(() => {
   const instant = new Date(scheduledLocal.value).getTime();
-  return Number.isFinite(instant) && instant >= Date.now() + 30_000;
+  return Number.isFinite(instant) && instant >= currentTime.value + 30_000;
 });
 let publicationRefreshTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -172,6 +173,7 @@ async function loadWorkspace(): Promise<void> {
   }
 }
 async function refreshPublicationStatuses(): Promise<void> {
+  currentTime.value = Date.now();
   const selectedProjectId = projectId.value;
   if (
     !selectedProjectId ||
@@ -295,6 +297,7 @@ async function createChannel(): Promise<void> {
   }
 }
 async function schedule(): Promise<void> {
+  currentTime.value = Date.now();
   if (!scheduleIsValid.value) {
     error.value = "Выберите время публикации хотя бы на минуту позже текущего.";
     return;
