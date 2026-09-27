@@ -762,6 +762,57 @@ export type EnumEditorialOperationTypeWithAggregatesFilter<$PrismaModel = never>
   _max?: Prisma.NestedEnumEditorialOperationTypeFilter<$PrismaModel>
 }
 
+export type EnumPublicationPlatformFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationPlatform | Prisma.EnumPublicationPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationPlatformFilter<$PrismaModel> | $Enums.PublicationPlatform
+}
+
+export type EnumPublicationChannelStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationChannelState | Prisma.EnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel> | $Enums.PublicationChannelState
+}
+
+export type EnumPublicationPlatformWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationPlatform | Prisma.EnumPublicationPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationPlatformWithAggregatesFilter<$PrismaModel> | $Enums.PublicationPlatform
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationPlatformFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationPlatformFilter<$PrismaModel>
+}
+
+export type EnumPublicationChannelStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationChannelState | Prisma.EnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationChannelStateWithAggregatesFilter<$PrismaModel> | $Enums.PublicationChannelState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel>
+}
+
+export type EnumPublicationIntentStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationIntentState | Prisma.EnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel> | $Enums.PublicationIntentState
+}
+
+export type EnumPublicationIntentStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationIntentState | Prisma.EnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationIntentStateWithAggregatesFilter<$PrismaModel> | $Enums.PublicationIntentState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel>
+}
+
 export type EnumJobAttemptStateFilter<$PrismaModel = never> = {
   equals?: $Enums.JobAttemptState | Prisma.EnumJobAttemptStateFieldRefInput<$PrismaModel>
   in?: $Enums.JobAttemptState[] | Prisma.ListEnumJobAttemptStateFieldRefInput<$PrismaModel>
@@ -1669,6 +1720,57 @@ export type NestedEnumEditorialOperationTypeWithAggregatesFilter<$PrismaModel = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEditorialOperationTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEditorialOperationTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumPublicationPlatformFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationPlatform | Prisma.EnumPublicationPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationPlatformFilter<$PrismaModel> | $Enums.PublicationPlatform
+}
+
+export type NestedEnumPublicationChannelStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationChannelState | Prisma.EnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel> | $Enums.PublicationChannelState
+}
+
+export type NestedEnumPublicationPlatformWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationPlatform | Prisma.EnumPublicationPlatformFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationPlatform[] | Prisma.ListEnumPublicationPlatformFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationPlatformWithAggregatesFilter<$PrismaModel> | $Enums.PublicationPlatform
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationPlatformFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationPlatformFilter<$PrismaModel>
+}
+
+export type NestedEnumPublicationChannelStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationChannelState | Prisma.EnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationChannelState[] | Prisma.ListEnumPublicationChannelStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationChannelStateWithAggregatesFilter<$PrismaModel> | $Enums.PublicationChannelState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel>
+}
+
+export type NestedEnumPublicationIntentStateFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationIntentState | Prisma.EnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel> | $Enums.PublicationIntentState
+}
+
+export type NestedEnumPublicationIntentStateWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationIntentState | Prisma.EnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationIntentStateWithAggregatesFilter<$PrismaModel> | $Enums.PublicationIntentState
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel>
 }
 
 export type NestedEnumJobAttemptStateFilter<$PrismaModel = never> = {

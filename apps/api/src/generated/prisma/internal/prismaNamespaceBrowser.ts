@@ -78,6 +78,9 @@ export const ModelName = {
   EditorialOperationRequest: 'EditorialOperationRequest',
   EditorialExportIntent: 'EditorialExportIntent',
   EditorialExportResult: 'EditorialExportResult',
+  PublicationChannel: 'PublicationChannel',
+  PublicationIntent: 'PublicationIntent',
+  PublicationResult: 'PublicationResult',
   CutSegment: 'CutSegment',
   JobAttempt: 'JobAttempt',
   CreatorProfile: 'CreatorProfile',
@@ -693,6 +696,66 @@ export const EditorialExportResultScalarFieldEnum = {
 } as const
 
 export type EditorialExportResultScalarFieldEnum = (typeof EditorialExportResultScalarFieldEnum)[keyof typeof EditorialExportResultScalarFieldEnum]
+
+
+export const PublicationChannelScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  platform: 'platform',
+  displayName: 'displayName',
+  externalChannelRef: 'externalChannelRef',
+  timezone: 'timezone',
+  state: 'state',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PublicationChannelScalarFieldEnum = (typeof PublicationChannelScalarFieldEnum)[keyof typeof PublicationChannelScalarFieldEnum]
+
+
+export const PublicationIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  projectId: 'projectId',
+  channelId: 'channelId',
+  approvalId: 'approvalId',
+  exportIntentId: 'exportIntentId',
+  exportResultId: 'exportResultId',
+  platform: 'platform',
+  scheduledAt: 'scheduledAt',
+  timezone: 'timezone',
+  metadataSnapshot: 'metadataSnapshot',
+  state: 'state',
+  remotePublicationId: 'remotePublicationId',
+  remoteStatus: 'remoteStatus',
+  attemptCount: 'attemptCount',
+  retryBudget: 'retryBudget',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  canceledAt: 'canceledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PublicationIntentScalarFieldEnum = (typeof PublicationIntentScalarFieldEnum)[keyof typeof PublicationIntentScalarFieldEnum]
+
+
+export const PublicationResultScalarFieldEnum = {
+  id: 'id',
+  publicationIntentId: 'publicationIntentId',
+  resultContractVersion: 'resultContractVersion',
+  adapterVersion: 'adapterVersion',
+  providerReceipt: 'providerReceipt',
+  publicUrl: 'publicUrl',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PublicationResultScalarFieldEnum = (typeof PublicationResultScalarFieldEnum)[keyof typeof PublicationResultScalarFieldEnum]
 
 
 export const CutSegmentScalarFieldEnum = {

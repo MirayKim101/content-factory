@@ -424,6 +424,9 @@ export const ModelName = {
   EditorialOperationRequest: 'EditorialOperationRequest',
   EditorialExportIntent: 'EditorialExportIntent',
   EditorialExportResult: 'EditorialExportResult',
+  PublicationChannel: 'PublicationChannel',
+  PublicationIntent: 'PublicationIntent',
+  PublicationResult: 'PublicationResult',
   CutSegment: 'CutSegment',
   JobAttempt: 'JobAttempt',
   CreatorProfile: 'CreatorProfile',
@@ -469,7 +472,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2468,6 +2471,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.EditorialExportResultCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.EditorialExportResultCountAggregateOutputType> | number
+        }
+      }
+    }
+    PublicationChannel: {
+      payload: Prisma.$PublicationChannelPayload<ExtArgs>
+      fields: Prisma.PublicationChannelFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PublicationChannelFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PublicationChannelFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>
+        }
+        findFirst: {
+          args: Prisma.PublicationChannelFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PublicationChannelFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>
+        }
+        findMany: {
+          args: Prisma.PublicationChannelFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>[]
+        }
+        create: {
+          args: Prisma.PublicationChannelCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>
+        }
+        createMany: {
+          args: Prisma.PublicationChannelCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PublicationChannelCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>[]
+        }
+        delete: {
+          args: Prisma.PublicationChannelDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>
+        }
+        update: {
+          args: Prisma.PublicationChannelUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>
+        }
+        deleteMany: {
+          args: Prisma.PublicationChannelDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PublicationChannelUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PublicationChannelUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>[]
+        }
+        upsert: {
+          args: Prisma.PublicationChannelUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationChannelPayload>
+        }
+        aggregate: {
+          args: Prisma.PublicationChannelAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePublicationChannel>
+        }
+        groupBy: {
+          args: Prisma.PublicationChannelGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationChannelGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PublicationChannelCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationChannelCountAggregateOutputType> | number
+        }
+      }
+    }
+    PublicationIntent: {
+      payload: Prisma.$PublicationIntentPayload<ExtArgs>
+      fields: Prisma.PublicationIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PublicationIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PublicationIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.PublicationIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PublicationIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>
+        }
+        findMany: {
+          args: Prisma.PublicationIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>[]
+        }
+        create: {
+          args: Prisma.PublicationIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>
+        }
+        createMany: {
+          args: Prisma.PublicationIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PublicationIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.PublicationIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>
+        }
+        update: {
+          args: Prisma.PublicationIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.PublicationIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PublicationIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PublicationIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.PublicationIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.PublicationIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePublicationIntent>
+        }
+        groupBy: {
+          args: Prisma.PublicationIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PublicationIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    PublicationResult: {
+      payload: Prisma.$PublicationResultPayload<ExtArgs>
+      fields: Prisma.PublicationResultFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PublicationResultFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PublicationResultFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>
+        }
+        findFirst: {
+          args: Prisma.PublicationResultFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PublicationResultFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>
+        }
+        findMany: {
+          args: Prisma.PublicationResultFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>[]
+        }
+        create: {
+          args: Prisma.PublicationResultCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>
+        }
+        createMany: {
+          args: Prisma.PublicationResultCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PublicationResultCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>[]
+        }
+        delete: {
+          args: Prisma.PublicationResultDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>
+        }
+        update: {
+          args: Prisma.PublicationResultUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>
+        }
+        deleteMany: {
+          args: Prisma.PublicationResultDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PublicationResultUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PublicationResultUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>[]
+        }
+        upsert: {
+          args: Prisma.PublicationResultUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationResultPayload>
+        }
+        aggregate: {
+          args: Prisma.PublicationResultAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePublicationResult>
+        }
+        groupBy: {
+          args: Prisma.PublicationResultGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationResultGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PublicationResultCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationResultCountAggregateOutputType> | number
         }
       }
     }
@@ -5299,6 +5524,66 @@ export const EditorialExportResultScalarFieldEnum = {
 export type EditorialExportResultScalarFieldEnum = (typeof EditorialExportResultScalarFieldEnum)[keyof typeof EditorialExportResultScalarFieldEnum]
 
 
+export const PublicationChannelScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  platform: 'platform',
+  displayName: 'displayName',
+  externalChannelRef: 'externalChannelRef',
+  timezone: 'timezone',
+  state: 'state',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PublicationChannelScalarFieldEnum = (typeof PublicationChannelScalarFieldEnum)[keyof typeof PublicationChannelScalarFieldEnum]
+
+
+export const PublicationIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  projectId: 'projectId',
+  channelId: 'channelId',
+  approvalId: 'approvalId',
+  exportIntentId: 'exportIntentId',
+  exportResultId: 'exportResultId',
+  platform: 'platform',
+  scheduledAt: 'scheduledAt',
+  timezone: 'timezone',
+  metadataSnapshot: 'metadataSnapshot',
+  state: 'state',
+  remotePublicationId: 'remotePublicationId',
+  remoteStatus: 'remoteStatus',
+  attemptCount: 'attemptCount',
+  retryBudget: 'retryBudget',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  queuedAt: 'queuedAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  canceledAt: 'canceledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PublicationIntentScalarFieldEnum = (typeof PublicationIntentScalarFieldEnum)[keyof typeof PublicationIntentScalarFieldEnum]
+
+
+export const PublicationResultScalarFieldEnum = {
+  id: 'id',
+  publicationIntentId: 'publicationIntentId',
+  resultContractVersion: 'resultContractVersion',
+  adapterVersion: 'adapterVersion',
+  providerReceipt: 'providerReceipt',
+  publicUrl: 'publicUrl',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PublicationResultScalarFieldEnum = (typeof PublicationResultScalarFieldEnum)[keyof typeof PublicationResultScalarFieldEnum]
+
+
 export const CutSegmentScalarFieldEnum = {
   id: 'id',
   jobId: 'jobId',
@@ -6345,6 +6630,48 @@ export type ListEnumEditorialOperationTypeFieldRefInput<$PrismaModel> = FieldRef
 
 
 /**
+ * Reference to a field of type 'PublicationPlatform'
+ */
+export type EnumPublicationPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PublicationPlatform'>
+    
+
+
+/**
+ * Reference to a field of type 'PublicationPlatform[]'
+ */
+export type ListEnumPublicationPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PublicationPlatform[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PublicationChannelState'
+ */
+export type EnumPublicationChannelStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PublicationChannelState'>
+    
+
+
+/**
+ * Reference to a field of type 'PublicationChannelState[]'
+ */
+export type ListEnumPublicationChannelStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PublicationChannelState[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PublicationIntentState'
+ */
+export type EnumPublicationIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PublicationIntentState'>
+    
+
+
+/**
+ * Reference to a field of type 'PublicationIntentState[]'
+ */
+export type ListEnumPublicationIntentStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PublicationIntentState[]'>
+    
+
+
+/**
  * Reference to a field of type 'JobAttemptState'
  */
 export type EnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState'>
@@ -6675,6 +7002,9 @@ export type GlobalOmitConfig = {
   editorialOperationRequest?: Prisma.EditorialOperationRequestOmit
   editorialExportIntent?: Prisma.EditorialExportIntentOmit
   editorialExportResult?: Prisma.EditorialExportResultOmit
+  publicationChannel?: Prisma.PublicationChannelOmit
+  publicationIntent?: Prisma.PublicationIntentOmit
+  publicationResult?: Prisma.PublicationResultOmit
   cutSegment?: Prisma.CutSegmentOmit
   jobAttempt?: Prisma.JobAttemptOmit
   creatorProfile?: Prisma.CreatorProfileOmit

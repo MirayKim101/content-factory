@@ -153,6 +153,21 @@ export type EditorialExportIntent = Prisma.EditorialExportIntentModel
  */
 export type EditorialExportResult = Prisma.EditorialExportResultModel
 /**
+ * Model PublicationChannel
+ * 
+ */
+export type PublicationChannel = Prisma.PublicationChannelModel
+/**
+ * Model PublicationIntent
+ * 
+ */
+export type PublicationIntent = Prisma.PublicationIntentModel
+/**
+ * Model PublicationResult
+ * 
+ */
+export type PublicationResult = Prisma.PublicationResultModel
+/**
  * Model CutSegment
  * 
  */

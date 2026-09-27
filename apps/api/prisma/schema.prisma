@@ -210,6 +210,28 @@ enum EditorialProvenanceMode {
   MIXED
 }
 
+enum PublicationPlatform {
+  LOCAL_DRY_RUN
+  YOUTUBE
+  TIKTOK
+}
+
+enum PublicationChannelState {
+  ENABLED
+  REVOKED
+}
+
+enum PublicationIntentState {
+  SCHEDULED
+  QUEUED
+  PROCESSING
+  UNKNOWN_REMOTE_STATE
+  DRY_RUN_READY
+  PUBLISHED
+  FAILED_FINAL
+  CANCELED
+}
+
 model Project {
   id                         String                      @id @db.Uuid
   idempotencyKey             String                      @unique
@@ -235,6 +257,8 @@ model Project {
   editorialOperationRequests EditorialOperationRequest[]
   editorialExportIntents     EditorialExportIntent[]
   sourceEditorialContexts    SourceEditorialContext[]
+  publicationChannels        PublicationChannel[]
+  publicationIntents         PublicationIntent[]
 }
 
 model VideoSource {
@@ -718,50 +742,51 @@ model EditorialMutationRequest {
 }
 
 model EditorialApproval {
-  id                           String                      @id @db.Uuid
-  projectId                    String                      @db.Uuid
-  project                      Project                     @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  sourceId                     String                      @db.Uuid
-  source                       VideoSource                 @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  id                           String                               @id @db.Uuid
+  projectId                    String                               @db.Uuid
+  project                      Project                              @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId                     String                               @db.Uuid
+  source                       VideoSource                          @relation(fields: [sourceId], references: [id], onDelete: Restrict)
   sourceVersion                Int
-  cutPipelineJobId             String                      @db.Uuid
-  cutPipelineJob               PipelineJob                 @relation(fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "EditorialApproval_exact_cut_job")
-  editorialPackageId           String                      @db.Uuid
-  editorialPackage             EditorialPackage            @relation(fields: [editorialPackageId], references: [id], onDelete: Restrict)
-  editorialPackageRevisionId   String                      @db.Uuid
-  editorialPackageRevision     EditorialPackageRevision    @relation(fields: [editorialPackageRevisionId, editorialPackageId, editorialRevision], references: [id, packageId, revision], onDelete: Restrict, map: "EditorialApproval_exact_editorial_revision")
+  cutPipelineJobId             String                               @db.Uuid
+  cutPipelineJob               PipelineJob                          @relation(fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "EditorialApproval_exact_cut_job")
+  editorialPackageId           String                               @db.Uuid
+  editorialPackage             EditorialPackage                     @relation(fields: [editorialPackageId], references: [id], onDelete: Restrict)
+  editorialPackageRevisionId   String                               @db.Uuid
+  editorialPackageRevision     EditorialPackageRevision             @relation(fields: [editorialPackageRevisionId, editorialPackageId, editorialRevision], references: [id, packageId, revision], onDelete: Restrict, map: "EditorialApproval_exact_editorial_revision")
   editorialRevision            Int
-  processingTemplateRevisionId String                      @db.Uuid
-  processingTemplateRevision   ProcessingTemplateRevision  @relation(fields: [processingTemplateRevisionId], references: [id], onDelete: Restrict)
-  thumbnailAssetId             String                      @db.Uuid
-  thumbnailAsset               EditorialAsset              @relation(fields: [thumbnailAssetId, projectId], references: [id, projectId], onDelete: Restrict, map: "EditorialApproval_exact_thumbnail_project")
+  processingTemplateRevisionId String                               @db.Uuid
+  processingTemplateRevision   ProcessingTemplateRevision           @relation(fields: [processingTemplateRevisionId], references: [id], onDelete: Restrict)
+  thumbnailAssetId             String                               @db.Uuid
+  thumbnailAsset               EditorialAsset                       @relation(fields: [thumbnailAssetId, projectId], references: [id, projectId], onDelete: Restrict, map: "EditorialApproval_exact_thumbnail_project")
   thumbnailSha256              String
   thumbnailSizeBytes           BigInt
   thumbnailContentType         String
-  assemblyRecipeId             String                      @db.Uuid
-  assemblyRecipe               AssemblyRecipe              @relation(fields: [assemblyRecipeId], references: [id], onDelete: Restrict)
-  recipeRevisionId             String                      @db.Uuid
-  recipeRevisionRecord         AssemblyRecipeRevision      @relation(fields: [recipeRevisionId, assemblyRecipeId, recipeRevision], references: [id, recipeId, revision], onDelete: Restrict, map: "EditorialApproval_exact_recipe_revision")
+  assemblyRecipeId             String                               @db.Uuid
+  assemblyRecipe               AssemblyRecipe                       @relation(fields: [assemblyRecipeId], references: [id], onDelete: Restrict)
+  recipeRevisionId             String                               @db.Uuid
+  recipeRevisionRecord         AssemblyRecipeRevision               @relation(fields: [recipeRevisionId, assemblyRecipeId, recipeRevision], references: [id, recipeId, revision], onDelete: Restrict, map: "EditorialApproval_exact_recipe_revision")
   recipeRevision               Int
   configurationFingerprint     String
-  assemblyRenderIntentId       String                      @db.Uuid
-  assemblyRenderIntent         AssemblyRenderIntent        @relation(fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "EditorialApproval_exact_render_intent")
-  assemblyRenderResultId       String                      @db.Uuid
-  assemblyRenderResult         AssemblyRenderResult        @relation(fields: [assemblyRenderResultId, assemblyRenderIntentId, renderArtifactId], references: [id, renderIntentId, artifactId], onDelete: Restrict, map: "EditorialApproval_exact_render_result")
-  renderArtifactId             String                      @db.Uuid
-  renderArtifact               MediaArtifact               @relation(fields: [renderArtifactId], references: [id], onDelete: Restrict)
+  assemblyRenderIntentId       String                               @db.Uuid
+  assemblyRenderIntent         AssemblyRenderIntent                 @relation(fields: [assemblyRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "EditorialApproval_exact_render_intent")
+  assemblyRenderResultId       String                               @db.Uuid
+  assemblyRenderResult         AssemblyRenderResult                 @relation(fields: [assemblyRenderResultId, assemblyRenderIntentId, renderArtifactId], references: [id, renderIntentId, artifactId], onDelete: Restrict, map: "EditorialApproval_exact_render_result")
+  renderArtifactId             String                               @db.Uuid
+  renderArtifact               MediaArtifact                        @relation(fields: [renderArtifactId], references: [id], onDelete: Restrict)
   renderArtifactSha256         String
   renderArtifactSizeBytes      BigInt
   renderContractVersion        String
-  approvalContractVersion      String                      @default("manual-horizontal-approval-v1")
+  approvalContractVersion      String                               @default("manual-horizontal-approval-v1")
   fingerprintBasisVersion      String?
   candidateFingerprint         String
-  approvedAt                   DateTime                    @default(now())
+  approvedAt                   DateTime                             @default(now())
   metrics                      EditorialApprovalMetrics?
   componentSnapshots           EditorialApprovalComponentSnapshot[]
   economicsV2                  EditorialApprovalEconomicsV2?
   operationRequests            EditorialOperationRequest[]
   exportIntents                EditorialExportIntent[]
+  publicationIntents           PublicationIntent[]
 
   @@unique([editorialPackageRevisionId, assemblyRenderResultId, approvalContractVersion], map: "EditorialApproval_logical_key")
   @@unique([id, editorialPackageRevisionId], map: "EditorialApproval_id_revision_key")
@@ -773,35 +798,35 @@ model EditorialApproval {
 
 /// Immutable v2 approval capture for one independently reviewed editorial component.
 model EditorialApprovalComponentSnapshot {
-  id                    String                       @id @db.Uuid
-  approvalId            String                       @db.Uuid
-  editorialPackageRevisionId String                  @db.Uuid
-  approval              EditorialApproval            @relation(fields: [approvalId, editorialPackageRevisionId], references: [id, editorialPackageRevisionId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_approval_revision_fkey")
-  component             EditorialComponentType
-  provenanceId          String                       @db.Uuid
-  provenance            EditorialComponentProvenance @relation(fields: [provenanceId, editorialPackageRevisionId, component], references: [id, packageRevisionId, component], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_provenance_fkey")
-  mode                  EditorialProvenanceMode
-  basisVersion          String
-  researchIntentId      String?                      @db.Uuid
-  researchIntent        ResearchSuggestionIntent?    @relation(fields: [researchIntentId], references: [id], onDelete: Restrict)
-  suggestionSetId       String?                      @db.Uuid
-  suggestionSet         ResearchSuggestionSet?       @relation(fields: [suggestionSetId, researchIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_suggestion_fkey")
-  imageIntentId         String?                      @db.Uuid
-  imageIntent           ImageSuggestionIntent?       @relation(fields: [imageIntentId], references: [id], onDelete: Restrict)
-  imageCandidateId      String?                      @db.Uuid
-  imageCandidate        ImageSuggestionCandidate?    @relation(fields: [imageCandidateId, imageIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_image_fkey")
-  transcriptArtifactId  String?                      @db.Uuid
-  transcriptArtifact    TranscriptEvidenceArtifact?  @relation(fields: [transcriptArtifactId], references: [id], onDelete: Restrict)
-  transcriptSha256      String?
-  citations             Json
-  freshness             Json?
-  imageSafetyDecision   Json?
-  likeness              String?
-  directCostMicrousd    BigInt
-  costBasisVersion      String
-  incompleteReasons     Json
-  snapshotFingerprint   String
-  createdAt             DateTime                     @default(now())
+  id                         String                       @id @db.Uuid
+  approvalId                 String                       @db.Uuid
+  editorialPackageRevisionId String                       @db.Uuid
+  approval                   EditorialApproval            @relation(fields: [approvalId, editorialPackageRevisionId], references: [id, editorialPackageRevisionId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_approval_revision_fkey")
+  component                  EditorialComponentType
+  provenanceId               String                       @db.Uuid
+  provenance                 EditorialComponentProvenance @relation(fields: [provenanceId, editorialPackageRevisionId, component], references: [id, packageRevisionId, component], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_provenance_fkey")
+  mode                       EditorialProvenanceMode
+  basisVersion               String
+  researchIntentId           String?                      @db.Uuid
+  researchIntent             ResearchSuggestionIntent?    @relation(fields: [researchIntentId], references: [id], onDelete: Restrict)
+  suggestionSetId            String?                      @db.Uuid
+  suggestionSet              ResearchSuggestionSet?       @relation(fields: [suggestionSetId, researchIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_suggestion_fkey")
+  imageIntentId              String?                      @db.Uuid
+  imageIntent                ImageSuggestionIntent?       @relation(fields: [imageIntentId], references: [id], onDelete: Restrict)
+  imageCandidateId           String?                      @db.Uuid
+  imageCandidate             ImageSuggestionCandidate?    @relation(fields: [imageCandidateId, imageIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialApprovalComponentSnapshot_exact_image_fkey")
+  transcriptArtifactId       String?                      @db.Uuid
+  transcriptArtifact         TranscriptEvidenceArtifact?  @relation(fields: [transcriptArtifactId], references: [id], onDelete: Restrict)
+  transcriptSha256           String?
+  citations                  Json
+  freshness                  Json?
+  imageSafetyDecision        Json?
+  likeness                   String?
+  directCostMicrousd         BigInt
+  costBasisVersion           String
+  incompleteReasons          Json
+  snapshotFingerprint        String
+  createdAt                  DateTime                     @default(now())
 
   @@unique([approvalId, component], map: "EditorialApprovalComponentSnapshot_approval_component_key")
   @@index([provenanceId])
@@ -813,27 +838,27 @@ model EditorialApprovalComponentSnapshot {
 
 /// One authoritative economics snapshot for a human-horizontal-approval-v2 row.
 model EditorialApprovalEconomicsV2 {
-  approvalId                    String            @id @db.Uuid
-  approval                      EditorialApproval @relation(fields: [approvalId], references: [id], onDelete: Restrict)
-  schemaVersion                 String
-  workflowMode                  EditorialProvenanceMode
-  attentionSchemaVersion        String
-  preparationForegroundMs      Int
-  finalReviewForegroundMs       Int
-  totalOperatorAttentionMs      Int
-  metadataDirectCostMicrousd    BigInt
-  evidenceDirectCostMicrousd    BigInt
-  thumbnailDirectCostMicrousd   BigInt
-  combinedDirectCostMicrousd    BigInt
-  currency                      String
-  unit                          String
-  metadataCostBasisVersion      String
-  evidenceCostBasisVersion      String
-  thumbnailCostBasisVersion     String
-  assistanceTiming             Json?
-  incompleteReasons            Json
-  snapshotFingerprint          String
-  createdAt                    DateTime          @default(now())
+  approvalId                  String                  @id @db.Uuid
+  approval                    EditorialApproval       @relation(fields: [approvalId], references: [id], onDelete: Restrict)
+  schemaVersion               String
+  workflowMode                EditorialProvenanceMode
+  attentionSchemaVersion      String
+  preparationForegroundMs     Int
+  finalReviewForegroundMs     Int
+  totalOperatorAttentionMs    Int
+  metadataDirectCostMicrousd  BigInt
+  evidenceDirectCostMicrousd  BigInt
+  thumbnailDirectCostMicrousd BigInt
+  combinedDirectCostMicrousd  BigInt
+  currency                    String
+  unit                        String
+  metadataCostBasisVersion    String
+  evidenceCostBasisVersion    String
+  thumbnailCostBasisVersion   String
+  assistanceTiming            Json?
+  incompleteReasons           Json
+  snapshotFingerprint         String
+  createdAt                   DateTime                @default(now())
 }
 
 model EditorialApprovalMetrics {
@@ -926,8 +951,79 @@ model EditorialExportResult {
   exportContractVersion String                @default("editorial-export-zip-v1")
   completedAt           DateTime
   createdAt             DateTime              @default(now())
+  publicationIntents    PublicationIntent[]
 
+  @@unique([id, exportIntentId], map: "EditorialExportResult_id_exportIntentId_key")
   @@unique([id, exportIntentId, artifactId], map: "EditorialExportResult_exact_identity_key")
+}
+
+model PublicationChannel {
+  id                 String                  @id @db.Uuid
+  projectId          String                  @db.Uuid
+  project            Project                 @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  platform           PublicationPlatform
+  displayName        String
+  externalChannelRef String
+  timezone           String
+  state              PublicationChannelState @default(ENABLED)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  intents            PublicationIntent[]
+
+  @@unique([projectId, platform, externalChannelRef], map: "PublicationChannel_project_platform_external_key")
+  @@unique([id, projectId], map: "PublicationChannel_id_projectId_key")
+  @@unique([id, projectId, platform], map: "PublicationChannel_exact_target_key")
+  @@index([projectId, state, createdAt, id])
+}
+
+model PublicationIntent {
+  id                  String                 @id @db.Uuid
+  idempotencyKey      String                 @unique
+  requestFingerprint  String
+  projectId           String                 @db.Uuid
+  project             Project                @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  channelId           String                 @db.Uuid
+  channel             PublicationChannel     @relation(fields: [channelId, projectId, platform], references: [id, projectId, platform], onDelete: Restrict, map: "PublicationIntent_exact_channel_target")
+  approvalId          String                 @db.Uuid
+  approval            EditorialApproval      @relation(fields: [approvalId, projectId], references: [id, projectId], onDelete: Restrict, map: "PublicationIntent_exact_approval_project")
+  exportIntentId      String                 @db.Uuid
+  exportResultId      String                 @db.Uuid
+  exportResult        EditorialExportResult  @relation(fields: [exportResultId, exportIntentId], references: [id, exportIntentId], onDelete: Restrict, map: "PublicationIntent_exact_export_result")
+  platform            PublicationPlatform
+  scheduledAt         DateTime
+  timezone            String
+  metadataSnapshot    Json
+  state               PublicationIntentState @default(SCHEDULED)
+  remotePublicationId String?                @unique
+  remoteStatus        String?
+  attemptCount        Int                    @default(0)
+  retryBudget         Int                    @default(3)
+  failureCode         String?
+  failureMessage      String?
+  queuedAt            DateTime?
+  startedAt           DateTime?
+  finishedAt          DateTime?
+  canceledAt          DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  result              PublicationResult?
+
+  @@unique([channelId, exportResultId, platform], map: "PublicationIntent_logical_target_key")
+  @@index([projectId, scheduledAt, id])
+  @@index([state, scheduledAt, id])
+  @@index([channelId, createdAt, id])
+}
+
+model PublicationResult {
+  id                    String            @id @db.Uuid
+  publicationIntentId   String            @unique @db.Uuid
+  publicationIntent     PublicationIntent @relation(fields: [publicationIntentId], references: [id], onDelete: Restrict)
+  resultContractVersion String            @default("publication-result-v1")
+  adapterVersion        String
+  providerReceipt       Json
+  publicUrl             String?
+  completedAt           DateTime
+  createdAt             DateTime          @default(now())
 }
 
 model CutSegment {
@@ -1206,21 +1302,21 @@ model AiContentOperationRequest {
 }
 
 model EditorialComponentProvenance {
-  id                String                    @id @db.Uuid
-  packageRevisionId String                    @db.Uuid
-  packageRevision   EditorialPackageRevision  @relation(fields: [packageRevisionId], references: [id], onDelete: Restrict)
+  id                String                               @id @db.Uuid
+  packageRevisionId String                               @db.Uuid
+  packageRevision   EditorialPackageRevision             @relation(fields: [packageRevisionId], references: [id], onDelete: Restrict)
   component         EditorialComponentType
-  mode              EditorialProvenanceMode   @default(MANUAL)
-  basisVersion      String                    @default("manual-editorial-v1")
-  researchIntentId  String?                   @db.Uuid
-  researchIntent    ResearchSuggestionIntent? @relation(fields: [researchIntentId], references: [id], onDelete: Restrict)
-  suggestionSetId   String?                   @db.Uuid
-  suggestionSet     ResearchSuggestionSet?    @relation(fields: [suggestionSetId], references: [id], onDelete: Restrict)
-  imageIntentId     String?                   @db.Uuid
-  imageIntent       ImageSuggestionIntent?    @relation(fields: [imageIntentId], references: [id], onDelete: Restrict)
-  imageCandidateId  String?                   @db.Uuid
-  imageCandidate    ImageSuggestionCandidate? @relation(fields: [imageCandidateId, imageIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialComponentProvenance_exact_image_candidate_fkey")
-  createdAt         DateTime                  @default(now())
+  mode              EditorialProvenanceMode              @default(MANUAL)
+  basisVersion      String                               @default("manual-editorial-v1")
+  researchIntentId  String?                              @db.Uuid
+  researchIntent    ResearchSuggestionIntent?            @relation(fields: [researchIntentId], references: [id], onDelete: Restrict)
+  suggestionSetId   String?                              @db.Uuid
+  suggestionSet     ResearchSuggestionSet?               @relation(fields: [suggestionSetId], references: [id], onDelete: Restrict)
+  imageIntentId     String?                              @db.Uuid
+  imageIntent       ImageSuggestionIntent?               @relation(fields: [imageIntentId], references: [id], onDelete: Restrict)
+  imageCandidateId  String?                              @db.Uuid
+  imageCandidate    ImageSuggestionCandidate?            @relation(fields: [imageCandidateId, imageIntentId], references: [id, intentId], onDelete: Restrict, map: "EditorialComponentProvenance_exact_image_candidate_fkey")
+  createdAt         DateTime                             @default(now())
   approvalSnapshots EditorialApprovalComponentSnapshot[]
 
   @@unique([packageRevisionId, component], map: "EditorialComponentProvenance_revision_component_key")
@@ -1455,37 +1551,37 @@ model TranscriptEvidenceIntent {
 
 /// Durable operator-supplied cited research request bound to exact transcript lineage.
 model ResearchSuggestionIntent {
-  id                       String                         @id @db.Uuid
-  idempotencyKey           String                         @unique
-  requestFingerprint       String
-  transcriptIntentId       String                         @db.Uuid
-  transcriptIntent         TranscriptEvidenceIntent       @relation(fields: [transcriptIntentId], references: [id], onDelete: Restrict)
-  projectId                String                         @db.Uuid
-  sourceId                 String                         @db.Uuid
-  sourceVersion            Int
-  cutPipelineJobId         String                         @db.Uuid
-  cutResultArtifactId      String                         @db.Uuid
-  creatorProfileRevisionId String                         @db.Uuid
-  sourceContextRevisionId  String                         @db.Uuid
-  cutPromptRevisionId      String                         @db.Uuid
-  contextPolicyFingerprint String
-  transcriptArtifactId     String                         @db.Uuid
-  transcriptSha256         String
-  query                    String
-  contractVersion          String
-  adapterVersion           String
-  freshnessPolicyVersion   String
-  searchedAt               DateTime
-  freshUntil               DateTime
-  state                    ResearchIntentState            @default(QUEUED)
-  failureCode              String?
-  failureMessage           String?
-  createdAt                DateTime                       @default(now())
-  updatedAt                DateTime                       @updatedAt
-  citations                ResearchCitation[]
-  attempts                 ResearchSuggestionAttempt[]
-  suggestionSet            ResearchSuggestionSet?
-  componentProvenance      EditorialComponentProvenance[]
+  id                         String                               @id @db.Uuid
+  idempotencyKey             String                               @unique
+  requestFingerprint         String
+  transcriptIntentId         String                               @db.Uuid
+  transcriptIntent           TranscriptEvidenceIntent             @relation(fields: [transcriptIntentId], references: [id], onDelete: Restrict)
+  projectId                  String                               @db.Uuid
+  sourceId                   String                               @db.Uuid
+  sourceVersion              Int
+  cutPipelineJobId           String                               @db.Uuid
+  cutResultArtifactId        String                               @db.Uuid
+  creatorProfileRevisionId   String                               @db.Uuid
+  sourceContextRevisionId    String                               @db.Uuid
+  cutPromptRevisionId        String                               @db.Uuid
+  contextPolicyFingerprint   String
+  transcriptArtifactId       String                               @db.Uuid
+  transcriptSha256           String
+  query                      String
+  contractVersion            String
+  adapterVersion             String
+  freshnessPolicyVersion     String
+  searchedAt                 DateTime
+  freshUntil                 DateTime
+  state                      ResearchIntentState                  @default(QUEUED)
+  failureCode                String?
+  failureMessage             String?
+  createdAt                  DateTime                             @default(now())
+  updatedAt                  DateTime                             @updatedAt
+  citations                  ResearchCitation[]
+  attempts                   ResearchSuggestionAttempt[]
+  suggestionSet              ResearchSuggestionSet?
+  componentProvenance        EditorialComponentProvenance[]
   approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
 
   @@index([transcriptIntentId, createdAt, id])
@@ -1530,21 +1626,21 @@ model ResearchSuggestionAttempt {
 }
 
 model ResearchSuggestionSet {
-  id                  String                         @id @db.Uuid
-  intentId            String                         @unique @db.Uuid
-  intent              ResearchSuggestionIntent       @relation(fields: [intentId], references: [id], onDelete: Restrict)
-  attemptId           String                         @unique @db.Uuid
-  attempt             ResearchSuggestionAttempt      @relation(fields: [attemptId], references: [id], onDelete: Restrict)
-  title               String
-  description         String
-  tags                Json
-  claims              Json
-  citationIds         Json
-  basisVersion        String
-  directCostMicrousd  BigInt                         @default(0)
-  costBasisVersion    String
-  createdAt           DateTime                       @default(now())
-  componentProvenance EditorialComponentProvenance[]
+  id                         String                               @id @db.Uuid
+  intentId                   String                               @unique @db.Uuid
+  intent                     ResearchSuggestionIntent             @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptId                  String                               @unique @db.Uuid
+  attempt                    ResearchSuggestionAttempt            @relation(fields: [attemptId], references: [id], onDelete: Restrict)
+  title                      String
+  description                String
+  tags                       Json
+  claims                     Json
+  citationIds                Json
+  basisVersion               String
+  directCostMicrousd         BigInt                               @default(0)
+  costBasisVersion           String
+  createdAt                  DateTime                             @default(now())
+  componentProvenance        EditorialComponentProvenance[]
   approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
 
   @@unique([id, intentId], map: "ResearchSuggestionSet_id_intent_key")
@@ -1552,41 +1648,41 @@ model ResearchSuggestionSet {
 
 /// Durable no-likeness image request bound to exact cut and creator context.
 model ImageSuggestionIntent {
-  id                                    String                         @id @db.Uuid
-  idempotencyKey                        String                         @unique
+  id                                    String                               @id @db.Uuid
+  idempotencyKey                        String                               @unique
   requestFingerprint                    String
-  projectId                             String                         @db.Uuid
-  sourceId                              String                         @db.Uuid
+  projectId                             String                               @db.Uuid
+  sourceId                              String                               @db.Uuid
   sourceVersion                         Int
   sourceSha256                          String
   sourceAuthorizationRevision           Int
   sourceAuthorizationBasis              String
   sourceAuthorizationDeclarationVersion String
   sourceAuthorizationDecidedAt          DateTime
-  cutPipelineJobId                      String                         @db.Uuid
-  cutResultArtifactId                   String                         @db.Uuid
+  cutPipelineJobId                      String                               @db.Uuid
+  cutResultArtifactId                   String                               @db.Uuid
   cutResultSha256                       String
   cutResultSizeBytes                    BigInt
   cutStartMs                            Int
   cutEndMs                              Int
-  creatorProfileId                      String                         @db.Uuid
-  creatorProfileRevisionId              String                         @db.Uuid
+  creatorProfileId                      String                               @db.Uuid
+  creatorProfileRevisionId              String                               @db.Uuid
   creatorProfileRevisionNo              Int
-  sourceContextId                       String                         @db.Uuid
-  sourceContextRevisionId               String                         @db.Uuid
+  sourceContextId                       String                               @db.Uuid
+  sourceContextRevisionId               String                               @db.Uuid
   sourceContextRevisionNo               Int
-  cutPromptId                           String                         @db.Uuid
-  cutPromptRevisionId                   String                         @db.Uuid
+  cutPromptId                           String                               @db.Uuid
+  cutPromptRevisionId                   String                               @db.Uuid
   cutPromptRevisionNo                   Int
   contextPolicyFingerprint              String
   contractVersion                       String
   adapterVersion                        String
   promptBasisVersion                    String
-  state                                 ImageSuggestionState           @default(QUEUED)
+  state                                 ImageSuggestionState                 @default(QUEUED)
   failureCode                           String?
   failureMessage                        String?
-  createdAt                             DateTime                       @default(now())
-  updatedAt                             DateTime                       @updatedAt
+  createdAt                             DateTime                             @default(now())
+  updatedAt                             DateTime                             @updatedAt
   attempts                              ImageSuggestionAttempt[]
   candidate                             ImageSuggestionCandidate?
   componentProvenance                   EditorialComponentProvenance[]
@@ -1597,27 +1693,27 @@ model ImageSuggestionIntent {
 }
 
 model ImageSuggestionAttempt {
-  id             String                      @id @db.Uuid
-  intentId       String                      @db.Uuid
-  intent         ImageSuggestionIntent       @relation(fields: [intentId], references: [id], onDelete: Restrict)
-  attemptNumber  Int
-  state          ImageSuggestionAttemptState @default(PROCESSING)
-  leaseToken     String                      @unique
-  leaseExpiresAt DateTime
-  workDeadlineAt DateTime
-  failureCode    String?
-  failureMessage String?
-  objectKey      String                @unique
-  uploadStartedAt DateTime?
-  uploadSettledAt DateTime?
-  cleanupStatus  ArtifactCleanupStatus @default(PENDING)
-  cleanupAttemptCount Int               @default(0)
+  id                   String                      @id @db.Uuid
+  intentId             String                      @db.Uuid
+  intent               ImageSuggestionIntent       @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptNumber        Int
+  state                ImageSuggestionAttemptState @default(PROCESSING)
+  leaseToken           String                      @unique
+  leaseExpiresAt       DateTime
+  workDeadlineAt       DateTime
+  failureCode          String?
+  failureMessage       String?
+  objectKey            String                      @unique
+  uploadStartedAt      DateTime?
+  uploadSettledAt      DateTime?
+  cleanupStatus        ArtifactCleanupStatus       @default(PENDING)
+  cleanupAttemptCount  Int                         @default(0)
   cleanupLastErrorCode String?
-  nextCleanupAt  DateTime               @default(now())
-  cleanupCompletedAt DateTime?
-  createdAt      DateTime                    @default(now())
-  updatedAt      DateTime                    @updatedAt
-  candidate      ImageSuggestionCandidate?
+  nextCleanupAt        DateTime                    @default(now())
+  cleanupCompletedAt   DateTime?
+  createdAt            DateTime                    @default(now())
+  updatedAt            DateTime                    @updatedAt
+  candidate            ImageSuggestionCandidate?
 
   @@unique([intentId, attemptNumber])
   @@unique([id, intentId], map: "ImageSuggestionAttempt_id_intent_key")
@@ -1626,28 +1722,28 @@ model ImageSuggestionAttempt {
 }
 
 model ImageSuggestionCandidate {
-  id                  String                         @id @db.Uuid
-  intentId            String                         @unique @db.Uuid
-  intent              ImageSuggestionIntent          @relation(fields: [intentId], references: [id], onDelete: Restrict)
-  attemptId           String                         @unique @db.Uuid
-  attempt             ImageSuggestionAttempt         @relation(fields: [attemptId, intentId], references: [id, intentId], onDelete: Restrict, map: "ImageSuggestionCandidate_exact_attempt_fkey")
-  objectKey           String                         @unique
-  contentType         String
-  sizeBytes           BigInt
-  sha256              String
-  width               Int
-  height              Int
-  storageEtag         String?
-  storageVersion      String?
-  contractVersion     String
-  adapterVersion      String
-  promptBasisVersion  String
-  likeness            String                         @default("NONE")
-  safetyDecision      Json
-  directCostMicrousd  BigInt                         @default(0)
-  costBasisVersion    String
-  createdAt           DateTime                       @default(now())
-  componentProvenance EditorialComponentProvenance[]
+  id                         String                               @id @db.Uuid
+  intentId                   String                               @unique @db.Uuid
+  intent                     ImageSuggestionIntent                @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptId                  String                               @unique @db.Uuid
+  attempt                    ImageSuggestionAttempt               @relation(fields: [attemptId, intentId], references: [id, intentId], onDelete: Restrict, map: "ImageSuggestionCandidate_exact_attempt_fkey")
+  objectKey                  String                               @unique
+  contentType                String
+  sizeBytes                  BigInt
+  sha256                     String
+  width                      Int
+  height                     Int
+  storageEtag                String?
+  storageVersion             String?
+  contractVersion            String
+  adapterVersion             String
+  promptBasisVersion         String
+  likeness                   String                               @default("NONE")
+  safetyDecision             Json
+  directCostMicrousd         BigInt                               @default(0)
+  costBasisVersion           String
+  createdAt                  DateTime                             @default(now())
+  componentProvenance        EditorialComponentProvenance[]
   approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
 
   @@unique([id, intentId], map: "ImageSuggestionCandidate_id_intent_key")
@@ -1656,30 +1752,30 @@ model ImageSuggestionCandidate {
 
 /// Fenced worker attempt. An expired lease may be reclaimed until retryBudget is exhausted.
 model TranscriptEvidenceAttempt {
-  id                   String                   @id @db.Uuid
-  intentId             String                   @db.Uuid
-  intent               TranscriptEvidenceIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
-  attemptNumber        Int
-  state                TranscriptAttemptState   @default(PROCESSING)
-  workerId             String
-  leaseToken           String                   @unique
-  leaseExpiresAt       DateTime
-  workDeadlineAt       DateTime
-  objectKey            String?                  @unique
-  uploadStartedAt      DateTime?
-  uploadSettledAt      DateTime?
-  cleanupStatus        ArtifactCleanupStatus    @default(NOT_REQUIRED)
-  cleanupAttemptCount  Int                      @default(0)
-  cleanupLastErrorCode String?
-  cleanupLeaseToken    String?                  @unique
+  id                    String                   @id @db.Uuid
+  intentId              String                   @db.Uuid
+  intent                TranscriptEvidenceIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  attemptNumber         Int
+  state                 TranscriptAttemptState   @default(PROCESSING)
+  workerId              String
+  leaseToken            String                   @unique
+  leaseExpiresAt        DateTime
+  workDeadlineAt        DateTime
+  objectKey             String?                  @unique
+  uploadStartedAt       DateTime?
+  uploadSettledAt       DateTime?
+  cleanupStatus         ArtifactCleanupStatus    @default(NOT_REQUIRED)
+  cleanupAttemptCount   Int                      @default(0)
+  cleanupLastErrorCode  String?
+  cleanupLeaseToken     String?                  @unique
   cleanupLeaseExpiresAt DateTime?
-  nextCleanupAt        DateTime                 @default(now())
-  cleanupCompletedAt   DateTime?
-  startedAt            DateTime                 @default(now())
-  finishedAt           DateTime?
-  failureCode          String?
-  failureMessage       String?
-  updatedAt            DateTime                 @updatedAt
+  nextCleanupAt         DateTime                 @default(now())
+  cleanupCompletedAt    DateTime?
+  startedAt             DateTime                 @default(now())
+  finishedAt            DateTime?
+  failureCode           String?
+  failureMessage        String?
+  updatedAt             DateTime                 @updatedAt
 
   @@unique([intentId, attemptNumber])
   @@index([state, leaseExpiresAt])
@@ -1688,16 +1784,16 @@ model TranscriptEvidenceAttempt {
 
 /// Private immutable transcript bytes and normalized timestamp metadata.
 model TranscriptEvidenceArtifact {
-  id             String                   @id @db.Uuid
-  intentId       String                   @unique @db.Uuid
-  intent         TranscriptEvidenceIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
-  objectKey      String                   @unique
-  contentType    String
-  sizeBytes      BigInt
-  sha256         String
-  adapterVersion String
-  language       String
-  segments       Json
-  createdAt      DateTime                 @default(now())
+  id                         String                               @id @db.Uuid
+  intentId                   String                               @unique @db.Uuid
+  intent                     TranscriptEvidenceIntent             @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  objectKey                  String                               @unique
+  contentType                String
+  sizeBytes                  BigInt
+  sha256                     String
+  adapterVersion             String
+  language                   String
+  segments                   Json
+  createdAt                  DateTime                             @default(now())
   approvalComponentSnapshots EditorialApprovalComponentSnapshot[]
 }

@@ -425,6 +425,7 @@ export type EditorialApprovalWhereInput = {
   economicsV2?: Prisma.XOR<Prisma.EditorialApprovalEconomicsV2NullableScalarRelationFilter, Prisma.EditorialApprovalEconomicsV2WhereInput> | null
   operationRequests?: Prisma.EditorialOperationRequestListRelationFilter
   exportIntents?: Prisma.EditorialExportIntentListRelationFilter
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
 }
 
 export type EditorialApprovalOrderByWithRelationInput = {
@@ -472,6 +473,7 @@ export type EditorialApprovalOrderByWithRelationInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2OrderByWithRelationInput
   operationRequests?: Prisma.EditorialOperationRequestOrderByRelationAggregateInput
   exportIntents?: Prisma.EditorialExportIntentOrderByRelationAggregateInput
+  publicationIntents?: Prisma.PublicationIntentOrderByRelationAggregateInput
 }
 
 export type EditorialApprovalWhereUniqueInput = Prisma.AtLeast<{
@@ -526,6 +528,7 @@ export type EditorialApprovalWhereUniqueInput = Prisma.AtLeast<{
   economicsV2?: Prisma.XOR<Prisma.EditorialApprovalEconomicsV2NullableScalarRelationFilter, Prisma.EditorialApprovalEconomicsV2WhereInput> | null
   operationRequests?: Prisma.EditorialOperationRequestListRelationFilter
   exportIntents?: Prisma.EditorialExportIntentListRelationFilter
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
 }, "id" | "editorialPackageRevisionId_assemblyRenderResultId_approvalContractVersion" | "id_editorialPackageRevisionId" | "id_projectId" | "id_projectId_sourceId_sourceVersion_cutPipelineJobId_candidateFingerprint_editorialPackageRevisionId_recipeRevisionId_assemblyRenderResultId">
 
 export type EditorialApprovalOrderByWithAggregationInput = {
@@ -626,6 +629,7 @@ export type EditorialApprovalCreateInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateInput = {
@@ -661,6 +665,7 @@ export type EditorialApprovalUncheckedCreateInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUpdateInput = {
@@ -693,6 +698,7 @@ export type EditorialApprovalUpdateInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateInput = {
@@ -728,6 +734,7 @@ export type EditorialApprovalUncheckedUpdateInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalCreateManyInput = {
@@ -1535,6 +1542,20 @@ export type EditorialApprovalUpdateOneRequiredWithoutExportIntentsNestedInput = 
   update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialApprovalUpdateToOneWithWhereWithoutExportIntentsInput, Prisma.EditorialApprovalUpdateWithoutExportIntentsInput>, Prisma.EditorialApprovalUncheckedUpdateWithoutExportIntentsInput>
 }
 
+export type EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput = {
+  create?: Prisma.XOR<Prisma.EditorialApprovalCreateWithoutPublicationIntentsInput, Prisma.EditorialApprovalUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.EditorialApprovalCreateOrConnectWithoutPublicationIntentsInput
+  connect?: Prisma.EditorialApprovalWhereUniqueInput
+}
+
+export type EditorialApprovalUpdateOneRequiredWithoutPublicationIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialApprovalCreateWithoutPublicationIntentsInput, Prisma.EditorialApprovalUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.EditorialApprovalCreateOrConnectWithoutPublicationIntentsInput
+  upsert?: Prisma.EditorialApprovalUpsertWithoutPublicationIntentsInput
+  connect?: Prisma.EditorialApprovalWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialApprovalUpdateToOneWithWhereWithoutPublicationIntentsInput, Prisma.EditorialApprovalUpdateWithoutPublicationIntentsInput>, Prisma.EditorialApprovalUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
 export type EditorialApprovalCreateWithoutProjectInput = {
   id: string
   thumbnailSha256: string
@@ -1564,6 +1585,7 @@ export type EditorialApprovalCreateWithoutProjectInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutProjectInput = {
@@ -1598,6 +1620,7 @@ export type EditorialApprovalUncheckedCreateWithoutProjectInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutProjectInput = {
@@ -1688,6 +1711,7 @@ export type EditorialApprovalCreateWithoutSourceInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutSourceInput = {
@@ -1722,6 +1746,7 @@ export type EditorialApprovalUncheckedCreateWithoutSourceInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutSourceInput = {
@@ -1779,6 +1804,7 @@ export type EditorialApprovalCreateWithoutRenderArtifactInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutRenderArtifactInput = {
@@ -1813,6 +1839,7 @@ export type EditorialApprovalUncheckedCreateWithoutRenderArtifactInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutRenderArtifactInput = {
@@ -1870,6 +1897,7 @@ export type EditorialApprovalCreateWithoutCutPipelineJobInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutCutPipelineJobInput = {
@@ -1901,6 +1929,7 @@ export type EditorialApprovalUncheckedCreateWithoutCutPipelineJobInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutCutPipelineJobInput = {
@@ -1958,6 +1987,7 @@ export type EditorialApprovalCreateWithoutAssemblyRecipeInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutAssemblyRecipeInput = {
@@ -1992,6 +2022,7 @@ export type EditorialApprovalUncheckedCreateWithoutAssemblyRecipeInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutAssemblyRecipeInput = {
@@ -2049,6 +2080,7 @@ export type EditorialApprovalCreateWithoutRecipeRevisionRecordInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutRecipeRevisionRecordInput = {
@@ -2081,6 +2113,7 @@ export type EditorialApprovalUncheckedCreateWithoutRecipeRevisionRecordInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutRecipeRevisionRecordInput = {
@@ -2138,6 +2171,7 @@ export type EditorialApprovalCreateWithoutAssemblyRenderIntentInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutAssemblyRenderIntentInput = {
@@ -2169,6 +2203,7 @@ export type EditorialApprovalUncheckedCreateWithoutAssemblyRenderIntentInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutAssemblyRenderIntentInput = {
@@ -2226,6 +2261,7 @@ export type EditorialApprovalCreateWithoutAssemblyRenderResultInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutAssemblyRenderResultInput = {
@@ -2258,6 +2294,7 @@ export type EditorialApprovalUncheckedCreateWithoutAssemblyRenderResultInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutAssemblyRenderResultInput = {
@@ -2315,6 +2352,7 @@ export type EditorialApprovalCreateWithoutProcessingTemplateRevisionInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutProcessingTemplateRevisionInput = {
@@ -2349,6 +2387,7 @@ export type EditorialApprovalUncheckedCreateWithoutProcessingTemplateRevisionInp
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutProcessingTemplateRevisionInput = {
@@ -2406,6 +2445,7 @@ export type EditorialApprovalCreateWithoutThumbnailAssetInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutThumbnailAssetInput = {
@@ -2439,6 +2479,7 @@ export type EditorialApprovalUncheckedCreateWithoutThumbnailAssetInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutThumbnailAssetInput = {
@@ -2496,6 +2537,7 @@ export type EditorialApprovalCreateWithoutEditorialPackageInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutEditorialPackageInput = {
@@ -2530,6 +2572,7 @@ export type EditorialApprovalUncheckedCreateWithoutEditorialPackageInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutEditorialPackageInput = {
@@ -2587,6 +2630,7 @@ export type EditorialApprovalCreateWithoutEditorialPackageRevisionInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutEditorialPackageRevisionInput = {
@@ -2619,6 +2663,7 @@ export type EditorialApprovalUncheckedCreateWithoutEditorialPackageRevisionInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutEditorialPackageRevisionInput = {
@@ -2676,6 +2721,7 @@ export type EditorialApprovalCreateWithoutComponentSnapshotsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutComponentSnapshotsInput = {
@@ -2710,6 +2756,7 @@ export type EditorialApprovalUncheckedCreateWithoutComponentSnapshotsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutComponentSnapshotsInput = {
@@ -2757,6 +2804,7 @@ export type EditorialApprovalUpdateWithoutComponentSnapshotsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutComponentSnapshotsInput = {
@@ -2791,6 +2839,7 @@ export type EditorialApprovalUncheckedUpdateWithoutComponentSnapshotsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalCreateWithoutEconomicsV2Input = {
@@ -2822,6 +2871,7 @@ export type EditorialApprovalCreateWithoutEconomicsV2Input = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutEconomicsV2Input = {
@@ -2856,6 +2906,7 @@ export type EditorialApprovalUncheckedCreateWithoutEconomicsV2Input = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutEconomicsV2Input = {
@@ -2903,6 +2954,7 @@ export type EditorialApprovalUpdateWithoutEconomicsV2Input = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutEconomicsV2Input = {
@@ -2937,6 +2989,7 @@ export type EditorialApprovalUncheckedUpdateWithoutEconomicsV2Input = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalCreateWithoutMetricsInput = {
@@ -2968,6 +3021,7 @@ export type EditorialApprovalCreateWithoutMetricsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutMetricsInput = {
@@ -3002,6 +3056,7 @@ export type EditorialApprovalUncheckedCreateWithoutMetricsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutMetricsInput = {
@@ -3049,6 +3104,7 @@ export type EditorialApprovalUpdateWithoutMetricsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutMetricsInput = {
@@ -3083,6 +3139,7 @@ export type EditorialApprovalUncheckedUpdateWithoutMetricsInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalCreateWithoutOperationRequestsInput = {
@@ -3114,6 +3171,7 @@ export type EditorialApprovalCreateWithoutOperationRequestsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutApprovalInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutOperationRequestsInput = {
@@ -3148,6 +3206,7 @@ export type EditorialApprovalUncheckedCreateWithoutOperationRequestsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutApprovalInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutOperationRequestsInput = {
@@ -3195,6 +3254,7 @@ export type EditorialApprovalUpdateWithoutOperationRequestsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutApprovalNestedInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutOperationRequestsInput = {
@@ -3229,6 +3289,7 @@ export type EditorialApprovalUncheckedUpdateWithoutOperationRequestsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutApprovalNestedInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalCreateWithoutExportIntentsInput = {
@@ -3260,6 +3321,7 @@ export type EditorialApprovalCreateWithoutExportIntentsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutApprovalInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalUncheckedCreateWithoutExportIntentsInput = {
@@ -3294,6 +3356,7 @@ export type EditorialApprovalUncheckedCreateWithoutExportIntentsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutApprovalInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutApprovalInput
 }
 
 export type EditorialApprovalCreateOrConnectWithoutExportIntentsInput = {
@@ -3341,6 +3404,7 @@ export type EditorialApprovalUpdateWithoutExportIntentsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutApprovalNestedInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutExportIntentsInput = {
@@ -3375,6 +3439,157 @@ export type EditorialApprovalUncheckedUpdateWithoutExportIntentsInput = {
   componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutApprovalNestedInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
+}
+
+export type EditorialApprovalCreateWithoutPublicationIntentsInput = {
+  id: string
+  thumbnailSha256: string
+  thumbnailSizeBytes: bigint | number
+  thumbnailContentType: string
+  configurationFingerprint: string
+  renderArtifactSha256: string
+  renderArtifactSizeBytes: bigint | number
+  renderContractVersion: string
+  approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
+  candidateFingerprint: string
+  approvedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutEditorialApprovalsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutEditorialApprovalsInput
+  cutPipelineJob: Prisma.PipelineJobCreateNestedOneWithoutEditorialApprovalsInput
+  editorialPackage: Prisma.EditorialPackageCreateNestedOneWithoutEditorialApprovalsInput
+  editorialPackageRevision: Prisma.EditorialPackageRevisionCreateNestedOneWithoutEditorialApprovalsInput
+  processingTemplateRevision: Prisma.ProcessingTemplateRevisionCreateNestedOneWithoutEditorialApprovalsInput
+  thumbnailAsset: Prisma.EditorialAssetCreateNestedOneWithoutEditorialApprovalsInput
+  assemblyRecipe: Prisma.AssemblyRecipeCreateNestedOneWithoutEditorialApprovalsInput
+  recipeRevisionRecord: Prisma.AssemblyRecipeRevisionCreateNestedOneWithoutEditorialApprovalsInput
+  assemblyRenderIntent: Prisma.AssemblyRenderIntentCreateNestedOneWithoutEditorialApprovalsInput
+  assemblyRenderResult: Prisma.AssemblyRenderResultCreateNestedOneWithoutEditorialApprovalsInput
+  renderArtifact: Prisma.MediaArtifactCreateNestedOneWithoutEditorialApprovalsInput
+  metrics?: Prisma.EditorialApprovalMetricsCreateNestedOneWithoutApprovalInput
+  componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotCreateNestedManyWithoutApprovalInput
+  economicsV2?: Prisma.EditorialApprovalEconomicsV2CreateNestedOneWithoutApprovalInput
+  operationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutApprovalInput
+  exportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutApprovalInput
+}
+
+export type EditorialApprovalUncheckedCreateWithoutPublicationIntentsInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  cutPipelineJobId: string
+  editorialPackageId: string
+  editorialPackageRevisionId: string
+  editorialRevision: number
+  processingTemplateRevisionId: string
+  thumbnailAssetId: string
+  thumbnailSha256: string
+  thumbnailSizeBytes: bigint | number
+  thumbnailContentType: string
+  assemblyRecipeId: string
+  recipeRevisionId: string
+  recipeRevision: number
+  configurationFingerprint: string
+  assemblyRenderIntentId: string
+  assemblyRenderResultId: string
+  renderArtifactId: string
+  renderArtifactSha256: string
+  renderArtifactSizeBytes: bigint | number
+  renderContractVersion: string
+  approvalContractVersion?: string
+  fingerprintBasisVersion?: string | null
+  candidateFingerprint: string
+  approvedAt?: Date | string
+  metrics?: Prisma.EditorialApprovalMetricsUncheckedCreateNestedOneWithoutApprovalInput
+  componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedCreateNestedManyWithoutApprovalInput
+  economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedCreateNestedOneWithoutApprovalInput
+  operationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutApprovalInput
+  exportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutApprovalInput
+}
+
+export type EditorialApprovalCreateOrConnectWithoutPublicationIntentsInput = {
+  where: Prisma.EditorialApprovalWhereUniqueInput
+  create: Prisma.XOR<Prisma.EditorialApprovalCreateWithoutPublicationIntentsInput, Prisma.EditorialApprovalUncheckedCreateWithoutPublicationIntentsInput>
+}
+
+export type EditorialApprovalUpsertWithoutPublicationIntentsInput = {
+  update: Prisma.XOR<Prisma.EditorialApprovalUpdateWithoutPublicationIntentsInput, Prisma.EditorialApprovalUncheckedUpdateWithoutPublicationIntentsInput>
+  create: Prisma.XOR<Prisma.EditorialApprovalCreateWithoutPublicationIntentsInput, Prisma.EditorialApprovalUncheckedCreateWithoutPublicationIntentsInput>
+  where?: Prisma.EditorialApprovalWhereInput
+}
+
+export type EditorialApprovalUpdateToOneWithWhereWithoutPublicationIntentsInput = {
+  where?: Prisma.EditorialApprovalWhereInput
+  data: Prisma.XOR<Prisma.EditorialApprovalUpdateWithoutPublicationIntentsInput, Prisma.EditorialApprovalUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
+export type EditorialApprovalUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  thumbnailSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  thumbnailSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  thumbnailContentType?: Prisma.StringFieldUpdateOperationsInput | string
+  configurationFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  renderArtifactSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  cutPipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  editorialPackageRevision?: Prisma.EditorialPackageRevisionUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  processingTemplateRevision?: Prisma.ProcessingTemplateRevisionUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  thumbnailAsset?: Prisma.EditorialAssetUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  recipeRevisionRecord?: Prisma.AssemblyRecipeRevisionUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  assemblyRenderResult?: Prisma.AssemblyRenderResultUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  renderArtifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutEditorialApprovalsNestedInput
+  metrics?: Prisma.EditorialApprovalMetricsUpdateOneWithoutApprovalNestedInput
+  componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUpdateManyWithoutApprovalNestedInput
+  economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
+  operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
+  exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+}
+
+export type EditorialApprovalUncheckedUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  cutPipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  editorialPackageId?: Prisma.StringFieldUpdateOperationsInput | string
+  editorialPackageRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  editorialRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  processingTemplateRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  thumbnailAssetId?: Prisma.StringFieldUpdateOperationsInput | string
+  thumbnailSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  thumbnailSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  thumbnailContentType?: Prisma.StringFieldUpdateOperationsInput | string
+  assemblyRecipeId?: Prisma.StringFieldUpdateOperationsInput | string
+  recipeRevisionId?: Prisma.StringFieldUpdateOperationsInput | string
+  recipeRevision?: Prisma.IntFieldUpdateOperationsInput | number
+  configurationFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  assemblyRenderIntentId?: Prisma.StringFieldUpdateOperationsInput | string
+  assemblyRenderResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  renderArtifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  renderArtifactSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  renderArtifactSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  fingerprintBasisVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  candidateFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  metrics?: Prisma.EditorialApprovalMetricsUncheckedUpdateOneWithoutApprovalNestedInput
+  componentSnapshots?: Prisma.EditorialApprovalComponentSnapshotUncheckedUpdateManyWithoutApprovalNestedInput
+  economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
+  operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
+  exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalCreateManyProjectInput = {
@@ -3435,6 +3650,7 @@ export type EditorialApprovalUpdateWithoutProjectInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutProjectInput = {
@@ -3469,6 +3685,7 @@ export type EditorialApprovalUncheckedUpdateWithoutProjectInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutProjectInput = {
@@ -3558,6 +3775,7 @@ export type EditorialApprovalUpdateWithoutSourceInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutSourceInput = {
@@ -3592,6 +3810,7 @@ export type EditorialApprovalUncheckedUpdateWithoutSourceInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutSourceInput = {
@@ -3681,6 +3900,7 @@ export type EditorialApprovalUpdateWithoutRenderArtifactInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutRenderArtifactInput = {
@@ -3715,6 +3935,7 @@ export type EditorialApprovalUncheckedUpdateWithoutRenderArtifactInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutRenderArtifactInput = {
@@ -3801,6 +4022,7 @@ export type EditorialApprovalUpdateWithoutCutPipelineJobInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutCutPipelineJobInput = {
@@ -3832,6 +4054,7 @@ export type EditorialApprovalUncheckedUpdateWithoutCutPipelineJobInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobInput = {
@@ -3918,6 +4141,7 @@ export type EditorialApprovalUpdateWithoutAssemblyRecipeInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutAssemblyRecipeInput = {
@@ -3952,6 +4176,7 @@ export type EditorialApprovalUncheckedUpdateWithoutAssemblyRecipeInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutAssemblyRecipeInput = {
@@ -4039,6 +4264,7 @@ export type EditorialApprovalUpdateWithoutRecipeRevisionRecordInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutRecipeRevisionRecordInput = {
@@ -4071,6 +4297,7 @@ export type EditorialApprovalUncheckedUpdateWithoutRecipeRevisionRecordInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutRecipeRevisionRecordInput = {
@@ -4155,6 +4382,7 @@ export type EditorialApprovalUpdateWithoutAssemblyRenderIntentInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutAssemblyRenderIntentInput = {
@@ -4186,6 +4414,7 @@ export type EditorialApprovalUncheckedUpdateWithoutAssemblyRenderIntentInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutAssemblyRenderIntentInput = {
@@ -4270,6 +4499,7 @@ export type EditorialApprovalUpdateWithoutAssemblyRenderResultInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutAssemblyRenderResultInput = {
@@ -4302,6 +4532,7 @@ export type EditorialApprovalUncheckedUpdateWithoutAssemblyRenderResultInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutAssemblyRenderResultInput = {
@@ -4389,6 +4620,7 @@ export type EditorialApprovalUpdateWithoutProcessingTemplateRevisionInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutProcessingTemplateRevisionInput = {
@@ -4423,6 +4655,7 @@ export type EditorialApprovalUncheckedUpdateWithoutProcessingTemplateRevisionInp
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutProcessingTemplateRevisionInput = {
@@ -4511,6 +4744,7 @@ export type EditorialApprovalUpdateWithoutThumbnailAssetInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutThumbnailAssetInput = {
@@ -4544,6 +4778,7 @@ export type EditorialApprovalUncheckedUpdateWithoutThumbnailAssetInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutThumbnailAssetInput = {
@@ -4632,6 +4867,7 @@ export type EditorialApprovalUpdateWithoutEditorialPackageInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutEditorialPackageInput = {
@@ -4666,6 +4902,7 @@ export type EditorialApprovalUncheckedUpdateWithoutEditorialPackageInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutEditorialPackageInput = {
@@ -4753,6 +4990,7 @@ export type EditorialApprovalUpdateWithoutEditorialPackageRevisionInput = {
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateWithoutEditorialPackageRevisionInput = {
@@ -4785,6 +5023,7 @@ export type EditorialApprovalUncheckedUpdateWithoutEditorialPackageRevisionInput
   economicsV2?: Prisma.EditorialApprovalEconomicsV2UncheckedUpdateOneWithoutApprovalNestedInput
   operationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutApprovalNestedInput
   exportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutApprovalNestedInput
 }
 
 export type EditorialApprovalUncheckedUpdateManyWithoutEditorialPackageRevisionInput = {
@@ -4823,12 +5062,14 @@ export type EditorialApprovalCountOutputType = {
   componentSnapshots: number
   operationRequests: number
   exportIntents: number
+  publicationIntents: number
 }
 
 export type EditorialApprovalCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   componentSnapshots?: boolean | EditorialApprovalCountOutputTypeCountComponentSnapshotsArgs
   operationRequests?: boolean | EditorialApprovalCountOutputTypeCountOperationRequestsArgs
   exportIntents?: boolean | EditorialApprovalCountOutputTypeCountExportIntentsArgs
+  publicationIntents?: boolean | EditorialApprovalCountOutputTypeCountPublicationIntentsArgs
 }
 
 /**
@@ -4860,6 +5101,13 @@ export type EditorialApprovalCountOutputTypeCountOperationRequestsArgs<ExtArgs e
  */
 export type EditorialApprovalCountOutputTypeCountExportIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.EditorialExportIntentWhereInput
+}
+
+/**
+ * EditorialApprovalCountOutputType without action
+ */
+export type EditorialApprovalCountOutputTypeCountPublicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PublicationIntentWhereInput
 }
 
 
@@ -4908,6 +5156,7 @@ export type EditorialApprovalSelect<ExtArgs extends runtime.Types.Extensions.Int
   economicsV2?: boolean | Prisma.EditorialApproval$economicsV2Args<ExtArgs>
   operationRequests?: boolean | Prisma.EditorialApproval$operationRequestsArgs<ExtArgs>
   exportIntents?: boolean | Prisma.EditorialApproval$exportIntentsArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.EditorialApproval$publicationIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.EditorialApprovalCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["editorialApproval"]>
 
@@ -5044,6 +5293,7 @@ export type EditorialApprovalInclude<ExtArgs extends runtime.Types.Extensions.In
   economicsV2?: boolean | Prisma.EditorialApproval$economicsV2Args<ExtArgs>
   operationRequests?: boolean | Prisma.EditorialApproval$operationRequestsArgs<ExtArgs>
   exportIntents?: boolean | Prisma.EditorialApproval$exportIntentsArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.EditorialApproval$publicationIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.EditorialApprovalCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EditorialApprovalIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5095,6 +5345,7 @@ export type $EditorialApprovalPayload<ExtArgs extends runtime.Types.Extensions.I
     economicsV2: Prisma.$EditorialApprovalEconomicsV2Payload<ExtArgs> | null
     operationRequests: Prisma.$EditorialOperationRequestPayload<ExtArgs>[]
     exportIntents: Prisma.$EditorialExportIntentPayload<ExtArgs>[]
+    publicationIntents: Prisma.$PublicationIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -5535,6 +5786,7 @@ export interface Prisma__EditorialApprovalClient<T, Null = never, ExtArgs extend
   economicsV2<T extends Prisma.EditorialApproval$economicsV2Args<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialApproval$economicsV2Args<ExtArgs>>): Prisma.Prisma__EditorialApprovalEconomicsV2Client<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalEconomicsV2Payload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   operationRequests<T extends Prisma.EditorialApproval$operationRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialApproval$operationRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialOperationRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   exportIntents<T extends Prisma.EditorialApproval$exportIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialApproval$exportIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialExportIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  publicationIntents<T extends Prisma.EditorialApproval$publicationIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialApproval$publicationIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PublicationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6099,6 +6351,30 @@ export type EditorialApproval$exportIntentsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.EditorialExportIntentScalarFieldEnum | Prisma.EditorialExportIntentScalarFieldEnum[]
+}
+
+/**
+ * EditorialApproval.publicationIntents
+ */
+export type EditorialApproval$publicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PublicationIntent
+   */
+  select?: Prisma.PublicationIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PublicationIntent
+   */
+  omit?: Prisma.PublicationIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PublicationIntentInclude<ExtArgs> | null
+  where?: Prisma.PublicationIntentWhereInput
+  orderBy?: Prisma.PublicationIntentOrderByWithRelationInput | Prisma.PublicationIntentOrderByWithRelationInput[]
+  cursor?: Prisma.PublicationIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PublicationIntentScalarFieldEnum | Prisma.PublicationIntentScalarFieldEnum[]
 }
 
 /**

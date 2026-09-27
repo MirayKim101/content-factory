@@ -300,3 +300,34 @@ export const EditorialProvenanceMode = {
 } as const
 
 export type EditorialProvenanceMode = (typeof EditorialProvenanceMode)[keyof typeof EditorialProvenanceMode]
+
+
+export const PublicationPlatform = {
+  LOCAL_DRY_RUN: 'LOCAL_DRY_RUN',
+  YOUTUBE: 'YOUTUBE',
+  TIKTOK: 'TIKTOK'
+} as const
+
+export type PublicationPlatform = (typeof PublicationPlatform)[keyof typeof PublicationPlatform]
+
+
+export const PublicationChannelState = {
+  ENABLED: 'ENABLED',
+  REVOKED: 'REVOKED'
+} as const
+
+export type PublicationChannelState = (typeof PublicationChannelState)[keyof typeof PublicationChannelState]
+
+
+export const PublicationIntentState = {
+  SCHEDULED: 'SCHEDULED',
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  UNKNOWN_REMOTE_STATE: 'UNKNOWN_REMOTE_STATE',
+  DRY_RUN_READY: 'DRY_RUN_READY',
+  PUBLISHED: 'PUBLISHED',
+  FAILED_FINAL: 'FAILED_FINAL',
+  CANCELED: 'CANCELED'
+} as const
+
+export type PublicationIntentState = (typeof PublicationIntentState)[keyof typeof PublicationIntentState]

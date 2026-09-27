@@ -263,6 +263,7 @@ export type EditorialExportResultWhereInput = {
   exportIntent?: Prisma.XOR<Prisma.EditorialExportIntentScalarRelationFilter, Prisma.EditorialExportIntentWhereInput>
   pipelineJob?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
   artifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
 }
 
 export type EditorialExportResultOrderByWithRelationInput = {
@@ -280,6 +281,7 @@ export type EditorialExportResultOrderByWithRelationInput = {
   exportIntent?: Prisma.EditorialExportIntentOrderByWithRelationInput
   pipelineJob?: Prisma.PipelineJobOrderByWithRelationInput
   artifact?: Prisma.MediaArtifactOrderByWithRelationInput
+  publicationIntents?: Prisma.PublicationIntentOrderByRelationAggregateInput
 }
 
 export type EditorialExportResultWhereUniqueInput = Prisma.AtLeast<{
@@ -287,6 +289,7 @@ export type EditorialExportResultWhereUniqueInput = Prisma.AtLeast<{
   exportIntentId?: string
   pipelineJobId?: string
   artifactId?: string
+  id_exportIntentId?: Prisma.EditorialExportResultIdExportIntentIdCompoundUniqueInput
   id_exportIntentId_artifactId?: Prisma.EditorialExportResultIdExportIntentIdArtifactIdCompoundUniqueInput
   AND?: Prisma.EditorialExportResultWhereInput | Prisma.EditorialExportResultWhereInput[]
   OR?: Prisma.EditorialExportResultWhereInput[]
@@ -301,7 +304,8 @@ export type EditorialExportResultWhereUniqueInput = Prisma.AtLeast<{
   exportIntent?: Prisma.XOR<Prisma.EditorialExportIntentScalarRelationFilter, Prisma.EditorialExportIntentWhereInput>
   pipelineJob?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
   artifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
-}, "id" | "exportIntentId" | "pipelineJobId" | "artifactId" | "id_exportIntentId_artifactId">
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
+}, "id" | "exportIntentId" | "pipelineJobId" | "artifactId" | "id_exportIntentId" | "id_exportIntentId_artifactId">
 
 export type EditorialExportResultOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -351,6 +355,7 @@ export type EditorialExportResultCreateInput = {
   exportIntent: Prisma.EditorialExportIntentCreateNestedOneWithoutResultInput
   pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutEditorialExportResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutEditorialExportResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultUncheckedCreateInput = {
@@ -365,6 +370,7 @@ export type EditorialExportResultUncheckedCreateInput = {
   exportContractVersion?: string
   completedAt: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultUpdateInput = {
@@ -379,6 +385,7 @@ export type EditorialExportResultUpdateInput = {
   exportIntent?: Prisma.EditorialExportIntentUpdateOneRequiredWithoutResultNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutEditorialExportResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutEditorialExportResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutExportResultNestedInput
 }
 
 export type EditorialExportResultUncheckedUpdateInput = {
@@ -393,6 +400,7 @@ export type EditorialExportResultUncheckedUpdateInput = {
   exportContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutExportResultNestedInput
 }
 
 export type EditorialExportResultCreateManyInput = {
@@ -437,6 +445,11 @@ export type EditorialExportResultUncheckedUpdateManyInput = {
 export type EditorialExportResultNullableScalarRelationFilter = {
   is?: Prisma.EditorialExportResultWhereInput | null
   isNot?: Prisma.EditorialExportResultWhereInput | null
+}
+
+export type EditorialExportResultIdExportIntentIdCompoundUniqueInput = {
+  id: string
+  exportIntentId: string
 }
 
 export type EditorialExportResultIdExportIntentIdArtifactIdCompoundUniqueInput = {
@@ -491,6 +504,11 @@ export type EditorialExportResultMinOrderByAggregateInput = {
 
 export type EditorialExportResultSumOrderByAggregateInput = {
   archiveSizeBytes?: Prisma.SortOrder
+}
+
+export type EditorialExportResultScalarRelationFilter = {
+  is?: Prisma.EditorialExportResultWhereInput
+  isNot?: Prisma.EditorialExportResultWhereInput
 }
 
 export type EditorialExportResultCreateNestedOneWithoutArtifactInput = {
@@ -589,6 +607,20 @@ export type EditorialExportResultUncheckedUpdateOneWithoutExportIntentNestedInpu
   update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialExportResultUpdateToOneWithWhereWithoutExportIntentInput, Prisma.EditorialExportResultUpdateWithoutExportIntentInput>, Prisma.EditorialExportResultUncheckedUpdateWithoutExportIntentInput>
 }
 
+export type EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput = {
+  create?: Prisma.XOR<Prisma.EditorialExportResultCreateWithoutPublicationIntentsInput, Prisma.EditorialExportResultUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.EditorialExportResultCreateOrConnectWithoutPublicationIntentsInput
+  connect?: Prisma.EditorialExportResultWhereUniqueInput
+}
+
+export type EditorialExportResultUpdateOneRequiredWithoutPublicationIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.EditorialExportResultCreateWithoutPublicationIntentsInput, Prisma.EditorialExportResultUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.EditorialExportResultCreateOrConnectWithoutPublicationIntentsInput
+  upsert?: Prisma.EditorialExportResultUpsertWithoutPublicationIntentsInput
+  connect?: Prisma.EditorialExportResultWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialExportResultUpdateToOneWithWhereWithoutPublicationIntentsInput, Prisma.EditorialExportResultUpdateWithoutPublicationIntentsInput>, Prisma.EditorialExportResultUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
 export type EditorialExportResultCreateWithoutArtifactInput = {
   id: string
   filename: string
@@ -600,6 +632,7 @@ export type EditorialExportResultCreateWithoutArtifactInput = {
   createdAt?: Date | string
   exportIntent: Prisma.EditorialExportIntentCreateNestedOneWithoutResultInput
   pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutEditorialExportResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultUncheckedCreateWithoutArtifactInput = {
@@ -613,6 +646,7 @@ export type EditorialExportResultUncheckedCreateWithoutArtifactInput = {
   exportContractVersion?: string
   completedAt: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultCreateOrConnectWithoutArtifactInput = {
@@ -642,6 +676,7 @@ export type EditorialExportResultUpdateWithoutArtifactInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exportIntent?: Prisma.EditorialExportIntentUpdateOneRequiredWithoutResultNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutEditorialExportResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutExportResultNestedInput
 }
 
 export type EditorialExportResultUncheckedUpdateWithoutArtifactInput = {
@@ -655,6 +690,7 @@ export type EditorialExportResultUncheckedUpdateWithoutArtifactInput = {
   exportContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutExportResultNestedInput
 }
 
 export type EditorialExportResultCreateWithoutPipelineJobInput = {
@@ -668,6 +704,7 @@ export type EditorialExportResultCreateWithoutPipelineJobInput = {
   createdAt?: Date | string
   exportIntent: Prisma.EditorialExportIntentCreateNestedOneWithoutResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutEditorialExportResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultUncheckedCreateWithoutPipelineJobInput = {
@@ -681,6 +718,7 @@ export type EditorialExportResultUncheckedCreateWithoutPipelineJobInput = {
   exportContractVersion?: string
   completedAt: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultCreateOrConnectWithoutPipelineJobInput = {
@@ -710,6 +748,7 @@ export type EditorialExportResultUpdateWithoutPipelineJobInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exportIntent?: Prisma.EditorialExportIntentUpdateOneRequiredWithoutResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutEditorialExportResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutExportResultNestedInput
 }
 
 export type EditorialExportResultUncheckedUpdateWithoutPipelineJobInput = {
@@ -723,6 +762,7 @@ export type EditorialExportResultUncheckedUpdateWithoutPipelineJobInput = {
   exportContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutExportResultNestedInput
 }
 
 export type EditorialExportResultCreateWithoutExportIntentInput = {
@@ -736,6 +776,7 @@ export type EditorialExportResultCreateWithoutExportIntentInput = {
   createdAt?: Date | string
   pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutEditorialExportResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutEditorialExportResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultUncheckedCreateWithoutExportIntentInput = {
@@ -749,6 +790,7 @@ export type EditorialExportResultUncheckedCreateWithoutExportIntentInput = {
   exportContractVersion?: string
   completedAt: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutExportResultInput
 }
 
 export type EditorialExportResultCreateOrConnectWithoutExportIntentInput = {
@@ -778,6 +820,7 @@ export type EditorialExportResultUpdateWithoutExportIntentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutEditorialExportResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutEditorialExportResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutExportResultNestedInput
 }
 
 export type EditorialExportResultUncheckedUpdateWithoutExportIntentInput = {
@@ -791,8 +834,110 @@ export type EditorialExportResultUncheckedUpdateWithoutExportIntentInput = {
   exportContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutExportResultNestedInput
 }
 
+export type EditorialExportResultCreateWithoutPublicationIntentsInput = {
+  id: string
+  filename: string
+  archiveSizeBytes: bigint | number
+  archiveSha256: string
+  manifest: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  exportContractVersion?: string
+  completedAt: Date | string
+  createdAt?: Date | string
+  exportIntent: Prisma.EditorialExportIntentCreateNestedOneWithoutResultInput
+  pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutEditorialExportResultInput
+  artifact: Prisma.MediaArtifactCreateNestedOneWithoutEditorialExportResultInput
+}
+
+export type EditorialExportResultUncheckedCreateWithoutPublicationIntentsInput = {
+  id: string
+  exportIntentId: string
+  pipelineJobId: string
+  artifactId: string
+  filename: string
+  archiveSizeBytes: bigint | number
+  archiveSha256: string
+  manifest: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  exportContractVersion?: string
+  completedAt: Date | string
+  createdAt?: Date | string
+}
+
+export type EditorialExportResultCreateOrConnectWithoutPublicationIntentsInput = {
+  where: Prisma.EditorialExportResultWhereUniqueInput
+  create: Prisma.XOR<Prisma.EditorialExportResultCreateWithoutPublicationIntentsInput, Prisma.EditorialExportResultUncheckedCreateWithoutPublicationIntentsInput>
+}
+
+export type EditorialExportResultUpsertWithoutPublicationIntentsInput = {
+  update: Prisma.XOR<Prisma.EditorialExportResultUpdateWithoutPublicationIntentsInput, Prisma.EditorialExportResultUncheckedUpdateWithoutPublicationIntentsInput>
+  create: Prisma.XOR<Prisma.EditorialExportResultCreateWithoutPublicationIntentsInput, Prisma.EditorialExportResultUncheckedCreateWithoutPublicationIntentsInput>
+  where?: Prisma.EditorialExportResultWhereInput
+}
+
+export type EditorialExportResultUpdateToOneWithWhereWithoutPublicationIntentsInput = {
+  where?: Prisma.EditorialExportResultWhereInput
+  data: Prisma.XOR<Prisma.EditorialExportResultUpdateWithoutPublicationIntentsInput, Prisma.EditorialExportResultUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
+export type EditorialExportResultUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  filename?: Prisma.StringFieldUpdateOperationsInput | string
+  archiveSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  archiveSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  manifest?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  exportContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  exportIntent?: Prisma.EditorialExportIntentUpdateOneRequiredWithoutResultNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutEditorialExportResultNestedInput
+  artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutEditorialExportResultNestedInput
+}
+
+export type EditorialExportResultUncheckedUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
+  artifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  filename?: Prisma.StringFieldUpdateOperationsInput | string
+  archiveSizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  archiveSha256?: Prisma.StringFieldUpdateOperationsInput | string
+  manifest?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  exportContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type EditorialExportResultCountOutputType
+ */
+
+export type EditorialExportResultCountOutputType = {
+  publicationIntents: number
+}
+
+export type EditorialExportResultCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  publicationIntents?: boolean | EditorialExportResultCountOutputTypeCountPublicationIntentsArgs
+}
+
+/**
+ * EditorialExportResultCountOutputType without action
+ */
+export type EditorialExportResultCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialExportResultCountOutputType
+   */
+  select?: Prisma.EditorialExportResultCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * EditorialExportResultCountOutputType without action
+ */
+export type EditorialExportResultCountOutputTypeCountPublicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PublicationIntentWhereInput
+}
 
 
 export type EditorialExportResultSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -810,6 +955,8 @@ export type EditorialExportResultSelect<ExtArgs extends runtime.Types.Extensions
   exportIntent?: boolean | Prisma.EditorialExportIntentDefaultArgs<ExtArgs>
   pipelineJob?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
   artifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.EditorialExportResult$publicationIntentsArgs<ExtArgs>
+  _count?: boolean | Prisma.EditorialExportResultCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["editorialExportResult"]>
 
 export type EditorialExportResultSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -865,6 +1012,8 @@ export type EditorialExportResultInclude<ExtArgs extends runtime.Types.Extension
   exportIntent?: boolean | Prisma.EditorialExportIntentDefaultArgs<ExtArgs>
   pipelineJob?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
   artifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.EditorialExportResult$publicationIntentsArgs<ExtArgs>
+  _count?: boolean | Prisma.EditorialExportResultCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EditorialExportResultIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   exportIntent?: boolean | Prisma.EditorialExportIntentDefaultArgs<ExtArgs>
@@ -883,6 +1032,7 @@ export type $EditorialExportResultPayload<ExtArgs extends runtime.Types.Extensio
     exportIntent: Prisma.$EditorialExportIntentPayload<ExtArgs>
     pipelineJob: Prisma.$PipelineJobPayload<ExtArgs>
     artifact: Prisma.$MediaArtifactPayload<ExtArgs>
+    publicationIntents: Prisma.$PublicationIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1293,6 +1443,7 @@ export interface Prisma__EditorialExportResultClient<T, Null = never, ExtArgs ex
   exportIntent<T extends Prisma.EditorialExportIntentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialExportIntentDefaultArgs<ExtArgs>>): Prisma.Prisma__EditorialExportIntentClient<runtime.Types.Result.GetResult<Prisma.$EditorialExportIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   pipelineJob<T extends Prisma.PipelineJobDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJobDefaultArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   artifact<T extends Prisma.MediaArtifactDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifactDefaultArgs<ExtArgs>>): Prisma.Prisma__MediaArtifactClient<runtime.Types.Result.GetResult<Prisma.$MediaArtifactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  publicationIntents<T extends Prisma.EditorialExportResult$publicationIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialExportResult$publicationIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PublicationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1731,6 +1882,30 @@ export type EditorialExportResultDeleteManyArgs<ExtArgs extends runtime.Types.Ex
    * Limit how many EditorialExportResults to delete.
    */
   limit?: number
+}
+
+/**
+ * EditorialExportResult.publicationIntents
+ */
+export type EditorialExportResult$publicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PublicationIntent
+   */
+  select?: Prisma.PublicationIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PublicationIntent
+   */
+  omit?: Prisma.PublicationIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PublicationIntentInclude<ExtArgs> | null
+  where?: Prisma.PublicationIntentWhereInput
+  orderBy?: Prisma.PublicationIntentOrderByWithRelationInput | Prisma.PublicationIntentOrderByWithRelationInput[]
+  cursor?: Prisma.PublicationIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PublicationIntentScalarFieldEnum | Prisma.PublicationIntentScalarFieldEnum[]
 }
 
 /**
