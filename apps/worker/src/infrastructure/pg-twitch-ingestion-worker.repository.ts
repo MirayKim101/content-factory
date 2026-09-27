@@ -163,6 +163,21 @@ export class PgTwitchIngestionWorkerRepository
     return result.rowCount === 1;
   }
 
+  async release(id: string, workerId: string): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "TwitchVodIngestIntent"
+          SET "state" = 'QUEUED',
+              "attemptCount" = GREATEST("attemptCount" - 1, 0),
+              "nextAttemptAt" = NULL, "leaseOwner" = NULL,
+              "leaseExpiresAt" = NULL, "updatedAt" = now()
+        WHERE "id" = $1 AND "leaseOwner" = $2
+          AND "state" IN ('DOWNLOADING','UPLOADING')
+          AND "leaseExpiresAt" > now()`,
+      [id, workerId],
+    );
+    return result.rowCount === 1;
+  }
+
   async beginUpload(
     id: string,
     workerId: string,

@@ -40,6 +40,7 @@ describe("ProcessTwitchVodIngest", () => {
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -97,6 +98,7 @@ describe("ProcessTwitchVodIngest", () => {
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -159,6 +161,7 @@ describe("ProcessTwitchVodIngest", () => {
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -195,6 +198,7 @@ describe("ProcessTwitchVodIngest", () => {
         totalBytes: null,
       })),
       heartbeat: vi.fn().mockRejectedValue(new Error("database offline")),
+      release: vi.fn().mockResolvedValue(true),
       checkpoint: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
@@ -232,6 +236,7 @@ describe("ProcessTwitchVodIngest", () => {
     await vi.advanceTimersByTimeAsync(1_000);
 
     await expect(processing).resolves.toBe(false);
+    expect(repository.release).not.toHaveBeenCalled();
     expect(repository.fail).not.toHaveBeenCalled();
     expect(repository.complete).not.toHaveBeenCalled();
   });
@@ -251,6 +256,7 @@ describe("ProcessTwitchVodIngest", () => {
         totalBytes: null,
       })),
       heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
       checkpoint: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
@@ -288,8 +294,77 @@ describe("ProcessTwitchVodIngest", () => {
     processor.abortAll();
 
     await expect(processing).resolves.toBe(false);
+    expect(repository.release).toHaveBeenCalledWith(intentId, "w");
     expect(repository.fail).not.toHaveBeenCalled();
     expect(repository.complete).not.toHaveBeenCalled();
+  });
+
+  it("does not start transfer when shutdown arrives during claim", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    let resolveClaim:
+      | ((claim: {
+          id: string;
+          candidateId: string;
+          providerVideoId: string;
+          projectName: string;
+          attemptCount: number;
+          leaseOwner: string;
+          downloadedBytes: bigint;
+          totalBytes: null;
+        }) => void)
+      | undefined;
+    const repository = {
+      claimNext: vi.fn(
+        () =>
+          new Promise<{
+            id: string;
+            candidateId: string;
+            providerVideoId: string;
+            projectName: string;
+            attemptCount: number;
+            leaseOwner: string;
+            downloadedBytes: bigint;
+            totalBytes: null;
+          }>((resolve) => {
+            resolveClaim = resolve;
+          }),
+      ),
+      heartbeat: vi.fn(),
+      release: vi.fn().mockResolvedValue(true),
+      checkpoint: vi.fn(),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = { open: vi.fn() };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      { upload: vi.fn() } as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    const processing = processor.execute("w");
+    await vi.waitFor(() => expect(repository.claimNext).toHaveBeenCalled());
+    processor.abortAll();
+    resolveClaim?.({
+      id: intentId,
+      candidateId: "c",
+      providerVideoId: "1",
+      projectName: "x",
+      attemptCount: 1,
+      leaseOwner: "w",
+      downloadedBytes: 0n,
+      totalBytes: null,
+    });
+
+    await expect(processing).resolves.toBe(false);
+    expect(repository.release).toHaveBeenCalledWith(intentId, "w");
+    expect(media.open).not.toHaveBeenCalled();
+    expect(repository.fail).not.toHaveBeenCalled();
   });
 
   it("bounds a stalled transfer even while its lease remains healthy", async () => {
@@ -307,6 +382,7 @@ describe("ProcessTwitchVodIngest", () => {
         totalBytes: null,
       })),
       heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
       checkpoint: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),

@@ -15,6 +15,7 @@ class TwitchVodIngestShutdownError extends Error {}
 
 export class ProcessTwitchVodIngest {
   private readonly activeControllers = new Set<AbortController>();
+  private stopping = false;
 
   constructor(
     private readonly repository: TwitchVodIngestRepository,
@@ -27,13 +28,19 @@ export class ProcessTwitchVodIngest {
   ) {}
 
   abortAll(): void {
+    this.stopping = true;
     for (const controller of this.activeControllers)
       controller.abort(new TwitchVodIngestShutdownError());
   }
 
   async execute(workerId: string): Promise<boolean> {
+    if (this.stopping) return false;
     const lease = await this.repository.claimNext(workerId, this.leaseMs);
     if (!lease) return false;
+    if (this.stopping) {
+      await this.repository.release(lease.id, workerId).catch(() => false);
+      return false;
+    }
     const path = join(
       this.scratchDirectory,
       "twitch-ingest",
@@ -152,11 +159,12 @@ export class ProcessTwitchVodIngest {
       await unlink(path).catch(() => undefined);
       return true;
     } catch (error) {
-      if (
-        controller.signal.reason instanceof TwitchVodIngestLeaseLostError ||
-        controller.signal.reason instanceof TwitchVodIngestShutdownError
-      )
+      if (controller.signal.reason instanceof TwitchVodIngestLeaseLostError)
         return false;
+      if (controller.signal.reason instanceof TwitchVodIngestShutdownError) {
+        await this.repository.release(lease.id, workerId).catch(() => false);
+        return false;
+      }
       const deadlineReason = deadline.signal.reason;
       const code =
         deadline.signal.aborted && deadlineReason instanceof Error

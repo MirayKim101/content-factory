@@ -15,6 +15,7 @@ export interface TwitchVodIngestRepository {
     leaseMs: number,
   ): Promise<TwitchVodIngestLease | null>;
   heartbeat(id: string, workerId: string, leaseMs: number): Promise<boolean>;
+  release(id: string, workerId: string): Promise<boolean>;
   checkpoint(
     id: string,
     workerId: string,

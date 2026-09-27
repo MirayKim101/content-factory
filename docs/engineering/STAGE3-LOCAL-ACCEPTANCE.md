@@ -120,13 +120,16 @@
   single-flight циклами. Импорт больше не блокирует Helix/EventSub ticks или
   startup readiness; graceful shutdown abort-ит активный transfer без ложного
   failure и затем дренирует оба цикла перед закрытием PostgreSQL/S3.
+- Shutdown во время pending Twitch claim также fenced: новый transfer не
+  стартует после SIGTERM, а уже выданный lease атомарно возвращается в `QUEUED`
+  без потери attempt budget и без двухчасовой задержки recovery.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  277/277 unit tests
+Worker:  278/278 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
