@@ -13,6 +13,8 @@ import {
 
 const claim: PublicationClaim = {
   id: "00000000-0000-4000-8000-000000000001",
+  channelId: "00000000-0000-4000-8000-000000000003",
+  externalChannelRef: "local:test-channel",
   platform: "LOCAL_DRY_RUN",
   contentKind: "EDITORIAL_EXPORT",
   contentId: "00000000-0000-4000-8000-000000000002",
@@ -26,6 +28,10 @@ function repository(): PublicationWorkerRepository {
     finalizeDryRun: vi.fn(),
     failFinal: vi.fn(),
     markUnknownRemoteState: vi.fn(),
+    unknownRemoteOutcomes: vi.fn().mockResolvedValue([]),
+    refreshUnknownRemoteState: vi.fn(),
+    finalizePublished: vi.fn(),
+    failUnknownRemoteState: vi.fn(),
   };
 }
 
@@ -77,6 +83,8 @@ describe("ProcessPublicationIntent", () => {
           new PublicationOutcomeUnknownError(
             "YOUTUBE_UPLOAD_TIMEOUT",
             "Timed out after the provider accepted the upload.",
+            "youtube-video-42",
+            "processing",
           ),
         ),
     };
@@ -88,6 +96,8 @@ describe("ProcessPublicationIntent", () => {
       remoteClaim,
       "YOUTUBE_UPLOAD_TIMEOUT",
       expect.any(String),
+      "youtube-video-42",
+      "processing",
       expect.any(Date),
     );
     expect(repo.failFinal).not.toHaveBeenCalled();

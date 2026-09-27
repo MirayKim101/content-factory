@@ -71,13 +71,13 @@ const grouped = computed(() => ({
     ["SCHEDULED", "QUEUED"].includes(item.state),
   ),
   processing: publications.value.filter((item) =>
-    ["PROCESSING", "UNKNOWN_REMOTE_STATE"].includes(item.state),
+    ["PROCESSING"].includes(item.state),
   ),
   complete: publications.value.filter((item) =>
     ["DRY_RUN_READY", "PUBLISHED"].includes(item.state),
   ),
   attention: publications.value.filter((item) =>
-    ["FAILED_FINAL", "CANCELED"].includes(item.state),
+    ["UNKNOWN_REMOTE_STATE", "FAILED_FINAL", "CANCELED"].includes(item.state),
   ),
 }));
 
@@ -317,7 +317,7 @@ onMounted(async () => {
       <article>
         <span>Требует внимания</span
         ><strong>{{ grouped.attention.length }}</strong
-        ><small>ошибки и отмены</small>
+        ><small>сверка, ошибки и отмены</small>
       </article>
     </section>
 
@@ -368,6 +368,17 @@ onMounted(async () => {
                 }}
               </p>
               <small v-if="item.failure">{{ item.failure.message }}</small>
+              <small
+                v-if="item.state === 'UNKNOWN_REMOTE_STATE'"
+                class="reconciliation-note"
+              >
+                Повторная отправка заблокирована до сверки с площадкой<span
+                  v-if="item.remotePublicationId"
+                  >. Remote ID: {{ item.remotePublicationId }}</span
+                ><span v-if="item.remoteStatus">
+                  · Статус: {{ item.remoteStatus }}</span
+                >
+              </small>
             </div>
             <Button
               v-if="['SCHEDULED', 'QUEUED'].includes(item.state)"
@@ -672,6 +683,14 @@ h2 {
 .status[data-state="PROCESSING"] {
   background: var(--cf-warning-soft);
   color: var(--cf-warning);
+}
+.status[data-state="UNKNOWN_REMOTE_STATE"] {
+  background: var(--cf-warning-soft);
+  color: var(--cf-warning);
+}
+.reconciliation-note {
+  display: block;
+  margin-top: 0.45rem;
 }
 .schedule-form {
   display: grid;

@@ -29,6 +29,7 @@ import { PgTranscriptWorker } from "./infrastructure/pg-transcript-worker.js";
 import { PgResearchWorker } from "./infrastructure/pg-research-worker.js";
 import { PgImageSuggestionWorker } from "./infrastructure/pg-image-suggestion-worker.js";
 import { ProcessPublicationIntent } from "./application/process-publication-intent.js";
+import { ReconcilePublicationOutcomes } from "./application/reconcile-publication-outcomes.js";
 import { LocalDryRunPublicationAdapter } from "./infrastructure/local-dry-run-publication-adapter.js";
 import { PgPublicationWorkerRepository } from "./infrastructure/pg-publication-worker.repository.js";
 import { ReconcileTwitchIngestion } from "./application/reconcile-twitch-ingestion.js";
@@ -234,12 +235,16 @@ async function startPublicationWorker(): Promise<void> {
   const config = workerConfig();
   const workerId = `publication-worker-${randomUUID()}`;
   const repository = new PgPublicationWorkerRepository(config.databaseUrl);
-  const processor = new ProcessPublicationIntent(repository, [
-    new LocalDryRunPublicationAdapter(),
-  ]);
+  const providers = [new LocalDryRunPublicationAdapter()];
+  const processor = new ProcessPublicationIntent(repository, providers);
+  const outcomeReconciler = new ReconcilePublicationOutcomes(
+    repository,
+    providers,
+  );
   const processDue = async (): Promise<void> => {
     const intentIds = await repository.due();
     await Promise.all(intentIds.map((intentId) => processor.execute(intentId)));
+    await outcomeReconciler.execute();
   };
   const worker = new Worker(
     PUBLICATION_QUEUE_NAME,

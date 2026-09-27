@@ -38,6 +38,8 @@ export class ProcessPublicationIntent {
           claim,
           error.code,
           error.message,
+          error.remotePublicationId,
+          error.remoteStatus,
           this.clock(),
         );
         return true;

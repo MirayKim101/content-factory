@@ -3,11 +3,15 @@ import { Pool, type PoolClient } from "pg";
 import type {
   PublicationClaim,
   PublicationAdapterResult,
+  PublicationReconciliationClaim,
+  PublicationReconciliationResult,
   PublicationWorkerRepository,
 } from "../application/publication.port.js";
 
 type ClaimRow = {
   id: string;
+  channelId: string;
+  externalChannelRef: string;
   platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
   contentKind: "EDITORIAL_EXPORT" | "VERTICAL_RESULT";
   contentId: string;
@@ -31,7 +35,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
       const result = await client.query<ClaimRow>(
-        `SELECT i."id", i."platform", i."contentKind",
+        `SELECT i."id", i."channelId", c."externalChannelRef",
+                i."platform", i."contentKind",
                 COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
                 i."metadataSnapshot",
                 i."attemptCount", i."retryBudget", i."state", i."startedAt",
@@ -126,6 +131,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       await client.query("COMMIT");
       return {
         id: row.id,
+        channelId: row.channelId,
+        externalChannelRef: row.externalChannelRef,
         platform: row.platform,
         contentKind: row.contentKind,
         contentId: row.contentId,
@@ -219,19 +226,154 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     claim: PublicationClaim,
     code: string,
     message: string,
+    remotePublicationId: string | null,
+    remoteStatus: string | null,
     now: Date,
   ): Promise<void> {
     await this.pool.query(
       `UPDATE "PublicationIntent"
           SET "state" = 'UNKNOWN_REMOTE_STATE', "failureCode" = $2,
-              "failureMessage" = $3, "updatedAt" = $4
-        WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $5`,
+              "failureMessage" = $3, "remotePublicationId" = $4,
+              "remoteStatus" = $5, "updatedAt" = $6
+        WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $7`,
       [
         claim.id,
         code.slice(0, 120),
         message.slice(0, 1000),
+        remotePublicationId?.slice(0, 255) ?? null,
+        remoteStatus?.slice(0, 120) ?? null,
         now,
         claim.attemptNumber,
+      ],
+    );
+  }
+
+  async unknownRemoteOutcomes(
+    now: Date,
+    limit = 100,
+  ): Promise<PublicationReconciliationClaim[]> {
+    const result = await this.pool.query<{
+      id: string;
+      channelId: string;
+      externalChannelRef: string;
+      platform: PublicationClaim["platform"];
+      contentKind: PublicationClaim["contentKind"];
+      contentId: string;
+      metadataSnapshot: Record<string, unknown>;
+      attemptCount: number;
+      remotePublicationId: string;
+    }>(
+      `SELECT i."id", i."channelId", c."externalChannelRef",
+              i."platform", i."contentKind",
+              COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
+              i."metadataSnapshot", i."attemptCount", i."remotePublicationId"
+         FROM "PublicationIntent" i
+         JOIN "PublicationChannel" c ON c."id" = i."channelId"
+        WHERE i."state" = 'UNKNOWN_REMOTE_STATE'
+          AND i."remotePublicationId" IS NOT NULL
+          AND i."updatedAt" <= $1 - interval '30 seconds'
+        ORDER BY i."updatedAt" ASC, i."id" ASC LIMIT $2`,
+      [now, Math.max(1, Math.min(500, Math.trunc(limit)))],
+    );
+    return result.rows.map((row) => ({
+      id: row.id,
+      channelId: row.channelId,
+      externalChannelRef: row.externalChannelRef,
+      platform: row.platform,
+      contentKind: row.contentKind,
+      contentId: row.contentId,
+      metadataSnapshot: row.metadataSnapshot,
+      attemptNumber: row.attemptCount,
+      remotePublicationId: row.remotePublicationId,
+    }));
+  }
+
+  async refreshUnknownRemoteState(
+    claim: PublicationReconciliationClaim,
+    remoteStatus: string,
+    now: Date,
+  ): Promise<void> {
+    await this.pool.query(
+      `UPDATE "PublicationIntent" SET "remoteStatus" = $2, "updatedAt" = $3
+        WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
+          AND "attemptCount" = $4 AND "remotePublicationId" = $5`,
+      [
+        claim.id,
+        remoteStatus.slice(0, 120),
+        now,
+        claim.attemptNumber,
+        claim.remotePublicationId,
+      ],
+    );
+  }
+
+  async finalizePublished(
+    claim: PublicationReconciliationClaim,
+    result: Extract<PublicationReconciliationResult, { state: "PUBLISHED" }>,
+    now: Date,
+  ): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
+      const updated = await client.query(
+        `UPDATE "PublicationIntent"
+            SET "state" = 'PUBLISHED', "remoteStatus" = $2,
+                "failureCode" = NULL, "failureMessage" = NULL,
+                "finishedAt" = $3, "updatedAt" = $3
+          WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
+            AND "attemptCount" = $4 AND "remotePublicationId" = $5`,
+        [
+          claim.id,
+          result.remoteStatus.slice(0, 120),
+          now,
+          claim.attemptNumber,
+          claim.remotePublicationId,
+        ],
+      );
+      if (updated.rowCount === 1)
+        await client.query(
+          `INSERT INTO "PublicationResult"
+            ("id", "publicationIntentId", "resultContractVersion", "adapterVersion",
+             "providerReceipt", "publicUrl", "completedAt", "createdAt")
+           VALUES (gen_random_uuid(), $1, 'publication-result-v1', $2, $3::jsonb, $4, $5, $5)
+           ON CONFLICT ("publicationIntentId") DO NOTHING`,
+          [
+            claim.id,
+            result.adapterVersion,
+            JSON.stringify(result.providerReceipt),
+            result.publicUrl,
+            now,
+          ],
+        );
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async failUnknownRemoteState(
+    claim: PublicationReconciliationClaim,
+    result: Extract<PublicationReconciliationResult, { state: "FAILED" }>,
+    now: Date,
+  ): Promise<void> {
+    await this.pool.query(
+      `UPDATE "PublicationIntent"
+          SET "state" = 'FAILED_FINAL', "remoteStatus" = $2,
+              "failureCode" = $3, "failureMessage" = $4,
+              "finishedAt" = $5, "updatedAt" = $5
+        WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
+          AND "attemptCount" = $6 AND "remotePublicationId" = $7`,
+      [
+        claim.id,
+        result.remoteStatus.slice(0, 120),
+        result.code.slice(0, 120),
+        result.message.slice(0, 1000),
+        now,
+        claim.attemptNumber,
+        claim.remotePublicationId,
       ],
     );
   }
