@@ -96,6 +96,12 @@ export interface OpenAiClipGenerationConfig {
   baseUrl?: string;
 }
 
+export function publicationWorkerAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.PUBLISHING_ENABLED?.trim() === "1";
+}
+
 export interface TwitchVodMediaGatewayConfig {
   baseUrl: string;
   bearerToken: string;

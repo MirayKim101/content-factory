@@ -51,6 +51,9 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Vertical heartbeat, completion и failure также требуют неистёкший lease.
   Поздний FFmpeg-процесс с прежним token больше не может воскресить либо
   финализировать просроченную попытку.
+- Publication worker теперь independently fail-closed по
+  `PUBLISHING_ENABLED`; compose передаёт флаг явно. Отключение admission больше
+  не оставляет фоновой процесс, способный выполнить ранее scheduled intent.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

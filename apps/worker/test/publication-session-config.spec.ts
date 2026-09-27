@@ -1,10 +1,23 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  publicationWorkerAdmissionEnabled,
   publicationSessionKeyConfig,
   tiktokPublishingConfig,
   youtubePublishingConfig,
 } from "../src/config.js";
+
+describe("publicationWorkerAdmissionEnabled", () => {
+  it("is default-off and accepts only the explicit enabled value", () => {
+    expect(publicationWorkerAdmissionEnabled({})).toBe(false);
+    expect(publicationWorkerAdmissionEnabled({ PUBLISHING_ENABLED: "0" })).toBe(
+      false,
+    );
+    expect(publicationWorkerAdmissionEnabled({ PUBLISHING_ENABLED: "1" })).toBe(
+      true,
+    );
+  });
+});
 
 describe("publicationSessionKeyConfig", () => {
   it("loads a current key and retained decryption keys", () => {

@@ -231,6 +231,7 @@ services:
       - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=64m
     environment:
       WORKER_ROLE: publication
+      PUBLISHING_ENABLED: ${PUBLISHING_ENABLED:-0}
       POSTGRES_DB: ${POSTGRES_DB:?copy .env.example to .env and set POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER:?copy .env.example to .env and set POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env and set POSTGRES_PASSWORD}

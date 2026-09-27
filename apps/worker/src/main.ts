@@ -17,6 +17,7 @@ import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.j
 import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
 import {
   openAiClipGenerationConfig,
+  publicationWorkerAdmissionEnabled,
   twitchVodAutoIngestConfig,
   tiktokPublishingConfig,
   workerConfig,
@@ -340,6 +341,8 @@ function requireWorkerSecret(name: string): string {
 }
 
 async function startPublicationWorker(): Promise<void> {
+  if (!publicationWorkerAdmissionEnabled(process.env))
+    throw new Error("CONFIG_PUBLISHING_DISABLED");
   const config = workerConfig();
   const workerId = `publication-worker-${randomUUID()}`;
   const repository = new PgPublicationWorkerRepository(config.databaseUrl);

@@ -42,6 +42,15 @@
 10. Migration rollback не удаляет publication history; admission-first rollback
     документирован и протестирован.
 
+## Rollback
+
+Сначала установить `PUBLISHING_ENABLED=0` одновременно для API и publication
+worker, затем пересоздать/остановить compose profile `publishing`. Worker
+проверяет этот флаг при старте и fail-closed не обрабатывает уже scheduled
+intent при выключенном admission. Provider-specific флаги выключаются до
+удаления credentials. Таблицы `Publication*` и их историю не удалять; ручной
+ZIP download не зависит от publishing profile.
+
 ## Следующий срез
 
 После независимого review 3A: Stage 3B Twitch channel registry + EventSub inbox
