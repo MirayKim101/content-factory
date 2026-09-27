@@ -134,6 +134,13 @@ export function createTwitchSourcesApi(
         },
         vodIngestIntentSchema,
       ),
+    retryVodImport: (id: string) =>
+      request(
+        fetcher,
+        `${base}/twitch/vod-imports/${encodeURIComponent(id)}/retry`,
+        { method: "POST" },
+        vodIngestIntentSchema,
+      ),
     linkVodProject: (
       id: string,
       projectId: string,

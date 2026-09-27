@@ -51,4 +51,35 @@ describe("Twitch sources API adapter", () => {
     expect(linked.state).toBe("IMPORTED");
     expect(linked.importedProjectId).toBe(vodCandidate.importedProjectId);
   });
+
+  it("retries a stopped durable import without creating a second intent", async () => {
+    const response = {
+      id: "00000000-0000-4000-8000-000000000009",
+      candidateId: vodCandidate.id,
+      projectName: "Creator stream",
+      state: "QUEUED",
+      projectId: null,
+      downloadedBytes: "1024",
+      totalBytes: "2048",
+      attemptCount: 0,
+      failureCode: null,
+      failureMessage: null,
+      createdAt: "2026-09-28T10:10:00.000Z",
+      updatedAt: "2026-09-28T10:20:00.000Z",
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => response,
+    });
+    const api = createTwitchSourcesApi("/api/v1", fetchMock);
+
+    await expect(api.retryVodImport(response.id)).resolves.toMatchObject({
+      state: "QUEUED",
+      downloadedBytes: "1024",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/twitch/vod-imports/${response.id}/retry`,
+      { method: "POST" },
+    );
+  });
 });

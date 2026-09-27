@@ -125,6 +125,22 @@ async function startAutomaticImport(item: TwitchVodCandidate) {
     saving.value = false;
   }
 }
+async function retryAutomaticImport(item: TwitchVodCandidate) {
+  if (saving.value || item.ingestIntent?.state !== "FAILED_FINAL") return;
+  saving.value = true;
+  error.value = null;
+  notice.value = null;
+  try {
+    await api.retryVodImport(item.ingestIntent.id);
+    notice.value = "Повторный импорт поставлен в очередь.";
+    await load();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Не удалось повторить импорт.";
+  } finally {
+    saving.value = false;
+  }
+}
 async function save() {
   if (!valid.value || saving.value) return;
   saving.value = true;
@@ -396,6 +412,13 @@ onUnmounted(() => pollTimer && clearInterval(pollTimer));
                     {{ vod.ingestIntent.failureCode }}. Повторите после проверки
                     gateway.
                   </small>
+                  <Button
+                    v-if="vod.ingestIntent.state === 'FAILED_FINAL'"
+                    severity="secondary"
+                    :disabled="saving || !autoIngestEnabled"
+                    @click="retryAutomaticImport(vod)"
+                    >Повторить импорт</Button
+                  >
                 </div>
                 <div
                   v-else-if="autoIngestEnabled"

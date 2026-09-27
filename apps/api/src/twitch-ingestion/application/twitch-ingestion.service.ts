@@ -124,6 +124,46 @@ export class TwitchIngestionService {
     }
   }
 
+  async retryVodIngest(id: string) {
+    const config = apiEnvironment();
+    if (!config.twitchIngestionEnabled || !config.twitchVodAutoIngestEnabled)
+      throw new TwitchVodAutoIngestDisabledError();
+    const current = await this.prisma.twitchVodIngestIntent.findUnique({
+      where: { id },
+      include: { candidate: { select: { state: true } } },
+    });
+    if (!current) return null;
+    if (current.state === "QUEUED" || current.state === "RETRY_WAIT")
+      return this.serializeIngestIntent(current);
+    if (
+      current.state !== "FAILED_FINAL" ||
+      current.candidate.state !== "READY_FOR_INGEST"
+    )
+      throw new TwitchVodConflictError();
+    const reset = await this.prisma.twitchVodIngestIntent.updateMany({
+      where: {
+        id,
+        state: "FAILED_FINAL",
+        leaseOwner: null,
+        leaseExpiresAt: null,
+        candidate: { state: "READY_FOR_INGEST", importedProjectId: null },
+      },
+      data: {
+        state: "QUEUED",
+        attemptCount: 0,
+        nextAttemptAt: null,
+        failureCode: null,
+        failureMessage: null,
+      },
+    });
+    if (reset.count !== 1) throw new TwitchVodConflictError();
+    const retried = await this.prisma.twitchVodIngestIntent.findUnique({
+      where: { id },
+    });
+    if (!retried) throw new TwitchVodConflictError();
+    return this.serializeIngestIntent(retried);
+  }
+
   async getVodIngest(id: string) {
     const intent = await this.prisma.twitchVodIngestIntent.findUnique({
       where: { id },

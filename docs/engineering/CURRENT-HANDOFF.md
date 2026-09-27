@@ -58,6 +58,10 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   `cf_stage3_fresh_acceptance_20260928` (PostgreSQL 18.6), получено 73 public
   tables и 0 unvalidated constraints. База guarded-удалена и её отсутствие
   подтверждено; restored DB не изменялась.
+- Terminal Twitch import больше не является тупиком: оператор может после
+  исправления gateway перевести `FAILED_FINAL` обратно в `QUEUED`. Transition
+  fenced по candidate state/lease, сохраняет Range-resume progress и сбрасывает
+  bounded attempt budget; UI показывает отдельное действие «Повторить импорт».
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

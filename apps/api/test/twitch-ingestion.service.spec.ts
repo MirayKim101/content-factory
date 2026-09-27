@@ -139,6 +139,49 @@ describe("TwitchIngestionService", () => {
       else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
     }
   });
+  it("requeues a terminal VOD import for an explicit operator retry", async () => {
+    const originalAuto = process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+    const prisma = repository();
+    const failed = {
+      id: "00000000-0000-4000-8000-000000000009",
+      candidateId: "00000000-0000-4000-8000-000000000001",
+      projectName: "Creator stream",
+      state: "FAILED_FINAL",
+      attemptCount: 3,
+      downloadedBytes: 1024n,
+      totalBytes: 2048n,
+      leaseOwner: null,
+      leaseExpiresAt: null,
+      candidate: { state: "READY_FOR_INGEST" },
+    };
+    prisma.twitchVodIngestIntent.findUnique
+      .mockResolvedValueOnce(failed as never)
+      .mockResolvedValueOnce({
+        ...failed,
+        state: "QUEUED",
+        attemptCount: 0,
+      } as never);
+    try {
+      process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = "1";
+      await expect(
+        new TwitchIngestionService(prisma as never).retryVodIngest(failed.id),
+      ).resolves.toMatchObject({
+        state: "QUEUED",
+        attemptCount: 0,
+        downloadedBytes: "1024",
+      });
+      expect(prisma.twitchVodIngestIntent.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ state: "FAILED_FINAL" }),
+          data: expect.objectContaining({ state: "QUEUED", attemptCount: 0 }),
+        }),
+      );
+    } finally {
+      if (originalAuto === undefined)
+        delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+      else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
+    }
+  });
   afterEach(() => {
     if (originalEnabled === undefined)
       delete process.env.TWITCH_INGESTION_ENABLED;

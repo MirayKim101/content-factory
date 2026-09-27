@@ -122,6 +122,34 @@ export class TwitchIngestionController {
     }
   }
 
+  @Post("vod-imports/:id/retry")
+  @ApiOkResponse({ type: TwitchVodIngestIntentResponseDto })
+  async retryVodImport(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+  ) {
+    try {
+      const intent = await this.service.retryVodIngest(id);
+      if (!intent)
+        throw new NotFoundException({
+          code: "TWITCH_VOD_INGEST_NOT_FOUND",
+          message: "Twitch VOD ingest was not found.",
+        });
+      return intent;
+    } catch (error) {
+      if (error instanceof TwitchVodAutoIngestDisabledError)
+        throw new ServiceUnavailableException({
+          code: "TWITCH_VOD_AUTO_INGEST_DISABLED",
+          message: "Automatic Twitch VOD ingest is disabled.",
+        });
+      if (error instanceof TwitchVodConflictError)
+        throw new ConflictException({
+          code: "TWITCH_VOD_INGEST_RETRY_CONFLICT",
+          message: "Only a stopped ready VOD import can be retried.",
+        });
+      throw error;
+    }
+  }
+
   @Post("vod-candidates/:id/ignore")
   @ApiOkResponse({ type: TwitchVodCandidateResponseDto })
   async ignoreVodCandidate(

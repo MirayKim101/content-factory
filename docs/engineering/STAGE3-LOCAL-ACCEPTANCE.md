@@ -22,9 +22,9 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     225/225 unit tests
+API:     226/226 unit tests
 Worker:  239/239 unit tests
-Web:     244/244 tests
+Web:     245/245 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 42/42, 73 public tables, 0 unvalidated constraints
