@@ -24,6 +24,7 @@ export interface VerticalRenderedFile {
 export interface VerticalRenderRepository {
   claim(jobId: string, leaseMs: number): Promise<VerticalRenderClaim | null>;
   heartbeat(claim: VerticalRenderClaim, leaseMs: number): Promise<boolean>;
+  release(claim: VerticalRenderClaim): Promise<boolean>;
   complete(
     claim: VerticalRenderClaim,
     output: VerticalRenderedFile & {

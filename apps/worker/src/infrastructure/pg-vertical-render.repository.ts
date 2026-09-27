@@ -128,6 +128,35 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
     return result.rowCount === 1;
   }
 
+  async release(claim: VerticalRenderClaim): Promise<boolean> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const updated = await client.query(
+        `UPDATE "PipelineJob" SET "state"='QUEUED',
+          "attemptCount"=GREATEST("attemptCount"-1,0),
+          "leaseOwner"=NULL, "leaseToken"=NULL, "leaseExpiresAt"=NULL,
+          "heartbeatAt"=NULL, "nextAttemptAt"=NULL, "updatedAt"=now()
+         WHERE "id"=$1 AND "state"='PROCESSING' AND "leaseToken"=$2
+           AND "leaseExpiresAt">now()`,
+        [claim.jobId, claim.leaseToken],
+      );
+      if (updated.rowCount)
+        await client.query(
+          `DELETE FROM "JobAttempt" WHERE "jobId"=$1 AND "attemptNumber"=$2
+            AND "leaseToken"=$3 AND "state"='PROCESSING'`,
+          [claim.jobId, claim.attemptNumber, claim.leaseToken],
+        );
+      await client.query("COMMIT");
+      return updated.rowCount === 1;
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   async complete(
     claim: VerticalRenderClaim,
     output: VerticalRenderedFile & {

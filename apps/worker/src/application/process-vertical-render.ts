@@ -10,7 +10,12 @@ import type {
   VerticalRenderRepository,
 } from "./vertical-render.port.js";
 
+class VerticalRenderShutdownError extends Error {}
+
 export class ProcessVerticalRender {
+  private readonly activeControllers = new Set<AbortController>();
+  private stopping = false;
+
   constructor(
     private readonly repository: VerticalRenderRepository,
     private readonly storage: WorkerObjectStorage,
@@ -20,19 +25,28 @@ export class ProcessVerticalRender {
     private readonly attemptTimeoutMs = 2 * 60 * 60 * 1_000,
   ) {}
 
+  abortAll(): void {
+    this.stopping = true;
+    for (const controller of this.activeControllers)
+      controller.abort(new VerticalRenderShutdownError());
+  }
+
   async execute(jobId: string): Promise<boolean> {
+    if (this.stopping) return false;
     const claim = await this.repository.claim(jobId, this.leaseMs);
     if (!claim) return false;
-    await mkdir(this.scratchRoot, { recursive: true });
-    const scratch = await mkdtemp(join(this.scratchRoot, "vertical-"));
-    const input = join(scratch, "input.mp4");
-    const output = join(scratch, "vertical.mp4");
+    if (this.stopping) {
+      await this.repository.release(claim).catch(() => false);
+      return false;
+    }
     const abort = new AbortController();
+    this.activeControllers.add(abort);
     const deadline = createAbortDeadline(
       abort.signal,
       this.attemptTimeoutMs,
       "VERTICAL_RENDER_TIMEOUT",
     );
+    let scratch: string | undefined;
     let heartbeatRunning = false;
     const heartbeat = setInterval(
       () => {
@@ -52,13 +66,21 @@ export class ProcessVerticalRender {
     try {
       if (!(await this.repository.heartbeat(claim, this.leaseMs)))
         throw new Error("VERTICAL_LEASE_LOST");
+      await mkdir(this.scratchRoot, { recursive: true });
+      scratch = await mkdtemp(join(this.scratchRoot, "vertical-"));
+      const input = join(scratch, "input.mp4");
+      const output = join(scratch, "vertical.mp4");
       await this.storage.download(
         claim.inputObjectKey,
         input,
         deadline.signal,
         claim.inputSizeBytes,
       );
-      const rendered = await this.renderer.render(input, output, deadline.signal);
+      const rendered = await this.renderer.render(
+        input,
+        output,
+        deadline.signal,
+      );
       if (
         rendered.width !== 1080 ||
         rendered.height !== 1920 ||
@@ -96,6 +118,10 @@ export class ProcessVerticalRender {
         await this.storage.delete(objectKey).catch(() => undefined);
       return completed;
     } catch (error) {
+      if (abort.signal.reason instanceof VerticalRenderShutdownError) {
+        await this.repository.release(claim).catch(() => false);
+        return false;
+      }
       await this.repository.fail(
         claim,
         error instanceof Error
@@ -107,9 +133,11 @@ export class ProcessVerticalRender {
     } finally {
       deadline.dispose();
       clearInterval(heartbeat);
-      await rm(scratch, { recursive: true, force: true }).catch(
-        () => undefined,
-      );
+      this.activeControllers.delete(abort);
+      if (scratch)
+        await rm(scratch, { recursive: true, force: true }).catch(
+          () => undefined,
+        );
     }
   }
 }

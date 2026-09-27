@@ -123,13 +123,16 @@
 - Shutdown во время pending Twitch claim также fenced: новый transfer не
   стартует после SIGTERM, а уже выданный lease атомарно возвращается в `QUEUED`
   без потери attempt budget и без двухчасовой задержки recovery.
+- Vertical worker применяет тот же shutdown contract к pending claim и
+  активным download/FFmpeg/upload: I/O abort-ится, job и attempt атомарно
+  возвращаются в очередь без ложной ошибки и расхода retry budget.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  278/278 unit tests
+Worker:  280/280 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

@@ -175,6 +175,7 @@ async function startVerticalWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(timer);
+    processor.abortAll();
     shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);
       await queue.close().catch(() => undefined);
