@@ -25,7 +25,12 @@ export class ReconcilePublicationOutcomes {
         (candidate) =>
           candidate.platform === claim.platform && candidate.reconcile,
       );
-      if (!provider?.reconcile) continue;
+      if (!provider?.reconcile) {
+        await this.repository
+          .releaseReconciliationClaim(claim)
+          .catch((error: unknown) => this.onFailure(claim.id, error));
+        continue;
+      }
       try {
         const result = await provider.reconcile(claim);
         if (result.state === "PENDING")

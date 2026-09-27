@@ -97,6 +97,7 @@ describe("ReconcilePublicationOutcomes", () => {
     expect(repo.refreshUnknownRemoteState).not.toHaveBeenCalled();
     expect(repo.finalizePublished).not.toHaveBeenCalled();
     expect(repo.failUnknownRemoteState).not.toHaveBeenCalled();
+    expect(repo.releaseReconciliationClaim).toHaveBeenCalledWith(claim);
   });
 
   it("isolates a provider failure and reconciles the next outcome", async () => {
