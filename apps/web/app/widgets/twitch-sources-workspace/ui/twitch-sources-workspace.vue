@@ -18,6 +18,7 @@ const projectsApi = createProjectsApi({
   apiBasePath: config.public.apiBasePath,
 });
 const channels = ref<TwitchSourceChannel[]>([]);
+const ingestionEnabled = ref(false);
 const autoIngestEnabled = ref(false);
 const vodCandidates = ref<TwitchVodCandidate[]>([]);
 const sourceReadyProjects = ref<{ label: string; value: string }[]>([]);
@@ -63,6 +64,7 @@ async function load() {
         api.listVodCandidates(),
         listAllProjects(projectsApi, { status: "SOURCE_READY" }),
       ]);
+    ingestionEnabled.value = capabilities.ingestionEnabled;
     autoIngestEnabled.value = capabilities.autoIngestEnabled;
     channels.value = nextChannels;
     vodCandidates.value = nextVodCandidates;
@@ -142,7 +144,7 @@ async function retryAutomaticImport(item: TwitchVodCandidate) {
   }
 }
 async function save() {
-  if (!valid.value || saving.value) return;
+  if (!ingestionEnabled.value || !valid.value || saving.value) return;
   saving.value = true;
   error.value = null;
   notice.value = null;
@@ -509,22 +511,29 @@ onUnmounted(() => pollTimer && clearInterval(pollTimer));
           Используйте числовой broadcaster ID из Twitch API. Login нужен только
           для отображения и может изменяться.
         </p>
+        <p v-if="!ingestionEnabled" class="admission-note" role="status">
+          Подключение новых каналов выключено администратором. Существующие
+          источники и история доступны для просмотра и отзыва.
+        </p>
         <form @submit.prevent="save">
           <label
             ><span>Broadcaster ID</span
             ><InputText
               v-model="broadcasterId"
+              :disabled="!ingestionEnabled"
               inputmode="numeric"
               placeholder="Например, 141981764" /></label
           ><label
             ><span>Login</span
             ><InputText
               v-model="broadcasterLogin"
+              :disabled="!ingestionEnabled"
               placeholder="channel_login" /></label
           ><label
             ><span>Название канала</span
             ><InputText
               v-model="broadcasterDisplayName"
+              :disabled="!ingestionEnabled"
               placeholder="Название для команды" /></label
           ><label
             ><span>Задержка после эфира, минут</span
@@ -532,9 +541,13 @@ onUnmounted(() => pollTimer && clearInterval(pollTimer));
               v-model.number="delayMinutes"
               class="number-input"
               type="number"
+              :disabled="!ingestionEnabled"
               min="1"
               max="1440" /></label
-          ><Button type="submit" :disabled="!valid || saving">{{
+          ><Button
+            type="submit"
+            :disabled="!ingestionEnabled || !valid || saving"
+            >{{
             saving ? "Сохраняем…" : "Разрешить источник"
           }}</Button>
         </form>
@@ -552,6 +565,15 @@ onUnmounted(() => pollTimer && clearInterval(pollTimer));
   max-width: 90rem;
   margin: 0 auto;
   padding: 2.3rem 2.5rem 5rem;
+}
+.admission-note {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface-muted);
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
 }
 .page-header,
 .section-heading,
