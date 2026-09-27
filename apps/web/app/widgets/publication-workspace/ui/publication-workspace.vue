@@ -22,6 +22,7 @@ import {
   createVerticalRendersApi,
   type VerticalRender,
 } from "~/shared/api/vertical-renders";
+import { hasPendingPublication } from "~/widgets/publication-workspace/model/status";
 
 type ProjectOption = { id: string; name: string };
 
@@ -205,6 +206,7 @@ async function refreshPublicationStatuses(): Promise<void> {
   const selectedProjectId = projectId.value;
   if (
     !selectedProjectId ||
+    !hasPendingPublication(publications.value) ||
     loading.value ||
     saving.value ||
     refreshingPublications.value ||

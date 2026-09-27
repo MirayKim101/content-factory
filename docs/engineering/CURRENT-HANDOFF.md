@@ -496,3 +496,9 @@ Vertical и Twitch workspaces теперь тихо обновляют акти�
 параллельные запросы, приостанавливается в скрытой вкладке и прекращается после
 terminal state. Ручное обновление по-прежнему показывает ошибки. Web `262/262`,
 typecheck, lint и production build прошли.
+
+Publication workspace больше не опрашивает API каждые 15 секунд после того,
+как все intent перешли в terminal/operator states. Автообновление сохраняется
+для `SCHEDULED`, `QUEUED` и `PROCESSING`, а локальные часы формы продолжают
+обновляться независимо. Web `266/266`, typecheck, lint и production build
+прошли.
