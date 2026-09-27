@@ -35,6 +35,9 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Publication worker fail-closed при ошибке heartbeat: потеря связи с БД теперь
   немедленно отменяет активный provider request, не оставляя окно для
   параллельной повторной публикации после recovery.
+- Тот же fail-closed fence применяется к status reconciliation: при ошибке
+  продления lease provider polling прерывается, а запись оставляется новому
+  владельцу после истечения durable lease.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

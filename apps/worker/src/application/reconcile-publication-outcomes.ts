@@ -89,7 +89,12 @@ export class ReconcilePublicationOutcomes {
           if (!retained && !abortController.signal.aborted)
             abortController.abort(new ReconciliationLeaseLostError());
         })
-        .catch(() => undefined)
+        .catch(() => {
+          // A database error makes lease ownership unknowable. Abort provider
+          // polling so an expired claim cannot overlap a recovery worker.
+          if (!abortController.signal.aborted)
+            abortController.abort(new ReconciliationLeaseLostError());
+        })
         .finally(() => {
           running = false;
         });

@@ -172,6 +172,39 @@ describe("ReconcilePublicationOutcomes", () => {
     }
   });
 
+  it("aborts reconciliation when heartbeat ownership cannot be proven", async () => {
+    vi.useFakeTimers();
+    try {
+      const repo = repository();
+      vi.mocked(repo.heartbeatReconciliationClaim).mockRejectedValue(
+        new Error("database offline"),
+      );
+      const provider = {
+        platform: "YOUTUBE" as const,
+        publish: vi.fn(),
+        reconcile: vi.fn(
+          (_claim: PublicationReconciliationClaim, signal?: AbortSignal) =>
+            new Promise<never>((_resolve, reject) => {
+              signal?.addEventListener("abort", () => reject(signal.reason), {
+                once: true,
+              });
+            }),
+        ),
+      };
+
+      const execution = new ReconcilePublicationOutcomes(repo, [
+        provider,
+      ]).execute();
+      await vi.advanceTimersByTimeAsync(30_000);
+
+      await expect(execution).resolves.toBe(0);
+      expect(repo.refreshUnknownRemoteState).not.toHaveBeenCalled();
+      expect(repo.releaseReconciliationClaim).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("does not report reconciliation after a fenced update loses the lease", async () => {
     const repo = repository();
     vi.mocked(repo.refreshUnknownRemoteState).mockResolvedValue(false);
