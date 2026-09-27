@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { ReconcileTwitchIngestion } from "../src/application/reconcile-twitch-ingestion.js";
 import type { TwitchIngestionWorkerRepository } from "../src/application/twitch-reconciliation.port.js";
+import { PgTwitchIngestionWorkerRepository } from "../src/infrastructure/pg-twitch-ingestion-worker.repository.js";
 import {
   parseTwitchDuration,
   parseTwitchVodPage,
@@ -9,6 +10,43 @@ import {
 } from "../src/infrastructure/twitch-helix-client.js";
 
 describe("Twitch reconciliation", () => {
+  it("polls enabled channels even when EventSub offline was missed", async () => {
+    const query = vi.fn().mockResolvedValue({
+      rows: [
+        {
+          id: "channel-1",
+          broadcasterId: "1337",
+          reconciliationCursor: null,
+          ingestDelaySeconds: 300,
+        },
+      ],
+    });
+    const repository = new PgTwitchIngestionWorkerRepository(
+      "postgresql://unused",
+    );
+    const originalPool = (
+      repository as unknown as { pool: { end(): Promise<void> } }
+    ).pool;
+    (
+      repository as unknown as {
+        pool: { query: typeof query; end(): Promise<void> };
+      }
+    ).pool = { query, end: vi.fn() };
+
+    await expect(repository.dueChannels()).resolves.toEqual([
+      {
+        id: "channel-1",
+        broadcasterId: "1337",
+        cursor: null,
+        ingestDelaySeconds: 300,
+      },
+    ]);
+    const sql = String(query.mock.calls[0]![0]);
+    expect(sql).not.toContain('"lastOfflineAt" IS NOT NULL');
+    expect(sql).toContain("\"state\" = 'ENABLED'");
+    await originalPool.end();
+  });
+
   it("parses bounded archive metadata and Twitch duration", () => {
     expect(parseTwitchDuration("12h34m56s")).toBe(45_296);
     expect(parseTwitchDuration("45m2s")).toBe(2_702);

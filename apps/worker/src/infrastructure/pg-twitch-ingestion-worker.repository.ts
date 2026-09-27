@@ -72,8 +72,6 @@ export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerR
       `SELECT "id", "broadcasterId", "reconciliationCursor", "ingestDelaySeconds"
          FROM "TwitchIngestChannel"
         WHERE "state" = 'ENABLED'
-          AND "lastOfflineAt" IS NOT NULL
-          AND "lastOfflineAt" + make_interval(secs => "ingestDelaySeconds") <= now()
           AND ("lastReconciledAt" IS NULL OR "lastReconciledAt" <= now() - interval '5 minutes')
         ORDER BY "lastReconciledAt" ASC NULLS FIRST, "id" ASC LIMIT $1`,
       [Math.max(1, Math.min(100, Math.trunc(limit)))],
