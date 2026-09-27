@@ -112,6 +112,10 @@
 - Metrics claims также удерживаются heartbeat с момента batch claim. Потеря
   владения или ошибка heartbeat abort-ит provider GET и запрещает старому
   worker записывать snapshot либо освобождать lease нового владельца.
+- Outcome/metrics heartbeat и terminal mutations требуют не только matching
+  token, но и неистёкший lease. Просроченный worker не может воскресить claim
+  или записать status/snapshot до следующего reclaim; SQL проверен на runtime DB
+  no-op probes с заведомо отсутствующим intent ID.
 
 ## Воспроизведённые проверки
 

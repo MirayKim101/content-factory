@@ -473,7 +473,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
               "reconciliationLeaseToken" = NULL, "reconciliationLeaseExpiresAt" = NULL
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
           AND "attemptCount" = $4 AND "remotePublicationId" = $5
-          AND "reconciliationLeaseToken" = $6`,
+          AND "reconciliationLeaseToken" = $6
+          AND "reconciliationLeaseExpiresAt" > $3`,
       [
         claim.id,
         remoteStatus.slice(0, 120),
@@ -494,7 +495,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       `UPDATE "PublicationIntent"
           SET "reconciliationLeaseExpiresAt" = $3::timestamp + interval '2 minutes'
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
-          AND "reconciliationLeaseToken" = $2`,
+          AND "reconciliationLeaseToken" = $2
+          AND "reconciliationLeaseExpiresAt" > $3`,
       [claim.id, claim.reconciliationLeaseToken, now],
     );
     return result.rowCount === 1;
@@ -516,7 +518,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                 "reconciliationLeaseToken" = NULL, "reconciliationLeaseExpiresAt" = NULL
           WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
             AND "attemptCount" = $4 AND "remotePublicationId" = $5
-            AND "reconciliationLeaseToken" = $6`,
+            AND "reconciliationLeaseToken" = $6
+            AND "reconciliationLeaseExpiresAt" > $3`,
         [
           claim.id,
           result.remoteStatus.slice(0, 120),
@@ -571,6 +574,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
           AND "attemptCount" = $6 AND "remotePublicationId" = $7
           AND "reconciliationLeaseToken" = $8
+          AND "reconciliationLeaseExpiresAt" > $5
         RETURNING "id"
        ), deleted AS (
          DELETE FROM "PublicationProviderSession" s
@@ -678,6 +682,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
             SET "metricsLeaseToken" = NULL, "metricsLeaseExpiresAt" = NULL
           WHERE "id" = $1 AND "state" = 'PUBLISHED'
             AND "platform" = $2 AND "metricsLeaseToken" = $3
+            AND "metricsLeaseExpiresAt" > $9
         RETURNING "id", "platform"
        ), inserted AS (
          INSERT INTO "PublicationMetricSnapshot"
@@ -712,7 +717,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       `UPDATE "PublicationIntent"
           SET "metricsLeaseExpiresAt" = $3::timestamp + interval '2 minutes'
         WHERE "id" = $1 AND "state" = 'PUBLISHED'
-          AND "metricsLeaseToken" = $2`,
+          AND "metricsLeaseToken" = $2
+          AND "metricsLeaseExpiresAt" > $3`,
       [claim.id, claim.metricsLeaseToken, now],
     );
     return result.rowCount === 1;
