@@ -15,6 +15,9 @@ export const PUBLISHING_ADMISSION_ENABLED = Symbol(
 export const YOUTUBE_PUBLISHING_ADMISSION_ENABLED = Symbol(
   "YOUTUBE_PUBLISHING_ADMISSION_ENABLED",
 );
+export const TIKTOK_PUBLISHING_ADMISSION_ENABLED = Symbol(
+  "TIKTOK_PUBLISHING_ADMISSION_ENABLED",
+);
 
 export interface PublicationRepository {
   createChannel(input: {

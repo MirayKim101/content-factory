@@ -5628,6 +5628,53 @@
         "required": ["file"],
         "type": "object"
       },
+      "TikTokCreatorInfoResponseDto": {
+        "properties": {
+          "commentDisabled": {
+            "type": "boolean"
+          },
+          "creatorAvatarUrl": {
+            "type": "string"
+          },
+          "creatorNickname": {
+            "type": "string"
+          },
+          "creatorUsername": {
+            "type": "string"
+          },
+          "duetDisabled": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "maxVideoPostDurationSec": {
+            "type": "number"
+          },
+          "privacyLevelOptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "stitchDisabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "creatorAvatarUrl",
+          "creatorNickname",
+          "creatorUsername",
+          "privacyLevelOptions",
+          "commentDisabled",
+          "duetDisabled",
+          "stitchDisabled",
+          "maxVideoPostDurationSec",
+          "fetchedAt"
+        ],
+        "type": "object"
+      },
       "TranscriptArtifactDto": {
         "properties": {
           "adapterVersion": {
@@ -10252,6 +10299,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicationChannelResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      }
+    },
+    "/api/v1/projects/{projectId}/publication-channels/{channelId}/tiktok-creator-info": {
+      "get": {
+        "operationId": "PublicationController_creatorInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TikTokCreatorInfoResponseDto"
                 }
               }
             },

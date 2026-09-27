@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Body,
   ConflictException,
@@ -23,6 +24,7 @@ import {
 } from "@nestjs/swagger";
 
 import { CreatePublicationIntent } from "../application/create-publication-intent.js";
+import { GetTikTokCreatorInfo } from "../application/get-tiktok-creator-info.js";
 import {
   CreatePublicationChannel,
   ListPublicationChannels,
@@ -39,9 +41,11 @@ import {
   PublicationIdempotencyConflictError,
   PublicationLineageInvalidError,
   PublicationMetadataInvalidError,
+  PublicationNotFoundError,
   PublicationScheduleInvalidError,
   PublicationTimezoneInvalidError,
   PublishingUnavailableError,
+  TikTokCreatorInfoUnavailableError,
 } from "../domain/publication.js";
 import {
   CreatePublicationChannelDto,
@@ -50,6 +54,7 @@ import {
   PublicationIntentListResponseDto,
   PublicationIntentResponseDto,
   PublicationListQueryDto,
+  TikTokCreatorInfoResponseDto,
 } from "./publication.dto.js";
 import {
   publicationChannelResponse,
@@ -66,6 +71,7 @@ export class PublicationController {
     private readonly getIntent: GetPublicationIntent,
     private readonly listIntents: ListPublicationIntents,
     private readonly cancelIntent: CancelPublicationIntent,
+    private readonly getTikTokCreatorInfo: GetTikTokCreatorInfo,
   ) {}
 
   @Post("projects/:projectId/publication-channels")
@@ -91,6 +97,21 @@ export class PublicationController {
     return (await this.listChannels.execute(projectId)).map(
       publicationChannelResponse,
     );
+  }
+
+  @Get(
+    "projects/:projectId/publication-channels/:channelId/tiktok-creator-info",
+  )
+  @ApiOkResponse({ type: TikTokCreatorInfoResponseDto })
+  async creatorInfo(
+    @Param("projectId", new ParseUUIDPipe({ version: "4" })) projectId: string,
+    @Param("channelId", new ParseUUIDPipe({ version: "4" })) channelId: string,
+  ) {
+    try {
+      return await this.getTikTokCreatorInfo.execute(projectId, channelId);
+    } catch (error) {
+      this.rethrow(error);
+    }
   }
 
   @Post("projects/:projectId/publications")
@@ -167,6 +188,16 @@ export class PublicationController {
       throw new ServiceUnavailableException({
         code: "PUBLISHING_DISABLED",
         message: "Publishing is disabled.",
+      });
+    if (error instanceof PublicationNotFoundError)
+      throw new NotFoundException({
+        code: "PUBLICATION_CHANNEL_NOT_FOUND",
+        message: "Publication channel was not found.",
+      });
+    if (error instanceof TikTokCreatorInfoUnavailableError)
+      throw new BadGatewayException({
+        code: "TIKTOK_CREATOR_INFO_UNAVAILABLE",
+        message: "TikTok creator capabilities are temporarily unavailable.",
       });
     if (
       error instanceof PublicationScheduleInvalidError ||

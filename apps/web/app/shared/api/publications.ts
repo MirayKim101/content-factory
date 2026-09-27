@@ -69,6 +69,18 @@ const listSchema = z.object({
 const errorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string().optional() }),
 });
+const tiktokCreatorInfoSchema = z.object({
+  creatorAvatarUrl: z.string(),
+  creatorNickname: z.string(),
+  creatorUsername: z.string(),
+  privacyLevelOptions: z.array(z.string()).min(1),
+  commentDisabled: z.boolean(),
+  duetDisabled: z.boolean(),
+  stitchDisabled: z.boolean(),
+  maxVideoPostDurationSec: z.number().int().positive(),
+  fetchedAt: z.iso.datetime(),
+});
+export type TikTokCreatorInfo = z.infer<typeof tiktokCreatorInfoSchema>;
 
 export class PublicationsApiError extends Error {
   constructor(
@@ -130,6 +142,13 @@ export function createPublicationsApi(
           body: JSON.stringify(input),
         },
         channelSchema,
+      ),
+    getTikTokCreatorInfo: (projectId: string, channelId: string) =>
+      request(
+        fetchImplementation,
+        `${basePath}/projects/${encodeURIComponent(projectId)}/publication-channels/${encodeURIComponent(channelId)}/tiktok-creator-info`,
+        {},
+        tiktokCreatorInfoSchema,
       ),
     list: (projectId: string) =>
       request(
@@ -210,6 +229,8 @@ async function request<T>(
       PUBLICATION_CONFLICT:
         "Данные изменились. Обновите очередь и повторите действие.",
       PUBLICATION_REQUEST_INVALID: "Проверьте дату, часовой пояс и метаданные.",
+      TIKTOK_CREATOR_INFO_UNAVAILABLE:
+        "TikTok временно не вернул настройки автора. Обновите их перед публикацией.",
     };
     const message =
       messages[code] ??

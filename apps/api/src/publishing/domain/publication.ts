@@ -50,6 +50,7 @@ export class PublicationNotFoundError extends Error {}
 export class PublicationCursorInvalidError extends Error {}
 export class PublicationCancellationConflictError extends Error {}
 export class PublicationChannelConflictError extends Error {}
+export class TikTokCreatorInfoUnavailableError extends Error {}
 
 export function requirePublicationTimezone(value: string): string {
   const timezone = value.trim();
@@ -74,6 +75,50 @@ export function requirePublicationMetadata(
   )
     throw new PublicationMetadataInvalidError();
   return structuredClone(value as Record<string, unknown>);
+}
+
+export function requireTikTokPublicationMetadata(
+  value: Record<string, unknown>,
+  now: Date,
+): void {
+  const consent = value.consent;
+  if (!consent || typeof consent !== "object" || Array.isArray(consent))
+    throw new PublicationMetadataInvalidError();
+  const record = consent as Record<string, unknown>;
+  const fetchedAt = parseInstant(record.creatorInfoFetchedAt);
+  const confirmedAt = parseInstant(record.confirmedAt);
+  if (
+    record.version !== "tiktok-direct-post-consent-v1" ||
+    typeof record.creatorUsername !== "string" ||
+    !record.creatorUsername.trim() ||
+    record.creatorUsername.length > 256 ||
+    !fetchedAt ||
+    !confirmedAt ||
+    confirmedAt.getTime() < fetchedAt.getTime() ||
+    fetchedAt.getTime() < now.getTime() - 15 * 60 * 1000 ||
+    fetchedAt.getTime() > now.getTime() + 60 * 1000 ||
+    confirmedAt.getTime() > now.getTime() + 60 * 1000 ||
+    typeof value.title !== "string" ||
+    !value.title.trim() ||
+    value.title.length > 2200 ||
+    typeof value.privacyLevel !== "string" ||
+    !/^[A-Z_]{2,64}$/.test(value.privacyLevel) ||
+    ![
+      "disableComment",
+      "disableDuet",
+      "disableStitch",
+      "brandContentToggle",
+      "brandOrganicToggle",
+    ].every((field) => typeof value[field] === "boolean") ||
+    (value.isAigc !== undefined && typeof value.isAigc !== "boolean")
+  )
+    throw new PublicationMetadataInvalidError();
+}
+
+function parseInstant(value: unknown): Date | null {
+  if (typeof value !== "string") return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 export function requirePublicationLabel(

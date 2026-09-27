@@ -163,3 +163,15 @@ export class PublicationIntentListResponseDto {
   @ApiProperty({ type: String, format: "uuid", nullable: true }) nextCursor!:
     string | null;
 }
+
+export class TikTokCreatorInfoResponseDto {
+  @ApiProperty({ type: String }) creatorAvatarUrl!: string;
+  @ApiProperty({ type: String }) creatorNickname!: string;
+  @ApiProperty({ type: String }) creatorUsername!: string;
+  @ApiProperty({ type: [String] }) privacyLevelOptions!: string[];
+  @ApiProperty({ type: Boolean }) commentDisabled!: boolean;
+  @ApiProperty({ type: Boolean }) duetDisabled!: boolean;
+  @ApiProperty({ type: Boolean }) stitchDisabled!: boolean;
+  @ApiProperty({ type: Number }) maxVideoPostDurationSec!: number;
+  @ApiProperty({ type: String, format: "date-time" }) fetchedAt!: string;
+}

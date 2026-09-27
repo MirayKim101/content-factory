@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
@@ -14,6 +15,7 @@ import {
   createPublicationsApi,
   type PublicationChannel,
   type PublicationIntent,
+  type TikTokCreatorInfo,
 } from "~/shared/api/publications";
 import {
   createVerticalRendersApi,
@@ -49,6 +51,18 @@ const verticalId = ref("");
 const channelId = ref("");
 const youtubeChannelRef = ref("");
 const youtubeDisplayName = ref("");
+const tiktokOpenId = ref("");
+const tiktokDisplayName = ref("");
+const tiktokCreator = ref<TikTokCreatorInfo | null>(null);
+const tiktokPrivacy = ref("");
+const tiktokDisableComment = ref(false);
+const tiktokDisableDuet = ref(false);
+const tiktokDisableStitch = ref(false);
+const tiktokBrandContent = ref(false);
+const tiktokBrandOrganic = ref(false);
+const tiktokIsAigc = ref(false);
+const tiktokConsent = ref(false);
+const creatorLoading = ref(false);
 const title = ref("");
 const description = ref("");
 const scheduledLocal = ref(defaultSchedule());
@@ -70,10 +84,18 @@ const activeChannels = computed(() =>
 const activeChannel = computed(() =>
   activeChannels.value.find((item) => item.id === channelId.value),
 );
+const contentKindOptions = computed(() =>
+  activeChannel.value?.platform === "LOCAL_DRY_RUN"
+    ? [
+        { label: "Горизонтальный пакет", value: "EDITORIAL_EXPORT" },
+        { label: "Вертикальный ролик", value: "VERTICAL_RESULT" },
+      ]
+    : [{ label: "Вертикальный ролик", value: "VERTICAL_RESULT" }],
+);
 const channelOptions = computed(() =>
   activeChannels.value.map((item) => ({
     id: item.id,
-    label: `${item.platform === "YOUTUBE" ? "YouTube" : "Dry run"} · ${item.displayName}`,
+    label: `${item.platform === "YOUTUBE" ? "YouTube" : item.platform === "TIKTOK" ? "TikTok" : "Dry run"} · ${item.displayName}`,
   })),
 );
 const grouped = computed(() => ({
@@ -123,6 +145,7 @@ async function loadWorkspace(): Promise<void> {
     if (!nextChannels.some((item) => item.id === channelId.value))
       channelId.value =
         nextChannels.find((item) => item.platform === "YOUTUBE")?.id ??
+        nextChannels.find((item) => item.platform === "TIKTOK")?.id ??
         nextChannels.find((item) => item.platform === "LOCAL_DRY_RUN")?.id ??
         "";
     publications.value = nextPublications.items;
@@ -137,6 +160,60 @@ async function loadWorkspace(): Promise<void> {
       cause instanceof Error ? cause.message : "Не удалось загрузить очередь.";
   } finally {
     loading.value = false;
+  }
+}
+async function createTikTokChannel(): Promise<void> {
+  const externalChannelRef = tiktokOpenId.value.trim();
+  if (
+    !projectId.value ||
+    saving.value ||
+    !/^[A-Za-z0-9._-]{1,128}$/.test(externalChannelRef)
+  )
+    return;
+  saving.value = true;
+  error.value = null;
+  try {
+    const created = await publicationsApi.createChannel(projectId.value, {
+      platform: "TIKTOK",
+      displayName: tiktokDisplayName.value.trim() || "TikTok",
+      externalChannelRef,
+      timezone,
+    });
+    channelId.value = created.id;
+    tiktokOpenId.value = "";
+    tiktokDisplayName.value = "";
+    notice.value = "TikTok-аккаунт подключён. Проверьте настройки автора.";
+    await loadWorkspace();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Не удалось подключить TikTok.";
+  } finally {
+    saving.value = false;
+  }
+}
+async function loadTikTokCreator(): Promise<void> {
+  tiktokCreator.value = null;
+  tiktokConsent.value = false;
+  if (!projectId.value || activeChannel.value?.platform !== "TIKTOK") return;
+  creatorLoading.value = true;
+  error.value = null;
+  try {
+    const info = await publicationsApi.getTikTokCreatorInfo(
+      projectId.value,
+      activeChannel.value.id,
+    );
+    tiktokCreator.value = info;
+    tiktokPrivacy.value = info.privacyLevelOptions[0] ?? "";
+    tiktokDisableComment.value = info.commentDisabled;
+    tiktokDisableDuet.value = info.duetDisabled;
+    tiktokDisableStitch.value = info.stitchDisabled;
+  } catch (cause) {
+    error.value =
+      cause instanceof Error
+        ? cause.message
+        : "Не удалось получить настройки TikTok.";
+  } finally {
+    creatorLoading.value = false;
   }
 }
 async function createYoutubeChannel(): Promise<void> {
@@ -201,6 +278,8 @@ async function schedule(): Promise<void> {
     (contentKind.value === "EDITORIAL_EXPORT"
       ? !selectedExport?.result
       : !selectedVertical?.result?.approval) ||
+    (activeChannel.value.platform === "TIKTOK" &&
+      (!tiktokCreator.value || !tiktokPrivacy.value || !tiktokConsent.value)) ||
     saving.value
   )
     return;
@@ -220,6 +299,29 @@ async function schedule(): Promise<void> {
             verticalApprovalId: selectedVertical!.result!.approval!.id,
             verticalResultId: selectedVertical!.result!.id,
           };
+    const metadataSnapshot =
+      activeChannel.value.platform === "TIKTOK"
+        ? {
+            title: title.value.trim() || projectName(projectId.value),
+            privacyLevel: tiktokPrivacy.value,
+            disableComment: tiktokDisableComment.value,
+            disableDuet: tiktokDisableDuet.value,
+            disableStitch: tiktokDisableStitch.value,
+            brandContentToggle: tiktokBrandContent.value,
+            brandOrganicToggle: tiktokBrandOrganic.value,
+            isAigc: tiktokIsAigc.value,
+            consent: {
+              version: "tiktok-direct-post-consent-v1",
+              creatorUsername: tiktokCreator.value!.creatorUsername,
+              creatorInfoFetchedAt: tiktokCreator.value!.fetchedAt,
+              confirmedAt: new Date().toISOString(),
+            },
+          }
+        : {
+            title: title.value.trim() || projectName(projectId.value),
+            description: description.value.trim(),
+            source: "content-factory-ui-v1",
+          };
     await publicationsApi.create(
       projectId.value,
       {
@@ -228,11 +330,7 @@ async function schedule(): Promise<void> {
         ...lineage,
         scheduledAt: new Date(scheduledLocal.value).toISOString(),
         timezone,
-        metadataSnapshot: {
-          title: title.value.trim() || projectName(projectId.value),
-          description: description.value.trim(),
-          source: "content-factory-ui-v1",
-        },
+        metadataSnapshot,
       },
       `publication-ui-${crypto.randomUUID()}`,
     );
@@ -304,6 +402,11 @@ function defaultSchedule(): string {
 
 watch(projectId, () => {
   if (initialized.value) void loadWorkspace();
+});
+watch(channelId, () => void loadTikTokCreator());
+watch(activeChannel, (channel) => {
+  if (channel && channel.platform !== "LOCAL_DRY_RUN")
+    contentKind.value = "VERTICAL_RESULT";
 });
 onMounted(async () => {
   try {
@@ -453,7 +556,11 @@ onMounted(async () => {
             <h2 id="composer-title">Запланировать</h2>
           </div>
           <span class="safe-badge">{{
-            activeChannel?.platform === "YOUTUBE" ? "YouTube" : "Dry run"
+            activeChannel?.platform === "YOUTUBE"
+              ? "YouTube"
+              : activeChannel?.platform === "TIKTOK"
+                ? "TikTok"
+                : "Dry run"
           }}</span>
         </div>
         <template v-if="!projectId"
@@ -493,6 +600,24 @@ onMounted(async () => {
                 >Подключить YouTube</Button
               >
             </details>
+            <details class="channel-connector">
+              <summary>Подключить TikTok</summary>
+              <p>Укажите immutable open_id из OAuth-настройки сервера.</p>
+              <InputText v-model="tiktokOpenId" placeholder="TikTok open_id" />
+              <InputText
+                v-model="tiktokDisplayName"
+                placeholder="Название аккаунта"
+                maxlength="120"
+              />
+              <Button
+                type="button"
+                severity="secondary"
+                :disabled="!/^[A-Za-z0-9._-]{1,128}$/.test(tiktokOpenId.trim())"
+                :loading="saving"
+                @click="createTikTokChannel"
+                >Подключить TikTok</Button
+              >
+            </details>
           </div>
         </template>
         <form v-else class="schedule-form" @submit.prevent="schedule">
@@ -508,10 +633,7 @@ onMounted(async () => {
             ><span>Формат контента</span
             ><Select
               v-model="contentKind"
-              :options="[
-                { label: 'Горизонтальный пакет', value: 'EDITORIAL_EXPORT' },
-                { label: 'Вертикальный ролик', value: 'VERTICAL_RESULT' },
-              ]"
+              :options="contentKindOptions"
               option-label="label"
               option-value="value"
           /></label>
@@ -571,6 +693,85 @@ onMounted(async () => {
               maxlength="1000"
               placeholder="Коротко опишите выпуск"
           /></label>
+          <section
+            v-if="activeChannel.platform === 'TIKTOK'"
+            class="tiktok-consent"
+            aria-labelledby="tiktok-settings-title"
+          >
+            <div class="title-row">
+              <strong id="tiktok-settings-title">Настройки TikTok</strong>
+              <Button
+                type="button"
+                severity="secondary"
+                :loading="creatorLoading"
+                @click="loadTikTokCreator"
+                >Обновить</Button
+              >
+            </div>
+            <p v-if="creatorLoading" class="hint">
+              Проверяем настройки автора…
+            </p>
+            <template v-else-if="tiktokCreator">
+              <p class="creator-identity">
+                Публикация от
+                <strong>@{{ tiktokCreator.creatorUsername }}</strong> · максимум
+                {{ tiktokCreator.maxVideoPostDurationSec }} сек.
+              </p>
+              <label>
+                <span>Видимость</span>
+                <Select
+                  v-model="tiktokPrivacy"
+                  :options="tiktokCreator.privacyLevelOptions"
+                />
+              </label>
+              <label class="check-row">
+                <Checkbox
+                  v-model="tiktokDisableComment"
+                  binary
+                  :disabled="tiktokCreator.commentDisabled"
+                />
+                <span>Отключить комментарии</span>
+              </label>
+              <label class="check-row">
+                <Checkbox
+                  v-model="tiktokDisableDuet"
+                  binary
+                  :disabled="tiktokCreator.duetDisabled"
+                />
+                <span>Отключить Duet</span>
+              </label>
+              <label class="check-row">
+                <Checkbox
+                  v-model="tiktokDisableStitch"
+                  binary
+                  :disabled="tiktokCreator.stitchDisabled"
+                />
+                <span>Отключить Stitch</span>
+              </label>
+              <label class="check-row">
+                <Checkbox v-model="tiktokBrandContent" binary />
+                <span>Брендированный контент</span>
+              </label>
+              <label class="check-row">
+                <Checkbox v-model="tiktokBrandOrganic" binary />
+                <span>Продвижение собственного бренда</span>
+              </label>
+              <label class="check-row">
+                <Checkbox v-model="tiktokIsAigc" binary />
+                <span>Контент создан или существенно изменён ИИ</span>
+              </label>
+              <label class="check-row consent-row">
+                <Checkbox v-model="tiktokConsent" binary />
+                <span
+                  >Я проверил аккаунт, видимость и настройки и подтверждаю
+                  прямую публикацию.</span
+                >
+              </label>
+            </template>
+            <p v-else class="hint">
+              Свежие настройки автора недоступны. Публикация заблокирована.
+            </p>
+          </section>
           <label
             ><span>Дата и время</span
             ><input
@@ -586,6 +787,8 @@ onMounted(async () => {
             type="submit"
             :disabled="
               (contentKind === 'EDITORIAL_EXPORT' ? !exportId : !verticalId) ||
+              (activeChannel.platform === 'TIKTOK' &&
+                (!tiktokCreator || !tiktokConsent || !tiktokPrivacy)) ||
               saving
             "
             :loading="saving"
@@ -611,6 +814,26 @@ onMounted(async () => {
               "
               :loading="saving"
               @click="createYoutubeChannel"
+              >Подключить</Button
+            >
+          </details>
+          <details class="channel-connector">
+            <summary>Добавить TikTok-аккаунт</summary>
+            <p>
+              Используется open_id, связанный с OAuth credential на сервере.
+            </p>
+            <InputText v-model="tiktokOpenId" placeholder="TikTok open_id" />
+            <InputText
+              v-model="tiktokDisplayName"
+              placeholder="Название аккаунта"
+              maxlength="120"
+            />
+            <Button
+              type="button"
+              severity="secondary"
+              :disabled="!/^[A-Za-z0-9._-]{1,128}$/.test(tiktokOpenId.trim())"
+              :loading="saving"
+              @click="createTikTokChannel"
               >Подключить</Button
             >
           </details>
@@ -672,6 +895,35 @@ h1 {
   font-size: 0.76rem;
   font-weight: 750;
   color: var(--cf-text-muted);
+}
+.tiktok-consent {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--cf-brand) 28%, var(--cf-border));
+  border-radius: var(--cf-radius-md);
+  background: color-mix(in srgb, var(--cf-brand) 4%, var(--cf-surface));
+}
+.creator-identity {
+  margin: 0;
+  color: var(--cf-text-muted);
+  font-size: 0.84rem;
+}
+.check-row {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 0.65rem !important;
+  cursor: pointer;
+}
+.check-row > span {
+  color: var(--cf-text) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.35;
+}
+.consent-row {
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--cf-border);
+  font-weight: 700;
 }
 .summary {
   display: grid;

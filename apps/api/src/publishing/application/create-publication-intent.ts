@@ -8,14 +8,17 @@ import {
 } from "@content-factory/contracts";
 
 import {
+  PublicationLineageInvalidError,
   PublicationScheduleInvalidError,
   PublishingUnavailableError,
   requirePublicationMetadata,
+  requireTikTokPublicationMetadata,
   requirePublicationTimezone,
 } from "../domain/publication.js";
 import {
   PUBLICATION_REPOSITORY,
   PUBLISHING_ADMISSION_ENABLED,
+  TIKTOK_PUBLISHING_ADMISSION_ENABLED,
   YOUTUBE_PUBLISHING_ADMISSION_ENABLED,
   type PublicationRepository,
 } from "./publication-repository.port.js";
@@ -48,6 +51,8 @@ export class CreatePublicationIntent {
     private readonly admissionEnabled: boolean,
     @Inject(YOUTUBE_PUBLISHING_ADMISSION_ENABLED)
     private readonly youtubeAdmissionEnabled: boolean,
+    @Inject(TIKTOK_PUBLISHING_ADMISSION_ENABLED)
+    private readonly tiktokAdmissionEnabled: boolean,
     @Inject(PUBLICATION_DISPATCH)
     private readonly dispatch: PublicationDispatch,
     @Optional()
@@ -58,11 +63,19 @@ export class CreatePublicationIntent {
     if (!this.admissionEnabled) throw new PublishingUnavailableError();
     if (
       input.platform !== "LOCAL_DRY_RUN" &&
-      !(input.platform === "YOUTUBE" && this.youtubeAdmissionEnabled)
+      !(input.platform === "YOUTUBE" && this.youtubeAdmissionEnabled) &&
+      !(input.platform === "TIKTOK" && this.tiktokAdmissionEnabled)
     )
       throw new PublishingUnavailableError();
+    if (
+      input.platform !== "LOCAL_DRY_RUN" &&
+      (input.contentKind ?? "EDITORIAL_EXPORT") !== "VERTICAL_RESULT"
+    )
+      throw new PublicationLineageInvalidError();
     const timezone = requirePublicationTimezone(input.timezone);
     const metadataSnapshot = requirePublicationMetadata(input.metadataSnapshot);
+    if (input.platform === "TIKTOK")
+      requireTikTokPublicationMetadata(metadataSnapshot, this.clock());
     let scheduledAt: Date;
     try {
       scheduledAt = new Date(

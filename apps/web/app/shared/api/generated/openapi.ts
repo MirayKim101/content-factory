@@ -817,6 +817,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/publication-channels/{channelId}/tiktok-creator-info": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["PublicationController_creatorInfo"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{projectId}/publications": {
     parameters: {
       query?: never;
@@ -2873,6 +2889,18 @@ export interface components {
     ThumbnailUploadDto: {
       /** Format: binary */
       file: string;
+    };
+    TikTokCreatorInfoResponseDto: {
+      commentDisabled: boolean;
+      creatorAvatarUrl: string;
+      creatorNickname: string;
+      creatorUsername: string;
+      duetDisabled: boolean;
+      /** Format: date-time */
+      fetchedAt: string;
+      maxVideoPostDurationSec: number;
+      privacyLevelOptions: string[];
+      stitchDisabled: boolean;
     };
     TranscriptArtifactDto: {
       adapterVersion: string;
@@ -5853,6 +5881,25 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PublicationChannelResponseDto"];
+        };
+      };
+    };
+  };
+  PublicationController_creatorInfo: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TikTokCreatorInfoResponseDto"];
         };
       };
     };

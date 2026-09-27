@@ -24,6 +24,36 @@ function channel() {
 }
 
 describe("publications api", () => {
+  it("loads bounded TikTok creator capabilities without credentials", async () => {
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            creatorAvatarUrl: "https://example.test/avatar",
+            creatorNickname: "Creator",
+            creatorUsername: "creator",
+            privacyLevelOptions: ["SELF_ONLY"],
+            commentDisabled: false,
+            duetDisabled: true,
+            stitchDisabled: false,
+            maxVideoPostDurationSec: 600,
+            fetchedAt: "2026-09-28T00:00:00.000Z",
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    );
+    const result = await createPublicationsApi(
+      "/api/v1",
+      fetchMock as typeof fetch,
+    ).getTikTokCreatorInfo(projectId, channelId);
+    expect(result.creatorUsername).toBe("creator");
+    expect(result).not.toHaveProperty("accessToken");
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/projects/${projectId}/publication-channels/${channelId}/tiktok-creator-info`,
+      {},
+    );
+  });
+
   it("creates a bounded local channel without exposing credentials", async () => {
     const fetchMock = vi.fn(
       async () =>

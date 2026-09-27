@@ -39,7 +39,13 @@ describe("CreatePublicationIntent", () => {
   it("fails closed before touching persistence", async () => {
     const repo = repository();
     const dispatch = dispatcher();
-    const useCase = new CreatePublicationIntent(repo, false, false, dispatch);
+    const useCase = new CreatePublicationIntent(
+      repo,
+      false,
+      false,
+      false,
+      dispatch,
+    );
     await expect(useCase.execute(base)).rejects.toBeInstanceOf(
       PublishingUnavailableError,
     );
@@ -54,6 +60,7 @@ describe("CreatePublicationIntent", () => {
     const useCase = new CreatePublicationIntent(
       repo,
       true,
+      false,
       false,
       dispatch,
       now,
@@ -82,6 +89,7 @@ describe("CreatePublicationIntent", () => {
     const useCase = new CreatePublicationIntent(
       repo,
       true,
+      false,
       false,
       dispatcher(),
       () => new Date("2026-09-27T00:00:00.000Z"),
@@ -112,6 +120,7 @@ describe("CreatePublicationIntent", () => {
       repo,
       true,
       false,
+      false,
       dispatch,
       () => new Date("2026-09-27T00:00:00.000Z"),
     );
@@ -130,7 +139,13 @@ describe("CreatePublicationIntent", () => {
   it("keeps external providers unavailable in the dry-run slice", async () => {
     const repo = repository();
     const dispatch = dispatcher();
-    const useCase = new CreatePublicationIntent(repo, true, false, dispatch);
+    const useCase = new CreatePublicationIntent(
+      repo,
+      true,
+      false,
+      false,
+      dispatch,
+    );
     await expect(
       useCase.execute({ ...base, platform: "YOUTUBE" }),
     ).rejects.toBeInstanceOf(PublishingUnavailableError);
@@ -144,14 +159,78 @@ describe("CreatePublicationIntent", () => {
       repo,
       true,
       true,
+      false,
       dispatch,
       () => new Date("2026-09-27T00:00:00.000Z"),
     );
 
-    await useCase.execute({ ...base, platform: "YOUTUBE" });
+    await useCase.execute({
+      ...base,
+      platform: "YOUTUBE",
+      contentKind: "VERTICAL_RESULT",
+      approvalId: undefined,
+      exportResultId: undefined,
+      verticalApprovalId: "00000000-0000-4000-8000-000000000005",
+      verticalResultId: "00000000-0000-4000-8000-000000000006",
+    });
 
     expect(repo.create).toHaveBeenCalledWith(
       expect.objectContaining({ platform: "YOUTUBE" }),
     );
+  });
+
+  it("requires fresh explicit TikTok consent before persistence", async () => {
+    const repo = repository();
+    const dispatch = dispatcher();
+    const now = () => new Date("2026-09-28T00:10:00.000Z");
+    const useCase = new CreatePublicationIntent(
+      repo,
+      true,
+      false,
+      true,
+      dispatch,
+      now,
+    );
+    const tiktok = {
+      ...base,
+      platform: "TIKTOK" as const,
+      contentKind: "VERTICAL_RESULT" as const,
+      approvalId: undefined,
+      exportResultId: undefined,
+      verticalApprovalId: "00000000-0000-4000-8000-000000000005",
+      verticalResultId: "00000000-0000-4000-8000-000000000006",
+      metadataSnapshot: {
+        title: "Release",
+        privacyLevel: "SELF_ONLY",
+        disableComment: false,
+        disableDuet: true,
+        disableStitch: false,
+        brandContentToggle: false,
+        brandOrganicToggle: false,
+        consent: {
+          version: "tiktok-direct-post-consent-v1",
+          creatorUsername: "creator",
+          creatorInfoFetchedAt: "2026-09-28T00:08:00.000Z",
+          confirmedAt: "2026-09-28T00:09:00.000Z",
+        },
+      },
+    };
+    await useCase.execute(tiktok);
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ platform: "TIKTOK" }),
+    );
+
+    await expect(
+      useCase.execute({
+        ...tiktok,
+        metadataSnapshot: {
+          ...tiktok.metadataSnapshot,
+          consent: {
+            ...tiktok.metadataSnapshot.consent,
+            creatorInfoFetchedAt: "2026-09-27T00:00:00.000Z",
+          },
+        },
+      }),
+    ).rejects.toBeInstanceOf(PublicationMetadataInvalidError);
   });
 });
