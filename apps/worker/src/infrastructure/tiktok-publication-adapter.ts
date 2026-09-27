@@ -187,6 +187,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
 
   async reconcile(
     claim: PublicationReconciliationClaim,
+    signal?: AbortSignal,
   ): Promise<PublicationReconciliationResult> {
     const accessToken = await this.tokens.resolve({
       channelId: claim.channelId,
@@ -196,6 +197,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
     const remote = await this.transport.status({
       accessToken,
       publishId: claim.remotePublicationId,
+      signal,
     });
     if (
       [

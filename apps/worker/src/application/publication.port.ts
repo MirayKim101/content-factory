@@ -85,6 +85,10 @@ export interface PublicationWorkerRepository {
     now: Date,
     limit?: number,
   ): Promise<PublicationReconciliationClaim[]>;
+  heartbeatReconciliationClaim(
+    claim: PublicationReconciliationClaim,
+    now: Date,
+  ): Promise<boolean>;
   refreshUnknownRemoteState(
     claim: PublicationReconciliationClaim,
     remoteStatus: string,
@@ -113,6 +117,7 @@ export interface PublicationProvider {
   ): Promise<PublicationAdapterResult>;
   reconcile?(
     claim: PublicationReconciliationClaim,
+    signal?: AbortSignal,
   ): Promise<PublicationReconciliationResult>;
 }
 

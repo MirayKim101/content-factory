@@ -477,6 +477,20 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     );
   }
 
+  async heartbeatReconciliationClaim(
+    claim: PublicationReconciliationClaim,
+    now: Date,
+  ): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "PublicationIntent"
+          SET "reconciliationLeaseExpiresAt" = $3::timestamp + interval '2 minutes'
+        WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
+          AND "reconciliationLeaseToken" = $2`,
+      [claim.id, claim.reconciliationLeaseToken, now],
+    );
+    return result.rowCount === 1;
+  }
+
   async finalizePublished(
     claim: PublicationReconciliationClaim,
     result: Extract<PublicationReconciliationResult, { state: "PUBLISHED" }>,

@@ -1,7 +1,11 @@
 import type {
+  PublicationReconciliationClaim,
   PublicationProvider,
   PublicationWorkerRepository,
 } from "./publication.port.js";
+
+const RECONCILIATION_HEARTBEAT_INTERVAL_MS = 30_000;
+class ReconciliationLeaseLostError extends Error {}
 
 export class ReconcilePublicationOutcomes {
   constructor(
@@ -31,8 +35,10 @@ export class ReconcilePublicationOutcomes {
           .catch((error: unknown) => this.onFailure(claim.id, error));
         continue;
       }
+      const abortController = new AbortController();
+      const heartbeat = this.startHeartbeat(claim, abortController);
       try {
-        const result = await provider.reconcile(claim);
+        const result = await provider.reconcile(claim, abortController.signal);
         if (result.state === "PENDING")
           await this.repository.refreshUnknownRemoteState(
             claim,
@@ -49,12 +55,41 @@ export class ReconcilePublicationOutcomes {
           );
         reconciled += 1;
       } catch (error) {
+        if (
+          abortController.signal.reason instanceof ReconciliationLeaseLostError
+        )
+          continue;
         await this.repository
           .releaseReconciliationClaim(claim)
           .catch(() => undefined);
         this.onFailure(claim.id, error);
+      } finally {
+        clearInterval(heartbeat);
       }
     }
     return reconciled;
+  }
+
+  private startHeartbeat(
+    claim: PublicationReconciliationClaim,
+    abortController: AbortController,
+  ): ReturnType<typeof setInterval> {
+    let running = false;
+    const timer = setInterval(() => {
+      if (running) return;
+      running = true;
+      void this.repository
+        .heartbeatReconciliationClaim(claim, this.clock())
+        .then((retained) => {
+          if (!retained && !abortController.signal.aborted)
+            abortController.abort(new ReconciliationLeaseLostError());
+        })
+        .catch(() => undefined)
+        .finally(() => {
+          running = false;
+        });
+    }, RECONCILIATION_HEARTBEAT_INTERVAL_MS);
+    timer.unref();
+    return timer;
   }
 }

@@ -157,6 +157,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
 
   async reconcile(
     claim: PublicationReconciliationClaim,
+    signal?: AbortSignal,
   ): Promise<PublicationReconciliationResult> {
     const accessToken = await this.tokens.resolve({
       channelId: claim.channelId,
@@ -166,6 +167,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
     const remoteStatus = await this.transport.status({
       accessToken,
       videoId: claim.remotePublicationId,
+      signal,
     });
     if (["uploaded", "processing"].includes(remoteStatus))
       return { state: "PENDING", remoteStatus };

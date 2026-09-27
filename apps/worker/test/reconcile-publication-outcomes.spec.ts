@@ -33,6 +33,7 @@ function repository(): PublicationWorkerRepository {
     failFinal: vi.fn(),
     markUnknownRemoteState: vi.fn(),
     unknownRemoteOutcomes: vi.fn().mockResolvedValue([claim]),
+    heartbeatReconciliationClaim: vi.fn().mockResolvedValue(true),
     refreshUnknownRemoteState: vi.fn(),
     finalizePublished: vi.fn(),
     failUnknownRemoteState: vi.fn(),
@@ -133,5 +134,38 @@ describe("ReconcilePublicationOutcomes", () => {
       "processing",
       expect.any(Date),
     );
+  });
+
+  it("aborts provider reconciliation and leaves cleanup to the new lease owner", async () => {
+    vi.useFakeTimers();
+    try {
+      const repo = repository();
+      vi.mocked(repo.heartbeatReconciliationClaim).mockResolvedValue(false);
+      const release = vi.fn<(reason?: unknown) => void>();
+      const provider = {
+        platform: "YOUTUBE" as const,
+        publish: vi.fn(),
+        reconcile: vi.fn(
+          (_claim: PublicationReconciliationClaim, signal?: AbortSignal) =>
+            new Promise<never>((_resolve, reject) => {
+              signal?.addEventListener("abort", () => {
+                release(signal.reason);
+                reject(signal.reason);
+              });
+            }),
+        ),
+      };
+
+      const execution = new ReconcilePublicationOutcomes(repo, [
+        provider,
+      ]).execute();
+      await vi.advanceTimersByTimeAsync(30_000);
+
+      await expect(execution).resolves.toBe(0);
+      expect(release).toHaveBeenCalledOnce();
+      expect(repo.releaseReconciliationClaim).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
