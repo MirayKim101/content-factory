@@ -39,6 +39,7 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
     channelId: string;
     platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
     externalChannelRef: string;
+    signal?: AbortSignal;
   }): Promise<string> {
     if (input.platform !== "TIKTOK")
       throw new Error("TIKTOK_CREDENTIAL_PLATFORM_MISMATCH");
@@ -61,6 +62,7 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
         grant_type: "refresh_token",
         refresh_token: credential.refreshToken,
       }),
+      signal: input.signal,
     });
     if (!response.ok)
       throw new Error(`TIKTOK_TOKEN_REFRESH_FAILED_${response.status}`);

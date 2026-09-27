@@ -5,5 +5,6 @@ export interface PublicationAccessTokenResolver {
     channelId: string;
     platform: PublicationPlatform;
     externalChannelRef: string;
+    signal?: AbortSignal;
   }): Promise<string>;
 }

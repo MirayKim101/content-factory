@@ -415,3 +415,9 @@ Timeout теперь фиксирует `UNKNOWN_REMOTE_STATE` даже без r
 повторный POST до provider/operator reconciliation. Обычные доказанно
 pre-commit transient failures продолжают использовать bounded backoff. Worker
 `256/256`, typecheck, lint и production build прошли.
+
+Publication abort signal теперь проходит через весь внешний adapter boundary:
+S3 identity HEAD, Google/TikTok OAuth refresh, YouTube channel identity verify,
+init/chunk/status/metrics transport. Раньше OAuth и pre-upload identity могли
+игнорировать 30-минутный attempt deadline. Signal propagation закреплена
+тестами resolver-ов; worker `256/256`, typecheck и lint прошли.

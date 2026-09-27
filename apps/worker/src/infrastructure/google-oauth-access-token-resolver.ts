@@ -44,6 +44,7 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
     channelId: string;
     platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
     externalChannelRef: string;
+    signal?: AbortSignal;
   }): Promise<string> {
     if (input.platform !== "YOUTUBE")
       throw new Error("YOUTUBE_CREDENTIAL_PLATFORM_MISMATCH");
@@ -58,13 +59,20 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
     if (cached && cached.expiresAtMs > this.clock() + 60_000)
       return cached.accessToken;
 
-    const token = await this.refresh(credential.refreshToken);
-    await this.verifyChannel(token.accessToken, credential.externalChannelRef);
+    const token = await this.refresh(credential.refreshToken, input.signal);
+    await this.verifyChannel(
+      token.accessToken,
+      credential.externalChannelRef,
+      input.signal,
+    );
     this.cache.set(input.channelId, token);
     return token.accessToken;
   }
 
-  private async refresh(refreshToken: string): Promise<CachedToken> {
+  private async refresh(
+    refreshToken: string,
+    signal?: AbortSignal,
+  ): Promise<CachedToken> {
     const response = await this.request(GOOGLE_TOKEN_ENDPOINT, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -74,6 +82,7 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
         refresh_token: refreshToken,
         grant_type: "refresh_token",
       }),
+      signal,
     });
     if (!response.ok)
       throw new Error(`YOUTUBE_TOKEN_REFRESH_FAILED_${response.status}`);
@@ -100,9 +109,11 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
   private async verifyChannel(
     accessToken: string,
     expectedChannelId: string,
+    signal?: AbortSignal,
   ): Promise<void> {
     const response = await this.request(YOUTUBE_MINE_ENDPOINT, {
       headers: { authorization: `Bearer ${accessToken}` },
+      signal,
     });
     if (!response.ok)
       throw new Error(`YOUTUBE_CHANNEL_VERIFY_FAILED_${response.status}`);

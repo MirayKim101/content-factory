@@ -32,6 +32,7 @@ describe("GoogleOAuthAccessTokenResolver", () => {
       channelId,
       platform: "YOUTUBE" as const,
       externalChannelRef,
+      signal: new AbortController().signal,
     };
 
     await expect(resolver.resolve(input)).resolves.toBe("access-token");
@@ -41,6 +42,8 @@ describe("GoogleOAuthAccessTokenResolver", () => {
     const tokenRequest = request.mock.calls[0]![1]!;
     expect(String(tokenRequest.body)).toContain("refresh_token=refresh-token");
     expect(String(tokenRequest.body)).toContain("client_secret=client-secret");
+    expect(tokenRequest.signal).toBe(input.signal);
+    expect(request.mock.calls[1]![1]!.signal).toBe(input.signal);
   });
 
   it("rejects a valid token for a different YouTube channel", async () => {

@@ -51,12 +51,13 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       )
     )
       throw new Error("TIKTOK_CONTENT_TYPE_INVALID");
-    await this.media.verifyIdentity(identity);
+    await this.media.verifyIdentity(identity, signal);
     signal?.throwIfAborted();
     const accessToken = await this.tokens.resolve({
       channelId: claim.channelId,
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
+      signal,
     });
     const creator = await this.transport.creatorInfo(accessToken, signal);
     signal?.throwIfAborted();
@@ -195,6 +196,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       channelId: claim.channelId,
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
+      signal,
     });
     const remote = await this.transport.status({
       accessToken,
@@ -235,6 +237,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       channelId: claim.channelId,
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
+      signal,
     });
     return {
       ...(await this.transport.metrics({

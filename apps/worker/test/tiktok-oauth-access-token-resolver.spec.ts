@@ -10,6 +10,7 @@ const input = {
 
 describe("TikTokOAuthAccessTokenResolver", () => {
   it("refreshes a scoped token and binds it to the immutable open_id", async () => {
+    const signal = new AbortController().signal;
     const request = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -34,10 +35,13 @@ describe("TikTokOAuthAccessTokenResolver", () => {
       request,
       () => 1_000,
     );
-    await expect(resolver.resolve(input)).resolves.toBe("access-token");
+    await expect(resolver.resolve({ ...input, signal })).resolves.toBe(
+      "access-token",
+    );
     const body = request.mock.calls[0]![1]!.body as URLSearchParams;
     expect(body.get("client_secret")).toBe("client-secret");
     expect(String(request.mock.calls[0]![0])).not.toContain("client-secret");
+    expect(request.mock.calls[0]![1]!.signal).toBe(signal);
   });
 
   it("rejects a token issued for another creator", async () => {

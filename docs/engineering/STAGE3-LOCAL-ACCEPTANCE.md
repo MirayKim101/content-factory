@@ -27,6 +27,9 @@
 - Timeout внешнего publication attempt всегда переходит в
   `UNKNOWN_REMOTE_STATE`, а не повторяет POST; новый вызов блокируется до
   provider reconciliation даже когда remote ID ещё неизвестен.
+- Общий publication deadline физически проходит через S3 identity check,
+  OAuth token refresh/channel verification и все provider transport calls;
+  зависший credential endpoint не обходит lease fencing.
 - YouTube и TikTok работают через независимые abort-aware provider pools с
   concurrency 1; очередь одного provider не потребляет permit другого. После
   трёх последовательных transient/network/5xx ошибок circuit открывается на

@@ -51,12 +51,13 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       sha256: claim.contentSha256,
       contentType: claim.contentType,
     };
-    await this.media.verifyIdentity(identity);
+    await this.media.verifyIdentity(identity, signal);
     signal?.throwIfAborted();
     const accessToken = await this.tokens.resolve({
       channelId: claim.channelId,
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
+      signal,
     });
 
     const stored = await this.sessions.load(claim.id, claim.platform);
@@ -165,6 +166,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       channelId: claim.channelId,
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
+      signal,
     });
     const remoteStatus = await this.transport.status({
       accessToken,
@@ -202,6 +204,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       channelId: claim.channelId,
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
+      signal,
     });
     return {
       ...(await this.transport.metrics({
