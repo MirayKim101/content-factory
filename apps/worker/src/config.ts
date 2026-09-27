@@ -96,6 +96,56 @@ export interface OpenAiClipGenerationConfig {
   baseUrl?: string;
 }
 
+export interface TwitchVodMediaGatewayConfig {
+  baseUrl: string;
+  bearerToken: string;
+  timeoutMs: number;
+}
+
+export function twitchVodMediaGatewayConfig(
+  environment: NodeJS.ProcessEnv,
+): TwitchVodMediaGatewayConfig | null {
+  if (environment.TWITCH_VOD_MEDIA_GATEWAY_ENABLED?.trim() !== "1") return null;
+  const rawBaseUrl = environment.TWITCH_VOD_MEDIA_GATEWAY_BASE_URL?.trim();
+  const bearerToken = environment.TWITCH_VOD_MEDIA_GATEWAY_TOKEN?.trim();
+  if (!rawBaseUrl)
+    throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_BASE_URL_REQUIRED");
+  if (!bearerToken)
+    throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_TOKEN_REQUIRED");
+  let url: URL;
+  try {
+    url = new URL(rawBaseUrl);
+  } catch {
+    throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_BASE_URL_INVALID");
+  }
+  const loopback = ["127.0.0.1", "localhost", "::1"].includes(url.hostname);
+  if (
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    (url.protocol !== "https:" &&
+      !(
+        environment.DEPLOYMENT_PROFILE?.trim() === "local" &&
+        url.protocol === "http:" &&
+        loopback
+      ))
+  )
+    throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_BASE_URL_UNSAFE");
+  const baseUrl = url.toString().replace(/\/$/, "");
+  return {
+    baseUrl,
+    bearerToken,
+    timeoutMs: integerFromEnvironment(
+      environment,
+      "TWITCH_VOD_MEDIA_REQUEST_TIMEOUT_MS",
+      30_000,
+      5_000,
+      300_000,
+    ),
+  };
+}
+
 export function openAiClipGenerationConfig(
   environment: NodeJS.ProcessEnv,
 ): OpenAiClipGenerationConfig | null {
