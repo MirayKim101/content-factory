@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { RetryPublicationIntent } from "../src/publishing/application/retry-publication-intent.js";
+import { ConfirmPublicationRemoteAbsent } from "../src/publishing/application/publication-queries.js";
 import type { PublicationRepository } from "../src/publishing/application/publication-repository.port.js";
 import {
   PublicationNotFoundError,
@@ -24,6 +25,7 @@ function repository(
     listProject: vi.fn(),
     cancel: vi.fn(),
     retry: vi.fn(async () => intent),
+    confirmRemoteAbsent: vi.fn(),
   };
 }
 
@@ -79,5 +81,25 @@ describe("RetryPublicationIntent", () => {
       PublicationNotFoundError,
     );
     expect(repo.retry).not.toHaveBeenCalled();
+  });
+});
+
+describe("ConfirmPublicationRemoteAbsent", () => {
+  it("requires an existing intent before recording operator evidence", async () => {
+    const repo = repository();
+    const resolved = {
+      id,
+      platform: "YOUTUBE",
+      scheduledAt,
+      updatedAt,
+    } as never;
+    vi.mocked(repo.confirmRemoteAbsent).mockResolvedValue(resolved);
+    await expect(
+      new ConfirmPublicationRemoteAbsent(repo).execute(id),
+    ).resolves.toEqual(resolved);
+    expect(repo.confirmRemoteAbsent).toHaveBeenCalledWith(
+      id,
+      expect.any(Date),
+    );
   });
 });

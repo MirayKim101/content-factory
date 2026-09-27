@@ -427,3 +427,11 @@ init/chunk/status/metrics transport. Раньше OAuth и pre-upload identity �
 kill switch даже когда `PUBLISHING_ENABLED=0`; подключение и создание новых
 intent при этом остаются скрыты/запрещены. Web typecheck, lint и production
 build прошли.
+
+Добавлен bounded operator resolution для timeout без remote ID:
+`POST /api/v1/publications/:id/confirm-remote-absent` принимает только явное
+`remoteAbsenceConfirmed: true`. Serializable update разрешён исключительно из
+`UNKNOWN_REMOTE_STATE` без результата/remote ID, удаляет encrypted resumable
+session и переводит intent в `FAILED_FINAL`; UI требует отдельное подтверждение,
+после чего доступен уже существующий подтверждаемый retry. API `234/234`, web
+`251/251`; OpenAPI regenerated.

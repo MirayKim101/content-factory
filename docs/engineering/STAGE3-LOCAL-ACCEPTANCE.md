@@ -30,6 +30,10 @@
 - Общий publication deadline физически проходит через S3 identity check,
   OAuth token refresh/channel verification и все provider transport calls;
   зависший credential endpoint не обходит lease fencing.
+- Для `UNKNOWN_REMOTE_STATE` без remote ID оператор может после ручной проверки
+  подтвердить отсутствие публикации. Только exact boolean confirmation удаляет
+  незавершённую encrypted session и переводит intent в `FAILED_FINAL`, после
+  чего отдельный retry снова требует подтверждения.
 - YouTube и TikTok работают через независимые abort-aware provider pools с
   concurrency 1; очередь одного provider не потребляет permit другого. После
   трёх последовательных transient/network/5xx ошибок circuit открывается на
@@ -53,9 +57,9 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     233/233 unit tests
+API:     234/234 unit tests
 Worker:  256/256 unit tests
-Web:     250/250 tests
+Web:     251/251 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints

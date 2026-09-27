@@ -254,6 +254,17 @@ export function createPublicationsApi(
         { method: "POST" },
         intentSchema,
       ),
+    confirmRemoteAbsent: (id: string) =>
+      request(
+        fetchImplementation,
+        `${basePath}/publications/${encodeURIComponent(id)}/confirm-remote-absent`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ remoteAbsenceConfirmed: true }),
+        },
+        intentSchema,
+      ),
   };
 }
 
@@ -285,6 +296,8 @@ async function request<T>(
         "Данные изменились. Обновите очередь и повторите действие.",
       PUBLICATION_RETRY_UNSAFE:
         "Повтор заблокирован: сначала подтвердите итог операции на площадке.",
+      PUBLICATION_OUTCOME_RESOLUTION_UNSAFE:
+        "Подтверждение недоступно: результат уже содержит идентификатор площадки или изменился.",
       PUBLICATION_REQUEST_INVALID: "Проверьте дату, часовой пояс и метаданные.",
       TIKTOK_CREATOR_INFO_UNAVAILABLE:
         "TikTok временно не вернул настройки автора. Обновите их перед публикацией.",

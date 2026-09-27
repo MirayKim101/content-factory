@@ -9,6 +9,7 @@ import {
   PublicationCursorInvalidError,
   PublicationIdempotencyConflictError,
   PublicationLineageInvalidError,
+  PublicationOutcomeResolutionConflictError,
   PublicationRetryConflictError,
   type PublicationChannelView,
   type PublicationIntentView,
@@ -270,6 +271,79 @@ export class PrismaPublicationRepository implements PublicationRepository {
       if (!retried) throw new PublicationLineageInvalidError();
       return this.map(retried);
     });
+  }
+
+  async confirmRemoteAbsent(
+    id: string,
+    now: Date,
+  ): Promise<PublicationIntentView> {
+    return this.confirmRemoteAbsentWithRetry(id, now, 0);
+  }
+
+  private async confirmRemoteAbsentWithRetry(
+    id: string,
+    now: Date,
+    conflictCount: number,
+  ): Promise<PublicationIntentView> {
+    try {
+      return await this.prisma.$transaction(
+        async (tx) => {
+        const row = await tx.publicationIntent.findUnique({
+          where: { id },
+          include: { result: true },
+        });
+        if (!row) throw new PublicationLineageInvalidError();
+        if (
+          row.state !== "UNKNOWN_REMOTE_STATE" ||
+          row.remotePublicationId !== null ||
+          row.result !== null
+        )
+          throw new PublicationOutcomeResolutionConflictError();
+        await tx.publicationProviderSession.deleteMany({
+          where: { publicationIntentId: id },
+        });
+        const updated = await tx.publicationIntent.updateMany({
+          where: {
+            id,
+            state: "UNKNOWN_REMOTE_STATE",
+            remotePublicationId: null,
+            result: { is: null },
+          },
+          data: {
+            state: "FAILED_FINAL",
+            remoteStatus: "operator_confirmed_absent",
+            reconciliationLeaseToken: null,
+            reconciliationLeaseExpiresAt: null,
+            failureCode: "PUBLICATION_REMOTE_ABSENCE_CONFIRMED",
+            failureMessage:
+              "Operator confirmed that no remote publication exists.",
+            finishedAt: now,
+          },
+        });
+        if (updated.count !== 1)
+          throw new PublicationOutcomeResolutionConflictError();
+        const resolved = await tx.publicationIntent.findUnique({
+          where: { id },
+          include: intentInclude,
+        });
+        if (!resolved) throw new PublicationLineageInvalidError();
+        return this.map(resolved);
+        },
+        { isolationLevel: "Serializable" },
+      );
+    } catch (error) {
+      if (this.isRetryable(error) && conflictCount < 5) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 5 * 2 ** conflictCount),
+        );
+        return this.confirmRemoteAbsentWithRetry(
+          id,
+          now,
+          conflictCount + 1,
+        );
+      }
+      throw error;
+    }
   }
 
   create(input: Parameters<PublicationRepository["create"]>[0]) {

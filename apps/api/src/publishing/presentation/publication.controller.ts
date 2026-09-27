@@ -34,6 +34,7 @@ import {
 } from "../application/publication-channel-commands.js";
 import {
   CancelPublicationIntent,
+  ConfirmPublicationRemoteAbsent,
   GetPublicationIntent,
   ListPublicationIntents,
 } from "../application/publication-queries.js";
@@ -45,6 +46,7 @@ import {
   PublicationLineageInvalidError,
   PublicationMetadataInvalidError,
   PublicationRetryConflictError,
+  PublicationOutcomeResolutionConflictError,
   PublicationNotFoundError,
   PublicationScheduleInvalidError,
   PublicationTimezoneInvalidError,
@@ -54,6 +56,7 @@ import {
 import {
   CreatePublicationChannelDto,
   CreatePublicationIntentDto,
+  ConfirmPublicationRemoteAbsentDto,
   PublicationChannelResponseDto,
   PublicationIntentListResponseDto,
   PublicationIntentResponseDto,
@@ -78,6 +81,7 @@ export class PublicationController {
     private readonly getIntent: GetPublicationIntent,
     private readonly listIntents: ListPublicationIntents,
     private readonly cancelIntent: CancelPublicationIntent,
+    private readonly confirmRemoteAbsent: ConfirmPublicationRemoteAbsent,
     private readonly retryIntent: RetryPublicationIntent,
     private readonly getTikTokCreatorInfo: GetTikTokCreatorInfo,
   ) {}
@@ -221,6 +225,21 @@ export class PublicationController {
     }
   }
 
+  @Post("publications/:id/confirm-remote-absent")
+  @ApiOkResponse({ type: PublicationIntentResponseDto })
+  async confirmAbsent(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Body() _body: ConfirmPublicationRemoteAbsentDto,
+  ) {
+    try {
+      return publicationIntentResponse(
+        await this.confirmRemoteAbsent.execute(id),
+      );
+    } catch (error) {
+      this.rethrow(error);
+    }
+  }
+
   private rethrow(error: unknown): never {
     if (error instanceof HttpException) throw error;
     if (error instanceof PublishingUnavailableError)
@@ -243,6 +262,12 @@ export class PublicationController {
         code: "PUBLICATION_RETRY_UNSAFE",
         message:
           "Publication cannot be retried until its remote outcome is known.",
+      });
+    if (error instanceof PublicationOutcomeResolutionConflictError)
+      throw new ConflictException({
+        code: "PUBLICATION_OUTCOME_RESOLUTION_UNSAFE",
+        message:
+          "Remote absence can only be confirmed for an unknown outcome without a remote ID.",
       });
     if (
       error instanceof PublicationScheduleInvalidError ||

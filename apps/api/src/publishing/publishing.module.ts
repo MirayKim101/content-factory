@@ -13,6 +13,7 @@ import {
 } from "./application/publication-channel-commands.js";
 import {
   CancelPublicationIntent,
+  ConfirmPublicationRemoteAbsent,
   GetPublicationIntent,
   ListPublicationIntents,
 } from "./application/publication-queries.js";
@@ -47,6 +48,7 @@ import {
     GetPublicationIntent,
     ListPublicationIntents,
     CancelPublicationIntent,
+    ConfirmPublicationRemoteAbsent,
     RetryPublicationIntent,
     {
       provide: PUBLICATION_REPOSITORY,

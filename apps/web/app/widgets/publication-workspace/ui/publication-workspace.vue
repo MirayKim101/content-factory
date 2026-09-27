@@ -506,6 +506,33 @@ async function retry(item: PublicationIntent): Promise<void> {
     saving.value = false;
   }
 }
+async function confirmRemoteAbsent(item: PublicationIntent): Promise<void> {
+  if (
+    saving.value ||
+    item.state !== "UNKNOWN_REMOTE_STATE" ||
+    item.remotePublicationId ||
+    !confirm(
+      `Подтвердить, что «${metadataTitle(item)}» отсутствует на площадке? Делайте это только после ручной проверки аккаунта.`,
+    )
+  )
+    return;
+  saving.value = true;
+  error.value = null;
+  notice.value = null;
+  try {
+    await publicationsApi.confirmRemoteAbsent(item.id);
+    notice.value =
+      "Отсутствие публикации подтверждено. Теперь задачу можно повторить.";
+    await loadWorkspace();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error
+        ? cause.message
+        : "Не удалось подтвердить результат проверки.";
+  } finally {
+    saving.value = false;
+  }
+}
 function projectName(id: string): string {
   return projects.value.find((item) => item.id === id)?.name ?? "Публикация";
 }
@@ -753,6 +780,16 @@ onUnmounted(() => {
               :disabled="saving"
               @click="retry(item)"
               >Повторить</Button
+            >
+            <Button
+              v-else-if="
+                item.state === 'UNKNOWN_REMOTE_STATE' &&
+                !item.remotePublicationId
+              "
+              severity="secondary"
+              :disabled="saving"
+              @click="confirmRemoteAbsent(item)"
+              >Проверил: публикации нет</Button
             >
           </article>
           <Button

@@ -4,6 +4,7 @@ import {
   PUBLICATION_REPOSITORY,
   type PublicationRepository,
 } from "./publication-repository.port.js";
+import { PublicationNotFoundError } from "../domain/publication.js";
 
 @Injectable()
 export class GetPublicationIntent {
@@ -40,5 +41,17 @@ export class CancelPublicationIntent {
   ) {}
   execute(id: string) {
     return this.repository.cancel(id, new Date());
+  }
+}
+
+@Injectable()
+export class ConfirmPublicationRemoteAbsent {
+  constructor(
+    @Inject(PUBLICATION_REPOSITORY)
+    private readonly repository: PublicationRepository,
+  ) {}
+  async execute(id: string) {
+    if (!(await this.repository.get(id))) throw new PublicationNotFoundError();
+    return this.repository.confirmRemoteAbsent(id, new Date());
   }
 }

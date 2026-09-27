@@ -1025,6 +1025,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/publications/{id}/confirm-remote-absent": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["PublicationController_confirmAbsent"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/publications/{id}/retry": {
     parameters: {
       query?: never;
@@ -6499,6 +6515,25 @@ export interface operations {
     };
   };
   PublicationController_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationIntentResponseDto"];
+        };
+      };
+    };
+  };
+  PublicationController_confirmAbsent: {
     parameters: {
       query?: never;
       header?: never;

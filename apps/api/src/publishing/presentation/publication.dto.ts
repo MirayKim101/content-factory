@@ -1,5 +1,6 @@
 import { Type } from "class-transformer";
 import {
+  Equals,
   IsIn,
   IsInt,
   IsISO8601,
@@ -193,6 +194,12 @@ export class PublicationIntentListResponseDto {
   items!: PublicationIntentResponseDto[];
   @ApiProperty({ type: String, format: "uuid", nullable: true }) nextCursor!:
     string | null;
+}
+
+export class ConfirmPublicationRemoteAbsentDto {
+  @ApiProperty({ type: Boolean, enum: [true] })
+  @Equals(true)
+  remoteAbsenceConfirmed!: true;
 }
 
 export class TikTokCreatorInfoResponseDto {

@@ -59,4 +59,8 @@ export interface PublicationRepository {
   }): Promise<PublicationIntentView[]>;
   cancel(id: string, now: Date): Promise<PublicationIntentView>;
   retry(id: string, now: Date): Promise<PublicationIntentView>;
+  confirmRemoteAbsent(
+    id: string,
+    now: Date,
+  ): Promise<PublicationIntentView>;
 }

@@ -138,6 +138,44 @@ describe("publications api", () => {
     );
   });
 
+  it("requires an explicit operator assertion to resolve an unknown outcome", async () => {
+    const resolved = {
+      ...channel(),
+      id: intentId,
+      channelId,
+      contentKind: "VERTICAL_RESULT",
+      approvalId: null,
+      exportIntentId: null,
+      exportResultId: null,
+      verticalApprovalId: null,
+      verticalResultId: null,
+      scheduledAt: "2026-09-28T12:00:00.000Z",
+      metadataSnapshot: {},
+      state: "FAILED_FINAL",
+      attemptCount: 1,
+      retryBudget: 3,
+      nextAttemptAt: null,
+      remotePublicationId: null,
+      remoteStatus: "operator_confirmed_absent",
+      failure: { code: "PUBLICATION_REMOTE_ABSENCE_CONFIRMED" },
+      latestMetrics: null,
+    };
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify(resolved), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+    await createPublicationsApi(
+      "/api/v1",
+      fetchMock as typeof fetch,
+    ).confirmRemoteAbsent(intentId);
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body as string)).toEqual({
+      remoteAbsenceConfirmed: true,
+    });
+  });
+
   it("loads bounded TikTok creator capabilities without credentials", async () => {
     const fetchMock = vi.fn(
       async () =>

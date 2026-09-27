@@ -37,6 +37,7 @@ function repository(): PublicationRepository {
     listProject: vi.fn(),
     cancel: vi.fn(),
     retry: vi.fn(),
+    confirmRemoteAbsent: vi.fn(),
   };
 }
 function dispatcher() {
