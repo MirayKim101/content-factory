@@ -176,6 +176,9 @@ function formatDuration(seconds: number) {
   const minutes = Math.floor((seconds % 3600) / 60);
   return hours ? `${hours} ч ${minutes} мин` : `${minutes} мин`;
 }
+function twitchVodUrl(providerVideoId: string) {
+  return `https://www.twitch.tv/videos/${encodeURIComponent(providerVideoId)}`;
+}
 function vodStateLabel(state: TwitchVodCandidate["state"]) {
   return (
     {
@@ -295,7 +298,14 @@ onMounted(load);
               </p>
               <small
                 >{{ formatDate(vod.publishedAt) }} ·
-                {{ formatDuration(vod.durationSeconds) }}</small
+                {{ formatDuration(vod.durationSeconds) }} ·
+                <a
+                  class="vod-link"
+                  :href="twitchVodUrl(vod.providerVideoId)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Открыть оригинал ↗</a
+                ></small
               >
             </div>
             <div class="vod-actions">
@@ -498,6 +508,15 @@ h3 {
 .section-heading > small {
   margin: 0.25rem 0 0;
   color: var(--cf-text-muted);
+}
+.vod-link {
+  color: var(--cf-brand-strong);
+  font-weight: 750;
+  text-decoration: none;
+}
+.vod-link:hover,
+.vod-link:focus-visible {
+  text-decoration: underline;
 }
 .ingest-note {
   font-size: 0.78rem;
