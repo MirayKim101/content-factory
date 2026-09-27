@@ -71,6 +71,7 @@ function dependencies() {
         .fn()
         .mockResolvedValue({ complete: true, nextOffset: 6n }),
       status: vi.fn(),
+      metrics: vi.fn(),
     },
   };
 }

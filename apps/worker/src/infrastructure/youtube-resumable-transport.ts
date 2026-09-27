@@ -10,6 +10,12 @@ export type YoutubeUploadProgress =
   | { state: "INCOMPLETE"; nextOffset: bigint }
   | { state: "COMPLETE"; videoId: string };
 
+export interface YoutubeVideoMetrics {
+  viewCount: bigint;
+  likeCount: bigint | null;
+  commentCount: bigint | null;
+}
+
 export class YoutubeResumableTransport {
   constructor(
     private readonly request: typeof fetch = fetch,
@@ -131,6 +137,33 @@ export class YoutubeResumableTransport {
     return uploadStatus;
   }
 
+  async metrics(input: {
+    accessToken: string;
+    videoId: string;
+    signal?: AbortSignal;
+  }): Promise<YoutubeVideoMetrics> {
+    this.requireToken(input.accessToken);
+    if (!/^[A-Za-z0-9_-]{6,64}$/.test(input.videoId))
+      throw new Error("YOUTUBE_VIDEO_ID_INVALID");
+    const url = new URL(YOUTUBE_VIDEO_ENDPOINT);
+    url.searchParams.set("part", "statistics");
+    url.searchParams.set("id", input.videoId);
+    const response = await this.request(url, {
+      headers: { authorization: `Bearer ${input.accessToken}` },
+      signal: input.signal,
+    });
+    if (!response.ok)
+      throw new Error(`YOUTUBE_METRICS_FAILED_${response.status}`);
+    const payload: unknown = await response.json();
+    const item = objectArrayItem(payload, "items");
+    const statistics = objectValue(item, "statistics");
+    return {
+      viewCount: unsignedBigInt(statistics.viewCount, true),
+      likeCount: unsignedBigInt(statistics.likeCount, false),
+      commentCount: unsignedBigInt(statistics.commentCount, false),
+    };
+  }
+
   private async parseProgress(
     response: Response,
   ): Promise<YoutubeUploadProgress> {
@@ -175,4 +208,32 @@ export class YoutubeResumableTransport {
       throw new Error("YOUTUBE_UPLOAD_SESSION_INVALID");
     return parsed.toString();
   }
+}
+
+function objectArrayItem(value: unknown, key: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("YOUTUBE_METRICS_RESPONSE_INVALID");
+  const items = (value as Record<string, unknown>)[key];
+  if (!Array.isArray(items) || items.length !== 1)
+    throw new Error("YOUTUBE_METRICS_RESPONSE_INVALID");
+  return objectValue({ item: items[0] }, "item");
+}
+
+function objectValue(
+  value: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
+  const nested = value[key];
+  if (!nested || typeof nested !== "object" || Array.isArray(nested))
+    throw new Error("YOUTUBE_METRICS_RESPONSE_INVALID");
+  return nested as Record<string, unknown>;
+}
+
+function unsignedBigInt(value: unknown, required: true): bigint;
+function unsignedBigInt(value: unknown, required: false): bigint | null;
+function unsignedBigInt(value: unknown, required: boolean): bigint | null {
+  if (value === undefined && !required) return null;
+  if (typeof value !== "string" || !/^\d{1,20}$/.test(value))
+    throw new Error("YOUTUBE_METRICS_RESPONSE_INVALID");
+  return BigInt(value);
 }

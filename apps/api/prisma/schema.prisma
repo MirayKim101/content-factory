@@ -1011,44 +1011,47 @@ model PublicationChannel {
 }
 
 model PublicationIntent {
-  id                  String                 @id @db.Uuid
-  idempotencyKey      String                 @unique
-  requestFingerprint  String
-  projectId           String                 @db.Uuid
-  project             Project                @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  channelId           String                 @db.Uuid
-  channel             PublicationChannel     @relation(fields: [channelId, projectId, platform], references: [id, projectId, platform], onDelete: Restrict, map: "PublicationIntent_exact_channel_target")
-  contentKind         PublicationContentKind @default(EDITORIAL_EXPORT)
-  approvalId          String?                @db.Uuid
-  approval            EditorialApproval?     @relation(fields: [approvalId, projectId], references: [id, projectId], onDelete: Restrict, map: "PublicationIntent_exact_approval_project")
-  exportIntentId      String?                @db.Uuid
-  exportResultId      String?                @db.Uuid
-  exportResult        EditorialExportResult? @relation(fields: [exportResultId, exportIntentId], references: [id, exportIntentId], onDelete: Restrict, map: "PublicationIntent_exact_export_result")
-  verticalApprovalId  String?                @db.Uuid
-  verticalApproval    VerticalApproval?      @relation(fields: [verticalApprovalId], references: [id], onDelete: Restrict, map: "PublicationIntent_vertical_approval")
-  verticalResultId    String?                @db.Uuid
-  verticalResult      VerticalRenderResult?  @relation(fields: [verticalResultId], references: [id], onDelete: Restrict, map: "PublicationIntent_vertical_result")
-  platform            PublicationPlatform
-  scheduledAt         DateTime
-  timezone            String
-  metadataSnapshot    Json
-  state               PublicationIntentState @default(SCHEDULED)
-  remotePublicationId String?                @unique
-  remoteStatus        String?
-  reconciliationLeaseToken     String?       @unique
+  id                           String                      @id @db.Uuid
+  idempotencyKey               String                      @unique
+  requestFingerprint           String
+  projectId                    String                      @db.Uuid
+  project                      Project                     @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  channelId                    String                      @db.Uuid
+  channel                      PublicationChannel          @relation(fields: [channelId, projectId, platform], references: [id, projectId, platform], onDelete: Restrict, map: "PublicationIntent_exact_channel_target")
+  contentKind                  PublicationContentKind      @default(EDITORIAL_EXPORT)
+  approvalId                   String?                     @db.Uuid
+  approval                     EditorialApproval?          @relation(fields: [approvalId, projectId], references: [id, projectId], onDelete: Restrict, map: "PublicationIntent_exact_approval_project")
+  exportIntentId               String?                     @db.Uuid
+  exportResultId               String?                     @db.Uuid
+  exportResult                 EditorialExportResult?      @relation(fields: [exportResultId, exportIntentId], references: [id, exportIntentId], onDelete: Restrict, map: "PublicationIntent_exact_export_result")
+  verticalApprovalId           String?                     @db.Uuid
+  verticalApproval             VerticalApproval?           @relation(fields: [verticalApprovalId], references: [id], onDelete: Restrict, map: "PublicationIntent_vertical_approval")
+  verticalResultId             String?                     @db.Uuid
+  verticalResult               VerticalRenderResult?       @relation(fields: [verticalResultId], references: [id], onDelete: Restrict, map: "PublicationIntent_vertical_result")
+  platform                     PublicationPlatform
+  scheduledAt                  DateTime
+  timezone                     String
+  metadataSnapshot             Json
+  state                        PublicationIntentState      @default(SCHEDULED)
+  remotePublicationId          String?                     @unique
+  remoteStatus                 String?
+  reconciliationLeaseToken     String?                     @unique
   reconciliationLeaseExpiresAt DateTime?
-  attemptCount        Int                    @default(0)
-  retryBudget         Int                    @default(3)
-  failureCode         String?
-  failureMessage      String?
-  queuedAt            DateTime?
-  startedAt           DateTime?
-  finishedAt          DateTime?
-  canceledAt          DateTime?
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
-  result              PublicationResult?
-  providerSession     PublicationProviderSession?
+  metricsLeaseToken            String?                     @unique
+  metricsLeaseExpiresAt        DateTime?
+  attemptCount                 Int                         @default(0)
+  retryBudget                  Int                         @default(3)
+  failureCode                  String?
+  failureMessage               String?
+  queuedAt                     DateTime?
+  startedAt                    DateTime?
+  finishedAt                   DateTime?
+  canceledAt                   DateTime?
+  createdAt                    DateTime                    @default(now())
+  updatedAt                    DateTime                    @updatedAt
+  result                       PublicationResult?
+  providerSession              PublicationProviderSession?
+  metricSnapshots              PublicationMetricSnapshot[]
 
   @@unique([id, platform], map: "PublicationIntent_id_platform_key")
   @@unique([channelId, exportResultId, platform], map: "PublicationIntent_logical_target_key")
@@ -1056,22 +1059,23 @@ model PublicationIntent {
   @@index([projectId, scheduledAt, id])
   @@index([state, scheduledAt, id])
   @@index([state, reconciliationLeaseExpiresAt, updatedAt, id])
+  @@index([state, metricsLeaseExpiresAt, updatedAt, id])
   @@index([channelId, createdAt, id])
 }
 
 /// Encrypted resumable-upload capability. Plain session URIs never enter API responses or logs.
 model PublicationProviderSession {
-  publicationIntentId String                @id @db.Uuid
+  publicationIntentId String              @id @db.Uuid
   platform            PublicationPlatform
-  publicationIntent   PublicationIntent     @relation(fields: [publicationIntentId, platform], references: [id, platform], onDelete: Restrict, map: "PublicationProviderSession_exact_intent_platform")
+  publicationIntent   PublicationIntent   @relation(fields: [publicationIntentId, platform], references: [id, platform], onDelete: Restrict, map: "PublicationProviderSession_exact_intent_platform")
   ciphertext          Bytes
   iv                  Bytes
   authTag             Bytes
   keyVersion          String
-  uploadOffset        BigInt                @default(0)
+  uploadOffset        BigInt              @default(0)
   expiresAt           DateTime?
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
   @@unique([publicationIntentId, platform], map: "PublicationProviderSession_intent_platform_key")
   @@index([platform, expiresAt, updatedAt])
@@ -1087,6 +1091,25 @@ model PublicationResult {
   publicUrl             String?
   completedAt           DateTime
   createdAt             DateTime          @default(now())
+}
+
+/// Immutable provider counters observed after a confirmed publication.
+model PublicationMetricSnapshot {
+  id                  String              @id @db.Uuid
+  publicationIntentId String              @db.Uuid
+  publicationIntent   PublicationIntent   @relation(fields: [publicationIntentId], references: [id], onDelete: Restrict)
+  platform            PublicationPlatform
+  viewCount           BigInt
+  likeCount           BigInt?
+  commentCount        BigInt?
+  shareCount          BigInt?
+  adapterVersion      String
+  observedAt          DateTime
+  createdAt           DateTime            @default(now())
+
+  @@unique([publicationIntentId, observedAt])
+  @@index([publicationIntentId, observedAt(sort: Desc)])
+  @@index([platform, observedAt])
 }
 
 model CutSegment {

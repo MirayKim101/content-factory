@@ -3,6 +3,8 @@ import { Pool, type PoolClient } from "pg";
 import type {
   PublicationClaim,
   PublicationAdapterResult,
+  PublicationMetricsClaim,
+  PublicationMetricsSnapshot,
   PublicationReconciliationClaim,
   PublicationReconciliationResult,
   PublicationWorkerRepository,
@@ -593,6 +595,116 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
           AND "reconciliationLeaseToken" = $2`,
       [claim.id, claim.reconciliationLeaseToken],
+    );
+  }
+
+  async claimPublishedForMetrics(
+    now: Date,
+    limit = 50,
+  ): Promise<PublicationMetricsClaim[]> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const boundedLimit = Math.max(1, Math.min(200, Math.trunc(limit)));
+      const selected = await client.query<{ id: string }>(
+        `SELECT i."id" FROM "PublicationIntent" i
+          JOIN "PublicationResult" r ON r."publicationIntentId" = i."id"
+          LEFT JOIN LATERAL (
+            SELECT m."observedAt" FROM "PublicationMetricSnapshot" m
+             WHERE m."publicationIntentId" = i."id"
+             ORDER BY m."observedAt" DESC LIMIT 1
+          ) latest ON TRUE
+         WHERE i."state" = 'PUBLISHED'
+           AND i."platform" IN ('YOUTUBE', 'TIKTOK')
+           AND i."remotePublicationId" IS NOT NULL
+           AND (i."platform" = 'YOUTUBE' OR r."providerReceipt"->'postIds'->>0 IS NOT NULL)
+           AND (latest."observedAt" IS NULL OR latest."observedAt" <= $1::timestamp - interval '15 minutes')
+           AND (i."metricsLeaseExpiresAt" IS NULL OR i."metricsLeaseExpiresAt" <= $1)
+         ORDER BY latest."observedAt" ASC NULLS FIRST, i."id" ASC
+         LIMIT $2 FOR UPDATE OF i SKIP LOCKED`,
+        [now, boundedLimit],
+      );
+      if (!selected.rows.length) {
+        await client.query("COMMIT");
+        return [];
+      }
+      const ids = selected.rows.map((row) => row.id);
+      const claimed = await client.query<{
+        id: string;
+        channelId: string;
+        externalChannelRef: string;
+        platform: "YOUTUBE" | "TIKTOK";
+        remotePublicationId: string;
+        metricsLeaseToken: string;
+      }>(
+        `UPDATE "PublicationIntent" i
+            SET "metricsLeaseToken" = gen_random_uuid()::text,
+                "metricsLeaseExpiresAt" = $2::timestamp + interval '2 minutes'
+           FROM "PublicationChannel" c, "PublicationResult" r
+          WHERE i."id" = ANY($1::uuid[]) AND c."id" = i."channelId"
+            AND r."publicationIntentId" = i."id"
+        RETURNING i."id", i."channelId", c."externalChannelRef", i."platform",
+                  CASE WHEN i."platform" = 'TIKTOK'
+                    THEN r."providerReceipt"->'postIds'->>0
+                    ELSE i."remotePublicationId"
+                  END AS "remotePublicationId",
+                  i."metricsLeaseToken"`,
+        [ids, now],
+      );
+      await client.query("COMMIT");
+      return claimed.rows;
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async recordMetrics(
+    claim: PublicationMetricsClaim,
+    snapshot: PublicationMetricsSnapshot,
+    observedAt: Date,
+  ): Promise<boolean> {
+    const result = await this.pool.query<{ applied: boolean }>(
+      `WITH owned AS (
+         UPDATE "PublicationIntent"
+            SET "metricsLeaseToken" = NULL, "metricsLeaseExpiresAt" = NULL
+          WHERE "id" = $1 AND "state" = 'PUBLISHED'
+            AND "platform" = $2 AND "metricsLeaseToken" = $3
+        RETURNING "id", "platform"
+       ), inserted AS (
+         INSERT INTO "PublicationMetricSnapshot"
+           ("id", "publicationIntentId", "platform", "viewCount", "likeCount",
+            "commentCount", "shareCount", "adapterVersion", "observedAt")
+         SELECT gen_random_uuid(), "id", "platform", $4, $5, $6, $7, $8, $9
+           FROM owned
+         ON CONFLICT ("publicationIntentId", "observedAt") DO NOTHING
+         RETURNING "id"
+       )
+       SELECT EXISTS(SELECT 1 FROM inserted) AS "applied"`,
+      [
+        claim.id,
+        claim.platform,
+        claim.metricsLeaseToken,
+        snapshot.viewCount.toString(),
+        snapshot.likeCount?.toString() ?? null,
+        snapshot.commentCount?.toString() ?? null,
+        snapshot.shareCount?.toString() ?? null,
+        snapshot.adapterVersion,
+        observedAt,
+      ],
+    );
+    return result.rows[0]?.applied === true;
+  }
+
+  async releaseMetricsClaim(claim: PublicationMetricsClaim): Promise<void> {
+    await this.pool.query(
+      `UPDATE "PublicationIntent"
+          SET "metricsLeaseToken" = NULL, "metricsLeaseExpiresAt" = NULL
+        WHERE "id" = $1 AND "state" = 'PUBLISHED'
+          AND "metricsLeaseToken" = $2`,
+      [claim.id, claim.metricsLeaseToken],
     );
   }
 

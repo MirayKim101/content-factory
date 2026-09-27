@@ -128,4 +128,35 @@ describe("YoutubeResumableTransport", () => {
     ).resolves.toBe("processed");
     expect(String(request.mock.calls[0]![0])).toContain("part=status");
   });
+
+  it("reads large provider counters without losing integer precision", async () => {
+    const request = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          items: [
+            {
+              statistics: {
+                viewCount: "9007199254740993",
+                likeCount: "12",
+                commentCount: "3",
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+
+    await expect(
+      new YoutubeResumableTransport(request).metrics({
+        accessToken: "token",
+        videoId: "video_42",
+      }),
+    ).resolves.toEqual({
+      viewCount: 9_007_199_254_740_993n,
+      likeCount: 12n,
+      commentCount: 3n,
+    });
+    expect(String(request.mock.calls[0]![0])).toContain("part=statistics");
+  });
 });

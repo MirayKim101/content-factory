@@ -14,6 +14,12 @@ export function publicationChannelResponse(value: PublicationChannelView) {
 export function publicationIntentResponse(value: PublicationIntentView) {
   return {
     ...value,
+    latestMetrics: value.latestMetrics
+      ? {
+          ...value.latestMetrics,
+          observedAt: value.latestMetrics.observedAt.toISOString(),
+        }
+      : null,
     scheduledAt: value.scheduledAt.toISOString(),
     createdAt: value.createdAt.toISOString(),
     updatedAt: value.updatedAt.toISOString(),

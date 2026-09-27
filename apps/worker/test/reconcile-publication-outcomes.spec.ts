@@ -38,6 +38,9 @@ function repository(): PublicationWorkerRepository {
     finalizePublished: vi.fn().mockResolvedValue(true),
     failUnknownRemoteState: vi.fn().mockResolvedValue(true),
     releaseReconciliationClaim: vi.fn().mockResolvedValue(undefined),
+    claimPublishedForMetrics: vi.fn().mockResolvedValue([]),
+    recordMetrics: vi.fn().mockResolvedValue(true),
+    releaseMetricsClaim: vi.fn().mockResolvedValue(undefined),
   };
 }
 

@@ -2611,6 +2611,14 @@ export interface components {
       } | null;
       /** Format: uuid */
       id: string;
+      latestMetrics: {
+        commentCount?: string | null;
+        likeCount?: string | null;
+        /** Format: date-time */
+        observedAt?: string;
+        shareCount?: string | null;
+        viewCount?: string;
+      } | null;
       metadataSnapshot: Record<string, never>;
       /** @enum {string} */
       platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";

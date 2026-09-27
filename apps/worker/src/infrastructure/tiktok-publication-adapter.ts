@@ -5,6 +5,8 @@ import {
   PublicationOutcomeUnknownError,
   type PublicationAdapterResult,
   type PublicationClaim,
+  type PublicationMetricsClaim,
+  type PublicationMetricsSnapshot,
   type PublicationProvider,
   type PublicationReconciliationClaim,
   type PublicationReconciliationResult,
@@ -25,7 +27,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
     private readonly cipher: PublicationSessionCipher,
     private readonly transport: Pick<
       TikTokDirectPostTransport,
-      "creatorInfo" | "initiate" | "uploadChunk" | "status"
+      "creatorInfo" | "initiate" | "uploadChunk" | "status" | "metrics"
     >,
     private readonly clock: () => Date = () => new Date(),
   ) {}
@@ -222,6 +224,25 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       remoteStatus: remote.status,
       code: "TIKTOK_PUBLICATION_FAILED",
       message: `TikTok rejected the post (${safeCode(remote.failReason)}).`,
+    };
+  }
+
+  async metrics(
+    claim: PublicationMetricsClaim,
+    signal?: AbortSignal,
+  ): Promise<PublicationMetricsSnapshot> {
+    const accessToken = await this.tokens.resolve({
+      channelId: claim.channelId,
+      platform: claim.platform,
+      externalChannelRef: claim.externalChannelRef,
+    });
+    return {
+      ...(await this.transport.metrics({
+        accessToken,
+        videoId: claim.remotePublicationId,
+        signal,
+      })),
+      adapterVersion: "tiktok-display-v2-metrics",
     };
   }
 

@@ -4,6 +4,8 @@ import type { PublicationSessionRepository } from "../application/publication-se
 import type {
   PublicationAdapterResult,
   PublicationClaim,
+  PublicationMetricsClaim,
+  PublicationMetricsSnapshot,
   PublicationProvider,
   PublicationReconciliationClaim,
   PublicationReconciliationResult,
@@ -23,7 +25,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
     private readonly cipher: PublicationSessionCipher,
     private readonly transport: Pick<
       YoutubeResumableTransport,
-      "initiate" | "probe" | "uploadChunk" | "status"
+      "initiate" | "probe" | "uploadChunk" | "status" | "metrics"
     >,
     private readonly chunkBytes = DEFAULT_CHUNK_BYTES,
     private readonly clock: () => Date = () => new Date(),
@@ -190,6 +192,26 @@ export class YoutubePublicationAdapter implements PublicationProvider {
         message: "YouTube rejected or removed the uploaded video.",
       };
     throw new Error("YOUTUBE_STATUS_UNKNOWN");
+  }
+
+  async metrics(
+    claim: PublicationMetricsClaim,
+    signal?: AbortSignal,
+  ): Promise<PublicationMetricsSnapshot> {
+    const accessToken = await this.tokens.resolve({
+      channelId: claim.channelId,
+      platform: claim.platform,
+      externalChannelRef: claim.externalChannelRef,
+    });
+    return {
+      ...(await this.transport.metrics({
+        accessToken,
+        videoId: claim.remotePublicationId,
+        signal,
+      })),
+      shareCount: null,
+      adapterVersion: "youtube-data-v3-statistics",
+    };
   }
 
   private result(videoId: string, sha256: string): PublicationAdapterResult {

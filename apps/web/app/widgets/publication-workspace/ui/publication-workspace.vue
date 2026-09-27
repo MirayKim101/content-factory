@@ -401,6 +401,9 @@ function formatDate(value: string): string {
     minute: "2-digit",
   }).format(new Date(value));
 }
+function formatMetric(value: string): string {
+  return BigInt(value).toLocaleString("ru-RU");
+}
 function stateLabel(state: PublicationIntent["state"]): string {
   return (
     {
@@ -547,6 +550,24 @@ onUnmounted(() => {
                 }}
               </p>
               <small v-if="item.failure">{{ item.failure.message }}</small>
+              <dl v-if="item.latestMetrics" class="publication-metrics">
+                <div>
+                  <dt>Просмотры</dt>
+                  <dd>{{ formatMetric(item.latestMetrics.viewCount) }}</dd>
+                </div>
+                <div v-if="item.latestMetrics.likeCount !== null">
+                  <dt>Лайки</dt>
+                  <dd>{{ formatMetric(item.latestMetrics.likeCount) }}</dd>
+                </div>
+                <div v-if="item.latestMetrics.commentCount !== null">
+                  <dt>Комментарии</dt>
+                  <dd>{{ formatMetric(item.latestMetrics.commentCount) }}</dd>
+                </div>
+                <div v-if="item.latestMetrics.shareCount !== null">
+                  <dt>Репосты</dt>
+                  <dd>{{ formatMetric(item.latestMetrics.shareCount) }}</dd>
+                </div>
+              </dl>
               <small
                 v-if="item.state === 'UNKNOWN_REMOTE_STATE'"
                 class="reconciliation-note"
@@ -1077,6 +1098,27 @@ h2 {
 .reconciliation-note {
   display: block;
   margin-top: 0.45rem;
+}
+.publication-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  margin: 0.65rem 0 0;
+}
+.publication-metrics div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+.publication-metrics dt {
+  color: var(--cf-text-muted);
+  font-size: 0.72rem;
+}
+.publication-metrics dd {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
 }
 .schedule-form {
   display: grid;

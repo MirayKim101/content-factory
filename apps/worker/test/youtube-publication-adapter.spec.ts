@@ -46,6 +46,7 @@ function dependencies() {
         .mockResolvedValue("https://www.googleapis.com/upload/session"),
       probe: vi.fn(),
       status: vi.fn(),
+      metrics: vi.fn(),
       uploadChunk: vi
         .fn()
         .mockResolvedValueOnce({ state: "INCOMPLETE", nextOffset: 3n })

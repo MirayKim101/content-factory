@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 
-import type { Prisma } from "../../generated/prisma/client.js";
+import { Prisma } from "../../generated/prisma/client.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import type { PublicationRepository } from "../application/publication-repository.port.js";
 import {
@@ -86,7 +86,8 @@ export class PrismaPublicationRepository implements PublicationRepository {
       where: { id },
       include: intentInclude,
     });
-    return row ? this.map(row) : null;
+    if (!row) return null;
+    return (await this.mapWithLatestMetrics([row]))[0] ?? null;
   }
 
   async listProject(input: {
@@ -133,7 +134,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
       orderBy: [{ scheduledAt: "desc" }, { id: "desc" }],
       take: input.limit,
     });
-    return rows.map((row) => this.map(row));
+    return this.mapWithLatestMetrics(rows);
   }
 
   async cancel(id: string, now: Date): Promise<PublicationIntentView> {
@@ -369,9 +370,51 @@ export class PrismaPublicationRepository implements PublicationRepository {
         row.failureCode && row.failureMessage
           ? { code: row.failureCode, message: row.failureMessage }
           : null,
+      latestMetrics: null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
+  }
+
+  private async mapWithLatestMetrics(
+    rows: IntentRow[],
+  ): Promise<PublicationIntentView[]> {
+    if (!rows.length) return [];
+    const snapshots = await this.prisma.$queryRaw<
+      Array<{
+        publicationIntentId: string;
+        viewCount: bigint;
+        likeCount: bigint | null;
+        commentCount: bigint | null;
+        shareCount: bigint | null;
+        observedAt: Date;
+      }>
+    >(Prisma.sql`
+      SELECT DISTINCT ON ("publicationIntentId")
+        "publicationIntentId", "viewCount", "likeCount", "commentCount",
+        "shareCount", "observedAt"
+      FROM "PublicationMetricSnapshot"
+      WHERE "publicationIntentId" IN (${Prisma.join(rows.map((row) => row.id))})
+      ORDER BY "publicationIntentId", "observedAt" DESC
+    `);
+    const byIntent = new Map(
+      snapshots.map((snapshot) => [snapshot.publicationIntentId, snapshot]),
+    );
+    return rows.map((row) => {
+      const value = this.map(row);
+      const snapshot = byIntent.get(row.id);
+      if (!snapshot) return value;
+      return {
+        ...value,
+        latestMetrics: {
+          viewCount: snapshot.viewCount.toString(),
+          likeCount: snapshot.likeCount?.toString() ?? null,
+          commentCount: snapshot.commentCount?.toString() ?? null,
+          shareCount: snapshot.shareCount?.toString() ?? null,
+          observedAt: snapshot.observedAt,
+        },
+      };
+    });
   }
 
   private isRetryable(error: unknown): boolean {

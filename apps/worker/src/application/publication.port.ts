@@ -29,6 +29,23 @@ export interface PublicationReconciliationClaim extends PublicationClaim {
   reconciliationLeaseToken: string;
 }
 
+export interface PublicationMetricsClaim {
+  id: string;
+  channelId: string;
+  externalChannelRef: string;
+  platform: Exclude<PublicationPlatform, "LOCAL_DRY_RUN">;
+  remotePublicationId: string;
+  metricsLeaseToken: string;
+}
+
+export interface PublicationMetricsSnapshot {
+  adapterVersion: string;
+  viewCount: bigint;
+  likeCount: bigint | null;
+  commentCount: bigint | null;
+  shareCount: bigint | null;
+}
+
 export type PublicationReconciliationResult =
   | {
       state: "PENDING";
@@ -107,6 +124,16 @@ export interface PublicationWorkerRepository {
   releaseReconciliationClaim(
     claim: PublicationReconciliationClaim,
   ): Promise<void>;
+  claimPublishedForMetrics(
+    now: Date,
+    limit?: number,
+  ): Promise<PublicationMetricsClaim[]>;
+  recordMetrics(
+    claim: PublicationMetricsClaim,
+    snapshot: PublicationMetricsSnapshot,
+    observedAt: Date,
+  ): Promise<boolean>;
+  releaseMetricsClaim(claim: PublicationMetricsClaim): Promise<void>;
 }
 
 export interface PublicationProvider {
@@ -119,6 +146,10 @@ export interface PublicationProvider {
     claim: PublicationReconciliationClaim,
     signal?: AbortSignal,
   ): Promise<PublicationReconciliationResult>;
+  metrics?(
+    claim: PublicationMetricsClaim,
+    signal?: AbortSignal,
+  ): Promise<PublicationMetricsSnapshot>;
 }
 
 /** The provider may have committed remotely, so automatic POST retry is unsafe. */

@@ -24,6 +24,13 @@ export interface PublicationIntentView {
   remotePublicationId: string | null;
   remoteStatus: string | null;
   failure: { code: string; message: string } | null;
+  latestMetrics: {
+    viewCount: string;
+    likeCount: string | null;
+    commentCount: string | null;
+    shareCount: string | null;
+    observedAt: Date;
+  } | null;
   createdAt: Date;
   updatedAt: Date;
 }

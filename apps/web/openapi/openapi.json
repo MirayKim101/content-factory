@@ -4687,6 +4687,35 @@
             "format": "uuid",
             "type": "string"
           },
+          "latestMetrics": {
+            "nullable": true,
+            "properties": {
+              "commentCount": {
+                "nullable": true,
+                "pattern": "^[0-9]+$",
+                "type": "string"
+              },
+              "likeCount": {
+                "nullable": true,
+                "pattern": "^[0-9]+$",
+                "type": "string"
+              },
+              "observedAt": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "shareCount": {
+                "nullable": true,
+                "pattern": "^[0-9]+$",
+                "type": "string"
+              },
+              "viewCount": {
+                "pattern": "^[0-9]+$",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "metadataSnapshot": {
             "type": "object"
           },
@@ -4765,6 +4794,7 @@
           "remotePublicationId",
           "remoteStatus",
           "failure",
+          "latestMetrics",
           "createdAt",
           "updatedAt"
         ],

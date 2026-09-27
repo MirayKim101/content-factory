@@ -7,10 +7,17 @@ export type PublicationChannel =
   components["schemas"]["PublicationChannelResponseDto"];
 export type PublicationIntent = Omit<
   components["schemas"]["PublicationIntentResponseDto"],
-  "metadataSnapshot" | "failure"
+  "metadataSnapshot" | "failure" | "latestMetrics"
 > & {
   metadataSnapshot: Record<string, unknown>;
   failure: { code?: string; message?: string } | null;
+  latestMetrics: {
+    viewCount: string;
+    likeCount: string | null;
+    commentCount: string | null;
+    shareCount: string | null;
+    observedAt: string;
+  } | null;
 };
 
 const uuid = z.uuid();
@@ -59,6 +66,16 @@ const intentSchema: z.ZodType<PublicationIntent> = z.object({
   failure: z
     .object({ code: z.string().optional(), message: z.string().optional() })
     .nullable(),
+  latestMetrics: z
+    .object({
+      viewCount: z.string().regex(/^\d+$/),
+      likeCount: z.string().regex(/^\d+$/).nullable(),
+      commentCount: z.string().regex(/^\d+$/).nullable(),
+      shareCount: z.string().regex(/^\d+$/).nullable(),
+      observedAt: z.iso.datetime(),
+    })
+    .nullable()
+    .default(null),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

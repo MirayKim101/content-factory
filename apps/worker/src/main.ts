@@ -34,6 +34,7 @@ import { PgResearchWorker } from "./infrastructure/pg-research-worker.js";
 import { PgImageSuggestionWorker } from "./infrastructure/pg-image-suggestion-worker.js";
 import { ProcessPublicationIntent } from "./application/process-publication-intent.js";
 import { ReconcilePublicationOutcomes } from "./application/reconcile-publication-outcomes.js";
+import { CollectPublicationMetrics } from "./application/collect-publication-metrics.js";
 import { LocalDryRunPublicationAdapter } from "./infrastructure/local-dry-run-publication-adapter.js";
 import { PgPublicationWorkerRepository } from "./infrastructure/pg-publication-worker.repository.js";
 import { ReconcileTwitchIngestion } from "./application/reconcile-twitch-ingestion.js";
@@ -377,6 +378,20 @@ async function startPublicationWorker(): Promise<void> {
         }),
       ),
   );
+  const metricsCollector = new CollectPublicationMetrics(
+    repository,
+    providers,
+    undefined,
+    (intentId, error) =>
+      console.error(
+        JSON.stringify({
+          event: "publication_metrics_collection_failed",
+          workerId,
+          intentId,
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
+  );
   let recoveringPublications = false;
   const processDue = async (): Promise<void> => {
     if (recoveringPublications) return;
@@ -385,6 +400,7 @@ async function startPublicationWorker(): Promise<void> {
       for (const intentId of await repository.due())
         await processor.execute(intentId);
       await outcomeReconciler.execute();
+      await metricsCollector.execute();
     } finally {
       recoveringPublications = false;
     }

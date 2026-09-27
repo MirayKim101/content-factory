@@ -2,6 +2,7 @@ const API_ORIGIN = "https://open.tiktokapis.com";
 const CREATOR_INFO_ENDPOINT = `${API_ORIGIN}/v2/post/publish/creator_info/query/`;
 const DIRECT_POST_ENDPOINT = `${API_ORIGIN}/v2/post/publish/video/init/`;
 const STATUS_ENDPOINT = `${API_ORIGIN}/v2/post/publish/status/fetch/`;
+const VIDEO_QUERY_ENDPOINT = `${API_ORIGIN}/v2/video/query/?fields=id,view_count,like_count,comment_count,share_count`;
 const UPLOAD_HOST_SUFFIX = ".tiktokapis.com";
 
 export type TikTokPostStatus =
@@ -230,6 +231,39 @@ export class TikTokDirectPostTransport {
     };
   }
 
+  async metrics(input: {
+    accessToken: string;
+    videoId: string;
+    signal?: AbortSignal;
+  }): Promise<{
+    viewCount: bigint;
+    likeCount: bigint;
+    commentCount: bigint;
+    shareCount: bigint;
+  }> {
+    const videoId = this.identifier(input.videoId);
+    const data = await this.post(
+      VIDEO_QUERY_ENDPOINT,
+      input.accessToken,
+      { filters: { video_ids: [videoId] } },
+      input.signal,
+    );
+    if (!Array.isArray(data.videos) || data.videos.length !== 1)
+      throw new Error("TIKTOK_METRICS_RESPONSE_INVALID");
+    const video = data.videos[0];
+    if (!video || typeof video !== "object" || Array.isArray(video))
+      throw new Error("TIKTOK_METRICS_RESPONSE_INVALID");
+    const record = video as Record<string, unknown>;
+    if (String(record.id) !== videoId)
+      throw new Error("TIKTOK_METRICS_RESPONSE_INVALID");
+    return {
+      viewCount: this.unsignedBigInt(record.view_count),
+      likeCount: this.unsignedBigInt(record.like_count),
+      commentCount: this.unsignedBigInt(record.comment_count),
+      shareCount: this.unsignedBigInt(record.share_count),
+    };
+  }
+
   private async post(
     url: string,
     token: string,
@@ -321,5 +355,13 @@ export class TikTokDirectPostTransport {
     )
       throw new Error("TIKTOK_API_RESPONSE_INVALID");
     return value;
+  }
+  private unsignedBigInt(value: unknown): bigint {
+    if (
+      (typeof value !== "number" && typeof value !== "string") ||
+      !/^\d{1,20}$/.test(String(value))
+    )
+      throw new Error("TIKTOK_METRICS_RESPONSE_INVALID");
+    return BigInt(value);
   }
 }

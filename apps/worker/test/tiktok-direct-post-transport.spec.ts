@@ -153,4 +153,36 @@ describe("TikTokDirectPostTransport", () => {
       uploadedBytes: 100n,
     });
   });
+
+  it("queries metrics for the exact published post", async () => {
+    const request = vi.fn().mockResolvedValue(
+      ok({
+        videos: [
+          {
+            id: "12345",
+            view_count: 101,
+            like_count: 12,
+            comment_count: 3,
+            share_count: 4,
+          },
+        ],
+      }),
+    );
+
+    await expect(
+      new TikTokDirectPostTransport(request).metrics({
+        accessToken: "token",
+        videoId: "12345",
+      }),
+    ).resolves.toEqual({
+      viewCount: 101n,
+      likeCount: 12n,
+      commentCount: 3n,
+      shareCount: 4n,
+    });
+    expect(request).toHaveBeenCalledWith(
+      expect.stringContaining("/v2/video/query/"),
+      expect.objectContaining({ body: JSON.stringify({ filters: { video_ids: ["12345"] } }) }),
+    );
+  });
 });

@@ -153,6 +153,28 @@ export class PublicationIntentResponseDto {
     },
   })
   failure!: { code: string; message: string } | null;
+  @ApiProperty({
+    type: "object",
+    nullable: true,
+    properties: {
+      viewCount: { type: "string", pattern: "^[0-9]+$" },
+      likeCount: { type: "string", nullable: true, pattern: "^[0-9]+$" },
+      commentCount: {
+        type: "string",
+        nullable: true,
+        pattern: "^[0-9]+$",
+      },
+      shareCount: { type: "string", nullable: true, pattern: "^[0-9]+$" },
+      observedAt: { type: "string", format: "date-time" },
+    },
+  })
+  latestMetrics!: {
+    viewCount: string;
+    likeCount: string | null;
+    commentCount: string | null;
+    shareCount: string | null;
+    observedAt: string;
+  } | null;
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: string;
   @ApiProperty({ type: String, format: "date-time" }) updatedAt!: string;
 }
