@@ -3,37 +3,46 @@ import {
   PUBLICATION_QUEUE_NAME,
   type PublicationJobReferenceV1,
 } from "@content-factory/contracts";
-import { Injectable, type OnModuleDestroy } from "@nestjs/common";
+import { Inject, Injectable, type OnModuleDestroy } from "@nestjs/common";
 import { Queue } from "bullmq";
 
 import { apiEnvironment } from "../../config/environment.js";
 import type { PublicationDispatch } from "../application/publication-dispatch.port.js";
 
+export const PUBLICATION_QUEUE = Symbol("PUBLICATION_QUEUE");
+
+export function createPublicationQueue(): Queue<PublicationJobReferenceV1> | null {
+  const config = apiEnvironment();
+  if (!config.publishingEnabled) return null;
+  return new Queue(PUBLICATION_QUEUE_NAME, {
+    connection: {
+      host: config.redisHost,
+      port: config.redisPort,
+      password: config.redisPassword,
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      lazyConnect: true,
+    },
+  });
+}
+
 @Injectable()
 export class BullMqPublicationDispatch
   implements PublicationDispatch, OnModuleDestroy
 {
-  private readonly queue: Queue<PublicationJobReferenceV1> | null;
+  constructor(
+    @Inject(PUBLICATION_QUEUE)
+    private readonly queue: Queue<PublicationJobReferenceV1> | null,
+  ) {}
 
-  constructor() {
-    const config = apiEnvironment();
-    this.queue = config.publishingEnabled
-      ? new Queue(PUBLICATION_QUEUE_NAME, {
-          connection: {
-            host: config.redisHost,
-            port: config.redisPort,
-            password: config.redisPassword,
-            maxRetriesPerRequest: 1,
-            enableOfflineQueue: false,
-            lazyConnect: true,
-          },
-        })
-      : null;
-  }
-
-  async dispatch(input: { id: string; scheduledAt: Date }): Promise<void> {
+  async dispatch(input: {
+    id: string;
+    scheduledAt: Date;
+    deliveryRevision: string;
+  }): Promise<void> {
     if (!this.queue) return;
-    const existing = await this.queue.getJob(input.id);
+    const deliveryId = `${input.id}-${input.deliveryRevision}`;
+    const existing = await this.queue.getJob(deliveryId);
     if (existing) return;
     await this.queue.add(
       "publication-v1",
@@ -42,7 +51,7 @@ export class BullMqPublicationDispatch
         publicationIntentId: input.id,
       },
       {
-        jobId: input.id,
+        jobId: deliveryId,
         delay: Math.max(0, input.scheduledAt.getTime() - Date.now()),
         attempts: 1,
         removeOnComplete: { age: 3_600, count: 1_000 },

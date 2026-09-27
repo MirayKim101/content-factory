@@ -9,11 +9,12 @@ import {
 
 const id = "00000000-0000-4000-8000-000000000001";
 const scheduledAt = new Date("2026-09-28T12:00:00.000Z");
+const updatedAt = new Date("2026-09-28T12:00:01.000Z");
 
 function repository(
   platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK" = "LOCAL_DRY_RUN",
 ): PublicationRepository {
-  const intent = { id, platform, scheduledAt } as never;
+  const intent = { id, platform, scheduledAt, updatedAt } as never;
   return {
     createChannel: vi.fn(),
     listChannels: vi.fn(),
@@ -42,7 +43,11 @@ describe("RetryPublicationIntent", () => {
     await useCase.execute(id);
 
     expect(repo.retry).toHaveBeenCalledWith(id, scheduledAt);
-    expect(dispatch.dispatch).toHaveBeenCalledWith({ id, scheduledAt });
+    expect(dispatch.dispatch).toHaveBeenCalledWith({
+      id,
+      scheduledAt,
+      deliveryRevision: updatedAt.getTime().toString(),
+    });
   });
 
   it("fails closed for a disabled external provider", async () => {

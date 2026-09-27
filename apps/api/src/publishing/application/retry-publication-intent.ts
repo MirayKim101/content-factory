@@ -47,6 +47,7 @@ export class RetryPublicationIntent {
       this.dispatch.dispatch({
         id: retried.id,
         scheduledAt: retried.scheduledAt,
+        deliveryRevision: retried.updatedAt.getTime().toString(),
       }),
     ]);
     return retried;

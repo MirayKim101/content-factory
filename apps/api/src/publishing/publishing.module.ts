@@ -23,7 +23,11 @@ import {
 import { PrismaPublicationRepository } from "./infrastructure/prisma-publication.repository.js";
 import { PublicationController } from "./presentation/publication.controller.js";
 import { PUBLICATION_DISPATCH } from "./application/publication-dispatch.port.js";
-import { BullMqPublicationDispatch } from "./infrastructure/bullmq-publication-dispatch.js";
+import {
+  BullMqPublicationDispatch,
+  createPublicationQueue,
+  PUBLICATION_QUEUE,
+} from "./infrastructure/bullmq-publication-dispatch.js";
 
 @Module({
   imports: [ProjectsModule],
@@ -31,6 +35,7 @@ import { BullMqPublicationDispatch } from "./infrastructure/bullmq-publication-d
   providers: [
     PrismaPublicationRepository,
     BullMqPublicationDispatch,
+    { provide: PUBLICATION_QUEUE, useFactory: createPublicationQueue },
     CreatePublicationIntent,
     GetTikTokCreatorInfo,
     CreatePublicationChannel,

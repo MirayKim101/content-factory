@@ -314,7 +314,10 @@ remote сейчас подтверждён только до `b0b00f1`. Лока
 по-прежнему требует сверки с площадкой и никогда не переотправляется. Повтор
 снова проверяет общий и provider-specific feature flags, сбрасывает только
 bounded attempt budget и использует существующий intent, не создавая второй.
+BullMQ delivery ID включает durable `updatedAt` revision intent: новый retry не
+блокируется сохранённой completed/failed job предыдущего запуска, а повторная
+доставка той же ревизии остаётся идемпотентной.
 
-После изменения прошли API `229/229`, web `246/246`, typecheck, lint, production
+После изменения прошли API `231/231`, web `246/246`, typecheck, lint, production
 build и двусторонняя проверка OpenAPI drift. Локально API работает на 3001, UI
 на 3100; порт 3000 не использовался.

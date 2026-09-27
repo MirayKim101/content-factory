@@ -23,7 +23,13 @@ const base = {
 
 function repository(): PublicationRepository {
   return {
-    create: vi.fn(async (input) => input as never),
+    create: vi.fn(
+      async (input) =>
+        ({
+          ...input,
+          updatedAt: new Date("2026-09-27T00:00:00.000Z"),
+        }) as never,
+    ),
     createChannel: vi.fn(),
     listChannels: vi.fn(),
     get: vi.fn(),
@@ -82,6 +88,7 @@ describe("CreatePublicationIntent", () => {
     expect(dispatch.dispatch).toHaveBeenLastCalledWith({
       id: expect.any(String),
       scheduledAt: new Date("2026-10-01T09:00:00.000Z"),
+      deliveryRevision: "1790467200000",
     });
   });
 

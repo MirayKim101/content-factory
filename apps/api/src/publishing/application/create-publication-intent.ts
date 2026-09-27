@@ -110,6 +110,7 @@ export class CreatePublicationIntent {
       this.dispatch.dispatch({
         id: intent.id,
         scheduledAt: intent.scheduledAt,
+        deliveryRevision: intent.updatedAt.getTime().toString(),
       }),
     ]);
     return intent;
