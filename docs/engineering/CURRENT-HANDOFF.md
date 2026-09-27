@@ -514,3 +514,8 @@ Swagger setup. Health, API и документация теперь защище
 `X-Content-Type-Options`, `X-Frame-Options`, referrer policy и COOP. Поведение
 закреплено изолированным Nest HTTP test без внешних БД/S3; API `236/236`,
 typecheck, lint, production build и повторный dependency audit прошли.
+
+Устранён container-hardening drift у `ai-worker`: тот же worker image теперь
+запускается с read-only root filesystem, dropped Linux capabilities,
+`no-new-privileges`, PID/CPU limits, 1 GiB noexec tmpfs, graceful stop и local
+log rotation. Compose render со всеми Stage 3 profiles прошёл.

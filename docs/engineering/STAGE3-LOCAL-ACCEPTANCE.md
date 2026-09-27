@@ -78,6 +78,9 @@
   известных уязвимостей.
 - API responses, включая health и Swagger UI, получают единый Helmet baseline:
   CSP, HSTS, frame/referrer policy, COOP и MIME sniffing protection.
+- `ai-worker` использует тот же container security baseline, что остальные
+  workers: read-only root filesystem, dropped capabilities, no-new-privileges,
+  bounded PID/CPU, bounded noexec tmpfs и log rotation.
 
 ## Воспроизведённые проверки
 

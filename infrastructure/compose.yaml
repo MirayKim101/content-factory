@@ -184,6 +184,14 @@ services:
       dockerfile: apps/worker/Dockerfile
     restart: unless-stopped
     init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    cpus: 2.0
+    stop_grace_period: 45s
     environment:
       WORKER_ROLE: ai
       POSTGRES_DB: ${POSTGRES_DB:?copy .env.example to .env and set POSTGRES_DB}
@@ -202,6 +210,8 @@ services:
       SOURCE_AUTHORIZATION_POLICY: ${SOURCE_AUTHORIZATION_POLICY:-manual}
       DEPLOYMENT_PROFILE: local
       API_HOST: 127.0.0.1
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=1g
     networks:
       - content-factory
     depends_on:
@@ -213,6 +223,11 @@ services:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
 
   publication-worker:
     image: content-factory-media-worker:0.0.0-stage1
