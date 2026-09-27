@@ -8,6 +8,7 @@ export * from "#publication";
 export * from "#thumbnail";
 export * from "#twitch-ingestion";
 export * from "#vertical";
+export * from "#clip-generation";
 export const MEDIA_JOB_SCHEMA_VERSION = 1 as const;
 
 export const MONTAGE_PROBE_RECIPE_VERSION = "montage-asset-probe-v1" as const;

@@ -27,6 +27,7 @@
     "#publication": "./src/publication.ts",
     "#thumbnail": "./src/thumbnail.ts",
     "#twitch-ingestion": "./src/twitch-ingestion.ts",
-    "#vertical": "./src/vertical.ts"
+    "#vertical": "./src/vertical.ts",
+    "#clip-generation": "./src/clip-generation.ts"
   }
 }
