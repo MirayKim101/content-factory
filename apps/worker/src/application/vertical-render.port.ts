@@ -6,6 +6,7 @@ export interface VerticalRenderClaim {
   sourceVersion: number;
   inputObjectKey: string;
   inputSizeBytes: bigint;
+  expectedDurationMs: number;
   leaseToken: string;
   attemptNumber: number;
   retryBudget: number;
@@ -15,6 +16,8 @@ export interface VerticalRenderedFile {
   durationMs: number;
   width: number;
   height: number;
+  videoCodec: string;
+  audioCodec: string;
   ffmpegVersion: string;
 }
 

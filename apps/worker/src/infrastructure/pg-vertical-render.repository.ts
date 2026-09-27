@@ -31,11 +31,13 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
         retryBudget: number;
         objectKey: string;
         sizeBytes: string;
+        expectedDurationMs: number;
         current: boolean;
       }>(
         `SELECT j."id" AS "jobId", i."id" AS "intentId", j."projectId", j."sourceId",
                 j."sourceVersion", j."attemptCount", j."retryBudget",
                 a."objectKey", a."sizeBytes"::text AS "sizeBytes",
+                (segment."endMs" - segment."startMs") AS "expectedDurationMs",
                 (j."type" = 'RENDER_VERTICAL' AND j."payloadVersion" = 1
                  AND j."recipeVersion" = 'vertical-render-v1'
                  AND j."verticalRenderIntentId" = i."id"
@@ -52,6 +54,8 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
            FROM "PipelineJob" j
            JOIN "VerticalRenderIntent" i ON i."id" = j."verticalRenderIntentId"
            JOIN "MediaArtifact" a ON a."id" = i."cutResultArtifactId"
+           JOIN "PipelineJob" cut ON cut."id" = i."cutPipelineJobId"
+           JOIN "CutSegment" segment ON segment."jobId" = cut."id"
            JOIN "VideoSource" s ON s."id" = j."sourceId"
            JOIN "SourceAuthorization" sa ON sa."sourceId" = j."sourceId" AND sa."sourceVersion" = j."sourceVersion"
           WHERE j."id" = $1 AND (j."state" IN ('QUEUED', 'RETRY_WAIT') OR
@@ -98,6 +102,7 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
         sourceVersion: row.sourceVersion,
         inputObjectKey: row.objectKey,
         inputSizeBytes: BigInt(row.sizeBytes),
+        expectedDurationMs: row.expectedDurationMs,
         leaseToken,
         attemptNumber,
         retryBudget: row.retryBudget,

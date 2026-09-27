@@ -2898,6 +2898,22 @@ export interface components {
       externalProviderTransferAllowed?: boolean;
       scope?: string | null;
     };
+    VerticalApprovalSummaryDto: {
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      id: string;
+    };
+    VerticalJobResponseDto: {
+      attemptCount: number;
+      failureCode: string | null;
+      failureMessage: string | null;
+      /** Format: uuid */
+      id: string;
+      retryBudget: number;
+      /** @enum {string} */
+      state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    };
     VerticalRenderResponseDto: {
       /** Format: date-time */
       createdAt: string;
@@ -2907,13 +2923,28 @@ export interface components {
       framingMode: "CENTER_CROP";
       /** Format: uuid */
       id: string;
-      job: Record<string, never>;
+      job: components["schemas"]["VerticalJobResponseDto"];
       outputHeight: number;
       outputWidth: number;
       /** Format: uuid */
       projectId: string;
       renderContractVersion: string;
-      result: Record<string, never> | null;
+      result: components["schemas"]["VerticalResultResponseDto"] | null;
+    };
+    VerticalResultResponseDto: {
+      approval: components["schemas"]["VerticalApprovalSummaryDto"] | null;
+      /** Format: uuid */
+      artifactId: string;
+      /** Format: date-time */
+      completedAt: string;
+      /** @example 1920 */
+      height: number;
+      /** Format: uuid */
+      id: string;
+      /** @example 720885 */
+      sizeBytes: string;
+      /** @example 1080 */
+      width: number;
     };
   };
   responses: never;

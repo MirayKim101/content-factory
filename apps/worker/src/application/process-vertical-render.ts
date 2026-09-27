@@ -55,7 +55,10 @@ export class ProcessVerticalRender {
       if (
         rendered.width !== 1080 ||
         rendered.height !== 1920 ||
-        rendered.durationMs <= 0
+        rendered.videoCodec !== "h264" ||
+        rendered.audioCodec !== "aac" ||
+        Math.abs(rendered.durationMs - claim.expectedDurationMs) >
+          Math.max(1_000, Math.ceil(claim.expectedDurationMs * 0.03))
       )
         throw new Error("VERTICAL_OUTPUT_INVALID");
       const file = await stat(output);

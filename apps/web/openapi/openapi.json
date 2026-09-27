@@ -5999,6 +5999,61 @@
         "required": ["expectedRevision", "decision"],
         "type": "object"
       },
+      "VerticalApprovalSummaryDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": ["id", "createdAt"],
+        "type": "object"
+      },
+      "VerticalJobResponseDto": {
+        "properties": {
+          "attemptCount": {
+            "type": "number"
+          },
+          "failureCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "failureMessage": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "retryBudget": {
+            "type": "number"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "PROCESSING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "attemptCount",
+          "retryBudget",
+          "failureCode",
+          "failureMessage"
+        ],
+        "type": "object"
+      },
       "VerticalRenderResponseDto": {
         "properties": {
           "createdAt": {
@@ -6018,7 +6073,7 @@
             "type": "string"
           },
           "job": {
-            "type": "object"
+            "$ref": "#/components/schemas/VerticalJobResponseDto"
           },
           "outputHeight": {
             "type": "number"
@@ -6034,6 +6089,11 @@
             "type": "string"
           },
           "result": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VerticalResultResponseDto"
+              }
+            ],
             "nullable": true,
             "type": "object"
           }
@@ -6049,6 +6109,53 @@
           "job",
           "result",
           "createdAt"
+        ],
+        "type": "object"
+      },
+      "VerticalResultResponseDto": {
+        "properties": {
+          "approval": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VerticalApprovalSummaryDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "artifactId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "height": {
+            "example": 1920,
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sizeBytes": {
+            "example": "720885",
+            "type": "string"
+          },
+          "width": {
+            "example": 1080,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "artifactId",
+          "width",
+          "height",
+          "sizeBytes",
+          "completedAt",
+          "approval"
         ],
         "type": "object"
       }

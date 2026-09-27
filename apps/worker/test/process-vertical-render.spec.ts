@@ -20,6 +20,7 @@ const claim = {
   sourceVersion: 1,
   inputObjectKey: "cuts/input.mp4",
   inputSizeBytes: 5n,
+  expectedDurationMs: 30_000,
   leaseToken: "lease-1",
   attemptNumber: 1,
   retryBudget: 2,
@@ -67,6 +68,8 @@ const renderer: VerticalRenderer = {
       durationMs: 30_000,
       width: 1080,
       height: 1920,
+      videoCodec: "h264",
+      audioCodec: "aac",
       ffmpegVersion: "ffmpeg-test",
     };
   }),
@@ -138,5 +141,39 @@ describe("ProcessVerticalRender", () => {
 
     await expect(process.execute(claim.jobId)).resolves.toBe(false);
     expect(objectStorage.download).not.toHaveBeenCalled();
+  });
+
+  it("rejects a render with a non-admitted codec before upload", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "cf-vertical-test-"));
+    directories.push(scratch);
+    const repo = repository();
+    const objectStorage = storage();
+    const invalidRenderer: VerticalRenderer = {
+      ...renderer,
+      render: vi.fn(async (_input, output) => {
+        await writeFile(output, "invalid-output");
+        return {
+          durationMs: 30_000,
+          width: 1080,
+          height: 1920,
+          videoCodec: "hevc",
+          audioCodec: "aac",
+          ffmpegVersion: "ffmpeg-test",
+        };
+      }),
+    };
+    const process = new ProcessVerticalRender(
+      repo,
+      objectStorage,
+      invalidRenderer,
+      scratch,
+      60_000,
+    );
+
+    await expect(process.execute(claim.jobId)).rejects.toThrow(
+      "VERTICAL_OUTPUT_INVALID",
+    );
+    expect(objectStorage.upload).not.toHaveBeenCalled();
+    expect(repo.fail).toHaveBeenCalled();
   });
 });

@@ -58,26 +58,41 @@ export class FfmpegVerticalRenderer implements VerticalRenderer {
       "-v",
       "error",
       "-show_entries",
-      "format=duration:stream=codec_type,width,height",
+      "format=duration:stream=codec_type,codec_name,width,height",
       "-of",
       "json",
       output,
     ]);
     const probe = JSON.parse(stdout) as {
       format?: { duration?: string };
-      streams?: Array<{ codec_type?: string; width?: number; height?: number }>;
+      streams?: Array<{
+        codec_type?: string;
+        codec_name?: string;
+        width?: number;
+        height?: number;
+      }>;
     };
     const video = probe.streams?.find(
       (stream) => stream.codec_type === "video",
     );
+    const audio = probe.streams?.find(
+      (stream) => stream.codec_type === "audio",
+    );
     const durationMs = Math.round(Number(probe.format?.duration) * 1000);
-    if (!video || !Number.isSafeInteger(durationMs))
+    if (
+      !video ||
+      !audio ||
+      !Number.isSafeInteger(durationMs) ||
+      durationMs <= 0
+    )
       throw new Error("VERTICAL_PROBE_INVALID");
     const version = await execFileAsync(this.ffmpegPath, ["-version"]);
     return {
       durationMs,
       width: video.width ?? 0,
       height: video.height ?? 0,
+      videoCodec: video.codec_name ?? "",
+      audioCodec: audio.codec_name ?? "",
       ffmpegVersion: version.stdout.split("\n")[0]?.slice(0, 255) ?? "ffmpeg",
     };
   }
