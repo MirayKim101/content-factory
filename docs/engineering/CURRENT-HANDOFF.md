@@ -476,3 +476,9 @@ same-origin Nuxt/edge proxy. Runtime proof после rebuild: прямой CORS
 `PUBLISHING_ENABLED=0` и `VERTICAL_RENDER_ENABLED=0`. Compose config с явно
 включёнными profiles `publishing`, `twitch`, `vertical` проверен: publishing,
 Twitch ingestion/auto-ingest/media-gateway и vertical admission остаются `0`.
+
+Устранён vertical recovery dead end: `FAILED_FINAL` render больше не скрывает
+исходную READY-нарезку из composer. Новая попытка получает новый idempotency
+key и audit row; активный/готовый render всё ещё блокирует дубликат. Поведение
+вынесено в тестируемую availability policy; web `255/255`, typecheck, lint и
+production build прошли.

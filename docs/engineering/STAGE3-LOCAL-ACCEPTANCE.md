@@ -24,6 +24,10 @@
 - Vertical UI также получает эффективный server-side admission: при
   выключенном render flag создание новых задач заблокировано и объяснено,
   но история и подтверждение готовых результатов остаются доступны.
+- `FAILED_FINAL` vertical attempt не делает исходную нарезку навсегда
+  недоступной: оператор может создать новую идемпотентную попытку, а предыдущая
+  запись остаётся в истории. Активный или готовый render продолжает блокировать
+  дубликат.
 - `.env.example` перечисляет все Stage 3 master switches default-off;
   production-like compose render с подключёнными profiles подтверждает нули
   для publishing, Twitch control/data plane и vertical rendering.
@@ -73,7 +77,7 @@
 API:     235/235 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  259/259 unit tests
-Web:     253/253 tests
+Web:     255/255 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints

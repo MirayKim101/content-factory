@@ -12,6 +12,7 @@ import {
   createVerticalRendersApi,
   type VerticalRender,
 } from "~/shared/api/vertical-renders";
+import { hasBlockingVerticalRender } from "~/widgets/vertical-workspace/model/availability";
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -37,8 +38,7 @@ const readyCuts = computed(() =>
 );
 const availableCuts = computed(() =>
   readyCuts.value.filter(
-    (cut) =>
-      !renders.value.some((render) => render.cutPipelineJobId === cut.id),
+    (cut) => !hasBlockingVerticalRender(cut.id, renders.value),
   ),
 );
 const summary = computed(() => ({
@@ -328,6 +328,13 @@ onMounted(async () => {
         }}</Button>
         <p v-if="!loading && !availableCuts.length" class="hint">
           Все готовые нарезки уже добавлены или ещё не созданы.
+        </p>
+        <p
+          v-else-if="renders.some((item) => item.job.state === 'FAILED_FINAL')"
+          class="hint"
+        >
+          После финальной ошибки можно выбрать исходную нарезку повторно. Новая
+          попытка сохранит предыдущую запись в истории.
         </p>
       </aside>
     </div>
