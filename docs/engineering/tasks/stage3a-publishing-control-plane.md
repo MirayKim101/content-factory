@@ -31,8 +31,7 @@
 
 1. При `PUBLISHING_ENABLED=0` create возвращает controlled 503 и не создаёт row.
 2. Intent принимается только для current approval и READY current export.
-3. Same key + same payload replay возвращает тот же intent; другой payload —
-   409.
+3. Same key + same payload replay возвращает тот же intent; другой payload — 409.
 4. Время в прошлом и невалидная timezone отклоняются до записи.
 5. Duplicate delivery создаёт один dry-run result.
 6. Cancel после terminal result не меняет состояние.
