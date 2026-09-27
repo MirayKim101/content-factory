@@ -82,6 +82,32 @@ describe("ProcessPublicationIntent", () => {
     expect(repo.heartbeat).not.toHaveBeenCalled();
   });
 
+  it("aborts provider work when the publication lease is lost", async () => {
+    vi.useFakeTimers();
+    const repo = repository();
+    vi.mocked(repo.heartbeat).mockResolvedValue(false);
+    const publish = vi.fn(
+      (_claim: PublicationClaim, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          signal?.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          });
+        }),
+    );
+    const processing = new ProcessPublicationIntent(repo, [
+      { platform: "LOCAL_DRY_RUN", publish },
+    ]).execute(claim.id);
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    await expect(processing).resolves.toBe(false);
+    expect(repo.finalizeDryRun).not.toHaveBeenCalled();
+    expect(repo.finalizePublishedDirect).not.toHaveBeenCalled();
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
+    expect(repo.failFinal).not.toHaveBeenCalled();
+  });
+
   it("turns duplicate delivery into one durable dry-run result", async () => {
     const repo = repository();
     const process = new ProcessPublicationIntent(

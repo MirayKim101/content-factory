@@ -36,7 +36,11 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       throw new Error("YOUTUBE_UPLOAD_CHUNK_SIZE_INVALID");
   }
 
-  async publish(claim: PublicationClaim): Promise<PublicationAdapterResult> {
+  async publish(
+    claim: PublicationClaim,
+    signal?: AbortSignal,
+  ): Promise<PublicationAdapterResult> {
+    signal?.throwIfAborted();
     if (claim.platform !== this.platform)
       throw new Error("YOUTUBE_PUBLICATION_PLATFORM_MISMATCH");
     const identity = {
@@ -46,6 +50,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       contentType: claim.contentType,
     };
     await this.media.verifyIdentity(identity);
+    signal?.throwIfAborted();
     const accessToken = await this.tokens.resolve({
       channelId: claim.channelId,
       platform: claim.platform,
@@ -53,6 +58,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
     });
 
     const stored = await this.sessions.load(claim.id, claim.platform);
+    signal?.throwIfAborted();
     let sessionUrl: string;
     let offset: bigint;
     if (stored) {
@@ -70,6 +76,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
         accessToken,
         totalBytes: identity.sizeBytes,
       });
+      signal?.throwIfAborted();
       if (progress.state === "COMPLETE")
         return this.result(progress.videoId, identity.sha256);
       offset = progress.nextOffset;
@@ -90,6 +97,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
         contentType: identity.contentType,
         metadata: youtubeMetadata(claim.metadataSnapshot),
       });
+      signal?.throwIfAborted();
       offset = 0n;
       const encrypted = this.cipher.encrypt({
         publicationIntentId: claim.id,
@@ -110,10 +118,12 @@ export class YoutubePublicationAdapter implements PublicationProvider {
     }
 
     while (offset < identity.sizeBytes) {
+      signal?.throwIfAborted();
       const length = Number(
         minBigInt(BigInt(this.chunkBytes), identity.sizeBytes - offset),
       );
       const chunk = await this.media.readRange({ identity, offset, length });
+      signal?.throwIfAborted();
       const progress = await this.transport.uploadChunk({
         sessionUrl,
         accessToken,

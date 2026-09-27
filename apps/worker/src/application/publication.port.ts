@@ -103,7 +103,10 @@ export interface PublicationWorkerRepository {
 
 export interface PublicationProvider {
   readonly platform: PublicationPlatform;
-  publish(claim: PublicationClaim): Promise<PublicationAdapterResult>;
+  publish(
+    claim: PublicationClaim,
+    signal?: AbortSignal,
+  ): Promise<PublicationAdapterResult>;
   reconcile?(
     claim: PublicationReconciliationClaim,
   ): Promise<PublicationReconciliationResult>;

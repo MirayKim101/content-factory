@@ -30,7 +30,11 @@ export class TikTokPublicationAdapter implements PublicationProvider {
     private readonly clock: () => Date = () => new Date(),
   ) {}
 
-  async publish(claim: PublicationClaim): Promise<PublicationAdapterResult> {
+  async publish(
+    claim: PublicationClaim,
+    signal?: AbortSignal,
+  ): Promise<PublicationAdapterResult> {
+    signal?.throwIfAborted();
     if (claim.platform !== this.platform)
       throw new Error("TIKTOK_PUBLICATION_PLATFORM_MISMATCH");
     const identity = {
@@ -46,15 +50,18 @@ export class TikTokPublicationAdapter implements PublicationProvider {
     )
       throw new Error("TIKTOK_CONTENT_TYPE_INVALID");
     await this.media.verifyIdentity(identity);
+    signal?.throwIfAborted();
     const accessToken = await this.tokens.resolve({
       channelId: claim.channelId,
       platform: claim.platform,
       externalChannelRef: claim.externalChannelRef,
     });
     const creator = await this.transport.creatorInfo(accessToken);
+    signal?.throwIfAborted();
     const metadata = requireTikTokMetadata(claim.metadataSnapshot, creator);
 
     const stored = await this.sessions.load(claim.id, claim.platform);
+    signal?.throwIfAborted();
     let publishId: string;
     let uploadUrl: string;
     let chunkSize: number;
@@ -74,6 +81,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       uploadUrl = payload.uploadUrl;
       chunkSize = payload.chunkSize;
       const remote = await this.transport.status({ accessToken, publishId });
+      signal?.throwIfAborted();
       if (remote.status === "PUBLISH_COMPLETE")
         return this.result(publishId, identity.sha256, remote.postIds);
       if (remote.status === "FAILED")
@@ -99,6 +107,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
         totalBytes: identity.sizeBytes,
         ...metadata,
       });
+      signal?.throwIfAborted();
       publishId = initialized.publishId;
       uploadUrl = initialized.uploadUrl;
       chunkSize = initialized.plan.chunkSize;
@@ -131,11 +140,13 @@ export class TikTokPublicationAdapter implements PublicationProvider {
     }
 
     while (offset < identity.sizeBytes) {
+      signal?.throwIfAborted();
       const length = Number(
         minBigInt(BigInt(chunkSize), identity.sizeBytes - offset),
       );
       const final = offset + BigInt(length) === identity.sizeBytes;
       const chunk = await this.media.readRange({ identity, offset, length });
+      signal?.throwIfAborted();
       const progress = await this.transport.uploadChunk({
         uploadUrl,
         chunk,
