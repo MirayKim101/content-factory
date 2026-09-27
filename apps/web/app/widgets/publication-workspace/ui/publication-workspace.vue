@@ -597,6 +597,16 @@ onUnmounted(() => {
                   · Статус: {{ item.remoteStatus }}</span
                 >
               </small>
+              <small
+                v-else-if="
+                  item.state === 'FAILED_FINAL' && item.remotePublicationId
+                "
+                class="reconciliation-note"
+              >
+                Повтор заблокирован: площадка уже вернула Remote ID
+                {{ item.remotePublicationId }}. Сначала проверьте публикацию на
+                площадке.
+              </small>
             </div>
             <Button
               v-if="['SCHEDULED', 'QUEUED'].includes(item.state)"

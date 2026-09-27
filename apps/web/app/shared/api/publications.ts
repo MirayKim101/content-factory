@@ -252,6 +252,8 @@ async function request<T>(
       PUBLISHING_DISABLED: "Публикации выключены в конфигурации сервера.",
       PUBLICATION_CONFLICT:
         "Данные изменились. Обновите очередь и повторите действие.",
+      PUBLICATION_RETRY_UNSAFE:
+        "Повтор заблокирован: сначала подтвердите итог операции на площадке.",
       PUBLICATION_REQUEST_INVALID: "Проверьте дату, часовой пояс и метаданные.",
       TIKTOK_CREATOR_INFO_UNAVAILABLE:
         "TikTok временно не вернул настройки автора. Обновите их перед публикацией.",

@@ -212,6 +212,12 @@ export class PublicationController {
         code: "TIKTOK_CREATOR_INFO_UNAVAILABLE",
         message: "TikTok creator capabilities are temporarily unavailable.",
       });
+    if (error instanceof PublicationRetryConflictError)
+      throw new ConflictException({
+        code: "PUBLICATION_RETRY_UNSAFE",
+        message:
+          "Publication cannot be retried until its remote outcome is known.",
+      });
     if (
       error instanceof PublicationScheduleInvalidError ||
       error instanceof PublicationTimezoneInvalidError ||
@@ -226,7 +232,6 @@ export class PublicationController {
       error instanceof PublicationIdempotencyConflictError ||
       error instanceof PublicationChannelConflictError ||
       error instanceof PublicationCancellationConflictError ||
-      error instanceof PublicationRetryConflictError ||
       error instanceof PublicationLineageInvalidError
     )
       throw new ConflictException({

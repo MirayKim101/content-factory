@@ -318,6 +318,10 @@ BullMQ delivery ID включает durable `updatedAt` revision intent: нов�
 блокируется сохранённой completed/failed job предыдущего запуска, а повторная
 доставка той же ревизии остаётся идемпотентной.
 
-После изменения прошли API `231/231`, web `246/246`, typecheck, lint, production
+Unsafe retry имеет отдельный API-код `PUBLICATION_RETRY_UNSAFE`; UI объясняет
+необходимость сверки и показывает Remote ID вместо вводящего в заблуждение
+общего конфликта.
+
+После изменения прошли API `231/231`, web `247/247`, typecheck, lint, production
 build и двусторонняя проверка OpenAPI drift. Локально API работает на 3001, UI
 на 3100; порт 3000 не использовался.

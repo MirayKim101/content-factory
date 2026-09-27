@@ -63,6 +63,29 @@ describe("publications api", () => {
     );
   });
 
+  it("explains why an unsafe retry is blocked", async () => {
+    const rejected = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({ error: { code: "PUBLICATION_RETRY_UNSAFE" } }),
+          { status: 409, headers: { "Content-Type": "application/json" } },
+        ),
+    );
+
+    await expect(
+      createPublicationsApi("/api/v1", rejected as typeof fetch).retry(
+        intentId,
+      ),
+    ).rejects.toEqual(
+      expect.objectContaining<Partial<PublicationsApiError>>({
+        code: "PUBLICATION_RETRY_UNSAFE",
+        status: 409,
+        message:
+          "Повтор заблокирован: сначала подтвердите итог операции на площадке.",
+      }),
+    );
+  });
+
   it("loads bounded TikTok creator capabilities without credentials", async () => {
     const fetchMock = vi.fn(
       async () =>
