@@ -9,6 +9,8 @@ import type { TwitchVodMediaProvider } from "./twitch-vod-media.port.js";
 import type { TwitchVodIngestRepository } from "./twitch-vod-ingest.port.js";
 import type { WorkerObjectStorage } from "./ports.js";
 
+class TwitchVodIngestLeaseLostError extends Error {}
+
 export class ProcessTwitchVodIngest {
   constructor(
     private readonly repository: TwitchVodIngestRepository,
@@ -28,6 +30,7 @@ export class ProcessTwitchVodIngest {
       `${lease.id}.part`,
     );
     const controller = new AbortController();
+    const heartbeat = this.startHeartbeat(lease.id, workerId, controller);
     try {
       await mkdir(dirname(path), { recursive: true, mode: 0o700 });
       const offset = await stat(path)
@@ -98,7 +101,7 @@ export class ProcessTwitchVodIngest {
       if (expectedBytes === null || sizeBytes !== expectedBytes)
         throw new Error("TWITCH_VOD_SIZE_MISMATCH");
       await this.assertMp4(path);
-      const sha256 = await this.hash(path);
+      const sha256 = await this.hash(path, controller.signal);
       await this.repository.checkpoint(
         lease.id,
         workerId,
@@ -133,6 +136,10 @@ export class ProcessTwitchVodIngest {
       await unlink(path).catch(() => undefined);
       return true;
     } catch (error) {
+      if (
+        controller.signal.reason instanceof TwitchVodIngestLeaseLostError
+      )
+        return false;
       const code =
         error instanceof Error ? error.message : "TWITCH_VOD_INGEST_FAILED";
       const retryable =
@@ -148,7 +155,37 @@ export class ProcessTwitchVodIngest {
       );
       if (!retryable) await unlink(path).catch(() => undefined);
       return true;
+    } finally {
+      clearInterval(heartbeat);
     }
+  }
+
+  private startHeartbeat(
+    id: string,
+    workerId: string,
+    controller: AbortController,
+  ): ReturnType<typeof setInterval> {
+    let running = false;
+    const intervalMs = Math.max(1_000, Math.min(60_000, this.leaseMs / 3));
+    const timer = setInterval(() => {
+      if (running) return;
+      running = true;
+      void this.repository
+        .heartbeat(id, workerId, this.leaseMs)
+        .then((retained) => {
+          if (!retained && !controller.signal.aborted)
+            controller.abort(new TwitchVodIngestLeaseLostError());
+        })
+        .catch(() => {
+          if (!controller.signal.aborted)
+            controller.abort(new TwitchVodIngestLeaseLostError());
+        })
+        .finally(() => {
+          running = false;
+        });
+    }, intervalMs);
+    timer.unref();
+    return timer;
   }
 
   private async assertMp4(path: string): Promise<void> {
@@ -163,9 +200,9 @@ export class ProcessTwitchVodIngest {
     }
   }
 
-  private async hash(path: string): Promise<string> {
+  private async hash(path: string, signal: AbortSignal): Promise<string> {
     const hash = createHash("sha256");
-    for await (const chunk of createReadStream(path))
+    for await (const chunk of createReadStream(path, { signal }))
       hash.update(chunk as Buffer);
     return hash.digest("hex");
   }

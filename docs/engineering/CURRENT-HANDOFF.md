@@ -38,6 +38,10 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Тот же fail-closed fence применяется к status reconciliation: при ошибке
   продления lease provider polling прерывается, а запись оставляется новому
   владельцу после истечения durable lease.
+- Twitch VOD download, hash и multipart upload теперь имеют независимый
+  heartbeat. Ошибка БД или потеря lease отменяет HTTP/storage signal и не
+  переводит чужую попытку в retry/failure; это закрывает зависание на медленном
+  gateway между 8 MiB progress checkpoints.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

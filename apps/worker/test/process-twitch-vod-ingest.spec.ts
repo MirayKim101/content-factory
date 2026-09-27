@@ -10,6 +10,7 @@ const directories: string[] = [];
 const intentId = "00000000-0000-4000-8000-000000000001";
 
 afterEach(async () => {
+  vi.useRealTimers();
   await Promise.all(
     directories
       .splice(0)
@@ -38,6 +39,7 @@ describe("ProcessTwitchVodIngest", () => {
         totalBytes: null,
       })),
       checkpoint: vi.fn(),
+      heartbeat: vi.fn().mockResolvedValue(true),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -94,6 +96,7 @@ describe("ProcessTwitchVodIngest", () => {
         totalBytes: null,
       })),
       checkpoint: vi.fn(),
+      heartbeat: vi.fn().mockResolvedValue(true),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -155,6 +158,7 @@ describe("ProcessTwitchVodIngest", () => {
         totalBytes: BigInt(bytes.length),
       })),
       checkpoint: vi.fn(),
+      heartbeat: vi.fn().mockResolvedValue(true),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -173,5 +177,62 @@ describe("ProcessTwitchVodIngest", () => {
     await processor.execute("w");
     expect(media.open).not.toHaveBeenCalled();
     expect(repository.complete).toHaveBeenCalledOnce();
+  });
+
+  it("aborts a stalled transfer when its lease heartbeat cannot be retained", async () => {
+    vi.useFakeTimers();
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "c",
+        providerVideoId: "1",
+        projectName: "x",
+        attemptCount: 1,
+        leaseOwner: "w",
+        downloadedBytes: 0n,
+        totalBytes: null,
+      })),
+      heartbeat: vi.fn().mockRejectedValue(new Error("database offline")),
+      checkpoint: vi.fn(),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = {
+      open: vi.fn(
+        async (_id: string, _offset: bigint, signal: AbortSignal) => ({
+          body: new ReadableStream<Uint8Array>({
+            start(controller) {
+              signal.addEventListener(
+                "abort",
+                () => controller.error(signal.reason),
+                { once: true },
+              );
+            },
+          }),
+          contentType: "video/mp4" as const,
+          totalSizeBytes: 100n,
+          offset: 0n,
+        }),
+      ),
+    };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      { upload: vi.fn() } as never,
+      scratch,
+      1_000n,
+      3_000,
+    );
+
+    const processing = processor.execute("w");
+    await vi.waitFor(() => expect(repository.checkpoint).toHaveBeenCalled());
+    await vi.advanceTimersByTimeAsync(1_000);
+
+    await expect(processing).resolves.toBe(false);
+    expect(repository.fail).not.toHaveBeenCalled();
+    expect(repository.complete).not.toHaveBeenCalled();
   });
 });

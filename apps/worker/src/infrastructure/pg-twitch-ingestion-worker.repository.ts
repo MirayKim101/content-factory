@@ -146,6 +146,23 @@ export class PgTwitchIngestionWorkerRepository
     );
   }
 
+  async heartbeat(
+    id: string,
+    workerId: string,
+    leaseMs: number,
+  ): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "TwitchVodIngestIntent"
+          SET "leaseExpiresAt" = now() + ($3 * interval '1 millisecond'),
+              "updatedAt" = now()
+        WHERE "id" = $1 AND "leaseOwner" = $2
+          AND "state" IN ('DOWNLOADING','UPLOADING')
+          AND "leaseExpiresAt" > now()`,
+      [id, workerId, Math.max(5_000, leaseMs)],
+    );
+    return result.rowCount === 1;
+  }
+
   async beginUpload(
     id: string,
     workerId: string,
