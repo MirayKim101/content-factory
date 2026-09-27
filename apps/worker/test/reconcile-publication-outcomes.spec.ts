@@ -139,6 +139,52 @@ describe("ReconcilePublicationOutcomes", () => {
     );
   });
 
+  it("heartbeats later claims while they wait for sequential provider polling", async () => {
+    vi.useFakeTimers();
+    try {
+      const second = { ...claim, id: "00000000-0000-4000-8000-000000000009" };
+      const repo = repository();
+      vi.mocked(repo.unknownRemoteOutcomes).mockResolvedValue([claim, second]);
+      let finishFirst: (() => void) | undefined;
+      const provider = {
+        platform: "YOUTUBE" as const,
+        publish: vi.fn(),
+        reconcile: vi
+          .fn()
+          .mockImplementationOnce(
+            () =>
+              new Promise<{ state: "PENDING"; remoteStatus: string }>(
+                (resolve) => {
+                  finishFirst = () =>
+                    resolve({ state: "PENDING", remoteStatus: "processing" });
+                },
+              ),
+          )
+          .mockResolvedValueOnce({
+            state: "PENDING" as const,
+            remoteStatus: "processing",
+          }),
+      };
+
+      const execution = new ReconcilePublicationOutcomes(repo, [
+        provider,
+      ]).execute();
+      await vi.advanceTimersByTimeAsync(30_000);
+
+      expect(repo.heartbeatReconciliationClaim).toHaveBeenCalledWith(
+        second,
+        expect.any(Date),
+      );
+      expect(provider.reconcile).toHaveBeenCalledTimes(1);
+
+      finishFirst?.();
+      await expect(execution).resolves.toBe(2);
+      expect(provider.reconcile).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("aborts provider reconciliation and leaves cleanup to the new lease owner", async () => {
     vi.useFakeTimers();
     try {

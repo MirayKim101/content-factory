@@ -27,6 +27,12 @@ export class ReconcilePublicationOutcomes {
       limit,
     );
     let reconciled = 0;
+    const pending: Array<{
+      claim: PublicationReconciliationClaim;
+      reconcile: NonNullable<PublicationProvider["reconcile"]>;
+      abortController: AbortController;
+      heartbeat: ReturnType<typeof setInterval>;
+    }> = [];
     for (const claim of claims) {
       const provider = this.providers.find(
         (candidate) =>
@@ -40,13 +46,22 @@ export class ReconcilePublicationOutcomes {
       }
       const abortController = new AbortController();
       const heartbeat = this.startHeartbeat(claim, abortController);
+      pending.push({
+        claim,
+        reconcile: provider.reconcile.bind(provider),
+        abortController,
+        heartbeat,
+      });
+    }
+    for (const context of pending) {
+      const { claim, reconcile, abortController, heartbeat } = context;
       const deadline = createAbortDeadline(
         abortController.signal,
         this.attemptTimeoutMs,
         "PUBLICATION_RECONCILIATION_TIMEOUT",
       );
       try {
-        const result = await provider.reconcile(claim, deadline.signal);
+        const result = await reconcile(claim, deadline.signal);
         let applied: boolean;
         if (result.state === "PENDING")
           applied = await this.repository.refreshUnknownRemoteState(

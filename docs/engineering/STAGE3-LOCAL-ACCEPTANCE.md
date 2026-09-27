@@ -106,13 +106,16 @@
 - Scheduled publication reconciliation изолирует ошибку каждого intent:
   повреждённая запись не блокирует остальные due-публикации и последующие
   outcome/metrics проходы того же цикла; batch-query error остаётся видимым.
+- Все захваченные remote-outcome claims начинают heartbeat до последовательного
+  provider polling. Поздняя запись в batch больше не теряет двухминутный lease,
+  пока ждёт предыдущую, и не может параллельно попасть второму worker.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  273/273 unit tests
+Worker:  274/274 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
