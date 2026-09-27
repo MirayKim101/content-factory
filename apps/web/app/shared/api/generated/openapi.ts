@@ -613,7 +613,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations["ClipGenerationController_list"];
     put?: never;
     post: operations["ClipGenerationController_create"];
     delete?: never;
@@ -5247,6 +5247,26 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["AssemblyRenderListResponseDto"];
         };
+      };
+    };
+  };
+  ClipGenerationController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        projectId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Recent clip generation intents */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

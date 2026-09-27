@@ -9374,6 +9374,25 @@
       }
     },
     "/api/v1/projects/{projectId}/clip-generations": {
+      "get": {
+        "operationId": "ClipGenerationController_list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent clip generation intents"
+          }
+        },
+        "tags": ["clip-generation"]
+      },
       "post": {
         "operationId": "ClipGenerationController_create",
         "parameters": [

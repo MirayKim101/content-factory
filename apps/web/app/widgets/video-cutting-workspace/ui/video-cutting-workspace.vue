@@ -20,6 +20,7 @@ import {
   MediaPipelineApiError,
 } from "~/shared/api/media-pipeline";
 import { formatDisplayTimecode } from "~/shared/lib/timecode";
+import ClipSuggestionsPanel from "~/features/clip-generation/ui/clip-suggestions-panel.vue";
 
 const route = useRoute();
 const projectIdSchema = z.uuid();
@@ -144,6 +145,19 @@ function setMarker(field: "startText" | "endText"): void {
 
 function onTimeUpdate(): void {
   currentMs.value = Math.round((player.value?.currentTime ?? 0) * 1_000);
+}
+
+function seekTo(milliseconds: number): void {
+  if (!player.value) return;
+  player.value.currentTime = milliseconds / 1_000;
+  void player.value.play().catch(() => undefined);
+}
+
+function showAcceptedJobs(ids: string[]): void {
+  void navigateTo({
+    path: "/cuts",
+    query: { projectId: projectId.value, jobs: ids.join(",") },
+  });
 }
 
 async function submit(): Promise<void> {
@@ -396,6 +410,13 @@ async function submit(): Promise<void> {
           </p>
         </form>
       </div>
+
+      <ClipSuggestionsPanel
+        v-if="authorizationCleared && durationMs !== undefined && projectId"
+        :project-id="projectId"
+        @seek="seekTo"
+        @accepted="showAcceptedJobs"
+      />
 
       <section v-if="jobIds.length" class="jobs" aria-labelledby="jobs-title">
         <h2 id="jobs-title">Задания обработки</h2>

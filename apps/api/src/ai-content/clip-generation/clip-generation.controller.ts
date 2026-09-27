@@ -102,6 +102,16 @@ export class ClipGenerationController implements OnModuleDestroy {
     return this.service.detail(intentId);
   }
 
+  @Get("projects/:projectId/clip-generations")
+  @ApiParam({ name: "projectId", format: "uuid" })
+  @ApiOkResponse({ description: "Recent clip generation intents" })
+  list(
+    @Param("projectId", new ParseUUIDPipe({ version: "4" })) projectId: string,
+  ) {
+    this.requireEnabled();
+    return this.service.list(projectId).then((items) => ({ items }));
+  }
+
   @Post("clip-generations/:intentId/accept")
   @ApiParam({ name: "intentId", format: "uuid" })
   @ApiHeader({ name: "Idempotency-Key", required: true })

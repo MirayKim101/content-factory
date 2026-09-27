@@ -101,6 +101,15 @@ export class ClipGenerationService {
     return rows[0];
   }
 
+  async list(projectId: string) {
+    return this.prisma.$queryRaw<Array<Record<string, unknown>>>(Prisma.sql`
+      SELECT i."id", i."projectId", i."state"::text, i."provider", i."model", i."failureCode", i."failureMessage", i."createdAt", i."updatedAt",
+        COALESCE(jsonb_agg(jsonb_build_object('id',s."id",'ordinal',s."ordinal",'startMs',s."startMs",'endMs',s."endMs",'title',s."title",'rationale',s."rationale",'confidenceBasisPoints',s."confidenceBasisPoints") ORDER BY s."ordinal") FILTER (WHERE s."id" IS NOT NULL),'[]'::jsonb) AS "suggestions"
+      FROM "ClipGenerationIntent" i LEFT JOIN "ClipGenerationSuggestion" s ON s."intentId"=i."id"
+      WHERE i."projectId"=${projectId}::uuid GROUP BY i."id"
+      ORDER BY i."createdAt" DESC, i."id" DESC LIMIT 20`);
+  }
+
   async resolveAcceptance(intentId: string, suggestionIds: readonly string[]) {
     if (
       suggestionIds.length < 1 ||
