@@ -36,6 +36,7 @@ import { PgTranscriptWorker } from "./infrastructure/pg-transcript-worker.js";
 import { PgResearchWorker } from "./infrastructure/pg-research-worker.js";
 import { PgImageSuggestionWorker } from "./infrastructure/pg-image-suggestion-worker.js";
 import { ProcessPublicationIntent } from "./application/process-publication-intent.js";
+import { BoundedPublicationProvider } from "./application/bounded-publication-provider.js";
 import { ReconcilePublicationOutcomes } from "./application/reconcile-publication-outcomes.js";
 import { CollectPublicationMetrics } from "./application/collect-publication-metrics.js";
 import { LocalDryRunPublicationAdapter } from "./infrastructure/local-dry-run-publication-adapter.js";
@@ -360,16 +361,19 @@ async function startPublicationWorker(): Promise<void> {
       config.storage,
     );
     providers.push(
-      new YoutubePublicationAdapter(
-        new GoogleOAuthAccessTokenResolver(
-          youtube.clientId,
-          youtube.clientSecret,
-          youtube.credentials,
+      new BoundedPublicationProvider(
+        new YoutubePublicationAdapter(
+          new GoogleOAuthAccessTokenResolver(
+            youtube.clientId,
+            youtube.clientSecret,
+            youtube.credentials,
+          ),
+          storage,
+          sessionRepository,
+          new PublicationSessionCipher(youtube.currentKeyVersion, youtube.keys),
+          new YoutubeResumableTransport(),
         ),
-        storage,
-        sessionRepository,
-        new PublicationSessionCipher(youtube.currentKeyVersion, youtube.keys),
-        new YoutubeResumableTransport(),
+        1,
       ),
     );
     externalClosers.push(
@@ -387,16 +391,19 @@ async function startPublicationWorker(): Promise<void> {
       config.storage,
     );
     providers.push(
-      new TikTokPublicationAdapter(
-        new TikTokOAuthAccessTokenResolver(
-          tiktok.clientKey,
-          tiktok.clientSecret,
-          tiktok.credentials,
+      new BoundedPublicationProvider(
+        new TikTokPublicationAdapter(
+          new TikTokOAuthAccessTokenResolver(
+            tiktok.clientKey,
+            tiktok.clientSecret,
+            tiktok.credentials,
+          ),
+          storage,
+          sessionRepository,
+          new PublicationSessionCipher(tiktok.currentKeyVersion, tiktok.keys),
+          new TikTokDirectPostTransport(),
         ),
-        storage,
-        sessionRepository,
-        new PublicationSessionCipher(tiktok.currentKeyVersion, tiktok.keys),
-        new TikTokDirectPostTransport(),
+        1,
       ),
     );
     externalClosers.push(

@@ -353,3 +353,10 @@ provider request: upload attempt ограничен 30 минутами, reconci
 обычном timeout resumable upload возвращается в bounded retry, reconciliation
 claim освобождается. После изменения прошли worker `241/241`, typecheck, lint и
 production build.
+
+YouTube и TikTok adapters теперь обёрнуты отдельными provider pools с
+concurrency 1. Ожидающий permit request удаляется из очереди при abort, поэтому
+lease-loss/deadline не оставляет скрытый вызов, который позднее выполнит внешний
+POST. Optional reconciliation/metrics capabilities сохраняются только если их
+реально предоставляет adapter. После изменения прошли worker `245/245`,
+typecheck, lint и production build.

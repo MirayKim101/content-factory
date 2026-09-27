@@ -24,12 +24,14 @@
 - Publication uploads имеют 30-минутный bounded attempt deadline, status
   reconciliation — 60-секундный deadline; lease-loss по-прежнему имеет
   приоритет и не позволяет старому worker менять durable state.
+- YouTube и TikTok работают через независимые abort-aware provider pools с
+  concurrency 1; очередь одного provider не потребляет permit другого.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     232/232 unit tests
-Worker:  241/241 unit tests
+Worker:  245/245 unit tests
 Web:     248/248 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
