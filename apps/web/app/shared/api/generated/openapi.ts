@@ -1009,6 +1009,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/publications/{id}/retry": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["PublicationController_retry"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/research-suggestions/{researchIntentId}": {
     parameters: {
       query?: never;
@@ -1227,6 +1243,22 @@ export interface paths {
     get: operations["TwitchIngestionController_vodImport"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/twitch/vod-imports/{id}/retry": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["TwitchIngestionController_retryVodImport"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3081,6 +3113,8 @@ export interface components {
       /** Format: uuid */
       id: string;
       ingestDelaySeconds: number;
+      /** Format: date-time */
+      lastIngestClaimedAt: string | null;
       /** Format: date-time */
       lastOfflineAt: string | null;
       /** Format: date-time */
@@ -6424,6 +6458,25 @@ export interface operations {
       };
     };
   };
+  PublicationController_retry: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationIntentResponseDto"];
+        };
+      };
+    };
+  };
   ResearchController_detail: {
     parameters: {
       query?: never;
@@ -6803,6 +6856,25 @@ export interface operations {
     };
   };
   TwitchIngestionController_vodImport: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TwitchVodIngestIntentResponseDto"];
+        };
+      };
+    };
+  };
+  TwitchIngestionController_retryVodImport: {
     parameters: {
       query?: never;
       header?: never;

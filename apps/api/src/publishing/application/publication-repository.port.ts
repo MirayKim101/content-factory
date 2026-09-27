@@ -53,4 +53,5 @@ export interface PublicationRepository {
     limit: number;
   }): Promise<PublicationIntentView[]>;
   cancel(id: string, now: Date): Promise<PublicationIntentView>;
+  retry(id: string, now: Date): Promise<PublicationIntentView>;
 }

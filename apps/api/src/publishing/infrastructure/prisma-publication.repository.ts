@@ -9,6 +9,7 @@ import {
   PublicationCursorInvalidError,
   PublicationIdempotencyConflictError,
   PublicationLineageInvalidError,
+  PublicationRetryConflictError,
   type PublicationIntentView,
 } from "../domain/publication.js";
 
@@ -158,6 +159,50 @@ export class PrismaPublicationRepository implements PublicationRepository {
       });
       if (!canceled) throw new PublicationLineageInvalidError();
       return this.map(canceled);
+    });
+  }
+
+  async retry(id: string, now: Date): Promise<PublicationIntentView> {
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.publicationIntent.findUnique({
+        where: { id },
+        include: { result: true, providerSession: true, channel: true },
+      });
+      if (!row) throw new PublicationLineageInvalidError();
+      if (
+        row.state !== "FAILED_FINAL" ||
+        row.remotePublicationId !== null ||
+        row.result !== null ||
+        row.providerSession !== null ||
+        row.channel.state !== "ENABLED"
+      )
+        throw new PublicationRetryConflictError();
+      const updated = await tx.publicationIntent.updateMany({
+        where: {
+          id,
+          state: "FAILED_FINAL",
+          remotePublicationId: null,
+          result: { is: null },
+          providerSession: { is: null },
+        },
+        data: {
+          state: "QUEUED",
+          scheduledAt: now,
+          attemptCount: 0,
+          failureCode: null,
+          failureMessage: null,
+          queuedAt: now,
+          startedAt: null,
+          finishedAt: null,
+        },
+      });
+      if (updated.count !== 1) throw new PublicationRetryConflictError();
+      const retried = await tx.publicationIntent.findUnique({
+        where: { id },
+        include: intentInclude,
+      });
+      if (!retried) throw new PublicationLineageInvalidError();
+      return this.map(retried);
     });
   }
 

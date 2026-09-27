@@ -24,6 +24,45 @@ function channel() {
 }
 
 describe("publications api", () => {
+  it("requests a publication retry without creating a second intent", async () => {
+    const failed = {
+      ...channel(),
+      id: intentId,
+      channelId,
+      contentKind: "EDITORIAL_EXPORT",
+      approvalId: null,
+      exportIntentId: null,
+      exportResultId: null,
+      verticalApprovalId: null,
+      verticalResultId: null,
+      scheduledAt: "2026-09-28T12:00:00.000Z",
+      metadataSnapshot: {},
+      state: "QUEUED",
+      attemptCount: 0,
+      retryBudget: 3,
+      remotePublicationId: null,
+      remoteStatus: null,
+      failure: null,
+      latestMetrics: null,
+    };
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify(failed), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+
+    await createPublicationsApi("/api/v1", fetchMock as typeof fetch).retry(
+      intentId,
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/publications/${intentId}/retry`,
+      { method: "POST" },
+    );
+  });
+
   it("loads bounded TikTok creator capabilities without credentials", async () => {
     const fetchMock = vi.fn(
       async () =>

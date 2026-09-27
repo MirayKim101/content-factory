@@ -216,6 +216,13 @@ export function createPublicationsApi(
         { method: "POST" },
         intentSchema,
       ),
+    retry: (id: string) =>
+      request(
+        fetchImplementation,
+        `${basePath}/publications/${encodeURIComponent(id)}/retry`,
+        { method: "POST" },
+        intentSchema,
+      ),
   };
 }
 

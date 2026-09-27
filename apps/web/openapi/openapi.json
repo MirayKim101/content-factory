@@ -11032,6 +11032,25 @@
         "tags": ["publishing"]
       }
     },
+    "/api/v1/publications/{id}/retry": {
+      "post": {
+        "operationId": "PublicationController_retry",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationIntentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      }
+    },
     "/api/v1/research-suggestions/{researchIntentId}": {
       "get": {
         "operationId": "ResearchController_detail",

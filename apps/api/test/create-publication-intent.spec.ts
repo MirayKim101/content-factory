@@ -29,6 +29,7 @@ function repository(): PublicationRepository {
     get: vi.fn(),
     listProject: vi.fn(),
     cancel: vi.fn(),
+    retry: vi.fn(),
   };
 }
 function dispatcher() {

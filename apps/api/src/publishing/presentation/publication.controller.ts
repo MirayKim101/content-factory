@@ -25,6 +25,7 @@ import {
 
 import { CreatePublicationIntent } from "../application/create-publication-intent.js";
 import { GetTikTokCreatorInfo } from "../application/get-tiktok-creator-info.js";
+import { RetryPublicationIntent } from "../application/retry-publication-intent.js";
 import {
   CreatePublicationChannel,
   ListPublicationChannels,
@@ -41,6 +42,7 @@ import {
   PublicationIdempotencyConflictError,
   PublicationLineageInvalidError,
   PublicationMetadataInvalidError,
+  PublicationRetryConflictError,
   PublicationNotFoundError,
   PublicationScheduleInvalidError,
   PublicationTimezoneInvalidError,
@@ -71,6 +73,7 @@ export class PublicationController {
     private readonly getIntent: GetPublicationIntent,
     private readonly listIntents: ListPublicationIntents,
     private readonly cancelIntent: CancelPublicationIntent,
+    private readonly retryIntent: RetryPublicationIntent,
     private readonly getTikTokCreatorInfo: GetTikTokCreatorInfo,
   ) {}
 
@@ -182,6 +185,16 @@ export class PublicationController {
     }
   }
 
+  @Post("publications/:id/retry")
+  @ApiOkResponse({ type: PublicationIntentResponseDto })
+  async retry(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
+    try {
+      return publicationIntentResponse(await this.retryIntent.execute(id));
+    } catch (error) {
+      this.rethrow(error);
+    }
+  }
+
   private rethrow(error: unknown): never {
     if (error instanceof HttpException) throw error;
     if (error instanceof PublishingUnavailableError)
@@ -213,6 +226,7 @@ export class PublicationController {
       error instanceof PublicationIdempotencyConflictError ||
       error instanceof PublicationChannelConflictError ||
       error instanceof PublicationCancellationConflictError ||
+      error instanceof PublicationRetryConflictError ||
       error instanceof PublicationLineageInvalidError
     )
       throw new ConflictException({

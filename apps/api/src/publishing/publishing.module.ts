@@ -4,6 +4,7 @@ import { publishingAdmissionEnabled } from "../config/environment.js";
 import { ProjectsModule } from "../projects/projects.module.js";
 import { CreatePublicationIntent } from "./application/create-publication-intent.js";
 import { GetTikTokCreatorInfo } from "./application/get-tiktok-creator-info.js";
+import { RetryPublicationIntent } from "./application/retry-publication-intent.js";
 import {
   CreatePublicationChannel,
   ListPublicationChannels,
@@ -37,6 +38,7 @@ import { BullMqPublicationDispatch } from "./infrastructure/bullmq-publication-d
     GetPublicationIntent,
     ListPublicationIntents,
     CancelPublicationIntent,
+    RetryPublicationIntent,
     {
       provide: PUBLICATION_REPOSITORY,
       useExisting: PrismaPublicationRepository,

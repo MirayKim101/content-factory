@@ -304,3 +304,17 @@ remote сейчас подтверждён только до `b0b00f1`. Лока
 `tmp/restored-runtime/frames-acceptance/state/evidence.json` (ignored, mode
 0600). Перед следующим recovery check сохранить current manual ZIP checksum;
 все агенты закончили текущие задачи.
+
+## Stage 3 publication recovery checkpoint (28 сентября)
+
+Оператор теперь может повторно поставить публикацию в очередь после
+`FAILED_FINAL` через `POST /api/v1/publications/:id/retry` или кнопку
+«Повторить». Retry fail-closed: он доступен только без remote publication ID,
+готового результата и незавершённой provider session; `UNKNOWN_REMOTE_STATE`
+по-прежнему требует сверки с площадкой и никогда не переотправляется. Повтор
+снова проверяет общий и provider-specific feature flags, сбрасывает только
+bounded attempt budget и использует существующий intent, не создавая второй.
+
+После изменения прошли API `229/229`, web `246/246`, typecheck, lint, production
+build и двусторонняя проверка OpenAPI drift. Локально API работает на 3001, UI
+на 3100; порт 3000 не использовался.

@@ -56,6 +56,7 @@ export class PublicationLineageInvalidError extends Error {}
 export class PublicationNotFoundError extends Error {}
 export class PublicationCursorInvalidError extends Error {}
 export class PublicationCancellationConflictError extends Error {}
+export class PublicationRetryConflictError extends Error {}
 export class PublicationChannelConflictError extends Error {}
 export class TikTokCreatorInfoUnavailableError extends Error {}
 

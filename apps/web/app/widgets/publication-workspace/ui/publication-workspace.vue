@@ -384,6 +384,24 @@ async function cancel(item: PublicationIntent): Promise<void> {
     saving.value = false;
   }
 }
+async function retry(item: PublicationIntent): Promise<void> {
+  if (saving.value || item.state !== "FAILED_FINAL") return;
+  saving.value = true;
+  error.value = null;
+  notice.value = null;
+  try {
+    await publicationsApi.retry(item.id);
+    notice.value = "Публикация снова поставлена в очередь.";
+    await loadWorkspace();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error
+        ? cause.message
+        : "Не удалось повторить публикацию.";
+  } finally {
+    saving.value = false;
+  }
+}
 function projectName(id: string): string {
   return projects.value.find((item) => item.id === id)?.name ?? "Публикация";
 }
@@ -586,6 +604,15 @@ onUnmounted(() => {
               :disabled="saving"
               @click="cancel(item)"
               >Отменить</Button
+            >
+            <Button
+              v-else-if="
+                item.state === 'FAILED_FINAL' && !item.remotePublicationId
+              "
+              severity="secondary"
+              :disabled="saving"
+              @click="retry(item)"
+              >Повторить</Button
             >
           </article>
         </div>
