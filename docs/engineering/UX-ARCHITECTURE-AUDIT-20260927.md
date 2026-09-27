@@ -40,7 +40,7 @@ CRM-паттерны применяются к производственном�
 | Навык/инструмент | Когда нужен | Текущее состояние |
 | --- | --- | --- |
 | Обычная работа с кодом, тестами и Git | Весь pre-Twitch MVP | Доступно, отдельный skill не нужен |
-| `computer-use` | Визуальная проверка 3100 на desktop/mobile и keyboard flow | Skill прочитан, но callable `node_repl` в текущей сессии отсутствует |
+| `computer-use` | Визуальная проверка 3100 на desktop/mobile и keyboard flow | Skill прочитан; при недоступном callable backend выполнен локальный Chromium render fallback |
 | Browser E2E | Повторяемый smoke критических операторских сценариев | В проекте нет настроенного Playwright/Cypress gate; добавлять зависимость перед релизом без отдельного решения рискованно |
 | `imagegen` | Только для будущих bitmap assets или эталонных обложек | Доступно, для code-native CRM UI не требуется |
 | Security review/plugin | Перед внешней Stage 3 интеграцией и хранением credentials | Отдельный security plugin не установлен; текущие локальные gates остаются обязательными |
@@ -56,12 +56,12 @@ ADR и handoff. Дублирование быстро разойдётся с au
 1. Реальный одинаковый manual/assisted operator benchmark по
    `STAGE2B6-OPERATOR-ACCEPTANCE.md` требует человека: это измерение внимания и
    решения, его нельзя честно заменить unit-тестом.
-2. Визуальный browser smoke сейчас нельзя выполнить через `computer-use`, потому
-   что в сессии нет callable browser/node-repl backend. HTTP, component tests и
-   build проверяют код, но не заменяют визуальную приёмку.
-3. Даты автоматической публикации, календарь каналов и provider status относятся
-   к Stage 3. До появления domain model/API показывать их как работающую функцию
-   означало бы создать недостоверный UI.
+2. Полный keyboard/screen-reader smoke всё ещё требует человека или browser E2E
+   harness. Desktop/mobile Chromium render выполнен, но он не измеряет качество
+   операторского решения и assistive-technology flow.
+3. Реальные Twitch media bytes и provider publication canary требуют выбранного
+   gateway deployment и production OAuth credentials. Локальные Stage 3 paths
+   остаются default-off и доказаны только через dry-run/adapter acceptance.
 
 Остальная pre-Twitch техническая работа может продолжаться автономно при
 сохранённых default-off admission flags и портах UI 3100 / API 3001.

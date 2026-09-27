@@ -48,6 +48,9 @@
 - История публикаций загружается ограниченными cursor-страницами; оператор
   может открыть более ранние записи, а фоновое обновление не удаляет уже
   загруженную историю.
+- Селекторы проектов в Twitch, vertical, publication и montage workspaces
+  проходят все contract-sized cursor-страницы по 50 записей; проекты после
+  первой страницы больше не исчезают из операторского UI.
 - Publication channel можно отозвать из UI/API. Serializable revoke сохраняет
   историю, атомарно отменяет `SCHEDULED`/`QUEUED`, не маскирует уже начатый
   remote attempt и не допускает межпроектный revoke.
@@ -64,7 +67,7 @@
 API:     234/234 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  259/259 unit tests
-Web:     251/251 tests
+Web:     252/252 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints
@@ -74,6 +77,11 @@ Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints
 drift checks, API/worker/web typecheck и lint, API/worker/web production builds,
 Docker Compose config validation и runtime health на API 3001/UI 3100. Порт
 3000 не используется.
+
+Publication workspace дополнительно проверен реальным Chromium render на
+desktop и узком layout: проект загружается без ложной ошибки валидации,
+сводные карточки и форма переходят в одну колонку, длинное имя проекта не
+растягивает страницу.
 
 Publication repository дополнительно воспроизведён на отдельной базе, созданной
 из всех migration SQL: exact idempotent replay/conflict, atomic channel revoke,

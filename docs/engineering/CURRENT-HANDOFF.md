@@ -447,3 +447,12 @@ cleanup, operator resolution, retry и remote-ID fence. Проверка `1/1` �
 session и переводит intent в `FAILED_FINAL`; UI требует отдельное подтверждение,
 после чего доступен уже существующий подтверждаемый retry. API `234/234`, web
 `251/251`; OpenAPI regenerated.
+
+Stage 3 project selectors больше не запрашивают запрещённый API limit `100`:
+общий cursor paginator читает contract-sized страницы по 50 записей и
+используется в Twitch, vertical и publication workspaces. Это устранило ложную
+ошибку загрузки publication UI и вернуло проекты за первой страницей. Тот же
+фикс применён к montage workspace. Длинные названия проекта и summary cards
+получили mobile min-width/ellipsis guards. Реальный Chromium render на 3100
+проверен в desktop и узком layout; web `252/252`, typecheck, lint и production
+build прошли. Порт 3000 не использовался.
