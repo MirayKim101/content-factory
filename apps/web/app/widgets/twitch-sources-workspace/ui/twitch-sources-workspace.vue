@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
+import Select from "primevue/select";
 import { computed, onMounted, ref } from "vue";
 
+import { createProjectsApi } from "~/shared/api/projects";
 import {
   createTwitchSourcesApi,
   type TwitchSourceChannel,
@@ -11,8 +13,13 @@ import {
 
 const config = useRuntimeConfig();
 const api = createTwitchSourcesApi(config.public.apiBasePath);
+const projectsApi = createProjectsApi({
+  apiBasePath: config.public.apiBasePath,
+});
 const channels = ref<TwitchSourceChannel[]>([]);
 const vodCandidates = ref<TwitchVodCandidate[]>([]);
+const sourceReadyProjects = ref<{ label: string; value: string }[]>([]);
+const selectedProjects = ref<Record<string, string>>({});
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
@@ -45,10 +52,17 @@ async function load() {
   loading.value = true;
   error.value = null;
   try {
-    [channels.value, vodCandidates.value] = await Promise.all([
+    const [nextChannels, nextVodCandidates, projectPage] = await Promise.all([
       api.list(),
       api.listVodCandidates(),
+      projectsApi.listProjects!({ status: "SOURCE_READY", limit: 100 }),
     ]);
+    channels.value = nextChannels;
+    vodCandidates.value = nextVodCandidates;
+    sourceReadyProjects.value = projectPage.items.map((project) => ({
+      label: project.name,
+      value: project.id,
+    }));
   } catch (cause) {
     error.value =
       cause instanceof Error
@@ -56,6 +70,23 @@ async function load() {
         : "Не удалось загрузить источники.";
   } finally {
     loading.value = false;
+  }
+}
+async function linkProject(item: TwitchVodCandidate) {
+  const projectId = selectedProjects.value[item.id];
+  if (!projectId || saving.value) return;
+  saving.value = true;
+  error.value = null;
+  notice.value = null;
+  try {
+    await api.linkVodProject(item.id, projectId);
+    notice.value = "Запись Twitch привязана к проекту.";
+    await load();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Не удалось привязать проект.";
+  } finally {
+    saving.value = false;
   }
 }
 async function save() {
@@ -260,10 +291,31 @@ onMounted(load);
                 {{ formatDuration(vod.durationSeconds) }}</small
               >
             </div>
-            <p v-if="vod.state === 'READY_FOR_INGEST'" class="ingest-note">
-              Метаданные готовы. Для загрузки медиа требуется настроенный
-              provider adapter.
-            </p>
+            <div v-if="vod.state === 'READY_FOR_INGEST'" class="ingest-action">
+              <p class="ingest-note">
+                Выберите уже загруженный исходник этой записи. Автозагрузка
+                появится после подключения media provider.
+              </p>
+              <div v-if="sourceReadyProjects.length" class="project-linker">
+                <Select
+                  v-model="selectedProjects[vod.id]"
+                  :options="sourceReadyProjects"
+                  option-label="label"
+                  option-value="value"
+                  placeholder="Выберите проект"
+                  aria-label="Проект с исходником записи"
+                />
+                <Button
+                  :disabled="saving || !selectedProjects[vod.id]"
+                  @click="linkProject(vod)"
+                  >Привязать</Button
+                >
+              </div>
+              <small v-else>
+                Нет свободных проектов с готовым исходником. Загрузите видео в
+                медиатеку, затем вернитесь сюда.
+              </small>
+            </div>
             <NuxtLink
               v-else-if="vod.importedProjectId"
               :to="`/horizontal?projectIds=${vod.importedProjectId}`"
@@ -436,8 +488,17 @@ h3 {
   color: var(--cf-text-muted);
 }
 .ingest-note {
-  align-self: center;
   font-size: 0.78rem;
+}
+.ingest-action {
+  display: grid;
+  gap: 0.65rem;
+  align-self: center;
+}
+.project-linker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
 }
 .vod-status[data-state="WAITING_DELAY"] {
   background: var(--cf-warning-soft);
