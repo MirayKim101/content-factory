@@ -18,6 +18,7 @@ function repository(
   return {
     createChannel: vi.fn(),
     listChannels: vi.fn(),
+    revokeChannel: vi.fn(),
     create: vi.fn(),
     get: vi.fn(async () => intent),
     listProject: vi.fn(),

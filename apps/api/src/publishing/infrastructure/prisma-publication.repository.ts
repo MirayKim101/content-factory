@@ -10,6 +10,7 @@ import {
   PublicationIdempotencyConflictError,
   PublicationLineageInvalidError,
   PublicationRetryConflictError,
+  type PublicationChannelView,
   type PublicationIntentView,
 } from "../domain/publication.js";
 
@@ -27,7 +28,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
 
   async createChannel(
     input: Parameters<PublicationRepository["createChannel"]>[0],
-  ) {
+  ): Promise<PublicationChannelView> {
     const project = await this.prisma.project.findUnique({
       where: { id: input.projectId },
       select: { id: true },
@@ -48,7 +49,12 @@ export class PrismaPublicationRepository implements PublicationRepository {
         existing.timezone !== input.timezone
       )
         throw new PublicationChannelConflictError();
-      return existing;
+      return existing.state === "REVOKED"
+        ? this.prisma.publicationChannel.update({
+            where: { id: existing.id },
+            data: { state: "ENABLED" },
+          })
+        : existing;
     }
     try {
       return await this.prisma.publicationChannel.create({ data: input });
@@ -80,6 +86,60 @@ export class PrismaPublicationRepository implements PublicationRepository {
       where: { projectId },
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     });
+  }
+
+  revokeChannel(projectId: string, channelId: string, now: Date) {
+    return this.revokeChannelWithRetry(projectId, channelId, now, 0);
+  }
+
+  private async revokeChannelWithRetry(
+    projectId: string,
+    channelId: string,
+    now: Date,
+    conflictCount: number,
+  ): Promise<PublicationChannelView | null> {
+    try {
+      return await this.prisma.$transaction(
+        async (tx) => {
+          const channel = await tx.publicationChannel.findFirst({
+            where: { id: channelId, projectId },
+          });
+          if (!channel) return null;
+          if (channel.state === "REVOKED") return channel;
+          await tx.publicationIntent.updateMany({
+            where: {
+              channelId,
+              projectId,
+              state: { in: ["SCHEDULED", "QUEUED"] },
+            },
+            data: {
+              state: "CANCELED",
+              nextAttemptAt: null,
+              canceledAt: now,
+              finishedAt: now,
+            },
+          });
+          return tx.publicationChannel.update({
+            where: { id: channelId },
+            data: { state: "REVOKED" },
+          });
+        },
+        { isolationLevel: "Serializable" },
+      );
+    } catch (error) {
+      if (this.isRetryable(error) && conflictCount < 5) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 5 * 2 ** conflictCount),
+        );
+        return this.revokeChannelWithRetry(
+          projectId,
+          channelId,
+          now,
+          conflictCount + 1,
+        );
+      }
+      throw error;
+    }
   }
 
   async get(id: string): Promise<PublicationIntentView | null> {

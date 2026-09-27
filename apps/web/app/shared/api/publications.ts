@@ -176,6 +176,13 @@ export function createPublicationsApi(
         },
         channelSchema,
       ),
+    revokeChannel: (projectId: string, channelId: string) =>
+      request(
+        fetchImplementation,
+        `${basePath}/projects/${encodeURIComponent(projectId)}/publication-channels/${encodeURIComponent(channelId)}/revoke`,
+        { method: "POST" },
+        channelSchema,
+      ),
     getTikTokCreatorInfo: (projectId: string, channelId: string) =>
       request(
         fetchImplementation,

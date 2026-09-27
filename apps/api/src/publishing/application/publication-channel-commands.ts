@@ -78,6 +78,18 @@ export class ListPublicationChannels {
 }
 
 @Injectable()
+export class RevokePublicationChannel {
+  constructor(
+    @Inject(PUBLICATION_REPOSITORY)
+    private readonly repository: PublicationRepository,
+  ) {}
+
+  execute(projectId: string, channelId: string, now = new Date()) {
+    return this.repository.revokeChannel(projectId, channelId, now);
+  }
+}
+
+@Injectable()
 export class GetPublishingCapabilities {
   constructor(
     @Inject(PUBLISHING_ADMISSION_ENABLED)

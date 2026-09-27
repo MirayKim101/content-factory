@@ -29,6 +29,11 @@ export interface PublicationRepository {
     timezone: string;
   }): Promise<PublicationChannelView>;
   listChannels(projectId: string): Promise<PublicationChannelView[]>;
+  revokeChannel(
+    projectId: string,
+    channelId: string,
+    now: Date,
+  ): Promise<PublicationChannelView | null>;
   create(input: {
     id: string;
     idempotencyKey: string;

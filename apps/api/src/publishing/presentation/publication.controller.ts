@@ -30,6 +30,7 @@ import {
   CreatePublicationChannel,
   GetPublishingCapabilities,
   ListPublicationChannels,
+  RevokePublicationChannel,
 } from "../application/publication-channel-commands.js";
 import {
   CancelPublicationIntent,
@@ -72,6 +73,7 @@ export class PublicationController {
     private readonly createChannel: CreatePublicationChannel,
     private readonly getCapabilities: GetPublishingCapabilities,
     private readonly listChannels: ListPublicationChannels,
+    private readonly revokeChannel: RevokePublicationChannel,
     private readonly createIntent: CreatePublicationIntent,
     private readonly getIntent: GetPublicationIntent,
     private readonly listIntents: ListPublicationIntents,
@@ -109,6 +111,21 @@ export class PublicationController {
     return (await this.listChannels.execute(projectId)).map(
       publicationChannelResponse,
     );
+  }
+
+  @Post("projects/:projectId/publication-channels/:channelId/revoke")
+  @ApiOkResponse({ type: PublicationChannelResponseDto })
+  async revoke(
+    @Param("projectId", new ParseUUIDPipe({ version: "4" })) projectId: string,
+    @Param("channelId", new ParseUUIDPipe({ version: "4" })) channelId: string,
+  ) {
+    const channel = await this.revokeChannel.execute(projectId, channelId);
+    if (!channel)
+      throw new NotFoundException({
+        code: "PUBLICATION_CHANNEL_NOT_FOUND",
+        message: "Publication channel was not found.",
+      });
+    return publicationChannelResponse(channel);
   }
 
   @Get(

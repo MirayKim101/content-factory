@@ -401,3 +401,10 @@ Deadline vertical attempt теперь также передаётся в post-e
 stream или multipart upload больше не может бесконечно продлевать lease;
 timeout сохраняет partial file и идёт в bounded retry. Worker `256/256`,
 typecheck, lint и production build прошли.
+
+Добавлен operator revoke publication channel через project-scoped API и UI.
+Serializable-транзакция переводит канал в `REVOKED` и отменяет только ещё не
+начатые `SCHEDULED`/`QUEUED` intents; `PROCESSING` остаётся в штатном remote
+outcome/reconciliation контуре. Повторное создание того же exact channel
+является явной реактивацией, отменённые intents при этом не оживают. API
+`233/233`, web `250/250`; OpenAPI regenerated.

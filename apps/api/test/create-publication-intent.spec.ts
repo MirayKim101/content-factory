@@ -32,6 +32,7 @@ function repository(): PublicationRepository {
     ),
     createChannel: vi.fn(),
     listChannels: vi.fn(),
+    revokeChannel: vi.fn(),
     get: vi.fn(),
     listProject: vi.fn(),
     cancel: vi.fn(),

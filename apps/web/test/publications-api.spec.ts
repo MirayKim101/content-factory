@@ -194,6 +194,26 @@ describe("publications api", () => {
     });
   });
 
+  it("revokes a project-owned publication channel", async () => {
+    const revoked = { ...channel(), state: "REVOKED" };
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify(revoked), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+    const result = await createPublicationsApi(
+      "/api/v1",
+      fetchMock as typeof fetch,
+    ).revokeChannel(projectId, channelId);
+    expect(result.state).toBe("REVOKED");
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/projects/${projectId}/publication-channels/${channelId}/revoke`,
+      { method: "POST" },
+    );
+  });
+
   it("sends the idempotency key and translates disabled admission", async () => {
     const accepted = vi.fn(
       async () =>

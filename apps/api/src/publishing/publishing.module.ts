@@ -9,6 +9,7 @@ import {
   CreatePublicationChannel,
   GetPublishingCapabilities,
   ListPublicationChannels,
+  RevokePublicationChannel,
 } from "./application/publication-channel-commands.js";
 import {
   CancelPublicationIntent,
@@ -42,6 +43,7 @@ import {
     CreatePublicationChannel,
     GetPublishingCapabilities,
     ListPublicationChannels,
+    RevokePublicationChannel,
     GetPublicationIntent,
     ListPublicationIntents,
     CancelPublicationIntent,

@@ -356,6 +356,30 @@ async function createChannel(): Promise<void> {
     saving.value = false;
   }
 }
+async function revokeActiveChannel(): Promise<void> {
+  const channel = activeChannel.value;
+  if (!projectId.value || !channel || saving.value) return;
+  if (
+    !confirm(
+      `Отключить канал «${channel.displayName}»? Все ещё не начатые публикации этого канала будут отменены.`,
+    )
+  )
+    return;
+  saving.value = true;
+  error.value = null;
+  notice.value = null;
+  try {
+    await publicationsApi.revokeChannel(projectId.value, channel.id);
+    channelId.value = "";
+    notice.value = "Канал отключён, ожидавшие публикации отменены.";
+    await loadWorkspace();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Не удалось отключить канал.";
+  } finally {
+    saving.value = false;
+  }
+}
 async function schedule(): Promise<void> {
   currentTime.value = Date.now();
   if (!scheduleIsValid.value) {
@@ -850,6 +874,14 @@ onUnmounted(() => {
               option-label="label"
               option-value="id"
           /></label>
+          <Button
+            type="button"
+            class="revoke-channel"
+            severity="secondary"
+            :disabled="saving"
+            @click="revokeActiveChannel"
+            >Отключить выбранный канал</Button
+          >
           <label
             ><span>Формат контента</span
             ><Select

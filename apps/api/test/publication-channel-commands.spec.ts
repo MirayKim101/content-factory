@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   CreatePublicationChannel,
   GetPublishingCapabilities,
+  RevokePublicationChannel,
 } from "../src/publishing/application/publication-channel-commands.js";
 import type { PublicationRepository } from "../src/publishing/application/publication-repository.port.js";
 import {
@@ -14,6 +15,7 @@ function repository(): PublicationRepository {
   return {
     createChannel: vi.fn(async (input) => input as never),
     listChannels: vi.fn(),
+    revokeChannel: vi.fn(),
     create: vi.fn(),
     get: vi.fn(),
     listProject: vi.fn(),
@@ -102,6 +104,23 @@ describe("CreatePublicationChannel", () => {
     });
     expect(repo.createChannel).toHaveBeenCalledWith(
       expect.objectContaining({ platform: "TIKTOK" }),
+    );
+  });
+});
+
+describe("RevokePublicationChannel", () => {
+  it("scopes channel revocation to its project", async () => {
+    const repo = repository();
+    const now = new Date("2026-09-28T00:00:00.000Z");
+    await new RevokePublicationChannel(repo).execute(
+      input.projectId,
+      "00000000-0000-4000-8000-000000000002",
+      now,
+    );
+    expect(repo.revokeChannel).toHaveBeenCalledWith(
+      input.projectId,
+      "00000000-0000-4000-8000-000000000002",
+      now,
     );
   });
 });

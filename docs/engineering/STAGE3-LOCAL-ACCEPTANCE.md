@@ -34,6 +34,9 @@
 - История публикаций загружается ограниченными cursor-страницами; оператор
   может открыть более ранние записи, а фоновое обновление не удаляет уже
   загруженную историю.
+- Publication channel можно отозвать из UI/API. Serializable revoke сохраняет
+  историю, атомарно отменяет `SCHEDULED`/`QUEUED`, не маскирует уже начатый
+  remote attempt и не допускает межпроектный revoke.
 - Полный vertical attempt (download, FFmpeg и upload) ограничен двумя часами;
   timeout прерывает I/O тем же abort signal и освобождает durable lease через
   штатный bounded failure path.
@@ -44,9 +47,9 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     232/232 unit tests
+API:     233/233 unit tests
 Worker:  256/256 unit tests
-Web:     249/249 tests
+Web:     250/250 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints
