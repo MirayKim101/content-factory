@@ -215,6 +215,27 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     );
   }
 
+  async markUnknownRemoteState(
+    claim: PublicationClaim,
+    code: string,
+    message: string,
+    now: Date,
+  ): Promise<void> {
+    await this.pool.query(
+      `UPDATE "PublicationIntent"
+          SET "state" = 'UNKNOWN_REMOTE_STATE', "failureCode" = $2,
+              "failureMessage" = $3, "updatedAt" = $4
+        WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $5`,
+      [
+        claim.id,
+        code.slice(0, 120),
+        message.slice(0, 1000),
+        now,
+        claim.attemptNumber,
+      ],
+    );
+  }
+
   async due(limit = 100): Promise<string[]> {
     const result = await this.pool.query<{ id: string }>(
       `SELECT "id" FROM "PublicationIntent"

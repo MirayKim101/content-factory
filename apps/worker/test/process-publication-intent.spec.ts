@@ -5,6 +5,7 @@ import type {
   PublicationClaim,
   PublicationWorkerRepository,
 } from "../src/application/publication.port.js";
+import { PublicationOutcomeUnknownError } from "../src/application/publication.port.js";
 import {
   LOCAL_DRY_RUN_PUBLICATION_ADAPTER_VERSION,
   LocalDryRunPublicationAdapter,
@@ -24,6 +25,7 @@ function repository(): PublicationWorkerRepository {
     claim: vi.fn().mockResolvedValueOnce(claim).mockResolvedValue(null),
     finalizeDryRun: vi.fn(),
     failFinal: vi.fn(),
+    markUnknownRemoteState: vi.fn(),
   };
 }
 
@@ -61,5 +63,34 @@ describe("ProcessPublicationIntent", () => {
       expect.any(String),
       expect.any(Date),
     );
+  });
+
+  it("quarantines an ambiguous remote outcome without retrying the POST", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    const provider = {
+      platform: "YOUTUBE" as const,
+      publish: vi
+        .fn()
+        .mockRejectedValue(
+          new PublicationOutcomeUnknownError(
+            "YOUTUBE_UPLOAD_TIMEOUT",
+            "Timed out after the provider accepted the upload.",
+          ),
+        ),
+    };
+    const process = new ProcessPublicationIntent(repo, [provider]);
+
+    await expect(process.execute(remoteClaim.id)).resolves.toBe(true);
+
+    expect(repo.markUnknownRemoteState).toHaveBeenCalledWith(
+      remoteClaim,
+      "YOUTUBE_UPLOAD_TIMEOUT",
+      expect.any(String),
+      expect.any(Date),
+    );
+    expect(repo.failFinal).not.toHaveBeenCalled();
+    expect(provider.publish).toHaveBeenCalledOnce();
   });
 });

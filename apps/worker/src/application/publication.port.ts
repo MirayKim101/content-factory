@@ -31,9 +31,26 @@ export interface PublicationWorkerRepository {
     message: string,
     now: Date,
   ): Promise<void>;
+  markUnknownRemoteState(
+    claim: PublicationClaim,
+    code: string,
+    message: string,
+    now: Date,
+  ): Promise<void>;
 }
 
 export interface PublicationProvider {
   readonly platform: PublicationPlatform;
   publish(claim: PublicationClaim): Promise<PublicationAdapterResult>;
+}
+
+/** The provider may have committed remotely, so automatic POST retry is unsafe. */
+export class PublicationOutcomeUnknownError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "PublicationOutcomeUnknownError";
+  }
 }

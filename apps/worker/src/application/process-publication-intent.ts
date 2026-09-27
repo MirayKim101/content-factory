@@ -2,6 +2,7 @@ import type {
   PublicationProvider,
   PublicationWorkerRepository,
 } from "./publication.port.js";
+import { PublicationOutcomeUnknownError } from "./publication.port.js";
 
 export class ProcessPublicationIntent {
   constructor(
@@ -32,6 +33,15 @@ export class ProcessPublicationIntent {
       await this.repository.finalizeDryRun(claim, result, this.clock());
       return true;
     } catch (error) {
+      if (error instanceof PublicationOutcomeUnknownError) {
+        await this.repository.markUnknownRemoteState(
+          claim,
+          error.code,
+          error.message,
+          this.clock(),
+        );
+        return true;
+      }
       await this.repository.failFinal(
         claim,
         "PUBLICATION_DRY_RUN_FAILED",
