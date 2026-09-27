@@ -30,6 +30,8 @@ function repository(): PublicationWorkerRepository {
   return {
     claim: vi.fn().mockResolvedValueOnce(claim).mockResolvedValue(null),
     finalizeDryRun: vi.fn(),
+    finalizePublishedDirect: vi.fn(),
+    releaseForRetry: vi.fn(),
     failFinal: vi.fn(),
     markUnknownRemoteState: vi.fn(),
     unknownRemoteOutcomes: vi.fn().mockResolvedValue([]),
@@ -106,5 +108,53 @@ describe("ProcessPublicationIntent", () => {
     );
     expect(repo.failFinal).not.toHaveBeenCalled();
     expect(provider.publish).toHaveBeenCalledOnce();
+  });
+
+  it("finalizes a confirmed external upload directly", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    const result = {
+      adapterVersion: "youtube-resumable-v1",
+      providerReceipt: { videoId: "video_42" },
+      publicUrl: "https://www.youtube.com/watch?v=video_42",
+    };
+
+    await new ProcessPublicationIntent(repo, [
+      {
+        platform: "YOUTUBE",
+        publish: vi.fn().mockResolvedValue(result),
+      },
+    ]).execute(remoteClaim.id);
+
+    expect(repo.finalizePublishedDirect).toHaveBeenCalledWith(
+      remoteClaim,
+      result,
+      expect.any(Date),
+    );
+    expect(repo.finalizeDryRun).not.toHaveBeenCalled();
+  });
+
+  it("releases a resumable external failure into the bounded retry path", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+
+    await new ProcessPublicationIntent(repo, [
+      {
+        platform: "YOUTUBE",
+        publish: vi
+          .fn()
+          .mockRejectedValue(new Error("YOUTUBE_UPLOAD_FAILED_503")),
+      },
+    ]).execute(remoteClaim.id);
+
+    expect(repo.releaseForRetry).toHaveBeenCalledWith(
+      remoteClaim,
+      "PUBLICATION_PROVIDER_ATTEMPT_FAILED",
+      "YOUTUBE_UPLOAD_FAILED_503",
+      expect.any(Date),
+    );
+    expect(repo.failFinal).not.toHaveBeenCalled();
   });
 });

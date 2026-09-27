@@ -28,9 +28,14 @@ export class ProcessPublicationIntent {
     }
     try {
       const result = await provider.publish(claim);
-      if (claim.platform !== "LOCAL_DRY_RUN")
-        throw new Error("PUBLICATION_EXTERNAL_PROVIDER_NOT_ADMITTED");
-      await this.repository.finalizeDryRun(claim, result, this.clock());
+      if (claim.platform === "LOCAL_DRY_RUN")
+        await this.repository.finalizeDryRun(claim, result, this.clock());
+      else
+        await this.repository.finalizePublishedDirect(
+          claim,
+          result,
+          this.clock(),
+        );
       return true;
     } catch (error) {
       if (error instanceof PublicationOutcomeUnknownError) {
@@ -40,6 +45,15 @@ export class ProcessPublicationIntent {
           error.message,
           error.remotePublicationId,
           error.remoteStatus,
+          this.clock(),
+        );
+        return true;
+      }
+      if (claim.platform !== "LOCAL_DRY_RUN") {
+        await this.repository.releaseForRetry(
+          claim,
+          "PUBLICATION_PROVIDER_ATTEMPT_FAILED",
+          error instanceof Error ? error.message : "Provider attempt failed.",
           this.clock(),
         );
         return true;

@@ -243,6 +243,93 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     );
   }
 
+  async finalizePublishedDirect(
+    claim: PublicationClaim,
+    result: PublicationAdapterResult,
+    now: Date,
+  ): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
+      const updated = await client.query(
+        `UPDATE "PublicationIntent"
+            SET "state" = 'PUBLISHED', "remotePublicationId" = $2,
+                "remoteStatus" = 'published', "failureCode" = NULL,
+                "failureMessage" = NULL, "finishedAt" = $3, "updatedAt" = $3
+          WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $4
+            AND "platform" <> 'LOCAL_DRY_RUN'`,
+        [claim.id, remoteId(result.providerReceipt), now, claim.attemptNumber],
+      );
+      if (updated.rowCount === 1) {
+        await client.query(
+          `INSERT INTO "PublicationResult"
+            ("id", "publicationIntentId", "resultContractVersion", "adapterVersion",
+             "providerReceipt", "publicUrl", "completedAt", "createdAt")
+           VALUES (gen_random_uuid(), $1, 'publication-result-v1', $2, $3::jsonb, $4, $5, $5)
+           ON CONFLICT ("publicationIntentId") DO NOTHING`,
+          [
+            claim.id,
+            result.adapterVersion,
+            JSON.stringify(result.providerReceipt),
+            result.publicUrl,
+            now,
+          ],
+        );
+        await client.query(
+          `DELETE FROM "PublicationProviderSession" WHERE "publicationIntentId" = $1`,
+          [claim.id],
+        );
+      }
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async releaseForRetry(
+    claim: PublicationClaim,
+    code: string,
+    message: string,
+    now: Date,
+  ): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
+      const updated = await client.query<{ state: string }>(
+        `UPDATE "PublicationIntent"
+            SET "state" = CASE WHEN "attemptCount" <= "retryBudget"
+                                THEN 'QUEUED'::"PublicationIntentState"
+                                ELSE 'FAILED_FINAL'::"PublicationIntentState" END,
+                "failureCode" = $2, "failureMessage" = $3,
+                "finishedAt" = CASE WHEN "attemptCount" > "retryBudget" THEN $4 ELSE NULL END,
+                "updatedAt" = $4
+          WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $5
+          RETURNING "state"`,
+        [
+          claim.id,
+          code.slice(0, 120),
+          message.slice(0, 1000),
+          now,
+          claim.attemptNumber,
+        ],
+      );
+      if (updated.rows[0]?.state === "FAILED_FINAL")
+        await client.query(
+          `DELETE FROM "PublicationProviderSession" WHERE "publicationIntentId" = $1`,
+          [claim.id],
+        );
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   async markUnknownRemoteState(
     claim: PublicationClaim,
     code: string,
@@ -455,4 +542,11 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       [id, code, message, now],
     );
   }
+}
+
+function remoteId(receipt: Record<string, unknown>): string {
+  const value = receipt.videoId ?? receipt.publishId ?? receipt.id;
+  if (typeof value !== "string" || !value || value.length > 255)
+    throw new Error("PUBLICATION_PROVIDER_RECEIPT_INVALID");
+  return value;
 }

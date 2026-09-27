@@ -54,6 +54,17 @@ export interface PublicationWorkerRepository {
     result: PublicationAdapterResult,
     now: Date,
   ): Promise<void>;
+  finalizePublishedDirect(
+    claim: PublicationClaim,
+    result: PublicationAdapterResult,
+    now: Date,
+  ): Promise<void>;
+  releaseForRetry(
+    claim: PublicationClaim,
+    code: string,
+    message: string,
+    now: Date,
+  ): Promise<void>;
   failFinal(
     claim: PublicationClaim,
     code: string,

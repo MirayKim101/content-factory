@@ -26,6 +26,8 @@ function repository(): PublicationWorkerRepository {
   return {
     claim: vi.fn(),
     finalizeDryRun: vi.fn(),
+    finalizePublishedDirect: vi.fn(),
+    releaseForRetry: vi.fn(),
     failFinal: vi.fn(),
     markUnknownRemoteState: vi.fn(),
     unknownRemoteOutcomes: vi.fn().mockResolvedValue([claim]),
