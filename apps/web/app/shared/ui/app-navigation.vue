@@ -21,12 +21,13 @@ const navigation = [
       { to: "/horizontal", label: "Контент-план", marker: "01" },
       { to: "/library", label: "Медиатека", marker: "02" },
       { to: "/montage-assets", label: "Материалы", marker: "03" },
-      { to: "/publications", label: "Публикации", marker: "04" },
+      { to: "/vertical", label: "Вертикальные", marker: "04" },
+      { to: "/publications", label: "Публикации", marker: "05" },
     ],
   },
   {
     label: "Настройки",
-    items: [{ to: "/creator-context", label: "Профиль автора", marker: "05" }],
+    items: [{ to: "/creator-context", label: "Профиль автора", marker: "06" }],
   },
 ] as const;
 function close(restoreFocus = false): void {
