@@ -77,7 +77,7 @@ export class TwitchIngestionService {
     if (existing) {
       if (existing.requestFingerprint !== requestFingerprint)
         throw new TwitchVodIdempotencyConflictError();
-      return existing;
+      return this.serializeIngestIntent(existing);
     }
     const candidate = await this.prisma.twitchVodCandidate.findUnique({
       where: { id },
@@ -87,7 +87,7 @@ export class TwitchIngestionService {
     if (candidate.state !== "READY_FOR_INGEST" || candidate.importedProjectId)
       throw new TwitchVodConflictError();
     try {
-      return await this.prisma.twitchVodIngestIntent.create({
+      const created = await this.prisma.twitchVodIngestIntent.create({
         data: {
           id: randomUUID(),
           idempotencyKey,
@@ -96,14 +96,36 @@ export class TwitchIngestionService {
           projectName: normalizedName,
         },
       });
+      return this.serializeIngestIntent(created);
     } catch (error) {
       if (!this.isUniqueConflict(error)) throw error;
       const raced = await this.prisma.twitchVodIngestIntent.findFirst({
         where: { OR: [{ idempotencyKey }, { candidateId: id }] },
       });
-      if (raced?.requestFingerprint === requestFingerprint) return raced;
+      if (raced?.requestFingerprint === requestFingerprint)
+        return this.serializeIngestIntent(raced);
       throw new TwitchVodIdempotencyConflictError();
     }
+  }
+
+  async getVodIngest(id: string) {
+    const intent = await this.prisma.twitchVodIngestIntent.findUnique({
+      where: { id },
+    });
+    return intent ? this.serializeIngestIntent(intent) : null;
+  }
+
+  private serializeIngestIntent<
+    T extends {
+      downloadedBytes: bigint;
+      totalBytes: bigint | null;
+    },
+  >(intent: T) {
+    return {
+      ...intent,
+      downloadedBytes: intent.downloadedBytes.toString(),
+      totalBytes: intent.totalBytes?.toString() ?? null,
+    };
   }
 
   async ignoreVodCandidate(id: string) {

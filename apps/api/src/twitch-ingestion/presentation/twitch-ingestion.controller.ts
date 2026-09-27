@@ -56,6 +56,20 @@ export class TwitchIngestionController {
     return this.service.listVodCandidates();
   }
 
+  @Get("vod-imports/:id")
+  @ApiOkResponse({ type: TwitchVodIngestIntentResponseDto })
+  async vodImport(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+  ) {
+    const intent = await this.service.getVodIngest(id);
+    if (!intent)
+      throw new NotFoundException({
+        code: "TWITCH_VOD_INGEST_NOT_FOUND",
+        message: "Twitch VOD ingest was not found.",
+      });
+    return intent;
+  }
+
   @Post("vod-candidates/:id/import")
   @ApiHeader({ name: "Idempotency-Key", required: true })
   @ApiResponse({ status: 201, type: TwitchVodIngestIntentResponseDto })

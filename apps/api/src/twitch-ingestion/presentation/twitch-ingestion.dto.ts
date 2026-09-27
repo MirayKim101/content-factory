@@ -115,8 +115,8 @@ export class TwitchVodIngestIntentResponseDto {
   state!: string;
   @ApiProperty({ type: String, format: "uuid", nullable: true })
   projectId!: string | null;
-  @ApiProperty({ type: String }) downloadedBytes!: bigint;
-  @ApiProperty({ type: String, nullable: true }) totalBytes!: bigint | null;
+  @ApiProperty({ type: String }) downloadedBytes!: string;
+  @ApiProperty({ type: String, nullable: true }) totalBytes!: string | null;
   @ApiProperty({ type: Number }) attemptCount!: number;
   @ApiProperty({ type: String, nullable: true }) failureCode!: string | null;
   @ApiProperty({ type: String, nullable: true }) failureMessage!: string | null;

@@ -56,6 +56,8 @@ function repository(existingHash?: string) {
       create: vi.fn(async (input: { data: Record<string, unknown> }) => ({
         ...input.data,
         state: "QUEUED",
+        downloadedBytes: 0n,
+        totalBytes: null,
       })),
     },
     project: {
@@ -120,6 +122,7 @@ describe("TwitchIngestionService", () => {
       expect(result).toMatchObject({
         projectName: "Creator stream",
         state: "QUEUED",
+        downloadedBytes: "0",
       });
       expect(prisma.twitchVodIngestIntent.create).toHaveBeenCalledOnce();
     } finally {

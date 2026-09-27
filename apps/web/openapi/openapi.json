@@ -11433,6 +11433,25 @@
         "tags": ["twitch-ingestion"]
       }
     },
+    "/api/v1/twitch/vod-imports/{id}": {
+      "get": {
+        "operationId": "TwitchIngestionController_vodImport",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwitchVodIngestIntentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
+      }
+    },
     "/api/v1/vertical-renders/{id}": {
       "get": {
         "operationId": "VerticalController_get",
