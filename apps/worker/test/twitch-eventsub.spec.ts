@@ -97,6 +97,7 @@ describe("Twitch EventSub reconciliation", () => {
     ).resolves.toBeUndefined();
     const [url, init] = request.mock.calls[1]!;
     expect(String(url)).not.toContain("eventsub-secret-value");
+    expect(init?.redirect).toBe("error");
     expect(JSON.parse(String(init?.body))).toEqual({
       type: "stream.online",
       version: "1",

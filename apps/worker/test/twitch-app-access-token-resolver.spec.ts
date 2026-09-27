@@ -39,6 +39,7 @@ describe("TwitchAppAccessTokenResolver", () => {
     expect(url).not.toContain("client-secret");
     expect(String(init?.body)).toContain("client_secret=client-secret");
     expect(String(init?.body)).toContain("grant_type=client_credentials");
+    expect(init?.redirect).toBe("error");
   });
 
   it("does not cache failed or malformed responses", async () => {

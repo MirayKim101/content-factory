@@ -139,6 +139,9 @@
 - Тот же shutdown signal проходит через получение и повторное обновление
   Twitch app access token. Worker не ждёт отдельный OAuth timeout перед drain,
   а коалесцированный token cache не сохраняет результат отменённого запроса.
+- Twitch OAuth, Helix и EventSub запрещают HTTP redirects на credentialed
+  запросах; app secret и bearer token не могут быть перенесены fetch-клиентом
+  на ответивший redirect endpoint.
 - Все PostgreSQL-пулы worker-ролей используют единый fail-fast contract:
   подключение ограничено 5 секундами, SQL statement/query и простаивающая
   транзакция — 30 секундами. Потеря БД больше не может бессрочно удерживать

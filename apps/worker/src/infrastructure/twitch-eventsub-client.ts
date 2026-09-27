@@ -132,6 +132,7 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
   ) {
     return this.request(input, {
       ...init,
+      redirect: "error",
       headers: {
         ...Object.fromEntries(new Headers(init.headers).entries()),
         "Client-Id": this.clientId,

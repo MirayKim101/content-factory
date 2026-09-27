@@ -40,6 +40,7 @@ export class TwitchAppAccessTokenResolver {
         client_secret: this.clientSecret,
         grant_type: "client_credentials",
       }),
+      redirect: "error",
       signal: requestSignal,
     });
     signal?.throwIfAborted();

@@ -105,6 +105,7 @@ describe("Twitch reconciliation", () => {
       "Client-Id": "client-id",
       Authorization: "Bearer secret-token",
     });
+    expect(init?.redirect).toBe("error");
   });
 
   it("invalidates an app token and retries Helix once after an unauthorized response", async () => {

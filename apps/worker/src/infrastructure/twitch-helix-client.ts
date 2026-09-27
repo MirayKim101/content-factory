@@ -57,6 +57,7 @@ export class TwitchHelixClient implements TwitchVideoProvider {
           "Client-Id": this.clientId,
           Authorization: `Bearer ${accessToken}`,
         },
+        redirect: "error",
         signal: signal
           ? AbortSignal.any([signal, AbortSignal.timeout(10_000)])
           : AbortSignal.timeout(10_000),
