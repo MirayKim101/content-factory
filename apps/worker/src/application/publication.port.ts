@@ -128,6 +128,10 @@ export interface PublicationWorkerRepository {
     now: Date,
     limit?: number,
   ): Promise<PublicationMetricsClaim[]>;
+  heartbeatMetricsClaim(
+    claim: PublicationMetricsClaim,
+    now: Date,
+  ): Promise<boolean>;
   recordMetrics(
     claim: PublicationMetricsClaim,
     snapshot: PublicationMetricsSnapshot,

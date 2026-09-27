@@ -31,6 +31,7 @@ function repository(): PublicationWorkerRepository {
     failUnknownRemoteState: vi.fn(),
     releaseReconciliationClaim: vi.fn(),
     claimPublishedForMetrics: vi.fn().mockResolvedValue([claim]),
+    heartbeatMetricsClaim: vi.fn().mockResolvedValue(true),
     recordMetrics: vi.fn().mockResolvedValue(true),
     releaseMetricsClaim: vi.fn().mockResolvedValue(undefined),
   };
@@ -95,5 +96,96 @@ describe("CollectPublicationMetrics", () => {
       new CollectPublicationMetrics(repo, []).execute(),
     ).resolves.toBe(0);
     expect(repo.releaseMetricsClaim).toHaveBeenCalledWith(claim);
+  });
+
+  it("heartbeats later claims while they wait for metrics collection", async () => {
+    vi.useFakeTimers();
+    try {
+      const second = { ...claim, id: "00000000-0000-4000-8000-000000000009" };
+      const repo = repository();
+      vi.mocked(repo.claimPublishedForMetrics).mockResolvedValue([
+        claim,
+        second,
+      ]);
+      let finishFirst: (() => void) | undefined;
+      const snapshot = {
+        adapterVersion: "youtube-data-v3-statistics",
+        viewCount: 101n,
+        likeCount: 12n,
+        commentCount: 3n,
+        shareCount: null,
+      };
+      const provider = {
+        platform: "YOUTUBE" as const,
+        publish: vi.fn(),
+        metrics: vi
+          .fn()
+          .mockImplementationOnce(
+            () =>
+              new Promise<typeof snapshot>((resolve) => {
+                finishFirst = () => resolve(snapshot);
+              }),
+          )
+          .mockResolvedValueOnce(snapshot),
+      };
+
+      const execution = new CollectPublicationMetrics(
+        repo,
+        [provider],
+        undefined,
+        undefined,
+        60_000,
+      ).execute();
+      await vi.advanceTimersByTimeAsync(30_000);
+
+      expect(repo.heartbeatMetricsClaim).toHaveBeenCalledWith(
+        second,
+        expect.any(Date),
+      );
+      expect(provider.metrics).toHaveBeenCalledTimes(1);
+
+      finishFirst?.();
+      await expect(execution).resolves.toBe(2);
+      expect(provider.metrics).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("aborts metrics collection when heartbeat ownership is lost", async () => {
+    vi.useFakeTimers();
+    try {
+      const repo = repository();
+      vi.mocked(repo.heartbeatMetricsClaim).mockResolvedValue(false);
+      const onFailure = vi.fn();
+      const provider = {
+        platform: "YOUTUBE" as const,
+        publish: vi.fn(),
+        metrics: vi.fn(
+          (_claim: PublicationMetricsClaim, signal?: AbortSignal) =>
+            new Promise<never>((_resolve, reject) => {
+              signal?.addEventListener("abort", () => reject(signal.reason), {
+                once: true,
+              });
+            }),
+        ),
+      };
+
+      const execution = new CollectPublicationMetrics(
+        repo,
+        [provider],
+        undefined,
+        onFailure,
+        60_000,
+      ).execute();
+      await vi.advanceTimersByTimeAsync(30_000);
+
+      await expect(execution).resolves.toBe(0);
+      expect(repo.recordMetrics).not.toHaveBeenCalled();
+      expect(repo.releaseMetricsClaim).not.toHaveBeenCalled();
+      expect(onFailure).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -109,13 +109,16 @@
 - Все захваченные remote-outcome claims начинают heartbeat до последовательного
   provider polling. Поздняя запись в batch больше не теряет двухминутный lease,
   пока ждёт предыдущую, и не может параллельно попасть второму worker.
+- Metrics claims также удерживаются heartbeat с момента batch claim. Потеря
+  владения или ошибка heartbeat abort-ит provider GET и запрещает старому
+  worker записывать snapshot либо освобождать lease нового владельца.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  274/274 unit tests
+Worker:  276/276 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

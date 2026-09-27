@@ -2,8 +2,11 @@ import type {
   PublicationProvider,
   PublicationWorkerRepository,
 } from "./publication.port.js";
+import { createAbortDeadline } from "./abort-deadline.js";
 
 const METRICS_REQUEST_TIMEOUT_MS = 30_000;
+const METRICS_HEARTBEAT_INTERVAL_MS = 30_000;
+class MetricsLeaseLostError extends Error {}
 
 export class CollectPublicationMetrics {
   constructor(
@@ -14,6 +17,7 @@ export class CollectPublicationMetrics {
       intentId: string,
       error: unknown,
     ) => void = () => undefined,
+    private readonly requestTimeoutMs = METRICS_REQUEST_TIMEOUT_MS,
   ) {}
 
   async execute(limit = 50): Promise<number> {
@@ -22,6 +26,12 @@ export class CollectPublicationMetrics {
       limit,
     );
     let collected = 0;
+    const pending: Array<{
+      claim: (typeof claims)[number];
+      metrics: NonNullable<PublicationProvider["metrics"]>;
+      abortController: AbortController;
+      heartbeat: ReturnType<typeof setInterval>;
+    }> = [];
     for (const claim of claims) {
       const provider = this.providers.find(
         (candidate) =>
@@ -31,18 +41,64 @@ export class CollectPublicationMetrics {
         await this.repository.releaseMetricsClaim(claim).catch(() => undefined);
         continue;
       }
+      const abortController = new AbortController();
+      const heartbeat = this.startHeartbeat(claim, abortController);
+      pending.push({
+        claim,
+        metrics: provider.metrics.bind(provider),
+        abortController,
+        heartbeat,
+      });
+    }
+    for (const context of pending) {
+      const { claim, metrics, abortController, heartbeat } = context;
+      const deadline = createAbortDeadline(
+        abortController.signal,
+        this.requestTimeoutMs,
+        "PUBLICATION_METRICS_TIMEOUT",
+      );
       try {
-        const snapshot = await provider.metrics(
-          claim,
-          AbortSignal.timeout(METRICS_REQUEST_TIMEOUT_MS),
-        );
+        const snapshot = await metrics(claim, deadline.signal);
+        deadline.signal.throwIfAborted();
         if (await this.repository.recordMetrics(claim, snapshot, this.clock()))
           collected += 1;
       } catch (error) {
+        if (deadline.signal.reason instanceof MetricsLeaseLostError) continue;
         await this.repository.releaseMetricsClaim(claim).catch(() => undefined);
         this.onFailure(claim.id, error);
+      } finally {
+        deadline.dispose();
+        clearInterval(heartbeat);
       }
     }
     return collected;
+  }
+
+  private startHeartbeat(
+    claim: Awaited<
+      ReturnType<PublicationWorkerRepository["claimPublishedForMetrics"]>
+    >[number],
+    abortController: AbortController,
+  ): ReturnType<typeof setInterval> {
+    let running = false;
+    const timer = setInterval(() => {
+      if (running) return;
+      running = true;
+      void this.repository
+        .heartbeatMetricsClaim(claim, this.clock())
+        .then((retained) => {
+          if (!retained && !abortController.signal.aborted)
+            abortController.abort(new MetricsLeaseLostError());
+        })
+        .catch(() => {
+          if (!abortController.signal.aborted)
+            abortController.abort(new MetricsLeaseLostError());
+        })
+        .finally(() => {
+          running = false;
+        });
+    }, METRICS_HEARTBEAT_INTERVAL_MS);
+    timer.unref();
+    return timer;
   }
 }

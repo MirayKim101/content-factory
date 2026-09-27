@@ -704,6 +704,20 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     return result.rows[0]?.applied === true;
   }
 
+  async heartbeatMetricsClaim(
+    claim: PublicationMetricsClaim,
+    now: Date,
+  ): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "PublicationIntent"
+          SET "metricsLeaseExpiresAt" = $3::timestamp + interval '2 minutes'
+        WHERE "id" = $1 AND "state" = 'PUBLISHED'
+          AND "metricsLeaseToken" = $2`,
+      [claim.id, claim.metricsLeaseToken, now],
+    );
+    return result.rowCount === 1;
+  }
+
   async releaseMetricsClaim(claim: PublicationMetricsClaim): Promise<void> {
     await this.pool.query(
       `UPDATE "PublicationIntent"
