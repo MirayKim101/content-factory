@@ -5,6 +5,7 @@ import type { PublicationPlatform } from "@content-factory/contracts";
 
 import {
   PublishingUnavailableError,
+  requirePublicationExternalChannelRef,
   requirePublicationLabel,
   requirePublicationTimezone,
 } from "../domain/publication.js";
@@ -44,9 +45,9 @@ export class CreatePublicationChannel {
       projectId: input.projectId,
       platform: input.platform,
       displayName: requirePublicationLabel(input.displayName, 120),
-      externalChannelRef: requirePublicationLabel(
+      externalChannelRef: requirePublicationExternalChannelRef(
+        input.platform,
         input.externalChannelRef,
-        255,
       ),
       timezone: requirePublicationTimezone(input.timezone),
     });

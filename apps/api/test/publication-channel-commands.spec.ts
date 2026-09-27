@@ -2,7 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { CreatePublicationChannel } from "../src/publishing/application/publication-channel-commands.js";
 import type { PublicationRepository } from "../src/publishing/application/publication-repository.port.js";
-import { PublishingUnavailableError } from "../src/publishing/domain/publication.js";
+import {
+  PublicationMetadataInvalidError,
+  PublishingUnavailableError,
+} from "../src/publishing/domain/publication.js";
 
 function repository(): PublicationRepository {
   return {
@@ -71,5 +74,18 @@ describe("CreatePublicationChannel", () => {
     expect(repo.createChannel).toHaveBeenCalledWith(
       expect.objectContaining({ platform: "YOUTUBE" }),
     );
+  });
+
+  it("rejects a YouTube handle where an immutable UC channel id is required", async () => {
+    const repo = repository();
+
+    await expect(
+      new CreatePublicationChannel(repo, true, true).execute({
+        ...input,
+        platform: "YOUTUBE",
+        externalChannelRef: "@display-handle",
+      }),
+    ).rejects.toBeInstanceOf(PublicationMetadataInvalidError);
+    expect(repo.createChannel).not.toHaveBeenCalled();
   });
 });

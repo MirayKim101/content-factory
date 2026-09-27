@@ -85,3 +85,17 @@ export function requirePublicationLabel(
     throw new PublicationMetadataInvalidError();
   return normalized;
 }
+
+export function requirePublicationExternalChannelRef(
+  platform: PublicationPlatform,
+  value: string,
+): string {
+  const normalized = requirePublicationLabel(value, 255);
+  if (
+    (platform === "LOCAL_DRY_RUN" &&
+      !/^local:[A-Za-z0-9._:-]{1,200}$/.test(normalized)) ||
+    (platform === "YOUTUBE" && !/^UC[A-Za-z0-9_-]{20,40}$/.test(normalized))
+  )
+    throw new PublicationMetadataInvalidError();
+  return normalized;
+}
