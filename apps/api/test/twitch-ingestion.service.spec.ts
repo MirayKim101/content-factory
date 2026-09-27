@@ -190,6 +190,40 @@ describe("TwitchIngestionService", () => {
     });
   });
 
+  it("acknowledges a signed revocation for an already revoked channel", async () => {
+    const revocationBody = {
+      subscription: {
+        status: "authorization_revoked",
+        type: "stream.online",
+        version: "1",
+        condition: { broadcaster_user_id: "1337" },
+      },
+    };
+    const bytes = Buffer.from(JSON.stringify(revocationBody));
+    const prisma = repository();
+    prisma.twitchIngestChannel.findUnique.mockResolvedValue({
+      id: "channel-1",
+      state: "REVOKED",
+    });
+
+    await expect(
+      new TwitchIngestionService(prisma as never).receive(
+        {
+          ...headers(sign(bytes)),
+          messageType: "revocation",
+          subscriptionType: "stream.online",
+        },
+        bytes,
+        revocationBody,
+        now,
+      ),
+    ).resolves.toEqual({
+      duplicate: false,
+      messageId: "opaque-message-1",
+    });
+    expect(prisma.twitchEventInbox.create).toHaveBeenCalledOnce();
+  });
+
   it("revokes admission without deleting channel history", async () => {
     const prisma = repository();
     prisma.twitchIngestChannel.findUnique.mockResolvedValue({

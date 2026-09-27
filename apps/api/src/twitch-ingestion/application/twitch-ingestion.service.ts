@@ -259,7 +259,7 @@ export class TwitchIngestionService {
       !/^[a-z_]{1,64}$/.test(subscription.status)
     )
       throw new TwitchEventInvalidError();
-    const channel = await this.requireChannel(broadcasterId);
+    const channel = await this.requireKnownChannel(broadcasterId);
     const payloadSha256 = createHash("sha256").update(rawBody).digest("hex");
     const existing = await this.prisma.twitchEventInbox.findUnique({
       where: { messageId: headers.messageId },
@@ -302,11 +302,16 @@ export class TwitchIngestionService {
   }
 
   private async requireChannel(broadcasterId: string) {
+    const channel = await this.requireKnownChannel(broadcasterId);
+    if (channel.state !== "ENABLED") throw new TwitchChannelNotAllowedError();
+    return channel;
+  }
+
+  private async requireKnownChannel(broadcasterId: string) {
     const channel = await this.prisma.twitchIngestChannel.findUnique({
       where: { broadcasterId },
     });
-    if (!channel || channel.state !== "ENABLED")
-      throw new TwitchChannelNotAllowedError();
+    if (!channel) throw new TwitchChannelNotAllowedError();
     return channel;
   }
 
