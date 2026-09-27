@@ -93,22 +93,33 @@ export class PgTwitchIngestionWorkerRepository
   ): Promise<TwitchVodIngestLease | null> {
     const result = await this.pool.query<TwitchVodIngestLease>(
       `WITH candidate AS (
-         SELECT i."id" FROM "TwitchVodIngestIntent" i
+         SELECT i."id", v."providerVideoId", ch."id" AS "channelId"
+         FROM "TwitchVodIngestIntent" i
          JOIN "TwitchVodCandidate" v ON v."id" = i."candidateId"
          JOIN "TwitchIngestChannel" ch ON ch."id" = v."channelId"
          WHERE v."state" = 'READY_FOR_INGEST'
            AND ch."state" = 'ENABLED'
            AND (i."state" = 'QUEUED' OR (i."state" = 'RETRY_WAIT' AND i."nextAttemptAt" <= now())
              OR (i."state" IN ('DOWNLOADING','UPLOADING') AND i."leaseExpiresAt" < now()))
-         ORDER BY i."createdAt", i."id" FOR UPDATE OF i SKIP LOCKED LIMIT 1
+         ORDER BY ch."lastIngestClaimedAt" ASC NULLS FIRST, i."createdAt", i."id"
+         FOR UPDATE OF i, ch SKIP LOCKED LIMIT 1
+       ), claimed AS (
+         UPDATE "TwitchVodIngestIntent" i SET "state" = 'DOWNLOADING',
+           "attemptCount" = i."attemptCount" + 1, "leaseOwner" = $1,
+           "leaseExpiresAt" = now() + ($2 * interval '1 millisecond'),
+           "nextAttemptAt" = NULL, "failureCode" = NULL, "failureMessage" = NULL, "updatedAt" = now()
+         FROM candidate c WHERE i."id" = c."id"
+         RETURNING i."id", i."candidateId", c."providerVideoId", c."channelId",
+           i."projectName", i."attemptCount", i."leaseOwner", i."downloadedBytes", i."totalBytes"
+       ), touched AS (
+         UPDATE "TwitchIngestChannel" ch
+         SET "lastIngestClaimedAt" = now(), "updatedAt" = now()
+         FROM claimed c WHERE ch."id" = c."channelId"
+         RETURNING ch."id"
        )
-       UPDATE "TwitchVodIngestIntent" i SET "state" = 'DOWNLOADING',
-         "attemptCount" = i."attemptCount" + 1, "leaseOwner" = $1,
-         "leaseExpiresAt" = now() + ($2 * interval '1 millisecond'),
-         "nextAttemptAt" = NULL, "failureCode" = NULL, "failureMessage" = NULL, "updatedAt" = now()
-       FROM candidate c, "TwitchVodCandidate" v
-       WHERE i."id" = c."id" AND v."id" = i."candidateId"
-       RETURNING i."id", i."candidateId", v."providerVideoId", i."projectName", i."attemptCount", i."leaseOwner", i."downloadedBytes", i."totalBytes"`,
+       SELECT c."id", c."candidateId", c."providerVideoId", c."projectName",
+         c."attemptCount", c."leaseOwner", c."downloadedBytes", c."totalBytes"
+       FROM claimed c JOIN touched t ON t."id" = c."channelId"`,
       [workerId, Math.max(5_000, leaseMs)],
     );
     const row = result.rows[0];

@@ -11,6 +11,7 @@ const channelSchema = z.object({
   ingestDelaySeconds: z.number().int(),
   reconciliationCursor: z.string().nullable(),
   lastReconciledAt: z.iso.datetime().nullable(),
+  lastIngestClaimedAt: z.iso.datetime().nullable().optional().default(null),
   lastOnlineAt: z.iso.datetime().nullable(),
   lastOfflineAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),

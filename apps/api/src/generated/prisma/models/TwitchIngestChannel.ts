@@ -43,6 +43,7 @@ export type TwitchIngestChannelMinAggregateOutputType = {
   ingestDelaySeconds: number | null
   reconciliationCursor: string | null
   lastReconciledAt: Date | null
+  lastIngestClaimedAt: Date | null
   lastOnlineAt: Date | null
   lastOfflineAt: Date | null
   createdAt: Date | null
@@ -58,6 +59,7 @@ export type TwitchIngestChannelMaxAggregateOutputType = {
   ingestDelaySeconds: number | null
   reconciliationCursor: string | null
   lastReconciledAt: Date | null
+  lastIngestClaimedAt: Date | null
   lastOnlineAt: Date | null
   lastOfflineAt: Date | null
   createdAt: Date | null
@@ -73,6 +75,7 @@ export type TwitchIngestChannelCountAggregateOutputType = {
   ingestDelaySeconds: number
   reconciliationCursor: number
   lastReconciledAt: number
+  lastIngestClaimedAt: number
   lastOnlineAt: number
   lastOfflineAt: number
   createdAt: number
@@ -98,6 +101,7 @@ export type TwitchIngestChannelMinAggregateInputType = {
   ingestDelaySeconds?: true
   reconciliationCursor?: true
   lastReconciledAt?: true
+  lastIngestClaimedAt?: true
   lastOnlineAt?: true
   lastOfflineAt?: true
   createdAt?: true
@@ -113,6 +117,7 @@ export type TwitchIngestChannelMaxAggregateInputType = {
   ingestDelaySeconds?: true
   reconciliationCursor?: true
   lastReconciledAt?: true
+  lastIngestClaimedAt?: true
   lastOnlineAt?: true
   lastOfflineAt?: true
   createdAt?: true
@@ -128,6 +133,7 @@ export type TwitchIngestChannelCountAggregateInputType = {
   ingestDelaySeconds?: true
   reconciliationCursor?: true
   lastReconciledAt?: true
+  lastIngestClaimedAt?: true
   lastOnlineAt?: true
   lastOfflineAt?: true
   createdAt?: true
@@ -230,6 +236,7 @@ export type TwitchIngestChannelGroupByOutputType = {
   ingestDelaySeconds: number
   reconciliationCursor: string | null
   lastReconciledAt: Date | null
+  lastIngestClaimedAt: Date | null
   lastOnlineAt: Date | null
   lastOfflineAt: Date | null
   createdAt: Date
@@ -268,6 +275,7 @@ export type TwitchIngestChannelWhereInput = {
   ingestDelaySeconds?: Prisma.IntFilter<"TwitchIngestChannel"> | number
   reconciliationCursor?: Prisma.StringNullableFilter<"TwitchIngestChannel"> | string | null
   lastReconciledAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
+  lastIngestClaimedAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
   lastOfflineAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TwitchIngestChannel"> | Date | string
@@ -285,6 +293,7 @@ export type TwitchIngestChannelOrderByWithRelationInput = {
   ingestDelaySeconds?: Prisma.SortOrder
   reconciliationCursor?: Prisma.SortOrderInput | Prisma.SortOrder
   lastReconciledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastIngestClaimedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOfflineAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -305,6 +314,7 @@ export type TwitchIngestChannelWhereUniqueInput = Prisma.AtLeast<{
   ingestDelaySeconds?: Prisma.IntFilter<"TwitchIngestChannel"> | number
   reconciliationCursor?: Prisma.StringNullableFilter<"TwitchIngestChannel"> | string | null
   lastReconciledAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
+  lastIngestClaimedAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
   lastOfflineAt?: Prisma.DateTimeNullableFilter<"TwitchIngestChannel"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TwitchIngestChannel"> | Date | string
@@ -322,6 +332,7 @@ export type TwitchIngestChannelOrderByWithAggregationInput = {
   ingestDelaySeconds?: Prisma.SortOrder
   reconciliationCursor?: Prisma.SortOrderInput | Prisma.SortOrder
   lastReconciledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastIngestClaimedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastOfflineAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -345,6 +356,7 @@ export type TwitchIngestChannelScalarWhereWithAggregatesInput = {
   ingestDelaySeconds?: Prisma.IntWithAggregatesFilter<"TwitchIngestChannel"> | number
   reconciliationCursor?: Prisma.StringNullableWithAggregatesFilter<"TwitchIngestChannel"> | string | null
   lastReconciledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TwitchIngestChannel"> | Date | string | null
+  lastIngestClaimedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TwitchIngestChannel"> | Date | string | null
   lastOnlineAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TwitchIngestChannel"> | Date | string | null
   lastOfflineAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TwitchIngestChannel"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TwitchIngestChannel"> | Date | string
@@ -360,6 +372,7 @@ export type TwitchIngestChannelCreateInput = {
   ingestDelaySeconds?: number
   reconciliationCursor?: string | null
   lastReconciledAt?: Date | string | null
+  lastIngestClaimedAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   lastOfflineAt?: Date | string | null
   createdAt?: Date | string
@@ -377,6 +390,7 @@ export type TwitchIngestChannelUncheckedCreateInput = {
   ingestDelaySeconds?: number
   reconciliationCursor?: string | null
   lastReconciledAt?: Date | string | null
+  lastIngestClaimedAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   lastOfflineAt?: Date | string | null
   createdAt?: Date | string
@@ -394,6 +408,7 @@ export type TwitchIngestChannelUpdateInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -411,6 +426,7 @@ export type TwitchIngestChannelUncheckedUpdateInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -428,6 +444,7 @@ export type TwitchIngestChannelCreateManyInput = {
   ingestDelaySeconds?: number
   reconciliationCursor?: string | null
   lastReconciledAt?: Date | string | null
+  lastIngestClaimedAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   lastOfflineAt?: Date | string | null
   createdAt?: Date | string
@@ -443,6 +460,7 @@ export type TwitchIngestChannelUpdateManyMutationInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -458,6 +476,7 @@ export type TwitchIngestChannelUncheckedUpdateManyInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -473,6 +492,7 @@ export type TwitchIngestChannelCountOrderByAggregateInput = {
   ingestDelaySeconds?: Prisma.SortOrder
   reconciliationCursor?: Prisma.SortOrder
   lastReconciledAt?: Prisma.SortOrder
+  lastIngestClaimedAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
   lastOfflineAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -492,6 +512,7 @@ export type TwitchIngestChannelMaxOrderByAggregateInput = {
   ingestDelaySeconds?: Prisma.SortOrder
   reconciliationCursor?: Prisma.SortOrder
   lastReconciledAt?: Prisma.SortOrder
+  lastIngestClaimedAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
   lastOfflineAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -507,6 +528,7 @@ export type TwitchIngestChannelMinOrderByAggregateInput = {
   ingestDelaySeconds?: Prisma.SortOrder
   reconciliationCursor?: Prisma.SortOrder
   lastReconciledAt?: Prisma.SortOrder
+  lastIngestClaimedAt?: Prisma.SortOrder
   lastOnlineAt?: Prisma.SortOrder
   lastOfflineAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -563,6 +585,7 @@ export type TwitchIngestChannelCreateWithoutEventsInput = {
   ingestDelaySeconds?: number
   reconciliationCursor?: string | null
   lastReconciledAt?: Date | string | null
+  lastIngestClaimedAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   lastOfflineAt?: Date | string | null
   createdAt?: Date | string
@@ -579,6 +602,7 @@ export type TwitchIngestChannelUncheckedCreateWithoutEventsInput = {
   ingestDelaySeconds?: number
   reconciliationCursor?: string | null
   lastReconciledAt?: Date | string | null
+  lastIngestClaimedAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   lastOfflineAt?: Date | string | null
   createdAt?: Date | string
@@ -611,6 +635,7 @@ export type TwitchIngestChannelUpdateWithoutEventsInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -627,6 +652,7 @@ export type TwitchIngestChannelUncheckedUpdateWithoutEventsInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -643,6 +669,7 @@ export type TwitchIngestChannelCreateWithoutVodCandidatesInput = {
   ingestDelaySeconds?: number
   reconciliationCursor?: string | null
   lastReconciledAt?: Date | string | null
+  lastIngestClaimedAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   lastOfflineAt?: Date | string | null
   createdAt?: Date | string
@@ -659,6 +686,7 @@ export type TwitchIngestChannelUncheckedCreateWithoutVodCandidatesInput = {
   ingestDelaySeconds?: number
   reconciliationCursor?: string | null
   lastReconciledAt?: Date | string | null
+  lastIngestClaimedAt?: Date | string | null
   lastOnlineAt?: Date | string | null
   lastOfflineAt?: Date | string | null
   createdAt?: Date | string
@@ -691,6 +719,7 @@ export type TwitchIngestChannelUpdateWithoutVodCandidatesInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -707,6 +736,7 @@ export type TwitchIngestChannelUncheckedUpdateWithoutVodCandidatesInput = {
   ingestDelaySeconds?: Prisma.IntFieldUpdateOperationsInput | number
   reconciliationCursor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastReconciledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastIngestClaimedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOnlineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastOfflineAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -763,6 +793,7 @@ export type TwitchIngestChannelSelect<ExtArgs extends runtime.Types.Extensions.I
   ingestDelaySeconds?: boolean
   reconciliationCursor?: boolean
   lastReconciledAt?: boolean
+  lastIngestClaimedAt?: boolean
   lastOnlineAt?: boolean
   lastOfflineAt?: boolean
   createdAt?: boolean
@@ -781,6 +812,7 @@ export type TwitchIngestChannelSelectCreateManyAndReturn<ExtArgs extends runtime
   ingestDelaySeconds?: boolean
   reconciliationCursor?: boolean
   lastReconciledAt?: boolean
+  lastIngestClaimedAt?: boolean
   lastOnlineAt?: boolean
   lastOfflineAt?: boolean
   createdAt?: boolean
@@ -796,6 +828,7 @@ export type TwitchIngestChannelSelectUpdateManyAndReturn<ExtArgs extends runtime
   ingestDelaySeconds?: boolean
   reconciliationCursor?: boolean
   lastReconciledAt?: boolean
+  lastIngestClaimedAt?: boolean
   lastOnlineAt?: boolean
   lastOfflineAt?: boolean
   createdAt?: boolean
@@ -811,13 +844,14 @@ export type TwitchIngestChannelSelectScalar = {
   ingestDelaySeconds?: boolean
   reconciliationCursor?: boolean
   lastReconciledAt?: boolean
+  lastIngestClaimedAt?: boolean
   lastOnlineAt?: boolean
   lastOfflineAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TwitchIngestChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "broadcasterId" | "broadcasterLogin" | "broadcasterDisplayName" | "state" | "ingestDelaySeconds" | "reconciliationCursor" | "lastReconciledAt" | "lastOnlineAt" | "lastOfflineAt" | "createdAt" | "updatedAt", ExtArgs["result"]["twitchIngestChannel"]>
+export type TwitchIngestChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "broadcasterId" | "broadcasterLogin" | "broadcasterDisplayName" | "state" | "ingestDelaySeconds" | "reconciliationCursor" | "lastReconciledAt" | "lastIngestClaimedAt" | "lastOnlineAt" | "lastOfflineAt" | "createdAt" | "updatedAt", ExtArgs["result"]["twitchIngestChannel"]>
 export type TwitchIngestChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   events?: boolean | Prisma.TwitchIngestChannel$eventsArgs<ExtArgs>
   vodCandidates?: boolean | Prisma.TwitchIngestChannel$vodCandidatesArgs<ExtArgs>
@@ -841,6 +875,7 @@ export type $TwitchIngestChannelPayload<ExtArgs extends runtime.Types.Extensions
     ingestDelaySeconds: number
     reconciliationCursor: string | null
     lastReconciledAt: Date | null
+    lastIngestClaimedAt: Date | null
     lastOnlineAt: Date | null
     lastOfflineAt: Date | null
     createdAt: Date
@@ -1278,6 +1313,7 @@ export interface TwitchIngestChannelFieldRefs {
   readonly ingestDelaySeconds: Prisma.FieldRef<"TwitchIngestChannel", 'Int'>
   readonly reconciliationCursor: Prisma.FieldRef<"TwitchIngestChannel", 'String'>
   readonly lastReconciledAt: Prisma.FieldRef<"TwitchIngestChannel", 'DateTime'>
+  readonly lastIngestClaimedAt: Prisma.FieldRef<"TwitchIngestChannel", 'DateTime'>
   readonly lastOnlineAt: Prisma.FieldRef<"TwitchIngestChannel", 'DateTime'>
   readonly lastOfflineAt: Prisma.FieldRef<"TwitchIngestChannel", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"TwitchIngestChannel", 'DateTime'>

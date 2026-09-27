@@ -16,6 +16,88 @@ import { S3WorkerObjectStorage } from "../src/infrastructure/s3-worker-object-st
 describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
   "Twitch VOD ingest integration",
   () => {
+    it("claims work fairly across channels", async () => {
+      const config = workerConfig();
+      const pool = new Pool({ connectionString: config.databaseUrl });
+      const repository = new PgTwitchIngestionWorkerRepository(
+        config.databaseUrl,
+      );
+      const recentChannelId = randomUUID();
+      const waitingChannelId = randomUUID();
+      const recentCandidateId = randomUUID();
+      const waitingCandidateId = randomUUID();
+      const recentIntentId = randomUUID();
+      const waitingIntentId = randomUUID();
+      const suffix = Date.now().toString();
+
+      try {
+        await pool.query(
+          `INSERT INTO "TwitchIngestChannel" ("id","broadcasterId","broadcasterLogin","broadcasterDisplayName","state","ingestDelaySeconds","lastIngestClaimedAt","createdAt","updatedAt")
+           VALUES ($1,$2,$3,'Recent','ENABLED',60,now(),now(),now()),
+                  ($4,$5,$6,'Waiting','ENABLED',60,NULL,now(),now())`,
+          [
+            recentChannelId,
+            `recent-${suffix}`,
+            `recent_${suffix}`,
+            waitingChannelId,
+            `waiting-${suffix}`,
+            `waiting_${suffix}`,
+          ],
+        );
+        await pool.query(
+          `INSERT INTO "TwitchVodCandidate" ("id","channelId","providerVideoId","title","vodType","durationSeconds","startedAt","publishedAt","availableForIngestAt","state","createdAt","updatedAt")
+           VALUES ($1,$2,$3,'Recent VOD','archive',60,now(),now(),now(),'READY_FOR_INGEST',now()-interval '1 hour',now()),
+                  ($4,$5,$6,'Waiting VOD','archive',60,now(),now(),now(),'READY_FOR_INGEST',now(),now())`,
+          [
+            recentCandidateId,
+            recentChannelId,
+            `recent-vod-${suffix}`,
+            waitingCandidateId,
+            waitingChannelId,
+            `waiting-vod-${suffix}`,
+          ],
+        );
+        await pool.query(
+          `INSERT INTO "TwitchVodIngestIntent" ("id","idempotencyKey","requestFingerprint","candidateId","state","projectName","createdAt","updatedAt")
+           VALUES ($1,$2,$3,$4,'QUEUED','Recent import',now()-interval '1 hour',now()),
+                  ($5,$6,$7,$8,'QUEUED','Waiting import',now(),now())`,
+          [
+            recentIntentId,
+            `fairness:${recentIntentId}`,
+            recentIntentId.replaceAll("-", ""),
+            recentCandidateId,
+            waitingIntentId,
+            `fairness:${waitingIntentId}`,
+            waitingIntentId.replaceAll("-", ""),
+            waitingCandidateId,
+          ],
+        );
+
+        const lease = await repository.claimNext("fairness-worker", 60_000);
+
+        expect(lease?.id).toBe(waitingIntentId);
+        const marker = await pool.query<{ lastIngestClaimedAt: Date | null }>(
+          `SELECT "lastIngestClaimedAt" FROM "TwitchIngestChannel" WHERE "id"=$1`,
+          [waitingChannelId],
+        );
+        expect(marker.rows[0]?.lastIngestClaimedAt).toBeInstanceOf(Date);
+      } finally {
+        await pool.query(
+          `DELETE FROM "TwitchVodIngestIntent" WHERE "id" = ANY($1::uuid[])`,
+          [[recentIntentId, waitingIntentId]],
+        );
+        await pool.query(
+          `DELETE FROM "TwitchVodCandidate" WHERE "id" = ANY($1::uuid[])`,
+          [[recentCandidateId, waitingCandidateId]],
+        );
+        await pool.query(
+          `DELETE FROM "TwitchIngestChannel" WHERE "id" = ANY($1::uuid[])`,
+          [[recentChannelId, waitingChannelId]],
+        );
+        await Promise.all([repository.close(), pool.end()]);
+      }
+    });
+
     it("imports gateway bytes into private storage and an unauthorized project", async () => {
       const config = workerConfig();
       const pool = new Pool({ connectionString: config.databaseUrl });

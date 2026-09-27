@@ -5960,6 +5960,11 @@
           "ingestDelaySeconds": {
             "type": "number"
           },
+          "lastIngestClaimedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
           "lastOfflineAt": {
             "format": "date-time",
             "nullable": true,
@@ -5997,6 +6002,7 @@
           "ingestDelaySeconds",
           "reconciliationCursor",
           "lastReconciledAt",
+          "lastIngestClaimedAt",
           "lastOnlineAt",
           "lastOfflineAt",
           "createdAt",

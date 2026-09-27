@@ -7167,6 +7167,7 @@ export const TwitchIngestChannelScalarFieldEnum = {
   ingestDelaySeconds: 'ingestDelaySeconds',
   reconciliationCursor: 'reconciliationCursor',
   lastReconciledAt: 'lastReconciledAt',
+  lastIngestClaimedAt: 'lastIngestClaimedAt',
   lastOnlineAt: 'lastOnlineAt',
   lastOfflineAt: 'lastOfflineAt',
   createdAt: 'createdAt',

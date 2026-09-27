@@ -1915,6 +1915,7 @@ model TwitchIngestChannel {
   ingestDelaySeconds     Int                      @default(300)
   reconciliationCursor   String?
   lastReconciledAt       DateTime?
+  lastIngestClaimedAt    DateTime?
   lastOnlineAt           DateTime?
   lastOfflineAt          DateTime?
   createdAt              DateTime                 @default(now())
@@ -1923,6 +1924,7 @@ model TwitchIngestChannel {
   vodCandidates          TwitchVodCandidate[]
 
   @@index([state, updatedAt, id])
+  @@index([state, lastIngestClaimedAt, id])
 }
 
 /// Durable, deduplicated EventSub envelope. Payload is validated before processing.

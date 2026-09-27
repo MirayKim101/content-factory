@@ -28,6 +28,10 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   прошёл; source остался `NOT_REVIEWED`. Production Docker FFmpeg сформировал и
   декодировал 1080×1920 H.264/AAC. Внешний Twitch/YouTube/TikTok credentialed
   smoke намеренно не выполнялся без production credentials и rollout flags.
+- Единственный bounded Twitch ingest slot распределяется между каналами по
+  durable `lastIngestClaimedAt`; claim и обновление fairness-marker атомарны.
+  Реальная PostgreSQL-проверка подтверждает отсутствие starvation между
+  постоянно активными каналами.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

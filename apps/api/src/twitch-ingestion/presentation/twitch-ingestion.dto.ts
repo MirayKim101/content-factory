@@ -41,6 +41,8 @@ export class TwitchIngestChannelResponseDto {
   @ApiProperty({ type: String, nullable: true, format: "date-time" })
   lastReconciledAt!: Date | null;
   @ApiProperty({ type: String, nullable: true, format: "date-time" })
+  lastIngestClaimedAt!: Date | null;
+  @ApiProperty({ type: String, nullable: true, format: "date-time" })
   lastOnlineAt!: Date | null;
   @ApiProperty({ type: String, nullable: true, format: "date-time" })
   lastOfflineAt!: Date | null;
