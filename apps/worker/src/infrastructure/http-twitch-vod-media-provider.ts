@@ -21,29 +21,43 @@ export class HttpTwitchVodMediaProvider implements TwitchVodMediaProvider {
     if (!/^\d{1,64}$/.test(providerVideoId))
       throw new Error("TWITCH_VOD_MEDIA_ID_INVALID");
     if (offset < 0n) throw new Error("TWITCH_VOD_MEDIA_OFFSET_INVALID");
-    const timeout = AbortSignal.timeout(this.config.timeoutMs);
-    const response = await this.fetchImplementation(
-      `${this.config.baseUrl}/v1/twitch/vods/${providerVideoId}/media`,
-      {
-        headers: {
-          authorization: `Bearer ${this.config.bearerToken}`,
-          ...(offset > 0n ? { range: `bytes=${offset}-` } : {}),
-        },
-        redirect: "error",
-        signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
-      },
+    const controller = new AbortController();
+    const requestSignal = signal
+      ? AbortSignal.any([signal, controller.signal])
+      : controller.signal;
+    const timeout = setTimeout(
+      () => controller.abort(new Error("TWITCH_VOD_MEDIA_HEADER_TIMEOUT")),
+      this.config.timeoutMs,
     );
-    if (!response.ok)
-      throw new Error(`TWITCH_VOD_MEDIA_HTTP_${response.status}`);
-    if (!response.body || response.headers.get("content-type") !== "video/mp4")
-      throw new Error("TWITCH_VOD_MEDIA_RESPONSE_INVALID");
-    const identity = parseIdentity(response, offset);
-    return {
-      body: response.body,
-      contentType: "video/mp4",
-      totalSizeBytes: identity.totalSizeBytes,
-      offset,
-    };
+    try {
+      const response = await this.fetchImplementation(
+        `${this.config.baseUrl}/v1/twitch/vods/${providerVideoId}/media`,
+        {
+          headers: {
+            authorization: `Bearer ${this.config.bearerToken}`,
+            ...(offset > 0n ? { range: `bytes=${offset}-` } : {}),
+          },
+          redirect: "error",
+          signal: requestSignal,
+        },
+      );
+      if (!response.ok)
+        throw new Error(`TWITCH_VOD_MEDIA_HTTP_${response.status}`);
+      if (
+        !response.body ||
+        response.headers.get("content-type") !== "video/mp4"
+      )
+        throw new Error("TWITCH_VOD_MEDIA_RESPONSE_INVALID");
+      const identity = parseIdentity(response, offset);
+      return {
+        body: response.body,
+        contentType: "video/mp4",
+        totalSizeBytes: identity.totalSizeBytes,
+        offset,
+      };
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }
 

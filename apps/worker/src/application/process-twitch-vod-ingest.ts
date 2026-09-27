@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, open, stat, unlink } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { Readable } from "node:stream";
+import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
 import type { TwitchVodMediaProvider } from "./twitch-vod-media.port.js";
@@ -54,8 +54,39 @@ export class ProcessTwitchVodIngest {
           offset,
           response.totalSizeBytes,
         );
+        let downloaded = offset;
+        let persisted = offset;
+        const checkpointBytes = 8n * 1024n * 1024n;
+        const progress = new Transform({
+          transform: (chunk: Buffer, _encoding, callback) => {
+            downloaded += BigInt(chunk.length);
+            if (
+              downloaded > response.totalSizeBytes ||
+              downloaded > this.maxBytes
+            ) {
+              callback(new Error("TWITCH_VOD_SIZE_MISMATCH"));
+              return;
+            }
+            if (downloaded - persisted < checkpointBytes) {
+              callback(null, chunk);
+              return;
+            }
+            this.repository
+              .checkpoint(
+                lease.id,
+                workerId,
+                downloaded,
+                response.totalSizeBytes,
+              )
+              .then(() => {
+                persisted = downloaded;
+                callback(null, chunk);
+              }, callback);
+          },
+        });
         await pipeline(
           Readable.from(response.body as AsyncIterable<Uint8Array>),
+          progress,
           createWriteStream(path, {
             flags: offset > 0n ? "a" : "w",
             mode: 0o600,
