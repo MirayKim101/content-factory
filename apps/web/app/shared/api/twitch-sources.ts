@@ -17,6 +17,27 @@ const channelSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 export type TwitchSourceChannel = z.infer<typeof channelSchema>;
+const vodCandidateSchema = z.object({
+  id: z.uuid(),
+  channelId: z.uuid(),
+  channel: z.object({
+    broadcasterLogin: z.string(),
+    broadcasterDisplayName: z.string(),
+  }),
+  providerVideoId: z.string(),
+  streamId: z.string().nullable(),
+  title: z.string(),
+  vodType: z.enum(["archive", "highlight", "upload"]),
+  durationSeconds: z.number().int().positive(),
+  startedAt: z.iso.datetime(),
+  publishedAt: z.iso.datetime(),
+  availableForIngestAt: z.iso.datetime(),
+  state: z.enum(["WAITING_DELAY", "READY_FOR_INGEST", "IMPORTED", "IGNORED"]),
+  importedProjectId: z.uuid().nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+});
+export type TwitchVodCandidate = z.infer<typeof vodCandidateSchema>;
 const errorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string().optional() }),
 });
@@ -29,6 +50,13 @@ export function createTwitchSourcesApi(
   return {
     list: () =>
       request(fetcher, `${base}/twitch/channels`, {}, z.array(channelSchema)),
+    listVodCandidates: () =>
+      request(
+        fetcher,
+        `${base}/twitch/vod-candidates`,
+        {},
+        z.array(vodCandidateSchema),
+      ),
     save: (input: {
       broadcasterId: string;
       broadcasterLogin: string;

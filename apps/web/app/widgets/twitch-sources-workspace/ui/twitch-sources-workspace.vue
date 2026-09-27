@@ -6,11 +6,13 @@ import { computed, onMounted, ref } from "vue";
 import {
   createTwitchSourcesApi,
   type TwitchSourceChannel,
+  type TwitchVodCandidate,
 } from "~/shared/api/twitch-sources";
 
 const config = useRuntimeConfig();
 const api = createTwitchSourcesApi(config.public.apiBasePath);
 const channels = ref<TwitchSourceChannel[]>([]);
+const vodCandidates = ref<TwitchVodCandidate[]>([]);
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
@@ -25,6 +27,11 @@ const enabled = computed(() =>
 const synced = computed(
   () => channels.value.filter((item) => item.lastReconciledAt).length,
 );
+const readyVodCount = computed(
+  () =>
+    vodCandidates.value.filter((item) => item.state === "READY_FOR_INGEST")
+      .length,
+);
 const valid = computed(
   () =>
     /^\d{1,64}$/.test(broadcasterId.value.trim()) &&
@@ -38,7 +45,10 @@ async function load() {
   loading.value = true;
   error.value = null;
   try {
-    channels.value = await api.list();
+    [channels.value, vodCandidates.value] = await Promise.all([
+      api.list(),
+      api.listVodCandidates(),
+    ]);
   } catch (cause) {
     error.value =
       cause instanceof Error
@@ -104,6 +114,21 @@ function formatDate(value: string | null) {
       }).format(new Date(value))
     : "Ещё не выполнялась";
 }
+function formatDuration(seconds: number) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return hours ? `${hours} ч ${minutes} мин` : `${minutes} мин`;
+}
+function vodStateLabel(state: TwitchVodCandidate["state"]) {
+  return (
+    {
+      WAITING_DELAY: "Задержка",
+      READY_FOR_INGEST: "Готов к импорту",
+      IMPORTED: "Импортирован",
+      IGNORED: "Пропущен",
+    } as const
+  )[state];
+}
 onMounted(load);
 </script>
 
@@ -140,6 +165,10 @@ onMounted(load);
       <article>
         <span>Синхронизировано</span><strong>{{ synced }}</strong
         ><small>имеют результат сверки</small>
+      </article>
+      <article>
+        <span>Готово к импорту</span><strong>{{ readyVodCount }}</strong
+        ><small>записей после задержки</small>
       </article>
     </section>
     <div class="workspace-grid">
@@ -185,6 +214,48 @@ onMounted(load);
           <h3>Источники не добавлены</h3>
           <p>Добавьте первый Twitch-канал справа.</p>
         </div>
+      </section>
+      <section class="vod-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Архив эфиров</p>
+            <h2>Найденные записи</h2>
+          </div>
+          <small>Последние {{ vodCandidates.length }} из 200</small>
+        </div>
+        <div v-if="vodCandidates.length" class="vod-list">
+          <article v-for="vod in vodCandidates" :key="vod.id" class="vod-card">
+            <div>
+              <div class="title-row">
+                <h3>{{ vod.title }}</h3>
+                <span class="status vod-status" :data-state="vod.state">{{
+                  vodStateLabel(vod.state)
+                }}</span>
+              </div>
+              <p>
+                @{{ vod.channel.broadcasterLogin }} · VOD
+                {{ vod.providerVideoId }}
+              </p>
+              <small
+                >{{ formatDate(vod.publishedAt) }} ·
+                {{ formatDuration(vod.durationSeconds) }}</small
+              >
+            </div>
+            <p v-if="vod.state === 'READY_FOR_INGEST'" class="ingest-note">
+              Метаданные готовы. Для загрузки медиа требуется настроенный
+              provider adapter.
+            </p>
+            <NuxtLink
+              v-else-if="vod.importedProjectId"
+              :to="`/horizontal?projectIds=${vod.importedProjectId}`"
+            >
+              Открыть проект
+            </NuxtLink>
+          </article>
+        </div>
+        <p v-else class="empty">
+          Записи появятся после первого завершённого эфира и сверки с Twitch.
+        </p>
       </section>
       <aside class="composer">
         <p class="eyebrow">Новый источник</p>
@@ -280,12 +351,13 @@ h3 {
 }
 .summary {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
   margin: 1.5rem 0 1rem;
 }
 .summary article,
 .list-panel,
+.vod-panel,
 .composer {
   border: 1px solid var(--cf-border);
   background: #fff;
@@ -310,14 +382,51 @@ h3 {
   gap: 1rem;
 }
 .list-panel,
+.vod-panel,
 .composer {
   padding: 1.25rem;
   border-radius: var(--cf-radius-lg);
+}
+.vod-panel {
+  grid-column: 1;
+}
+.vod-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.vod-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 18rem);
+  gap: 1rem;
+  padding: 0.9rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+}
+.vod-card p,
+.vod-card small,
+.section-heading > small {
+  margin: 0.25rem 0 0;
+  color: var(--cf-text-muted);
+}
+.ingest-note {
+  align-self: center;
+  font-size: 0.78rem;
+}
+.vod-status[data-state="WAITING_DELAY"] {
+  background: var(--cf-warning-soft);
+  color: var(--cf-warning);
+}
+.vod-status[data-state="IGNORED"] {
+  background: var(--cf-surface-muted);
+  color: var(--cf-text-muted);
 }
 .composer {
   align-self: start;
   position: sticky;
   top: 1rem;
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 .channel-list {
   display: grid;
@@ -417,11 +526,16 @@ label span {
   .summary {
     grid-template-columns: 1fr;
   }
+  .vod-card {
+    grid-template-columns: 1fr;
+  }
   .workspace-grid {
     grid-template-columns: 1fr;
   }
   .composer {
     position: static;
+    grid-column: auto;
+    grid-row: auto;
   }
   .channel-card {
     grid-template-columns: 2.7rem minmax(0, 1fr);

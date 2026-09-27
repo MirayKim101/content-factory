@@ -38,3 +38,32 @@ export class TwitchIngestChannelResponseDto {
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: Date;
   @ApiProperty({ type: String, format: "date-time" }) updatedAt!: Date;
 }
+
+export class TwitchVodCandidateChannelDto {
+  @ApiProperty({ type: String }) broadcasterLogin!: string;
+  @ApiProperty({ type: String }) broadcasterDisplayName!: string;
+}
+
+export class TwitchVodCandidateResponseDto {
+  @ApiProperty({ type: String, format: "uuid" }) id!: string;
+  @ApiProperty({ type: String, format: "uuid" }) channelId!: string;
+  @ApiProperty({ type: TwitchVodCandidateChannelDto })
+  channel!: TwitchVodCandidateChannelDto;
+  @ApiProperty({ type: String }) providerVideoId!: string;
+  @ApiProperty({ type: String, nullable: true }) streamId!: string | null;
+  @ApiProperty({ type: String }) title!: string;
+  @ApiProperty({ enum: ["archive", "highlight", "upload"] }) vodType!: string;
+  @ApiProperty({ type: Number, minimum: 1 }) durationSeconds!: number;
+  @ApiProperty({ type: String, format: "date-time" }) startedAt!: Date;
+  @ApiProperty({ type: String, format: "date-time" }) publishedAt!: Date;
+  @ApiProperty({ type: String, format: "date-time" })
+  availableForIngestAt!: Date;
+  @ApiProperty({
+    enum: ["WAITING_DELAY", "READY_FOR_INGEST", "IMPORTED", "IGNORED"],
+  })
+  state!: string;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  importedProjectId!: string | null;
+  @ApiProperty({ type: String, format: "date-time" }) createdAt!: Date;
+  @ApiProperty({ type: String, format: "date-time" }) updatedAt!: Date;
+}

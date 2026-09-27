@@ -41,6 +41,21 @@ export class TwitchIngestionService {
     });
   }
 
+  listVodCandidates() {
+    return this.prisma.twitchVodCandidate.findMany({
+      include: {
+        channel: {
+          select: {
+            broadcasterLogin: true,
+            broadcasterDisplayName: true,
+          },
+        },
+      },
+      orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+      take: 200,
+    });
+  }
+
   createChannel(input: {
     broadcasterId: string;
     broadcasterLogin: string;

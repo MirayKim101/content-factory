@@ -28,6 +28,7 @@ import {
 import {
   CreateTwitchIngestChannelDto,
   TwitchIngestChannelResponseDto,
+  TwitchVodCandidateResponseDto,
 } from "./twitch-ingestion.dto.js";
 
 @ApiTags("twitch-ingestion")
@@ -41,6 +42,12 @@ export class TwitchIngestionController {
     return this.service.listChannels();
   }
 
+  @Get("vod-candidates")
+  @ApiOkResponse({ type: [TwitchVodCandidateResponseDto] })
+  vodCandidates() {
+    return this.service.listVodCandidates();
+  }
+
   @Post("channels")
   @ApiResponse({ status: 201, type: TwitchIngestChannelResponseDto })
   channel(@Body() body: CreateTwitchIngestChannelDto) {
@@ -52,7 +59,10 @@ export class TwitchIngestionController {
   async revoke(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     const channel = await this.service.revokeChannel(id);
     if (!channel)
-      throw new NotFoundException({ code: "TWITCH_CHANNEL_NOT_FOUND" });
+      throw new NotFoundException({
+        code: "TWITCH_CHANNEL_NOT_FOUND",
+        message: "Twitch channel was not found.",
+      });
     return channel;
   }
 
@@ -90,16 +100,27 @@ export class TwitchIngestionController {
       if (error instanceof TwitchIngestionDisabledError)
         throw new ServiceUnavailableException({
           code: "TWITCH_INGESTION_DISABLED",
+          message: "Twitch ingestion is disabled.",
         });
       if (error instanceof TwitchSignatureInvalidError)
-        throw new ForbiddenException({ code: "TWITCH_SIGNATURE_INVALID" });
+        throw new ForbiddenException({
+          code: "TWITCH_SIGNATURE_INVALID",
+          message: "Twitch signature is invalid.",
+        });
       if (error instanceof TwitchChannelNotAllowedError)
-        throw new ForbiddenException({ code: "TWITCH_CHANNEL_NOT_ALLOWED" });
+        throw new ForbiddenException({
+          code: "TWITCH_CHANNEL_NOT_ALLOWED",
+          message: "Twitch channel is not allowed.",
+        });
       if (error instanceof TwitchEventConflictError)
-        throw new ConflictException({ code: "TWITCH_EVENT_CONFLICT" });
+        throw new ConflictException({
+          code: "TWITCH_EVENT_CONFLICT",
+          message: "Twitch event conflicts with an existing message.",
+        });
       if (error instanceof TwitchEventInvalidError)
         throw new UnprocessableEntityException({
           code: "TWITCH_EVENT_INVALID",
+          message: "Twitch event is invalid.",
         });
       throw error;
     }

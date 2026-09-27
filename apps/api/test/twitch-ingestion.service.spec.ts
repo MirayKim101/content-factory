@@ -39,6 +39,9 @@ function repository(existingHash?: string) {
         async (_input: { data: { payloadSha256: string } }) => undefined,
       ),
     },
+    twitchVodCandidate: {
+      findMany: vi.fn(async () => []),
+    },
   };
 }
 
@@ -143,6 +146,24 @@ describe("TwitchIngestionService", () => {
     expect(prisma.twitchIngestChannel.updateMany).toHaveBeenCalledWith({
       where: { id: "channel-1", state: "ENABLED" },
       data: { state: "REVOKED" },
+    });
+  });
+
+  it("exposes a bounded operational VOD queue with channel context", async () => {
+    const prisma = repository();
+    const service = new TwitchIngestionService(prisma as never);
+    await expect(service.listVodCandidates()).resolves.toEqual([]);
+    expect(prisma.twitchVodCandidate.findMany).toHaveBeenCalledWith({
+      include: {
+        channel: {
+          select: {
+            broadcasterLogin: true,
+            broadcasterDisplayName: true,
+          },
+        },
+      },
+      orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+      take: 200,
     });
   });
 });
