@@ -76,7 +76,10 @@ const renderSuccess = ref<string>();
 
 const recipe = useQuery({
   queryKey: computed(() => ["assembly-recipe", props.jobId]),
-  queryFn: () => recipesApi.get(props.jobId),
+  // TanStack Query reserves `undefined` for a missing query result. The API
+  // represents a not-yet-created recipe as undefined, so normalise it at the
+  // UI boundary and keep the query in a successful, explicit empty state.
+  queryFn: async () => (await recipesApi.get(props.jobId)) ?? null,
   enabled: computed(() => props.visible),
   refetchOnMount: "always",
   retry: false,
@@ -197,7 +200,7 @@ watch(
   ([value, ready, visible]) => {
     const identity = currentIdentity();
     if (visible && ready && loadedIdentity.value !== identity) {
-      loadRecipe(value);
+      loadRecipe(value ?? undefined);
       loadedIdentity.value = identity;
     }
   },
@@ -417,7 +420,7 @@ function reloadSaved(): void {
     renders.refetch(),
   ]).then(([freshRecipe]) => {
     if (identity !== currentIdentity()) return;
-    loadRecipe(freshRecipe.data);
+    loadRecipe(freshRecipe.data ?? undefined);
     saveError.value = undefined;
     success.value = undefined;
   });

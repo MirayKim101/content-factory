@@ -8,7 +8,7 @@ const contextApi = vi.hoisted(() => ({ getCutPrompt: vi.fn() }));
 vi.mock("~/shared/api/thumbnail-suggestions", async (original) => ({ ...(await original<object>()), createThumbnailSuggestionsApi: () => api }));
 vi.mock("~/shared/api/creator-context", async (original) => ({ ...(await original<object>()), createCreatorContextApi: () => contextApi }));
 
-import ThumbnailSuggestionsPanel from "~/widgets/editorial-package/ui/thumbnail-suggestions-panel.vue";
+import ThumbnailSuggestionsPanel from "~/features/edit-editorial-package/ui/thumbnail-suggestions-panel.vue";
 import { ThumbnailSuggestionApiError } from "~/shared/api/thumbnail-suggestions";
 
 const projectId = "11111111-1111-4111-8111-111111111111"; const jobId = "22222222-2222-4222-8222-222222222222"; const intentId = "33333333-3333-4333-8333-333333333333";

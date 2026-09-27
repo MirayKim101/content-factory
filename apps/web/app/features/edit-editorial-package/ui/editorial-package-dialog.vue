@@ -20,9 +20,9 @@ import {
   type EditorialOperationAttempt,
   type EditorialSaveAttempt,
 } from "~/features/edit-editorial-package/model/save-identity";
-import ResearchTextPanel from "~/widgets/editorial-package/ui/research-text-panel.vue";
+import ResearchTextPanel from "~/features/edit-editorial-package/ui/research-text-panel.vue";
 import type { ResearchMetadataApplyResponse } from "~/shared/api/research-text";
-import ThumbnailSuggestionsPanel from "~/widgets/editorial-package/ui/thumbnail-suggestions-panel.vue";
+import ThumbnailSuggestionsPanel from "~/features/edit-editorial-package/ui/thumbnail-suggestions-panel.vue";
 import type { ThumbnailSuggestionApply } from "~/shared/api/thumbnail-suggestions";
 import {
   createEditorialContentApi,

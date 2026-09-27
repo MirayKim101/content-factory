@@ -226,7 +226,17 @@ function requestApply(): void {
 
 <template>
   <section class="research-panel" aria-labelledby="research-title">
-    <h3 id="research-title">Исследование и варианты текста</h3>
+    <header class="panel-header">
+      <div>
+        <p class="eyebrow">AI-помощник · с проверкой источников</p>
+        <h3 id="research-title">Исследование и варианты текста</h3>
+      </div>
+      <span class="mode-badge">Ручное решение</span>
+    </header>
+    <p class="panel-summary">
+      Добавьте проверяемые источники, получите черновик и перенесите его в
+      редактор. Ничего не применяется без вашего действия.
+    </p>
     <p v-if="transcript.isPending.value" role="status">
       Проверяем transcript evidence…
     </p>
@@ -241,9 +251,17 @@ function requestApply(): void {
       Research отключён feature flag. Ручной редактор доступен ниже.
     </p>
     <template v-else-if="transcript.data.value?.state === 'READY'">
-      <label>
+      <label class="field-stack">
         Что проверить и учесть
-        <Textarea v-model="query" rows="3" maxlength="4000" />
+        <Textarea
+          v-model="query"
+          rows="3"
+          maxlength="4000"
+          aria-describedby="research-query-hint"
+        />
+        <small id="research-query-hint" class="hint">
+          Сформулируйте факты, которые нужно подтвердить перед публикацией.
+        </small>
       </label>
       <fieldset v-for="(citation, index) in citations" :key="index">
         <legend>Источник {{ index + 1 }}</legend>
@@ -302,7 +320,7 @@ function requestApply(): void {
           </option>
         </select>
       </label>
-      <article v-if="active" class="research-result">
+      <article v-if="active" class="research-result" aria-live="polite">
         <p>
           Статус: <strong>{{ active.state }}</strong> · свежесть:
           <strong>{{ active.snapshot.freshness }}</strong>
@@ -362,10 +380,10 @@ function requestApply(): void {
   gap: 0.65rem;
 }
 .research-panel {
-  padding: 0.875rem;
-  border: 1px solid #c4cec7;
-  border-radius: 0.5rem;
-  background: #f4f7f4;
+  padding: 1rem;
+  border: 1px solid var(--cf-border);
+  border-radius: 0.75rem;
+  background: var(--cf-surface-subtle);
 }
 h3,
 p {
@@ -375,30 +393,59 @@ label {
   display: grid;
   gap: 0.4rem;
 }
+.panel-header,
+.research-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.panel-header > div,
+.field-stack {
+  display: grid;
+  gap: 0.35rem;
+}
+.eyebrow {
+  color: var(--cf-brand);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.mode-badge {
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: var(--cf-brand-soft);
+  color: var(--cf-brand-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.panel-summary {
+  max-width: 72ch;
+  color: var(--cf-text-muted);
+  line-height: 1.5;
+}
 input,
 textarea,
 select {
   box-sizing: border-box;
   width: 100%;
 }
-.research-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
 .research-result {
   padding: 0.75rem;
-  border-radius: 0.4rem;
-  background: #fff;
+  border: 1px solid var(--cf-border);
+  border-radius: 0.5rem;
+  background: var(--cf-surface);
 }
 .hint {
-  color: #4b5d51;
+  color: var(--cf-text-muted);
   font-size: 0.875rem;
 }
 .error {
-  color: #991b1b;
+  color: var(--cf-danger);
 }
 .success {
-  color: #166534;
+  color: var(--cf-success);
 }
 </style>

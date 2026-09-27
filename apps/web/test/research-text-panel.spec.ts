@@ -15,7 +15,7 @@ vi.mock("~/shared/api/research-text", async (original) => ({
   createResearchTextApi: () => api,
 }));
 
-import ResearchTextPanel from "~/widgets/editorial-package/ui/research-text-panel.vue";
+import ResearchTextPanel from "~/features/edit-editorial-package/ui/research-text-panel.vue";
 import { ResearchApiError } from "~/shared/api/research-text";
 
 const jobId = "00000000-0000-4000-8000-000000000001";

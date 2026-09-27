@@ -161,18 +161,19 @@
 
 ## Ближайшие действия
 
-Актуализировано 2026-09-16. Этапы 1 и 2 реализованы; точные проверки и
+Актуализировано 2026-09-27. Этапы 1 и 2 реализованы; точные проверки и
 операционные ограничения сохранены в
 [`CURRENT-HANDOFF`](../engineering/CURRENT-HANDOFF.md). Backend этапа 2B-1
 и UI также приняты после независимого review и live browser smoke, см.
 [acceptance](../engineering/CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md).
-Это ещё не полный MVP: оставшиеся этапы 2B и 3 обязательны.
+Техническая реализация pre-Twitch этапа 2B завершена. До её продуктового
+принятия остаются одинаковый manual/assisted операторский benchmark и визуальный
+browser smoke; этап 3 остаётся отдельным следующим срезом полного MVP.
 
 1. Этап 2B-1 завершён: профиль, reference image и права, точные версии
    source context/prompt, stale/rebind/reload и ручной fallback проверены.
-2. Этап 2B-2: код извлечения кадров реализован и независимо проверен;
-   admission выключен, реальная сквозная приёмка ещё требуется. Работа
-   сохранена в `feat/stage2b2-frame-evidence`, срез пока не принят.
+2. Этап 2B-2: sparse-frame evidence реализован, независимо проверен и принят в
+   bounded local scope; admission остаётся управляемым feature flag.
 3. Этап 2B-3: transcript и отдельный AI-worker реализованы локальным adapter;
    admission остаётся закрытым до завершения общего pre-production gate.
 4. Этап 2B-4a: durable research с HTTPS-источниками, варианты текста и exact
@@ -182,12 +183,11 @@
    ручной режим приняты после real PostgreSQL/MinIO smoke и CLEAN review;
    admission выключен по умолчанию.
 6. Этап 2B-6: единая проверка manual/AI/mixed, подтверждение, экспорт и
-   измерение затрат времени и стоимости реализованы в рабочем дереве;
-   default-off flag, focused tests и полный 12-test disposable-PostgreSQL
-   worker harness на Node 24.15 прошли. Exact lineage/snapshot/economics
-   tampering и AI/MIXED admission через historical v1 закрыты fail-closed.
-   Срез ещё не принят до independent real-diff review и manual/assisted
-   object-storage E2E.
+   измерение затрат времени и стоимости технически приняты. Independent
+   real-diff review завершён `CLEAN`; disposable PostgreSQL и private
+   object-storage E2E прошли. Exact lineage/snapshot/economics tampering и
+   AI/MIXED admission через historical v1 закрыты fail-closed. Остался реальный
+   одинаковый manual/assisted операторский benchmark и визуальный smoke.
 7. Этап 3: Twitch, вертикальный pipeline, публикация и сбор статусов по
    отдельным acceptance criteria.
 

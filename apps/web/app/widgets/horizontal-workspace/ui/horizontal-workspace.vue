@@ -154,6 +154,19 @@ function sourceStatusLabel(value: {
     ? "Источник готов"
     : "Права не подтверждены";
 }
+const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+function formatWorkspaceDate(value: string | undefined): string {
+  if (!value) return "Дата не указана";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "Дата не указана"
+    : dateTimeFormatter.format(date);
+}
 const editorRow = computed(() =>
   rows.value.find((row) => row.id === editorProjectId.value),
 );
@@ -556,12 +569,17 @@ watch(
                   >{{ sourceStatusLabel(row.query.data) }}</span
                 >
               </div>
-              <div class="meta">
-                {{
-                  row.query.data.source.durationMs === undefined
-                    ? "длительность проверяется"
-                    : formatDisplayTimecode(row.query.data.source.durationMs)
-                }}
+              <div class="meta-row">
+                <span>
+                  {{
+                    row.query.data.source.durationMs === undefined
+                      ? "длительность проверяется"
+                      : formatDisplayTimecode(row.query.data.source.durationMs)
+                  }}
+                </span>
+                <time :datetime="row.query.data.updatedAt">
+                  Обновлено {{ formatWorkspaceDate(row.query.data.updatedAt) }}
+                </time>
               </div>
             </div>
             <video
@@ -1120,6 +1138,19 @@ watch(
   font-size: 0.8rem;
   font-weight: 560;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  color: var(--cf-text-muted);
+  font-size: 0.75rem;
+}
+.meta-row time {
   white-space: nowrap;
 }
 .source-status {

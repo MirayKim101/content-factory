@@ -86,6 +86,12 @@ function mountWidget() {
         [PrimeVue, { unstyled: true }],
         [VueQueryPlugin, { queryClient: new QueryClient() }],
       ],
+      stubs: {
+        NuxtLink: {
+          props: ["to"],
+          template: '<a :href="to"><slot /></a>',
+        },
+      },
     },
   });
 }
