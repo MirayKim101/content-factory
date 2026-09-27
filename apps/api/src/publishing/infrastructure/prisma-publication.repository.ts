@@ -194,6 +194,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
           reconciliationLeaseExpiresAt: null,
           metricsLeaseToken: null,
           metricsLeaseExpiresAt: null,
+          nextAttemptAt: null,
           failureCode: null,
           failureMessage: null,
           queuedAt: now,

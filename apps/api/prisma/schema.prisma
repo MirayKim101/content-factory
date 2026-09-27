@@ -1062,6 +1062,7 @@ model PublicationIntent {
   metricsLeaseExpiresAt        DateTime?
   attemptCount                 Int                         @default(0)
   retryBudget                  Int                         @default(3)
+  nextAttemptAt                DateTime?
   failureCode                  String?
   failureMessage               String?
   queuedAt                     DateTime?
@@ -1079,6 +1080,7 @@ model PublicationIntent {
   @@unique([channelId, verticalResultId, platform], map: "PublicationIntent_vertical_target_key")
   @@index([projectId, scheduledAt, id])
   @@index([state, scheduledAt, id])
+  @@index([state, nextAttemptAt, scheduledAt, id])
   @@index([state, reconciliationLeaseExpiresAt, updatedAt, id])
   @@index([state, metricsLeaseExpiresAt, updatedAt, id])
   @@index([channelId, createdAt, id])

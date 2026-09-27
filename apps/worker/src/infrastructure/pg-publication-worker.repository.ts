@@ -96,6 +96,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
            LEFT JOIN "PipelineJob" vj ON vj."id" = var."pipelineJobId"
            LEFT JOIN "MediaArtifact" vr ON vr."id" = var."artifactId"
           WHERE i."id" = $1 AND i."scheduledAt" <= $2
+            AND (i."nextAttemptAt" IS NULL OR i."nextAttemptAt" <= $2)
           FOR UPDATE OF i`,
         [intentId, now],
       );
@@ -133,6 +134,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         `UPDATE "PublicationIntent"
             SET "state" = 'PROCESSING', "attemptCount" = $2,
                 "startedAt" = $3, "queuedAt" = COALESCE("queuedAt", $3),
+                "nextAttemptAt" = NULL,
                 "failureCode" = NULL, "failureMessage" = NULL,
                 "updatedAt" = $3
           WHERE "id" = $1`,
@@ -306,6 +308,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     message: string,
     now: Date,
   ): Promise<void> {
+    const nextAttemptAt = publicationRetryAt(now, claim.attemptNumber);
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
@@ -315,6 +318,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                                 THEN 'QUEUED'::"PublicationIntentState"
                                 ELSE 'FAILED_FINAL'::"PublicationIntentState" END,
                 "failureCode" = $2, "failureMessage" = $3,
+                "nextAttemptAt" = CASE WHEN "attemptCount" <= "retryBudget"
+                                       THEN $6 ELSE NULL END,
                 "finishedAt" = CASE WHEN "attemptCount" > "retryBudget" THEN $4 ELSE NULL END,
                 "updatedAt" = $4
           WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $5
@@ -325,6 +330,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
           message.slice(0, 1000),
           now,
           claim.attemptNumber,
+          nextAttemptAt,
         ],
       );
       if (updated.rows[0]?.state === "FAILED_FINAL")
@@ -711,7 +717,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
   async due(limit = 100): Promise<string[]> {
     const result = await this.pool.query<{ id: string }>(
       `SELECT "id" FROM "PublicationIntent"
-        WHERE ("state" IN ('SCHEDULED', 'QUEUED') AND "scheduledAt" <= now())
+        WHERE ("state" IN ('SCHEDULED', 'QUEUED') AND "scheduledAt" <= now()
+               AND ("nextAttemptAt" IS NULL OR "nextAttemptAt" <= now()))
            OR ("state" = 'PROCESSING' AND "startedAt" <= now() - interval '5 minutes')
         ORDER BY "scheduledAt" ASC, "id" ASC LIMIT $1`,
       [Math.max(1, Math.min(500, Math.trunc(limit)))],
@@ -738,6 +745,13 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       [id, code, message, now],
     );
   }
+}
+
+export function publicationRetryAt(now: Date, attemptNumber: number): Date {
+  if (!Number.isSafeInteger(attemptNumber) || attemptNumber < 1)
+    throw new Error("PUBLICATION_ATTEMPT_NUMBER_INVALID");
+  const delayMs = Math.min(15 * 60_000, 30_000 * 2 ** (attemptNumber - 1));
+  return new Date(now.getTime() + delayMs);
 }
 
 function remoteId(receipt: Record<string, unknown>): string {

@@ -751,6 +751,7 @@ export const PublicationIntentScalarFieldEnum = {
   metricsLeaseExpiresAt: 'metricsLeaseExpiresAt',
   attemptCount: 'attemptCount',
   retryBudget: 'retryBudget',
+  nextAttemptAt: 'nextAttemptAt',
   failureCode: 'failureCode',
   failureMessage: 'failureMessage',
   queuedAt: 'queuedAt',

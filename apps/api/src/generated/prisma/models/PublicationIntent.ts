@@ -60,6 +60,7 @@ export type PublicationIntentMinAggregateOutputType = {
   metricsLeaseExpiresAt: Date | null
   attemptCount: number | null
   retryBudget: number | null
+  nextAttemptAt: Date | null
   failureCode: string | null
   failureMessage: string | null
   queuedAt: Date | null
@@ -94,6 +95,7 @@ export type PublicationIntentMaxAggregateOutputType = {
   metricsLeaseExpiresAt: Date | null
   attemptCount: number | null
   retryBudget: number | null
+  nextAttemptAt: Date | null
   failureCode: string | null
   failureMessage: string | null
   queuedAt: Date | null
@@ -129,6 +131,7 @@ export type PublicationIntentCountAggregateOutputType = {
   metricsLeaseExpiresAt: number
   attemptCount: number
   retryBudget: number
+  nextAttemptAt: number
   failureCode: number
   failureMessage: number
   queuedAt: number
@@ -175,6 +178,7 @@ export type PublicationIntentMinAggregateInputType = {
   metricsLeaseExpiresAt?: true
   attemptCount?: true
   retryBudget?: true
+  nextAttemptAt?: true
   failureCode?: true
   failureMessage?: true
   queuedAt?: true
@@ -209,6 +213,7 @@ export type PublicationIntentMaxAggregateInputType = {
   metricsLeaseExpiresAt?: true
   attemptCount?: true
   retryBudget?: true
+  nextAttemptAt?: true
   failureCode?: true
   failureMessage?: true
   queuedAt?: true
@@ -244,6 +249,7 @@ export type PublicationIntentCountAggregateInputType = {
   metricsLeaseExpiresAt?: true
   attemptCount?: true
   retryBudget?: true
+  nextAttemptAt?: true
   failureCode?: true
   failureMessage?: true
   queuedAt?: true
@@ -366,6 +372,7 @@ export type PublicationIntentGroupByOutputType = {
   metricsLeaseExpiresAt: Date | null
   attemptCount: number
   retryBudget: number
+  nextAttemptAt: Date | null
   failureCode: string | null
   failureMessage: string | null
   queuedAt: Date | null
@@ -424,6 +431,7 @@ export type PublicationIntentWhereInput = {
   metricsLeaseExpiresAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
   attemptCount?: Prisma.IntFilter<"PublicationIntent"> | number
   retryBudget?: Prisma.IntFilter<"PublicationIntent"> | number
+  nextAttemptAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
   failureCode?: Prisma.StringNullableFilter<"PublicationIntent"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"PublicationIntent"> | string | null
   queuedAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
@@ -468,6 +476,7 @@ export type PublicationIntentOrderByWithRelationInput = {
   metricsLeaseExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
   retryBudget?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
   failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   queuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -518,6 +527,7 @@ export type PublicationIntentWhereUniqueInput = Prisma.AtLeast<{
   metricsLeaseExpiresAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
   attemptCount?: Prisma.IntFilter<"PublicationIntent"> | number
   retryBudget?: Prisma.IntFilter<"PublicationIntent"> | number
+  nextAttemptAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
   failureCode?: Prisma.StringNullableFilter<"PublicationIntent"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"PublicationIntent"> | string | null
   queuedAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
@@ -562,6 +572,7 @@ export type PublicationIntentOrderByWithAggregationInput = {
   metricsLeaseExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
   retryBudget?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrderInput | Prisma.SortOrder
   failureCode?: Prisma.SortOrderInput | Prisma.SortOrder
   failureMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   queuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -605,6 +616,7 @@ export type PublicationIntentScalarWhereWithAggregatesInput = {
   metricsLeaseExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PublicationIntent"> | Date | string | null
   attemptCount?: Prisma.IntWithAggregatesFilter<"PublicationIntent"> | number
   retryBudget?: Prisma.IntWithAggregatesFilter<"PublicationIntent"> | number
+  nextAttemptAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PublicationIntent"> | Date | string | null
   failureCode?: Prisma.StringNullableWithAggregatesFilter<"PublicationIntent"> | string | null
   failureMessage?: Prisma.StringNullableWithAggregatesFilter<"PublicationIntent"> | string | null
   queuedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PublicationIntent"> | Date | string | null
@@ -632,6 +644,7 @@ export type PublicationIntentCreateInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -676,6 +689,7 @@ export type PublicationIntentUncheckedCreateInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -706,6 +720,7 @@ export type PublicationIntentUpdateInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -750,6 +765,7 @@ export type PublicationIntentUncheckedUpdateInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -788,6 +804,7 @@ export type PublicationIntentCreateManyInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -815,6 +832,7 @@ export type PublicationIntentUpdateManyMutationInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -850,6 +868,7 @@ export type PublicationIntentUncheckedUpdateManyInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -912,6 +931,7 @@ export type PublicationIntentCountOrderByAggregateInput = {
   metricsLeaseExpiresAt?: Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
   retryBudget?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
   failureMessage?: Prisma.SortOrder
   queuedAt?: Prisma.SortOrder
@@ -951,6 +971,7 @@ export type PublicationIntentMaxOrderByAggregateInput = {
   metricsLeaseExpiresAt?: Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
   retryBudget?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
   failureMessage?: Prisma.SortOrder
   queuedAt?: Prisma.SortOrder
@@ -985,6 +1006,7 @@ export type PublicationIntentMinOrderByAggregateInput = {
   metricsLeaseExpiresAt?: Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
   retryBudget?: Prisma.SortOrder
+  nextAttemptAt?: Prisma.SortOrder
   failureCode?: Prisma.SortOrder
   failureMessage?: Prisma.SortOrder
   queuedAt?: Prisma.SortOrder
@@ -1324,6 +1346,7 @@ export type PublicationIntentCreateWithoutProjectInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1366,6 +1389,7 @@ export type PublicationIntentUncheckedCreateWithoutProjectInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1433,6 +1457,7 @@ export type PublicationIntentScalarWhereInput = {
   metricsLeaseExpiresAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
   attemptCount?: Prisma.IntFilter<"PublicationIntent"> | number
   retryBudget?: Prisma.IntFilter<"PublicationIntent"> | number
+  nextAttemptAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
   failureCode?: Prisma.StringNullableFilter<"PublicationIntent"> | string | null
   failureMessage?: Prisma.StringNullableFilter<"PublicationIntent"> | string | null
   queuedAt?: Prisma.DateTimeNullableFilter<"PublicationIntent"> | Date | string | null
@@ -1460,6 +1485,7 @@ export type PublicationIntentCreateWithoutApprovalInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1501,6 +1527,7 @@ export type PublicationIntentUncheckedCreateWithoutApprovalInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1557,6 +1584,7 @@ export type PublicationIntentCreateWithoutExportResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1598,6 +1626,7 @@ export type PublicationIntentUncheckedCreateWithoutExportResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1654,6 +1683,7 @@ export type PublicationIntentCreateWithoutChannelInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1694,6 +1724,7 @@ export type PublicationIntentUncheckedCreateWithoutChannelInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1750,6 +1781,7 @@ export type PublicationIntentCreateWithoutProviderSessionInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1793,6 +1825,7 @@ export type PublicationIntentUncheckedCreateWithoutProviderSessionInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1838,6 +1871,7 @@ export type PublicationIntentUpdateWithoutProviderSessionInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1881,6 +1915,7 @@ export type PublicationIntentUncheckedUpdateWithoutProviderSessionInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1910,6 +1945,7 @@ export type PublicationIntentCreateWithoutResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1953,6 +1989,7 @@ export type PublicationIntentUncheckedCreateWithoutResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -1998,6 +2035,7 @@ export type PublicationIntentUpdateWithoutResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2041,6 +2079,7 @@ export type PublicationIntentUncheckedUpdateWithoutResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2070,6 +2109,7 @@ export type PublicationIntentCreateWithoutMetricSnapshotsInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2113,6 +2153,7 @@ export type PublicationIntentUncheckedCreateWithoutMetricSnapshotsInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2158,6 +2199,7 @@ export type PublicationIntentUpdateWithoutMetricSnapshotsInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2201,6 +2243,7 @@ export type PublicationIntentUncheckedUpdateWithoutMetricSnapshotsInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2230,6 +2273,7 @@ export type PublicationIntentCreateWithoutVerticalResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2272,6 +2316,7 @@ export type PublicationIntentUncheckedCreateWithoutVerticalResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2328,6 +2373,7 @@ export type PublicationIntentCreateWithoutVerticalApprovalInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2370,6 +2416,7 @@ export type PublicationIntentUncheckedCreateWithoutVerticalApprovalInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2433,6 +2480,7 @@ export type PublicationIntentCreateManyProjectInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2460,6 +2508,7 @@ export type PublicationIntentUpdateWithoutProjectInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2502,6 +2551,7 @@ export type PublicationIntentUncheckedUpdateWithoutProjectInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2539,6 +2589,7 @@ export type PublicationIntentUncheckedUpdateManyWithoutProjectInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2572,6 +2623,7 @@ export type PublicationIntentCreateManyApprovalInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2599,6 +2651,7 @@ export type PublicationIntentUpdateWithoutApprovalInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2640,6 +2693,7 @@ export type PublicationIntentUncheckedUpdateWithoutApprovalInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2676,6 +2730,7 @@ export type PublicationIntentUncheckedUpdateManyWithoutApprovalInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2709,6 +2764,7 @@ export type PublicationIntentCreateManyExportResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2736,6 +2792,7 @@ export type PublicationIntentUpdateWithoutExportResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2777,6 +2834,7 @@ export type PublicationIntentUncheckedUpdateWithoutExportResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2813,6 +2871,7 @@ export type PublicationIntentUncheckedUpdateManyWithoutExportResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2845,6 +2904,7 @@ export type PublicationIntentCreateManyChannelInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -2872,6 +2932,7 @@ export type PublicationIntentUpdateWithoutChannelInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2912,6 +2973,7 @@ export type PublicationIntentUncheckedUpdateWithoutChannelInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2947,6 +3009,7 @@ export type PublicationIntentUncheckedUpdateManyWithoutChannelInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2981,6 +3044,7 @@ export type PublicationIntentCreateManyVerticalResultInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -3008,6 +3072,7 @@ export type PublicationIntentUpdateWithoutVerticalResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3050,6 +3115,7 @@ export type PublicationIntentUncheckedUpdateWithoutVerticalResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3087,6 +3153,7 @@ export type PublicationIntentUncheckedUpdateManyWithoutVerticalResultInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3121,6 +3188,7 @@ export type PublicationIntentCreateManyVerticalApprovalInput = {
   metricsLeaseExpiresAt?: Date | string | null
   attemptCount?: number
   retryBudget?: number
+  nextAttemptAt?: Date | string | null
   failureCode?: string | null
   failureMessage?: string | null
   queuedAt?: Date | string | null
@@ -3148,6 +3216,7 @@ export type PublicationIntentUpdateWithoutVerticalApprovalInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3190,6 +3259,7 @@ export type PublicationIntentUncheckedUpdateWithoutVerticalApprovalInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3227,6 +3297,7 @@ export type PublicationIntentUncheckedUpdateManyWithoutVerticalApprovalInput = {
   metricsLeaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3293,6 +3364,7 @@ export type PublicationIntentSelect<ExtArgs extends runtime.Types.Extensions.Int
   metricsLeaseExpiresAt?: boolean
   attemptCount?: boolean
   retryBudget?: boolean
+  nextAttemptAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
   queuedAt?: boolean
@@ -3338,6 +3410,7 @@ export type PublicationIntentSelectCreateManyAndReturn<ExtArgs extends runtime.T
   metricsLeaseExpiresAt?: boolean
   attemptCount?: boolean
   retryBudget?: boolean
+  nextAttemptAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
   queuedAt?: boolean
@@ -3379,6 +3452,7 @@ export type PublicationIntentSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   metricsLeaseExpiresAt?: boolean
   attemptCount?: boolean
   retryBudget?: boolean
+  nextAttemptAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
   queuedAt?: boolean
@@ -3420,6 +3494,7 @@ export type PublicationIntentSelectScalar = {
   metricsLeaseExpiresAt?: boolean
   attemptCount?: boolean
   retryBudget?: boolean
+  nextAttemptAt?: boolean
   failureCode?: boolean
   failureMessage?: boolean
   queuedAt?: boolean
@@ -3430,7 +3505,7 @@ export type PublicationIntentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PublicationIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "projectId" | "channelId" | "contentKind" | "approvalId" | "exportIntentId" | "exportResultId" | "verticalApprovalId" | "verticalResultId" | "platform" | "scheduledAt" | "timezone" | "metadataSnapshot" | "state" | "remotePublicationId" | "remoteStatus" | "reconciliationLeaseToken" | "reconciliationLeaseExpiresAt" | "metricsLeaseToken" | "metricsLeaseExpiresAt" | "attemptCount" | "retryBudget" | "failureCode" | "failureMessage" | "queuedAt" | "startedAt" | "finishedAt" | "canceledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["publicationIntent"]>
+export type PublicationIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "projectId" | "channelId" | "contentKind" | "approvalId" | "exportIntentId" | "exportResultId" | "verticalApprovalId" | "verticalResultId" | "platform" | "scheduledAt" | "timezone" | "metadataSnapshot" | "state" | "remotePublicationId" | "remoteStatus" | "reconciliationLeaseToken" | "reconciliationLeaseExpiresAt" | "metricsLeaseToken" | "metricsLeaseExpiresAt" | "attemptCount" | "retryBudget" | "nextAttemptAt" | "failureCode" | "failureMessage" | "queuedAt" | "startedAt" | "finishedAt" | "canceledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["publicationIntent"]>
 export type PublicationIntentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PublicationChannelDefaultArgs<ExtArgs>
@@ -3498,6 +3573,7 @@ export type $PublicationIntentPayload<ExtArgs extends runtime.Types.Extensions.I
     metricsLeaseExpiresAt: Date | null
     attemptCount: number
     retryBudget: number
+    nextAttemptAt: Date | null
     failureCode: string | null
     failureMessage: string | null
     queuedAt: Date | null
@@ -3962,6 +4038,7 @@ export interface PublicationIntentFieldRefs {
   readonly metricsLeaseExpiresAt: Prisma.FieldRef<"PublicationIntent", 'DateTime'>
   readonly attemptCount: Prisma.FieldRef<"PublicationIntent", 'Int'>
   readonly retryBudget: Prisma.FieldRef<"PublicationIntent", 'Int'>
+  readonly nextAttemptAt: Prisma.FieldRef<"PublicationIntent", 'DateTime'>
   readonly failureCode: Prisma.FieldRef<"PublicationIntent", 'String'>
   readonly failureMessage: Prisma.FieldRef<"PublicationIntent", 'String'>
   readonly queuedAt: Prisma.FieldRef<"PublicationIntent", 'DateTime'>

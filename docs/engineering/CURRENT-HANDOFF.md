@@ -367,3 +367,13 @@ Provider boundary также содержит in-memory circuit breaker: три
 Детерминированные validation failures и штатный TikTok
 `UNKNOWN_REMOTE_STATE` не считаются downtime и не блокируют следующие каналы.
 После изменения прошли worker `249/249`, typecheck, lint и production build.
+
+Publication retries теперь используют durable `nextAttemptAt`, не перегружая
+provider и не сжигая retry budget каждые 30 секунд: backoff 30/60/120 секунд с
+cap 15 минут. `scheduledAt` остаётся исходным операторским временем; manual
+retry очищает backoff. Additive migration
+`20260929080000_publication_retry_backoff` применена к restored DB и с нуля к
+одноразовой `cf_stage3_retry_acceptance_20260929`: 43/43 migrations, 73 public
+tables, 0 invalid constraints, колонка `nextAttemptAt` присутствует. База proof
+удалена, `pg_database` вернул 0. После изменения прошли API `232/232`, worker
+`254/254`, typecheck, lint и production builds.
