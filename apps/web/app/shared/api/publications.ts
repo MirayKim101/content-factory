@@ -112,6 +112,25 @@ export function createPublicationsApi(
         },
         channelSchema,
       ),
+    createChannel: (
+      projectId: string,
+      input: {
+        platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
+        displayName: string;
+        externalChannelRef: string;
+        timezone: string;
+      },
+    ) =>
+      request(
+        fetchImplementation,
+        `${basePath}/projects/${encodeURIComponent(projectId)}/publication-channels`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        },
+        channelSchema,
+      ),
     list: (projectId: string) =>
       request(
         fetchImplementation,
@@ -122,6 +141,7 @@ export function createPublicationsApi(
     create: (
       projectId: string,
       input: {
+        platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
         channelId: string;
         scheduledAt: string;
         timezone: string;
@@ -149,7 +169,7 @@ export function createPublicationsApi(
             "Content-Type": "application/json",
             "Idempotency-Key": idempotencyKey,
           },
-          body: JSON.stringify({ platform: "LOCAL_DRY_RUN", ...input }),
+          body: JSON.stringify(input),
         },
         intentSchema,
       ),

@@ -46,6 +46,9 @@ const contentKind = ref<"EDITORIAL_EXPORT" | "VERTICAL_RESULT">(
   "EDITORIAL_EXPORT",
 );
 const verticalId = ref("");
+const channelId = ref("");
+const youtubeChannelRef = ref("");
+const youtubeDisplayName = ref("");
 const title = ref("");
 const description = ref("");
 const scheduledLocal = ref(defaultSchedule());
@@ -61,10 +64,17 @@ const readyVerticals = computed(() =>
     (item) => item.job.state === "READY" && item.result?.approval,
   ),
 );
+const activeChannels = computed(() =>
+  channels.value.filter((item) => item.state === "ENABLED"),
+);
 const activeChannel = computed(() =>
-  channels.value.find(
-    (item) => item.platform === "LOCAL_DRY_RUN" && item.state === "ENABLED",
-  ),
+  activeChannels.value.find((item) => item.id === channelId.value),
+);
+const channelOptions = computed(() =>
+  activeChannels.value.map((item) => ({
+    id: item.id,
+    label: `${item.platform === "YOUTUBE" ? "YouTube" : "Dry run"} · ${item.displayName}`,
+  })),
 );
 const grouped = computed(() => ({
   planned: publications.value.filter((item) =>
@@ -110,6 +120,11 @@ async function loadWorkspace(): Promise<void> {
         verticalApi.list(projectId.value),
       ]);
     channels.value = nextChannels;
+    if (!nextChannels.some((item) => item.id === channelId.value))
+      channelId.value =
+        nextChannels.find((item) => item.platform === "YOUTUBE")?.id ??
+        nextChannels.find((item) => item.platform === "LOCAL_DRY_RUN")?.id ??
+        "";
     publications.value = nextPublications.items;
     exports.value = nextExports;
     verticals.value = nextVerticals;
@@ -122,6 +137,37 @@ async function loadWorkspace(): Promise<void> {
       cause instanceof Error ? cause.message : "Не удалось загрузить очередь.";
   } finally {
     loading.value = false;
+  }
+}
+async function createYoutubeChannel(): Promise<void> {
+  const externalChannelRef = youtubeChannelRef.value.trim();
+  if (
+    !projectId.value ||
+    saving.value ||
+    !/^UC[A-Za-z0-9_-]{20,40}$/.test(externalChannelRef)
+  )
+    return;
+  saving.value = true;
+  error.value = null;
+  try {
+    const created = await publicationsApi.createChannel(projectId.value, {
+      platform: "YOUTUBE",
+      displayName: youtubeDisplayName.value.trim() || "YouTube",
+      externalChannelRef,
+      timezone,
+    });
+    channelId.value = created.id;
+    youtubeChannelRef.value = "";
+    youtubeDisplayName.value = "";
+    notice.value = "YouTube-канал подключён и выбран.";
+    await loadWorkspace();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error
+        ? cause.message
+        : "Не удалось подключить YouTube-канал.";
+  } finally {
+    saving.value = false;
   }
 }
 async function createChannel(): Promise<void> {
@@ -177,6 +223,7 @@ async function schedule(): Promise<void> {
     await publicationsApi.create(
       projectId.value,
       {
+        platform: activeChannel.value.platform,
         channelId: activeChannel.value.id,
         ...lineage,
         scheduledAt: new Date(scheduledLocal.value).toISOString(),
@@ -405,7 +452,9 @@ onMounted(async () => {
             <p class="eyebrow">Новая задача</p>
             <h2 id="composer-title">Запланировать</h2>
           </div>
-          <span class="safe-badge">Dry run</span>
+          <span class="safe-badge">{{
+            activeChannel?.platform === "YOUTUBE" ? "YouTube" : "Dry run"
+          }}</span>
         </div>
         <template v-if="!projectId"
           ><p class="hint">Сначала создайте или выберите проект.</p></template
@@ -419,9 +468,42 @@ onMounted(async () => {
             <Button :loading="saving" @click="createChannel"
               >Подключить dry run</Button
             >
+            <details class="channel-connector">
+              <summary>Подключить YouTube</summary>
+              <p>
+                Доступно, когда OAuth-канал разрешён администратором сервера.
+              </p>
+              <InputText
+                v-model="youtubeChannelRef"
+                placeholder="ID канала: UC…"
+              />
+              <InputText
+                v-model="youtubeDisplayName"
+                placeholder="Название канала"
+                maxlength="120"
+              />
+              <Button
+                type="button"
+                severity="secondary"
+                :disabled="
+                  !/^UC[A-Za-z0-9_-]{20,40}$/.test(youtubeChannelRef.trim())
+                "
+                :loading="saving"
+                @click="createYoutubeChannel"
+                >Подключить YouTube</Button
+              >
+            </details>
           </div>
         </template>
         <form v-else class="schedule-form" @submit.prevent="schedule">
+          <label
+            ><span>Канал публикации</span
+            ><Select
+              v-model="channelId"
+              :options="channelOptions"
+              option-label="label"
+              option-value="id"
+          /></label>
           <label
             ><span>Формат контента</span
             ><Select
@@ -509,6 +591,29 @@ onMounted(async () => {
             :loading="saving"
             >Добавить в расписание</Button
           >
+          <details class="channel-connector">
+            <summary>Добавить YouTube-канал</summary>
+            <p>Введите официальный ID канала, начинающийся с UC.</p>
+            <InputText
+              v-model="youtubeChannelRef"
+              placeholder="ID канала: UC…"
+            />
+            <InputText
+              v-model="youtubeDisplayName"
+              placeholder="Название канала"
+              maxlength="120"
+            />
+            <Button
+              type="button"
+              severity="secondary"
+              :disabled="
+                !/^UC[A-Za-z0-9_-]{20,40}$/.test(youtubeChannelRef.trim())
+              "
+              :loading="saving"
+              @click="createYoutubeChannel"
+              >Подключить</Button
+            >
+          </details>
         </form>
       </aside>
     </div>
@@ -700,6 +805,23 @@ h2 {
 .schedule-form label {
   display: grid;
   gap: 0.35rem;
+}
+.channel-connector {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--cf-border);
+}
+.channel-connector summary {
+  cursor: pointer;
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+.channel-connector p {
+  margin: 0;
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
 }
 .native-control {
   width: 100%;

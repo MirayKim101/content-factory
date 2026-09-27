@@ -81,6 +81,7 @@ describe("publications api", () => {
     await api.create(
       projectId,
       {
+        platform: "LOCAL_DRY_RUN",
         channelId,
         approvalId: "00000000-0000-4000-8000-000000000004",
         exportResultId: "00000000-0000-4000-8000-000000000006",
