@@ -41,4 +41,36 @@ describe("PendingUploadReconciliationStartup", () => {
       "SOURCE_PENDING_RECONCILIATION_TIMEOUT",
     );
   });
+
+  it("aborts and drains reconciliation during module shutdown", async () => {
+    process.env.SOURCE_PENDING_STARTUP_TIMEOUT_MS = "30000";
+    process.env.S3_ACCESS_KEY = "test-access";
+    process.env.S3_SECRET_KEY = "test-secret";
+    let receivedSignal: AbortSignal | undefined;
+    const execute = vi.fn(
+      (_before: Date, _limit: number, signal: AbortSignal) => {
+        receivedSignal = signal;
+        return new Promise<number>((_resolve, reject) => {
+          signal.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          });
+        });
+      },
+    );
+    const logger = vi
+      .spyOn(Logger.prototype, "error")
+      .mockImplementation(() => undefined);
+    const startup = new PendingUploadReconciliationStartup({
+      execute,
+    } as unknown as ReconcilePendingUploads);
+
+    startup.onApplicationBootstrap();
+    await startup.onModuleDestroy();
+
+    expect(receivedSignal?.aborted).toBe(true);
+    expect(receivedSignal?.reason).toEqual(
+      new Error("SOURCE_PENDING_RECONCILIATION_SHUTDOWN"),
+    );
+    expect(logger).not.toHaveBeenCalled();
+  });
 });

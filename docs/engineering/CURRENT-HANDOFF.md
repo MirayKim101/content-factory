@@ -408,6 +408,12 @@ Media и montage API startup reconcilers переведены с boolean guard �
 Wiring drain доказан отдельным delayed reconciliation test; API `240/240`,
 typecheck, lint, production build и runtime health 3001/3100 прошли.
 
+Ручной pre-Twitch upload path также защищён при rollout:
+`PendingUploadReconciliationStartup` хранит активный AbortController,
+отменяет S3 reconciliation в `onModuleDestroy`, ждёт завершение и не логирует
+ожидаемый shutdown как timeout/error. API `241/241`, typecheck, lint и build
+прошли.
+
 Добавлен operator revoke publication channel через project-scoped API и UI.
 Serializable-транзакция переводит канал в `REVOKED` и отменяет только ещё не
 начатые `SCHEDULED`/`QUEUED` intents; `PROCESSING` остаётся в штатном remote

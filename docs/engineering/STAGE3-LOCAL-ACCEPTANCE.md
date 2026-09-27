@@ -90,11 +90,13 @@
   поэтому Prisma, BullMQ, S3 и application timers получают lifecycle callbacks.
 - Периодические media/montage API reconcilers работают single-flight и
   дренируют активный tick в `onModuleDestroy` до закрытия зависимостей.
+- Startup reconciliation ручных source uploads abort-aware на shutdown и
+  дренируется без ложной timeout/error записи.
 
 ## Воспроизведённые проверки
 
 ```text
-API:     240/240 unit tests
+API:     241/241 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  268/268 unit tests
 Web:     266/266 tests
