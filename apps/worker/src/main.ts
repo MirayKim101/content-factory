@@ -785,10 +785,13 @@ async function startWorker(): Promise<void> {
     },
     (event) => console.log(JSON.stringify(event)),
   );
-  await processFrameJob.reconcile();
+  const frameReconciliation = new SingleFlightTask(async () => {
+    await processFrameJob.reconcile();
+  });
+  await frameReconciliation.run();
   const frameReconcileTimer = setInterval(() => {
-    void processFrameJob
-      .reconcile()
+    void frameReconciliation
+      .run()
       .catch(() =>
         console.error(JSON.stringify({ event: "frame_reconciliation_failed" })),
       );
@@ -833,35 +836,38 @@ async function startWorker(): Promise<void> {
     config.leaseMs,
     (event) => console.log(JSON.stringify(event)),
   );
-  processJob.setRecoveredScratchBytes(
-    await exportScratchReconciler.reconcile(),
-  );
   const mediaScratchReconciler = new MediaScratchReconciler(
     repository,
     config.scratchDirectory,
     config.leaseMs,
     (event) => console.log(JSON.stringify(event)),
   );
-  await mediaScratchReconciler.reconcile();
+  const exportScratchReconciliation = new SingleFlightTask(async () => {
+    processJob.setRecoveredScratchBytes(
+      await exportScratchReconciler.reconcile(),
+    );
+  });
+  const mediaScratchReconciliation = new SingleFlightTask(async () => {
+    await mediaScratchReconciler.reconcile();
+  });
+  await exportScratchReconciliation.run();
+  await mediaScratchReconciliation.run();
   const exportScratchTimer = setInterval(
     () =>
-      void exportScratchReconciler
-        .reconcile()
-        .then((bytes) => processJob.setRecoveredScratchBytes(bytes))
-        .catch((error) =>
-          console.error(
-            JSON.stringify({
-              event: "export_scratch_reconcile_failed",
-              error: error instanceof Error ? error.message : "unknown",
-            }),
-          ),
+      void exportScratchReconciliation.run().catch((error) =>
+        console.error(
+          JSON.stringify({
+            event: "export_scratch_reconcile_failed",
+            error: error instanceof Error ? error.message : "unknown",
+          }),
         ),
+      ),
     Math.max(config.leaseMs, 30_000),
   );
   exportScratchTimer.unref();
   const mediaScratchTimer = setInterval(
     () =>
-      void mediaScratchReconciler.reconcile().catch((error) =>
+      void mediaScratchReconciliation.run().catch((error) =>
         console.error(
           JSON.stringify({
             event: "media_scratch_reconcile_failed",
@@ -934,17 +940,22 @@ async function startWorker(): Promise<void> {
     process.exitCode = exitCode;
     if (shutdownPromise) return shutdownPromise;
     closing = true;
+    clearInterval(exportScratchTimer);
+    clearInterval(mediaScratchTimer);
+    clearInterval(frameReconcileTimer);
+    processFrameJob.abortAll();
     shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);
-      clearInterval(exportScratchTimer);
-      clearInterval(mediaScratchTimer);
-      clearInterval(frameReconcileTimer);
-      processFrameJob.abortAll();
       console.log(
         JSON.stringify({ event: "media_worker_stopping", workerId, signal }),
       );
       await worker.close().catch(() => undefined);
-      await processFrameJob.reconcile().catch(() => undefined);
+      await Promise.allSettled([
+        frameReconciliation.wait(),
+        exportScratchReconciliation.wait(),
+        mediaScratchReconciliation.wait(),
+      ]);
+      await frameReconciliation.run().catch(() => undefined);
       await Promise.allSettled([
         sourceCache.close(),
         repository.close(),
