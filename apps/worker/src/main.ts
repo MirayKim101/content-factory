@@ -277,10 +277,17 @@ async function startPublicationWorker(): Promise<void> {
     repository,
     providers,
   );
+  let recoveringPublications = false;
   const processDue = async (): Promise<void> => {
-    const intentIds = await repository.due();
-    await Promise.all(intentIds.map((intentId) => processor.execute(intentId)));
-    await outcomeReconciler.execute();
+    if (recoveringPublications) return;
+    recoveringPublications = true;
+    try {
+      for (const intentId of await repository.due())
+        await processor.execute(intentId);
+      await outcomeReconciler.execute();
+    } finally {
+      recoveringPublications = false;
+    }
   };
   const worker = new Worker(
     PUBLICATION_QUEUE_NAME,
