@@ -1,6 +1,6 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-25. Продолжение сессии; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-09-28. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
 ## Главный результат
 
@@ -14,6 +14,20 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 и не отражала recovered Mac project. Точный отчёт: `MAC-WSL-MERGE-REPORT.md`.
 
 ## Текущий этап
+
+- Stage 3 control/data plane реализован default-off: Twitch allowlist,
+  EventSub inbox и Helix reconciliation; durable resumable VOD import через
+  фиксированный media gateway; provider-neutral clip suggestions; отдельный
+  9:16 render/approval; scheduled LOCAL_DRY_RUN, YouTube resumable и TikTok
+  Direct Post adapters; reconciliation неизвестного remote outcome и metrics.
+- Ручной pre-Twitch upload/link, горизонтальный pipeline и ZIP export не зависят
+  от Stage 3 flags. Twitch-import создаёт `NOT_REVIEWED` authorization и не
+  обходит ручное подтверждение прав.
+- Миграция 41 применена к restored PostgreSQL. Реальный local gateway → Range
+  download → SHA-256 → MinIO multipart → atomic Project/Source/Artifact smoke
+  прошёл; source остался `NOT_REVIEWED`. Production Docker FFmpeg сформировал и
+  декодировал 1080×1920 H.264/AAC. Внешний Twitch/YouTube/TikTok credentialed
+  smoke намеренно не выполнялся без production credentials и rollout flags.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,
@@ -91,7 +105,7 @@ render/export/recovery suite этой объединённой версии не
 `http://127.0.0.1:3100`, API: `127.0.0.1:3001`. Порт 3000 зарезервирован
 владельцем для другого проекта и не используется Content Factory.
 Новые контейнеры, сеть и тома имеют префикс `content-factory-restored`.
-Порты зависимостей: 15432/16379/19000/19001. В рабочей базе применены все 29
+Порты зависимостей: 15432/16379/19000/19001. В рабочей базе применена 41
 миграций, включая transcript recovery и additive repair semantics для
 `updatedAt`; Prisma status сообщает schema up to date. Перед rollout сделан и
 полноценно восстановлен в disposable DB свежий backup; evidence:
@@ -212,9 +226,10 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
 3. Провести браузерный smoke текущего UI на порту 3100. Автоматизированный
    Windows computer-use из этой WSL-сессии не подключился, поэтому HTTP health
    и web `238/238` не заменяют визуальную операторскую проверку.
-4. После human benchmark принять rollout/merge решение. Stage 3
-   (Twitch/resumable ingestion, vertical pipeline, publishing и analytics)
-   остаётся за текущей pre-Twitch границей.
+4. Перед production rollout подключить утверждённые Twitch media gateway и
+   OAuth credentials YouTube/TikTok, включать admission flags по одному и
+   выполнить credentialed canary. До этого внешние записи закрыты, local
+   dry-run и весь ручной путь доступны.
 
 Ручная реклама, ручные обложки и полный локальный horizontal pipeline уже
 существуют. Техническая реализация pre-Twitch Stage 2B завершена; полный
