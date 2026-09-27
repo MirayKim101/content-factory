@@ -87,6 +87,7 @@ describe("Twitch EventSub reconciliation", () => {
   });
 
   it.each([
+    "not-a-url",
     "http://127.0.0.1:3001/api/v1/twitch/eventsub",
     "https://10.0.0.5/api/v1/twitch/eventsub",
     "https://172.20.0.5/api/v1/twitch/eventsub",

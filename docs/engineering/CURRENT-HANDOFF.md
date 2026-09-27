@@ -487,5 +487,6 @@ production build прошли.
 пропускала private IP и произвольный path; теперь разрешены только публичный
 host, порт 443 и точный `/api/v1/twitch/eventsub`. Localhost, RFC1918/shared/
 link-local ranges, IPv6 loopback/ULA/mapped addresses и чужой path закрыты
-fail-closed до обращения к Twitch. Worker `265/265`, typecheck, lint и build
+fail-closed до обращения к Twitch. Невалидная URL также нормализуется в
+контролируемую config-ошибку. Worker `266/266`, typecheck, lint и build
 прошли.

@@ -164,7 +164,12 @@ function parseSubscriptionPage(value: unknown): {
 }
 
 function requirePublicHttpsCallback(value: string): string {
-  const url = new URL(value);
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error("CONFIG_TWITCH_EVENTSUB_CALLBACK_URL_INVALID");
+  }
   const hostname = url.hostname.replace(/^\[|\]$/g, "").toLowerCase();
   if (
     url.protocol !== "https:" ||

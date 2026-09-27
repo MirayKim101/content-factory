@@ -79,7 +79,7 @@
 ```text
 API:     235/235 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  265/265 unit tests
+Worker:  266/266 unit tests
 Web:     255/255 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
