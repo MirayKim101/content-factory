@@ -148,6 +148,8 @@ export class PublicationIntentResponseDto {
   state!: string;
   @ApiProperty({ type: "integer", minimum: 0 }) attemptCount!: number;
   @ApiProperty({ type: "integer", minimum: 0 }) retryBudget!: number;
+  @ApiProperty({ type: String, format: "date-time", nullable: true })
+  nextAttemptAt!: string | null;
   @ApiProperty({ type: String, nullable: true }) remotePublicationId!:
     string | null;
   @ApiProperty({ type: String, nullable: true }) remoteStatus!: string | null;

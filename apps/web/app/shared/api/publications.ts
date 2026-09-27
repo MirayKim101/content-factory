@@ -61,6 +61,7 @@ const intentSchema: z.ZodType<PublicationIntent> = z.object({
   ]),
   attemptCount: z.number().int().nonnegative(),
   retryBudget: z.number().int().nonnegative(),
+  nextAttemptAt: z.iso.datetime().nullable(),
   remotePublicationId: z.string().nullable(),
   remoteStatus: z.string().nullable(),
   failure: z

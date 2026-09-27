@@ -623,6 +623,12 @@ onUnmounted(() => {
                 }}
               </p>
               <small v-if="item.failure">{{ item.failure.message }}</small>
+              <small
+                v-if="item.state === 'QUEUED' && item.nextAttemptAt"
+                class="reconciliation-note"
+              >
+                Следующая попытка: {{ formatDate(item.nextAttemptAt) }}
+              </small>
               <dl v-if="item.latestMetrics" class="publication-metrics">
                 <div>
                   <dt>Просмотры</dt>

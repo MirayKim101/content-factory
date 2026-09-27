@@ -377,3 +377,8 @@ retry очищает backoff. Additive migration
 tables, 0 invalid constraints, колонка `nextAttemptAt` присутствует. База proof
 удалена, `pg_database` вернул 0. После изменения прошли API `232/232`, worker
 `254/254`, typecheck, lint и production builds.
+
+`nextAttemptAt` добавлен в publication response/OpenAPI и показывается в UI
+для `QUEUED` retry, поэтому оператор отличает ожидающий backoff от зависшей
+задачи. API `232/232`, web `248/248`, оба typecheck/lint/build и двусторонний
+OpenAPI drift check прошли.

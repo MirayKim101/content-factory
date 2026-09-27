@@ -415,6 +415,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
       state: row.state,
       attemptCount: row.attemptCount,
       retryBudget: row.retryBudget,
+      nextAttemptAt: row.nextAttemptAt,
       remotePublicationId: row.remotePublicationId,
       remoteStatus: row.remoteStatus,
       failure:

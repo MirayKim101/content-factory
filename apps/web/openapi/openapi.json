@@ -4719,6 +4719,11 @@
           "metadataSnapshot": {
             "type": "object"
           },
+          "nextAttemptAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
           "platform": {
             "enum": ["LOCAL_DRY_RUN", "YOUTUBE", "TIKTOK"],
             "type": "string"
@@ -4791,6 +4796,7 @@
           "state",
           "attemptCount",
           "retryBudget",
+          "nextAttemptAt",
           "remotePublicationId",
           "remoteStatus",
           "failure",

@@ -29,7 +29,8 @@
   трёх последовательных transient/network/5xx ошибок circuit открывается на
   60 секунд; validation errors и durable unknown-remote handoff его не открывают.
 - Provider retry сохраняет отдельный `nextAttemptAt` с exponential backoff
-  30/60/120 секунд и cap 15 минут; исходный publication schedule не меняется.
+  30/60/120 секунд и cap 15 минут; исходный publication schedule не меняется,
+  API и UI явно показывают время следующей попытки.
 
 ## Воспроизведённые проверки
 

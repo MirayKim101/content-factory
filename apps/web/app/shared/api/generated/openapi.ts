@@ -2764,6 +2764,8 @@ export interface components {
         viewCount?: string;
       } | null;
       metadataSnapshot: Record<string, never>;
+      /** Format: date-time */
+      nextAttemptAt: string | null;
       /** @enum {string} */
       platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
       /** Format: uuid */

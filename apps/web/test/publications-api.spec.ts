@@ -68,6 +68,7 @@ describe("publications api", () => {
       state: "QUEUED",
       attemptCount: 0,
       retryBudget: 3,
+      nextAttemptAt: null,
       remotePublicationId: null,
       remoteStatus: null,
       failure: null,
@@ -81,10 +82,12 @@ describe("publications api", () => {
         }),
     );
 
-    await createPublicationsApi("/api/v1", fetchMock as typeof fetch).retry(
-      intentId,
-    );
+    const retried = await createPublicationsApi(
+      "/api/v1",
+      fetchMock as typeof fetch,
+    ).retry(intentId);
 
+    expect(retried.nextAttemptAt).toBeNull();
     expect(fetchMock).toHaveBeenCalledWith(
       `/api/v1/publications/${intentId}/retry`,
       { method: "POST" },
@@ -188,6 +191,7 @@ describe("publications api", () => {
             state: "SCHEDULED",
             attemptCount: 0,
             retryBudget: 0,
+            nextAttemptAt: null,
             remotePublicationId: null,
             remoteStatus: null,
             failure: null,

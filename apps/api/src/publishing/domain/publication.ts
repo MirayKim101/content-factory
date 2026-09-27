@@ -21,6 +21,7 @@ export interface PublicationIntentView {
   state: PublicationState;
   attemptCount: number;
   retryBudget: number;
+  nextAttemptAt: Date | null;
   remotePublicationId: string | null;
   remoteStatus: string | null;
   failure: { code: string; message: string } | null;
