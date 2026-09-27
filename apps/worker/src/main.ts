@@ -2,7 +2,11 @@ import { randomUUID } from "node:crypto";
 import { chmod, mkdir, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { parseMediaJobReference } from "@content-factory/contracts";
+import {
+  parseMediaJobReference,
+  parsePublicationJobReference,
+  PUBLICATION_QUEUE_NAME,
+} from "@content-factory/contracts";
 import { Worker } from "bullmq";
 
 import { ProcessMediaJob } from "./application/process-media-job.js";
@@ -22,6 +26,9 @@ import { verifyWorkerRollbackCompatibility } from "./rollback-compatibility.js";
 import { PgTranscriptWorker } from "./infrastructure/pg-transcript-worker.js";
 import { PgResearchWorker } from "./infrastructure/pg-research-worker.js";
 import { PgImageSuggestionWorker } from "./infrastructure/pg-image-suggestion-worker.js";
+import { ProcessPublicationIntent } from "./application/process-publication-intent.js";
+import { LocalDryRunPublicationAdapter } from "./infrastructure/local-dry-run-publication-adapter.js";
+import { PgPublicationWorkerRepository } from "./infrastructure/pg-publication-worker.repository.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -33,7 +40,78 @@ if (process.argv.includes("--verify-admission-off-rollback")) {
     scratchDirectory: rollbackConfig.scratchDirectory,
   });
 } else {
-  await (process.env.WORKER_ROLE === "ai" ? startAiWorker() : startWorker());
+  await (process.env.WORKER_ROLE === "ai"
+    ? startAiWorker()
+    : process.env.WORKER_ROLE === "publication"
+      ? startPublicationWorker()
+      : startWorker());
+}
+
+async function startPublicationWorker(): Promise<void> {
+  const config = workerConfig();
+  const workerId = `publication-worker-${randomUUID()}`;
+  const repository = new PgPublicationWorkerRepository(config.databaseUrl);
+  const processor = new ProcessPublicationIntent(repository, [
+    new LocalDryRunPublicationAdapter(),
+  ]);
+  const processDue = async (): Promise<void> => {
+    const intentIds = await repository.due();
+    await Promise.all(intentIds.map((intentId) => processor.execute(intentId)));
+  };
+  const worker = new Worker(
+    PUBLICATION_QUEUE_NAME,
+    async (delivery) => {
+      const reference = parsePublicationJobReference(delivery.data);
+      await processor.execute(reference.publicationIntentId);
+    },
+    {
+      connection: { ...config.redis, maxRetriesPerRequest: null },
+      concurrency: 2,
+    },
+  );
+  worker.on("error", (error) =>
+    console.error(
+      JSON.stringify({
+        event: "publication_worker_error",
+        workerId,
+        error: error.message,
+      }),
+    ),
+  );
+  await processDue();
+  const recoveryTimer = setInterval(() => {
+    void processDue().catch((error) =>
+      console.error(
+        JSON.stringify({
+          event: "publication_reconciliation_failed",
+          workerId,
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
+    );
+  }, 30_000);
+  recoveryTimer.unref();
+  let shutdownPromise: Promise<void> | undefined;
+  const shutdown = (): Promise<void> => {
+    if (shutdownPromise) return shutdownPromise;
+    clearInterval(recoveryTimer);
+    shutdownPromise = Promise.allSettled([worker.close(), repository.close()]).then(
+      () => undefined,
+    );
+    return shutdownPromise;
+  };
+  for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.once(signal, () => void shutdown());
+  }
+  await worker.waitUntilReady();
+  console.log(
+    JSON.stringify({
+      event: "publication_worker_started",
+      workerId,
+      queue: PUBLICATION_QUEUE_NAME,
+      adapters: ["LOCAL_DRY_RUN"],
+    }),
+  );
 }
 
 async function startAiWorker(): Promise<void> {

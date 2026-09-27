@@ -31,21 +31,27 @@ function repository(): PublicationRepository {
     cancel: vi.fn(),
   };
 }
+function dispatcher() {
+  return { dispatch: vi.fn(async () => undefined) };
+}
 
 describe("CreatePublicationIntent", () => {
   it("fails closed before touching persistence", async () => {
     const repo = repository();
-    const useCase = new CreatePublicationIntent(repo, false);
+    const dispatch = dispatcher();
+    const useCase = new CreatePublicationIntent(repo, false, dispatch);
     await expect(useCase.execute(base)).rejects.toBeInstanceOf(
       PublishingUnavailableError,
     );
     expect(repo.create).not.toHaveBeenCalled();
+    expect(dispatch.dispatch).not.toHaveBeenCalled();
   });
 
   it("canonicalizes the instant and produces a stable fingerprint", async () => {
     const repo = repository();
+    const dispatch = dispatcher();
     const now = () => new Date("2026-09-27T00:00:00.000Z");
-    const useCase = new CreatePublicationIntent(repo, true, now);
+    const useCase = new CreatePublicationIntent(repo, true, dispatch, now);
     await useCase.execute(base);
     await useCase.execute({
       ...base,
@@ -58,14 +64,18 @@ describe("CreatePublicationIntent", () => {
     expect(calls[0]?.[0].scheduledAt.toISOString()).toBe(
       "2026-10-01T09:00:00.000Z",
     );
+    expect(dispatch.dispatch).toHaveBeenCalledTimes(2);
+    expect(dispatch.dispatch).toHaveBeenLastCalledWith({
+      id: expect.any(String),
+      scheduledAt: new Date("2026-10-01T09:00:00.000Z"),
+    });
   });
 
   it("rejects past schedules, invalid timezones, and non-object metadata", async () => {
     const repo = repository();
-    const useCase = new CreatePublicationIntent(
-      repo,
-      true,
-      () => new Date("2026-09-27T00:00:00.000Z"),
+    const dispatch = dispatcher();
+    const useCase = new CreatePublicationIntent(repo, true, dispatch, () =>
+      new Date("2026-09-27T00:00:00.000Z"),
     );
     await expect(
       useCase.execute({ ...base, scheduledAt: "2020-01-01T00:00:00Z" }),
@@ -81,7 +91,8 @@ describe("CreatePublicationIntent", () => {
 
   it("keeps external providers unavailable in the dry-run slice", async () => {
     const repo = repository();
-    const useCase = new CreatePublicationIntent(repo, true);
+    const dispatch = dispatcher();
+    const useCase = new CreatePublicationIntent(repo, true, dispatch);
     await expect(
       useCase.execute({ ...base, platform: "YOUTUBE" }),
     ).rejects.toBeInstanceOf(PublishingUnavailableError);

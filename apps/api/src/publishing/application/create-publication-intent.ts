@@ -17,6 +17,10 @@ import {
   PUBLISHING_ADMISSION_ENABLED,
   type PublicationRepository,
 } from "./publication-repository.port.js";
+import {
+  PUBLICATION_DISPATCH,
+  type PublicationDispatch,
+} from "./publication-dispatch.port.js";
 
 export interface CreatePublicationIntentInput {
   idempotencyKey: string;
@@ -37,6 +41,8 @@ export class CreatePublicationIntent {
     private readonly repository: PublicationRepository,
     @Inject(PUBLISHING_ADMISSION_ENABLED)
     private readonly admissionEnabled: boolean,
+    @Inject(PUBLICATION_DISPATCH)
+    private readonly dispatch: PublicationDispatch,
     @Optional()
     private readonly clock: () => Date = () => new Date(),
   ) {}
@@ -67,7 +73,7 @@ export class CreatePublicationIntent {
       timezone,
       metadataSnapshot,
     };
-    return this.repository.create({
+    const intent = await this.repository.create({
       id: randomUUID(),
       idempotencyKey: input.idempotencyKey,
       requestFingerprint: createHash("sha256")
@@ -76,6 +82,10 @@ export class CreatePublicationIntent {
       ...canonical,
       scheduledAt,
     });
+    await Promise.allSettled([
+      this.dispatch.dispatch({ id: intent.id, scheduledAt: intent.scheduledAt }),
+    ]);
+    return intent;
   }
 }
 

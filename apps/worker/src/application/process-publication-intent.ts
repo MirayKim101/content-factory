@@ -1,0 +1,44 @@
+import type {
+  PublicationProvider,
+  PublicationWorkerRepository,
+} from "./publication.port.js";
+
+export class ProcessPublicationIntent {
+  constructor(
+    private readonly repository: PublicationWorkerRepository,
+    private readonly providers: readonly PublicationProvider[],
+    private readonly clock: () => Date = () => new Date(),
+  ) {}
+
+  async execute(intentId: string): Promise<boolean> {
+    const claim = await this.repository.claim(intentId, this.clock());
+    if (!claim) return false;
+    const provider = this.providers.find(
+      (candidate) => candidate.platform === claim.platform,
+    );
+    if (!provider) {
+      await this.repository.failFinal(
+        claim,
+        "PUBLICATION_PROVIDER_UNAVAILABLE",
+        "No enabled adapter exists for the requested platform.",
+        this.clock(),
+      );
+      return true;
+    }
+    try {
+      const result = await provider.publish(claim);
+      if (claim.platform !== "LOCAL_DRY_RUN")
+        throw new Error("PUBLICATION_EXTERNAL_PROVIDER_NOT_ADMITTED");
+      await this.repository.finalizeDryRun(claim, result, this.clock());
+      return true;
+    } catch (error) {
+      await this.repository.failFinal(
+        claim,
+        "PUBLICATION_DRY_RUN_FAILED",
+        error instanceof Error ? error.message : "Dry-run adapter failed.",
+        this.clock(),
+      );
+      throw error;
+    }
+  }
+}

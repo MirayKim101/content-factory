@@ -18,12 +18,15 @@ import {
 } from "./application/publication-repository.port.js";
 import { PrismaPublicationRepository } from "./infrastructure/prisma-publication.repository.js";
 import { PublicationController } from "./presentation/publication.controller.js";
+import { PUBLICATION_DISPATCH } from "./application/publication-dispatch.port.js";
+import { BullMqPublicationDispatch } from "./infrastructure/bullmq-publication-dispatch.js";
 
 @Module({
   imports: [ProjectsModule],
   controllers: [PublicationController],
   providers: [
     PrismaPublicationRepository,
+    BullMqPublicationDispatch,
     CreatePublicationIntent,
     CreatePublicationChannel,
     ListPublicationChannels,
@@ -37,6 +40,10 @@ import { PublicationController } from "./presentation/publication.controller.js"
     {
       provide: PUBLISHING_ADMISSION_ENABLED,
       useFactory: () => publishingAdmissionEnabled(process.env),
+    },
+    {
+      provide: PUBLICATION_DISPATCH,
+      useExisting: BullMqPublicationDispatch,
     },
   ],
 })
