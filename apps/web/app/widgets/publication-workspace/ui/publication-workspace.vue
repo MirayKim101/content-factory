@@ -397,6 +397,13 @@ async function cancel(item: PublicationIntent): Promise<void> {
 }
 async function retry(item: PublicationIntent): Promise<void> {
   if (saving.value || item.state !== "FAILED_FINAL") return;
+  if (
+    item.platform !== "LOCAL_DRY_RUN" &&
+    !confirm(
+      `Повторно отправить «${metadataTitle(item)}» в ${item.platform === "YOUTUBE" ? "YouTube" : "TikTok"}? Убедитесь, что публикации нет на площадке.`,
+    )
+  )
+    return;
   saving.value = true;
   error.value = null;
   notice.value = null;
