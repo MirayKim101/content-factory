@@ -15,7 +15,7 @@ import { ProcessMediaJob } from "./application/process-media-job.js";
 import { ProcessFrameJob } from "./application/process-frame-job.js";
 import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.js";
 import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
-import { workerConfig } from "./config.js";
+import { workerConfig, youtubePublishingConfig } from "./config.js";
 import { FfmpegMediaProcessor } from "./infrastructure/ffmpeg-media-processor.js";
 import { FfmpegAssemblyRenderer } from "./infrastructure/ffmpeg-assembly-renderer.js";
 import { LocalSourceCache } from "./infrastructure/local-source-cache.js";
@@ -38,6 +38,12 @@ import { TwitchHelixClient } from "./infrastructure/twitch-helix-client.js";
 import { ProcessVerticalRender } from "./application/process-vertical-render.js";
 import { FfmpegVerticalRenderer } from "./infrastructure/ffmpeg-vertical-renderer.js";
 import { PgVerticalRenderRepository } from "./infrastructure/pg-vertical-render.repository.js";
+import type { PublicationProvider } from "./application/publication.port.js";
+import { PgPublicationSessionRepository } from "./infrastructure/pg-publication-session.repository.js";
+import { PublicationSessionCipher } from "./infrastructure/publication-session-cipher.js";
+import { YoutubeResumableTransport } from "./infrastructure/youtube-resumable-transport.js";
+import { YoutubePublicationAdapter } from "./infrastructure/youtube-publication-adapter.js";
+import { GoogleOAuthAccessTokenResolver } from "./infrastructure/google-oauth-access-token-resolver.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -235,7 +241,37 @@ async function startPublicationWorker(): Promise<void> {
   const config = workerConfig();
   const workerId = `publication-worker-${randomUUID()}`;
   const repository = new PgPublicationWorkerRepository(config.databaseUrl);
-  const providers = [new LocalDryRunPublicationAdapter()];
+  const providers: PublicationProvider[] = [
+    new LocalDryRunPublicationAdapter(),
+  ];
+  const externalClosers: Array<() => void | Promise<void>> = [];
+  const youtube = youtubePublishingConfig(process.env);
+  if (youtube) {
+    const sessionRepository = new PgPublicationSessionRepository(
+      config.databaseUrl,
+    );
+    const storage = new S3WorkerObjectStorage(
+      config.storage.bucket,
+      config.storage,
+    );
+    providers.push(
+      new YoutubePublicationAdapter(
+        new GoogleOAuthAccessTokenResolver(
+          youtube.clientId,
+          youtube.clientSecret,
+          youtube.credentials,
+        ),
+        storage,
+        sessionRepository,
+        new PublicationSessionCipher(youtube.currentKeyVersion, youtube.keys),
+        new YoutubeResumableTransport(),
+      ),
+    );
+    externalClosers.push(
+      () => sessionRepository.close(),
+      () => storage.close(),
+    );
+  }
   const processor = new ProcessPublicationIntent(repository, providers);
   const outcomeReconciler = new ReconcilePublicationOutcomes(
     repository,
@@ -286,6 +322,7 @@ async function startPublicationWorker(): Promise<void> {
     shutdownPromise = Promise.allSettled([
       worker.close(),
       repository.close(),
+      ...externalClosers.map((close) => close()),
     ]).then(() => undefined);
     return shutdownPromise;
   };
@@ -298,7 +335,7 @@ async function startPublicationWorker(): Promise<void> {
       event: "publication_worker_started",
       workerId,
       queue: PUBLICATION_QUEUE_NAME,
-      adapters: ["LOCAL_DRY_RUN"],
+      adapters: providers.map((provider) => provider.platform),
     }),
   );
 }

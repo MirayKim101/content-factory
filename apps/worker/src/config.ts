@@ -69,6 +69,64 @@ export interface PublicationSessionKeyConfig {
   keys: ReadonlyMap<string, Buffer>;
 }
 
+export interface YoutubePublishingConfig extends PublicationSessionKeyConfig {
+  clientId: string;
+  clientSecret: string;
+  credentials: Array<{
+    channelId: string;
+    externalChannelRef: string;
+    refreshToken: string;
+  }>;
+}
+
+export function youtubePublishingConfig(
+  environment: NodeJS.ProcessEnv,
+): YoutubePublishingConfig | null {
+  if (environment.YOUTUBE_PUBLISHING_ENABLED?.trim() !== "1") return null;
+  const clientId = environment.YOUTUBE_OAUTH_CLIENT_ID?.trim();
+  const clientSecret = environment.YOUTUBE_OAUTH_CLIENT_SECRET?.trim();
+  const rawCredentials = environment.YOUTUBE_CHANNEL_CREDENTIALS_JSON?.trim();
+  if (!clientId) throw new Error("CONFIG_YOUTUBE_OAUTH_CLIENT_ID_REQUIRED");
+  if (!clientSecret)
+    throw new Error("CONFIG_YOUTUBE_OAUTH_CLIENT_SECRET_REQUIRED");
+  if (!rawCredentials)
+    throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_REQUIRED");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawCredentials);
+  } catch {
+    throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
+  }
+  if (!Array.isArray(parsed) || !parsed.length)
+    throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
+  const credentials = parsed.map((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item))
+      throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
+    const value = item as Record<string, unknown>;
+    if (
+      Object.keys(value).some(
+        (key) =>
+          !["channelId", "externalChannelRef", "refreshToken"].includes(key),
+      ) ||
+      typeof value.channelId !== "string" ||
+      typeof value.externalChannelRef !== "string" ||
+      typeof value.refreshToken !== "string"
+    )
+      throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
+    return {
+      channelId: value.channelId,
+      externalChannelRef: value.externalChannelRef,
+      refreshToken: value.refreshToken,
+    };
+  });
+  return {
+    clientId,
+    clientSecret,
+    credentials,
+    ...publicationSessionKeyConfig(environment),
+  };
+}
+
 export function publicationSessionKeyConfig(
   environment: NodeJS.ProcessEnv,
 ): PublicationSessionKeyConfig {

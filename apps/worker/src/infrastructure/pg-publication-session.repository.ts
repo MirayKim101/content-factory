@@ -109,4 +109,8 @@ export class PgPublicationSessionRepository implements PublicationSessionReposit
       [publicationIntentId, platform],
     );
   }
+
+  close(): Promise<void> {
+    return this.pool.end();
+  }
 }
