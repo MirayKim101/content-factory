@@ -89,6 +89,49 @@ export interface TikTokPublishingConfig extends PublicationSessionKeyConfig {
   }>;
 }
 
+export interface OpenAiClipGenerationConfig {
+  apiKey: string;
+  model: string;
+  timeoutMs: number;
+  baseUrl?: string;
+}
+
+export function openAiClipGenerationConfig(
+  environment: NodeJS.ProcessEnv,
+): OpenAiClipGenerationConfig | null {
+  if (environment.CLIP_GENERATION_ENABLED?.trim() !== "1") return null;
+  const provider = environment.CLIP_GENERATION_PROVIDER?.trim() || "OPENAI";
+  if (provider !== "OPENAI")
+    throw new Error("CONFIG_CLIP_GENERATION_PROVIDER_UNSUPPORTED");
+  const apiKey = environment.OPENAI_API_KEY?.trim();
+  const model = environment.CLIP_GENERATION_MODEL?.trim();
+  if (!apiKey) throw new Error("CONFIG_OPENAI_API_KEY_REQUIRED");
+  if (!model) throw new Error("CONFIG_CLIP_GENERATION_MODEL_REQUIRED");
+  const timeoutMs = integerFromEnvironment(
+    environment,
+    "CLIP_GENERATION_TIMEOUT_MS",
+    120_000,
+    5_000,
+    600_000,
+  );
+  const baseUrl = environment.OPENAI_BASE_URL?.trim();
+  return { apiKey, model, timeoutMs, ...(baseUrl ? { baseUrl } : {}) };
+}
+
+function integerFromEnvironment(
+  environment: NodeJS.ProcessEnv,
+  name: string,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const raw = environment[name];
+  const value = raw ? Number(raw) : fallback;
+  if (!Number.isSafeInteger(value) || value < min || value > max)
+    throw new Error(`CONFIG_${name}_INVALID`);
+  return value;
+}
+
 export function tiktokPublishingConfig(
   environment: NodeJS.ProcessEnv,
 ): TikTokPublishingConfig | null {
