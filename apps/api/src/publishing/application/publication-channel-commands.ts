@@ -4,11 +4,13 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { PublicationPlatform } from "@content-factory/contracts";
 
 import {
+  PublishingUnavailableError,
   requirePublicationLabel,
   requirePublicationTimezone,
 } from "../domain/publication.js";
 import {
   PUBLICATION_REPOSITORY,
+  PUBLISHING_ADMISSION_ENABLED,
   type PublicationRepository,
 } from "./publication-repository.port.js";
 
@@ -17,15 +19,19 @@ export class CreatePublicationChannel {
   constructor(
     @Inject(PUBLICATION_REPOSITORY)
     private readonly repository: PublicationRepository,
+    @Inject(PUBLISHING_ADMISSION_ENABLED)
+    private readonly admissionEnabled: boolean,
   ) {}
 
-  execute(input: {
+  async execute(input: {
     projectId: string;
     platform: PublicationPlatform;
     displayName: string;
     externalChannelRef: string;
     timezone: string;
   }) {
+    if (!this.admissionEnabled || input.platform !== "LOCAL_DRY_RUN")
+      throw new PublishingUnavailableError();
     return this.repository.createChannel({
       id: randomUUID(),
       projectId: input.projectId,
