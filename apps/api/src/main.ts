@@ -21,6 +21,7 @@ import {
   sourceAuthorizationRuntime,
 } from "./config/environment.js";
 import { HttpExceptionFilter } from "./http-exception.filter.js";
+import { enableApiShutdownHooks } from "./http-lifecycle.js";
 import { configureHttpSecurity } from "./http-security.js";
 import { verifyAdmissionOffRollbackCompatibility } from "./rollback-compatibility.js";
 
@@ -69,6 +70,7 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
 async function bootstrap(): Promise<void> {
   const config = apiEnvironment();
   const app = await createApp();
+  enableApiShutdownHooks(app);
   await app.listen(Number(process.env.PORT ?? 3001), config.apiHost);
 }
 
