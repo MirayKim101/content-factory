@@ -24,6 +24,9 @@
 - Vertical UI также получает эффективный server-side admission: при
   выключенном render flag создание новых задач заблокировано и объяснено,
   но история и подтверждение готовых результатов остаются доступны.
+- `.env.example` перечисляет все Stage 3 master switches default-off;
+  production-like compose render с подключёнными profiles подтверждает нули
+  для publishing, Twitch control/data plane и vertical rendering.
 - Publication uploads имеют 30-минутный bounded attempt deadline, status
   reconciliation — 60-секундный deadline; lease-loss по-прежнему имеет
   приоритет и не позволяет старому worker менять durable state.

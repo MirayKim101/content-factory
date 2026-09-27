@@ -471,3 +471,8 @@ CORS origin для `localhost:3000`: UI использует относител�
 same-origin Nuxt/edge proxy. Runtime proof после rebuild: прямой CORS preflight
 с origin 3000 не получает `Access-Control-Allow-Origin`, а
 `http://127.0.0.1:3100/api/v1/health` через proxy возвращает 200.
+
+В `.env.example` добавлены отсутствовавшие master switches
+`PUBLISHING_ENABLED=0` и `VERTICAL_RENDER_ENABLED=0`. Compose config с явно
+включёнными profiles `publishing`, `twitch`, `vertical` проверен: publishing,
+Twitch ingestion/auto-ingest/media-gateway и vertical admission остаются `0`.
