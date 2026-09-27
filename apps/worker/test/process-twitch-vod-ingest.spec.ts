@@ -1,0 +1,177 @@
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { ProcessTwitchVodIngest } from "../src/application/process-twitch-vod-ingest.js";
+
+const directories: string[] = [];
+const intentId = "00000000-0000-4000-8000-000000000001";
+
+afterEach(async () => {
+  await Promise.all(
+    directories
+      .splice(0)
+      .map((path) => rm(path, { recursive: true, force: true })),
+  );
+});
+
+describe("ProcessTwitchVodIngest", () => {
+  it("downloads, validates, hashes, uploads and finalizes one leased VOD", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const bytes = Buffer.concat([
+      Buffer.from([0, 0, 0, 20]),
+      Buffer.from("ftypisom"),
+      Buffer.alloc(32, 7),
+    ]);
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "candidate",
+        providerVideoId: "123",
+        projectName: "Stream",
+        attemptCount: 1,
+        leaseOwner: "worker",
+        downloadedBytes: 0n,
+        totalBytes: null,
+      })),
+      checkpoint: vi.fn(),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = {
+      open: vi.fn(async (_id: string, offset: bigint) => ({
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(bytes.subarray(Number(offset)));
+            controller.close();
+          },
+        }),
+        contentType: "video/mp4" as const,
+        totalSizeBytes: BigInt(bytes.length),
+        offset,
+      })),
+    };
+    const storage = {
+      upload: vi.fn(async (input: { filePath: string }) => {
+        expect(await readFile(input.filePath)).toEqual(bytes);
+        return { etag: "etag" };
+      }),
+    };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      storage as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    await expect(processor.execute("worker")).resolves.toBe(true);
+    expect(repository.complete).toHaveBeenCalledOnce();
+    expect(repository.fail).not.toHaveBeenCalled();
+    expect(storage.upload).toHaveBeenCalledWith(
+      expect.objectContaining({ uploadMode: "MULTIPART" }),
+    );
+  });
+
+  it("rejects non-MP4 media before object storage", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const bytes = Buffer.from("not an mp4 file");
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "c",
+        providerVideoId: "1",
+        projectName: "x",
+        attemptCount: 3,
+        leaseOwner: "w",
+        downloadedBytes: 0n,
+        totalBytes: null,
+      })),
+      checkpoint: vi.fn(),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = {
+      open: vi.fn(async () => ({
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(bytes);
+            controller.close();
+          },
+        }),
+        contentType: "video/mp4" as const,
+        totalSizeBytes: BigInt(bytes.length),
+        offset: 0n,
+      })),
+    };
+    const storage = { upload: vi.fn() };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      storage as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    await processor.execute("w");
+    expect(storage.upload).not.toHaveBeenCalled();
+    expect(repository.fail).toHaveBeenCalledWith(
+      intentId,
+      "w",
+      "TWITCH_VOD_MP4_INVALID",
+      expect.any(String),
+      false,
+    );
+  });
+
+  it("resumes after a crash that left a complete verified-size scratch file", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const bytes = Buffer.concat([
+      Buffer.from([0, 0, 0, 20]),
+      Buffer.from("ftypisom"),
+      Buffer.alloc(8),
+    ]);
+    const directory = join(scratch, "twitch-ingest");
+    await mkdir(directory);
+    await writeFile(join(directory, `${intentId}.part`), bytes);
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "c",
+        providerVideoId: "1",
+        projectName: "x",
+        attemptCount: 2,
+        leaseOwner: "w",
+        downloadedBytes: 0n,
+        totalBytes: BigInt(bytes.length),
+      })),
+      checkpoint: vi.fn(),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = { open: vi.fn() };
+    const storage = { upload: vi.fn(async () => ({})) };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      storage as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    await processor.execute("w");
+    expect(media.open).not.toHaveBeenCalled();
+    expect(repository.complete).toHaveBeenCalledOnce();
+  });
+});

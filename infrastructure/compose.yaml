@@ -283,6 +283,11 @@ services:
     environment:
       WORKER_ROLE: twitch
       TWITCH_INGESTION_ENABLED: ${TWITCH_INGESTION_ENABLED:-0}
+      TWITCH_VOD_MEDIA_GATEWAY_ENABLED: ${TWITCH_VOD_MEDIA_GATEWAY_ENABLED:-0}
+      TWITCH_VOD_MEDIA_GATEWAY_BASE_URL: ${TWITCH_VOD_MEDIA_GATEWAY_BASE_URL:-}
+      TWITCH_VOD_MEDIA_GATEWAY_TOKEN: ${TWITCH_VOD_MEDIA_GATEWAY_TOKEN:-}
+      TWITCH_VOD_MEDIA_REQUEST_TIMEOUT_MS: ${TWITCH_VOD_MEDIA_REQUEST_TIMEOUT_MS:-30000}
+      TWITCH_VOD_MAX_BYTES: ${TWITCH_VOD_MAX_BYTES:-107374182400}
       TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:-}
       TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:-}
       TWITCH_APP_ACCESS_TOKEN: ${TWITCH_APP_ACCESS_TOKEN:-}
@@ -304,6 +309,9 @@ services:
       SOURCE_AUTHORIZATION_POLICY: ${SOURCE_AUTHORIZATION_POLICY:-manual}
       DEPLOYMENT_PROFILE: ${DEPLOYMENT_PROFILE:-other}
       API_HOST: ${API_HOST:-127.0.0.1}
+      MEDIA_SCRATCH_DIRECTORY: /var/lib/content-factory/twitch
+    volumes:
+      - twitch-ingest-scratch:/var/lib/content-factory/twitch
     networks:
       - content-factory
     depends_on:
@@ -368,3 +376,4 @@ volumes:
   postgres-data:
   redis-data:
   minio-data:
+  twitch-ingest-scratch:

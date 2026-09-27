@@ -17,6 +17,7 @@ import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.j
 import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
 import {
   openAiClipGenerationConfig,
+  twitchVodMediaGatewayConfig,
   tiktokPublishingConfig,
   workerConfig,
   youtubePublishingConfig,
@@ -58,6 +59,8 @@ import { TikTokDirectPostTransport } from "./infrastructure/tiktok-direct-post-t
 import { TikTokPublicationAdapter } from "./infrastructure/tiktok-publication-adapter.js";
 import { OpenAiClipGenerationAdapter } from "./infrastructure/openai-clip-generation-adapter.js";
 import { PgClipGenerationWorker } from "./infrastructure/pg-clip-generation-worker.js";
+import { HttpTwitchVodMediaProvider } from "./infrastructure/http-twitch-vod-media-provider.js";
+import { ProcessTwitchVodIngest } from "./application/process-twitch-vod-ingest.js";
 
 const TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS = 5 * 60_000;
 
@@ -207,6 +210,21 @@ async function startTwitchWorker(): Promise<void> {
     : undefined;
   const workerId = `twitch-worker-${randomUUID()}`;
   const repository = new PgTwitchIngestionWorkerRepository(config.databaseUrl);
+  const mediaGateway = twitchVodMediaGatewayConfig(process.env);
+  const ingestStorage = mediaGateway
+    ? new S3WorkerObjectStorage(config.storage.bucket, config.storage)
+    : undefined;
+  const ingestProcessor =
+    mediaGateway && ingestStorage
+      ? new ProcessTwitchVodIngest(
+          repository,
+          new HttpTwitchVodMediaProvider(mediaGateway),
+          ingestStorage,
+          config.scratchDirectory,
+          twitchVodMaximumBytes(process.env),
+          Math.max(config.leaseMs, 7_200_000),
+        )
+      : undefined;
   const tokenProvider = tokenResolver ?? {
     resolve: () => Promise.resolve(staticAccessToken as string),
   };
@@ -253,11 +271,17 @@ async function startTwitchWorker(): Promise<void> {
         }
       }
       const result = await reconciler.execute();
+      let imported = 0;
+      if (ingestProcessor) {
+        while (imported < 1 && (await ingestProcessor.execute(workerId)))
+          imported += 1;
+      }
       if (
         subscriptionChanges.created ||
         subscriptionChanges.deleted ||
         result.events ||
-        result.channels
+        result.channels ||
+        imported
       )
         console.log(
           JSON.stringify({
@@ -266,6 +290,7 @@ async function startTwitchWorker(): Promise<void> {
             subscriptionsCreated: subscriptionChanges.created,
             subscriptionsDeleted: subscriptionChanges.deleted,
             ...result,
+            imported,
           }),
         );
     } finally {
@@ -289,13 +314,23 @@ async function startTwitchWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(timer);
-    shutdownPromise = repository.close();
+    shutdownPromise = repository.close().finally(() => ingestStorage?.close());
     return shutdownPromise;
   };
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.once(signal, () => void shutdown());
   }
   console.log(JSON.stringify({ event: "twitch_worker_started", workerId }));
+}
+
+function twitchVodMaximumBytes(environment: NodeJS.ProcessEnv): bigint {
+  const raw = environment.TWITCH_VOD_MAX_BYTES?.trim() || "107374182400";
+  if (!/^\d+$/.test(raw))
+    throw new Error("CONFIG_TWITCH_VOD_MAX_BYTES_INVALID");
+  const value = BigInt(raw);
+  if (value < 1n || value > 1_099_511_627_776n)
+    throw new Error("CONFIG_TWITCH_VOD_MAX_BYTES_INVALID");
+  return value;
 }
 
 function requireWorkerSecret(name: string): string {

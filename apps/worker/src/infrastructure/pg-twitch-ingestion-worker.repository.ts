@@ -7,8 +7,14 @@ import type {
   TwitchIngestionWorkerRepository,
   TwitchVodPage,
 } from "../application/twitch-reconciliation.port.js";
+import type {
+  TwitchVodIngestLease,
+  TwitchVodIngestRepository,
+} from "../application/twitch-vod-ingest.port.js";
 
-export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerRepository {
+export class PgTwitchIngestionWorkerRepository
+  implements TwitchIngestionWorkerRepository, TwitchVodIngestRepository
+{
   private readonly pool: Pool;
 
   constructor(databaseUrl: string) {
@@ -79,6 +85,185 @@ export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerR
       [now],
     );
     return result.rowCount ?? 0;
+  }
+
+  async claimNext(
+    workerId: string,
+    leaseMs: number,
+  ): Promise<TwitchVodIngestLease | null> {
+    const result = await this.pool.query<TwitchVodIngestLease>(
+      `WITH candidate AS (
+         SELECT i."id" FROM "TwitchVodIngestIntent" i
+         JOIN "TwitchVodCandidate" v ON v."id" = i."candidateId"
+         JOIN "TwitchIngestChannel" ch ON ch."id" = v."channelId"
+         WHERE v."state" = 'READY_FOR_INGEST'
+           AND ch."state" = 'ENABLED'
+           AND (i."state" = 'QUEUED' OR (i."state" = 'RETRY_WAIT' AND i."nextAttemptAt" <= now())
+             OR (i."state" IN ('DOWNLOADING','UPLOADING') AND i."leaseExpiresAt" < now()))
+         ORDER BY i."createdAt", i."id" FOR UPDATE OF i SKIP LOCKED LIMIT 1
+       )
+       UPDATE "TwitchVodIngestIntent" i SET "state" = 'DOWNLOADING',
+         "attemptCount" = i."attemptCount" + 1, "leaseOwner" = $1,
+         "leaseExpiresAt" = now() + ($2 * interval '1 millisecond'),
+         "nextAttemptAt" = NULL, "failureCode" = NULL, "failureMessage" = NULL, "updatedAt" = now()
+       FROM candidate c, "TwitchVodCandidate" v
+       WHERE i."id" = c."id" AND v."id" = i."candidateId"
+       RETURNING i."id", i."candidateId", v."providerVideoId", i."projectName", i."attemptCount", i."leaseOwner", i."downloadedBytes", i."totalBytes"`,
+      [workerId, Math.max(5_000, leaseMs)],
+    );
+    const row = result.rows[0];
+    return row
+      ? {
+          ...row,
+          downloadedBytes: BigInt(row.downloadedBytes),
+          totalBytes: row.totalBytes === null ? null : BigInt(row.totalBytes),
+        }
+      : null;
+  }
+
+  async checkpoint(
+    id: string,
+    workerId: string,
+    downloaded: bigint,
+    total: bigint,
+  ): Promise<void> {
+    await this.fencedUpdate(
+      id,
+      workerId,
+      `"downloadedBytes" = $3, "totalBytes" = $4, "leaseExpiresAt" = now() + interval '2 hours'`,
+      [downloaded.toString(), total.toString()],
+    );
+  }
+
+  async beginUpload(
+    id: string,
+    workerId: string,
+    objectKey: string,
+    sha256: string,
+  ): Promise<void> {
+    await this.fencedUpdate(
+      id,
+      workerId,
+      `"state" = 'UPLOADING', "objectKey" = $3, "sha256" = $4, "leaseExpiresAt" = now() + interval '2 hours'`,
+      [objectKey, sha256],
+    );
+  }
+
+  async complete(input: {
+    intentId: string;
+    workerId: string;
+    projectId: string;
+    sourceId: string;
+    artifactId: string;
+    objectKey: string;
+    sizeBytes: bigint;
+    sha256: string;
+    etag?: string;
+    version?: string;
+  }): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const locked = await client.query<{
+        candidateId: string;
+        projectName: string;
+      }>(
+        `SELECT "candidateId", "projectName" FROM "TwitchVodIngestIntent"
+         WHERE "id" = $1 AND "leaseOwner" = $2 AND "state" = 'UPLOADING' FOR UPDATE`,
+        [input.intentId, input.workerId],
+      );
+      const intent = locked.rows[0];
+      if (!intent) throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
+      await client.query(
+        `INSERT INTO "Project" ("id","idempotencyKey","requestFingerprint","name","status","createdAt","updatedAt")
+         VALUES ($1,$2,$3,$4,'SOURCE_READY',now(),now())`,
+        [
+          input.projectId,
+          `twitch-vod-ingest:${input.intentId}`,
+          input.sha256,
+          intent.projectName,
+        ],
+      );
+      await client.query(
+        `INSERT INTO "VideoSource" ("id","projectId","status","sourceVersion","originalFilename","contentType","sizeBytes","sha256","createdAt","updatedAt")
+         VALUES ($1,$2,'READY',1,$3,'video/mp4',$4,$5,now(),now())`,
+        [
+          input.sourceId,
+          input.projectId,
+          `twitch-${intent.candidateId}.mp4`,
+          input.sizeBytes.toString(),
+          input.sha256,
+        ],
+      );
+      await client.query(
+        `INSERT INTO "SourceAuthorization" ("sourceId","sourceVersion","status","revision","createdAt","updatedAt")
+         VALUES ($1,1,'NOT_REVIEWED',1,now(),now())`,
+        [input.sourceId],
+      );
+      await client.query(
+        `INSERT INTO "MediaArtifact" ("id","projectId","sourceId","role","status","objectKey","storageEtag","storageVersion","sizeBytes","sha256","contentType","lineageSourceId","lineageSourceVersion","recipeVersion","createdAt","updatedAt")
+         VALUES ($1,$2,$3,'SOURCE','READY',$4,$5,$6,$7,$8,'video/mp4',$3,1,'twitch-vod-ingest-v1',now(),now())`,
+        [
+          input.artifactId,
+          input.projectId,
+          input.sourceId,
+          input.objectKey,
+          input.etag ?? null,
+          input.version ?? null,
+          input.sizeBytes.toString(),
+          input.sha256,
+        ],
+      );
+      const vod = await client.query(
+        `UPDATE "TwitchVodCandidate" SET "state"='IMPORTED', "importedProjectId"=$2, "updatedAt"=now()
+         WHERE "id"=$1 AND "state"='READY_FOR_INGEST' AND "importedProjectId" IS NULL`,
+        [intent.candidateId, input.projectId],
+      );
+      if (vod.rowCount !== 1) throw new Error("TWITCH_VOD_INGEST_CONFLICT");
+      await client.query(
+        `UPDATE "TwitchVodIngestIntent" SET "state"='READY', "projectId"=$3,
+         "leaseOwner"=NULL,"leaseExpiresAt"=NULL,"updatedAt"=now() WHERE "id"=$1 AND "leaseOwner"=$2`,
+        [input.intentId, input.workerId, input.projectId],
+      );
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async fail(
+    id: string,
+    workerId: string,
+    code: string,
+    message: string,
+    retryable: boolean,
+  ): Promise<void> {
+    const state = retryable ? "RETRY_WAIT" : "FAILED_FINAL";
+    const result = await this.pool.query(
+      `UPDATE "TwitchVodIngestIntent" SET "state"=$3::"TwitchVodIngestState",
+       "nextAttemptAt"=CASE WHEN $4 THEN now()+interval '1 minute' ELSE NULL END,
+       "failureCode"=$5,"failureMessage"=$6,"leaseOwner"=NULL,"leaseExpiresAt"=NULL,"updatedAt"=now()
+       WHERE "id"=$1 AND "leaseOwner"=$2`,
+      [id, workerId, state, retryable, code, message],
+    );
+    if (result.rowCount !== 1) throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
+  }
+
+  private async fencedUpdate(
+    id: string,
+    workerId: string,
+    assignments: string,
+    values: unknown[],
+  ): Promise<void> {
+    const result = await this.pool.query(
+      `UPDATE "TwitchVodIngestIntent" SET ${assignments}, "updatedAt"=now()
+       WHERE "id"=$1 AND "leaseOwner"=$2 AND "state" IN ('DOWNLOADING','UPLOADING')`,
+      [id, workerId, ...values],
+    );
+    if (result.rowCount !== 1) throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
   }
 
   async dueChannels(limit = 25): Promise<TwitchChannelReconciliationTarget[]> {

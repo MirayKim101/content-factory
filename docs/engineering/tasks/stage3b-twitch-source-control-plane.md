@@ -44,6 +44,30 @@ reconciliation VOD-кандидатов. На этом срезе приложе
 ## Rollback
 
 Сначала выключить `TWITCH_INGESTION_ENABLED`, затем остановить ingest worker.
+
+## Automatic VOD data plane
+
+Автоматический импорт включается только совместно тремя независимыми флагами:
+`TWITCH_INGESTION_ENABLED=1`, `TWITCH_VOD_AUTO_INGEST_ENABLED=1` в API и
+`TWITCH_VOD_MEDIA_GATEWAY_ENABLED=1` у Twitch worker. Gateway должен быть
+фиксированным HTTPS origin с bearer token; произвольные URL от Twitch или
+пользователя worker не принимает.
+
+Импорт хранит durable intent, lease и byte checkpoint. Частичный MP4 лежит в
+отдельном persistent scratch volume и продолжается HTTP Range-запросом после
+рестарта. Перед multipart upload проверяются размер, MP4 `ftyp` и SHA-256.
+Проект, source, artifact и связь с VOD создаются одной транзакцией только после
+завершения upload. Идентификаторы и object key детерминированы от intent, поэтому
+retry после неизвестного результата не создаёт второй проект или объект.
+
+Автоматически импортированный source остаётся `NOT_REVIEWED`: оператор должен
+подтвердить права тем же ручным действием, что и для обычной загрузки. Пока это
+не сделано, source probe и последующая обработка не запускаются.
+
+Для экстренного отключения сначала выставить
+`TWITCH_VOD_AUTO_INGEST_ENABLED=0`, затем
+`TWITCH_VOD_MEDIA_GATEWAY_ENABLED=0`. Уже импортированные проекты и ручной
+`link-project` путь сохраняются.
 Таблицы channel/inbox/candidate не удалять: они нужны для deduplication и
 возобновления reconciliation. Ручной pre-Twitch путь остаётся основным.
 
