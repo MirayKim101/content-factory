@@ -5,6 +5,7 @@ import { EditorialContentModule } from "./editorial-content/editorial-content.mo
 import { ProjectsModule } from "./projects/projects.module.js";
 import { MediaPipelineModule } from "./media-pipeline/media-pipeline.module.js";
 import { AiContentModule } from "./ai-content/ai-content.module.js";
+import { PublishingModule } from "./publishing/publishing.module.js";
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AiContentModule } from "./ai-content/ai-content.module.js";
     MediaPipelineModule,
     EditorialContentModule,
     AiContentModule,
+    PublishingModule,
   ],
   controllers: [AppController],
 })

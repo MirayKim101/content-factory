@@ -59,6 +59,7 @@ const API_ENVIRONMENT_KEYS = [
   "EDITORIAL_FRAMES_ENABLED",
   "RESEARCH_TEXT_ENABLED",
   "THUMBNAIL_SUGGESTIONS_ENABLED",
+  "PUBLISHING_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -175,6 +176,7 @@ export interface ApiEnvironment {
   editorialFramesEnabled: boolean;
   researchTextEnabled: boolean;
   thumbnailSuggestionsEnabled: boolean;
+  publishingEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -261,6 +263,7 @@ export function apiEnvironment(): ApiEnvironment {
     researchTextEnabled: process.env.RESEARCH_TEXT_ENABLED === "1",
     thumbnailSuggestionsEnabled:
       process.env.THUMBNAIL_SUGGESTIONS_ENABLED === "1",
+    publishingEnabled: publishingAdmissionEnabled(process.env),
   };
 }
 
@@ -280,4 +283,10 @@ export function aiContextAdmissionEnabled(
   environment: NodeJS.ProcessEnv,
 ): boolean {
   return environment.AI_CONTEXT_ENABLED === "1";
+}
+
+export function publishingAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.PUBLISHING_ENABLED === "1";
 }

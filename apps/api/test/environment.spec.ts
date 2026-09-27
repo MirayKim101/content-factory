@@ -4,6 +4,7 @@ import {
   aiContextAdmissionEnabled,
   editorialExportAdmissionEnabled,
   editorialIntegratedReviewAdmissionEnabled,
+  publishingAdmissionEnabled,
 } from "../src/config/environment.js";
 
 describe("editorial export rollout flag", () => {
@@ -13,6 +14,16 @@ describe("editorial export rollout flag", () => {
     [{ EDITORIAL_EXPORT_ENABLED: "1" }, true],
   ] as const)("resolves %o to %s", (environment, expected) => {
     expect(editorialExportAdmissionEnabled(environment)).toBe(expected);
+  });
+});
+
+describe("publishing rollout flag", () => {
+  it.each([
+    [{}, false],
+    [{ PUBLISHING_ENABLED: "0" }, false],
+    [{ PUBLISHING_ENABLED: "1" }, true],
+  ] as const)("resolves %o to %s", (environment, expected) => {
+    expect(publishingAdmissionEnabled(environment)).toBe(expected);
   });
 });
 
