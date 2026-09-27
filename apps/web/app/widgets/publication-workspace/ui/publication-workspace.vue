@@ -68,6 +68,13 @@ const title = ref("");
 const description = ref("");
 const scheduledLocal = ref(defaultSchedule());
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+const minimumScheduledLocal = computed(() =>
+  localDateTime(Date.now() + 60_000),
+);
+const scheduleIsValid = computed(() => {
+  const instant = new Date(scheduledLocal.value).getTime();
+  return Number.isFinite(instant) && instant >= Date.now() + 30_000;
+});
 let publicationRefreshTimer: ReturnType<typeof setInterval> | undefined;
 
 const readyExports = computed(() =>
@@ -288,6 +295,10 @@ async function createChannel(): Promise<void> {
   }
 }
 async function schedule(): Promise<void> {
+  if (!scheduleIsValid.value) {
+    error.value = "Выберите время публикации хотя бы на минуту позже текущего.";
+    return;
+  }
   const selectedExport = readyExports.value.find(
     (item) => item.id === exportId.value,
   );
@@ -439,6 +450,10 @@ function stateLabel(state: PublicationIntent["state"]): string {
 function defaultSchedule(): string {
   const date = new Date(Date.now() + 60 * 60 * 1000);
   date.setMinutes(Math.ceil(date.getMinutes() / 15) * 15, 0, 0);
+  return localDateTime(date.getTime());
+}
+function localDateTime(timestamp: number): string {
+  const date = new Date(timestamp);
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return local.toISOString().slice(0, 16);
 }
@@ -865,15 +880,18 @@ onUnmounted(() => {
               v-model="scheduledLocal"
               class="native-control"
               type="datetime-local"
+              :min="minimumScheduledLocal"
               required
           /></label>
           <p class="timezone">
-            Часовой пояс: <strong>{{ timezone }}</strong>
+            Часовой пояс: <strong>{{ timezone }}</strong
+            >. Прошедшее время выбрать нельзя.
           </p>
           <Button
             type="submit"
             :disabled="
               (contentKind === 'EDITORIAL_EXPORT' ? !exportId : !verticalId) ||
+              !scheduleIsValid ||
               (activeChannel.platform === 'TIKTOK' &&
                 (!tiktokCreator || !tiktokConsent || !tiktokPrivacy)) ||
               saving

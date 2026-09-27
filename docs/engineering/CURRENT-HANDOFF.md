@@ -321,6 +321,9 @@ BullMQ delivery ID включает durable `updatedAt` revision intent: нов�
 Unsafe retry имеет отдельный API-код `PUBLICATION_RETRY_UNSAFE`; UI объясняет
 необходимость сверки и показывает Remote ID вместо вводящего в заблуждение
 общего конфликта.
+Планировщик UI блокирует прошедшее/невалидное локальное время до запроса,
+передаёт серверу ISO instant и явно показывает применяемый IANA timezone;
+серверная schedule policy остаётся финальной проверкой.
 
 После изменения прошли API `231/231`, web `247/247`, typecheck, lint, production
 build и двусторонняя проверка OpenAPI drift. Локально API работает на 3001, UI
