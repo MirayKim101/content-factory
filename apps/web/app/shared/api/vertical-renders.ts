@@ -24,6 +24,7 @@ const resultSchema = z.object({
   width: z.number().int(),
   height: z.number().int(),
   sizeBytes: z.string().regex(/^\d+$/),
+  downloadUrl: z.string(),
   completedAt: z.iso.datetime(),
   approval: approvalSchema.nullable(),
 });

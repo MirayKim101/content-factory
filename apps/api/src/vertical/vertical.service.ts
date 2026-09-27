@@ -169,6 +169,35 @@ export class VerticalService {
       },
     });
   }
+
+  async content(id: string) {
+    const intent = await this.prisma.verticalRenderIntent.findUnique({
+      where: { id },
+      include: {
+        job: true,
+        result: { include: { artifact: true } },
+      },
+    });
+    if (!intent) throw new VerticalNotFoundError();
+    const result = intent.result;
+    if (
+      intent.job?.state !== "READY" ||
+      !result ||
+      result.artifact.status !== "READY" ||
+      result.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+      result.artifact.pipelineJobId !== intent.job.id ||
+      result.artifact.projectId !== intent.projectId ||
+      result.artifact.lineageSourceId !== intent.sourceId ||
+      result.artifact.lineageSourceVersion !== intent.sourceVersion ||
+      result.artifact.sha256 !== result.sha256 ||
+      result.artifact.sizeBytes !== result.sizeBytes
+    )
+      throw new VerticalLineageInvalidError();
+    return {
+      objectKey: result.artifact.objectKey,
+      sizeBytes: result.sizeBytes,
+    };
+  }
 }
 
 interface VerticalRecord {
@@ -224,6 +253,7 @@ function verticalResponse(value: VerticalRecord) {
           width: value.result.width,
           height: value.result.height,
           sizeBytes: value.result.sizeBytes.toString(),
+          downloadUrl: `/api/v1/vertical-renders/${value.id}/content`,
           completedAt: value.result.completedAt,
           approval: value.result.approval
             ? {

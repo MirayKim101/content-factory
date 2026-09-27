@@ -255,14 +255,21 @@ onMounted(async () => {
                 item.job.failureMessage
               }}</small>
             </div>
-            <span v-if="item.result?.approval" class="approved"
-              >✓ Подтверждено</span
-            ><Button
-              v-else-if="item.job.state === 'READY'"
-              :disabled="saving"
-              @click="approve(item)"
-              >Подтвердить</Button
-            >
+            <div v-if="item.result" class="render-actions">
+              <a
+                class="preview-link"
+                :href="item.result.downloadUrl"
+                target="_blank"
+                rel="noopener"
+                >Открыть видео</a
+              >
+              <span v-if="item.result.approval" class="approved"
+                >✓ Подтверждено</span
+              >
+              <Button v-else :disabled="saving" @click="approve(item)"
+                >Подтвердить</Button
+              >
+            </div>
           </article>
         </div>
         <div v-else class="empty-state">
@@ -456,6 +463,15 @@ label > span {
 }
 .failure {
   color: var(--cf-danger) !important;
+}
+.render-actions {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: end;
+}
+.preview-link {
+  font-size: 0.78rem;
+  font-weight: 750;
 }
 .composer label {
   display: block;

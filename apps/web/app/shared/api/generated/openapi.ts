@@ -1089,6 +1089,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/vertical-renders/{id}/content": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["VerticalController_content"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2937,6 +2953,8 @@ export interface components {
       artifactId: string;
       /** Format: date-time */
       completedAt: string;
+      /** Format: uri-reference */
+      downloadUrl: string;
       /** @example 1920 */
       height: number;
       /** Format: uuid */
@@ -6329,6 +6347,23 @@ export interface operations {
     requestBody?: never;
     responses: {
       201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  VerticalController_content: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
         headers: {
           [name: string]: unknown;
         };

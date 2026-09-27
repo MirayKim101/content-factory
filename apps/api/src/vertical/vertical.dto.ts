@@ -30,6 +30,7 @@ export class VerticalResultResponseDto {
   @ApiProperty({ type: Number, example: 1080 }) width!: number;
   @ApiProperty({ type: Number, example: 1920 }) height!: number;
   @ApiProperty({ type: String, example: "720885" }) sizeBytes!: string;
+  @ApiProperty({ type: String, format: "uri-reference" }) downloadUrl!: string;
   @ApiProperty({ type: String, format: "date-time" }) completedAt!: Date;
   @ApiProperty({ type: VerticalApprovalSummaryDto, nullable: true })
   approval!: VerticalApprovalSummaryDto | null;

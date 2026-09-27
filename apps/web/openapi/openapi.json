@@ -6131,6 +6131,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "downloadUrl": {
+            "format": "uri-reference",
+            "type": "string"
+          },
           "height": {
             "example": 1920,
             "type": "number"
@@ -6154,6 +6158,7 @@
           "width",
           "height",
           "sizeBytes",
+          "downloadUrl",
           "completedAt",
           "approval"
         ],
@@ -10962,6 +10967,18 @@
         "parameters": [],
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "tags": ["vertical"]
+      }
+    },
+    "/api/v1/vertical-renders/{id}/content": {
+      "get": {
+        "operationId": "VerticalController_content",
+        "parameters": [],
+        "responses": {
+          "200": {
             "description": ""
           }
         },

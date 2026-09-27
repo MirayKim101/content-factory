@@ -1,3 +1,5 @@
+import type { ServerResponse } from "node:http";
+
 import {
   BadRequestException,
   Body,
@@ -5,10 +7,14 @@ import {
   Controller,
   Get,
   Headers,
+  HttpException,
+  HttpStatus,
+  Inject,
   NotFoundException,
   Param,
   ParseUUIDPipe,
   Post,
+  Res,
   ServiceUnavailableException,
 } from "@nestjs/common";
 import {
@@ -29,11 +35,19 @@ import {
   VerticalService,
   VerticalUnavailableError,
 } from "./vertical.service.js";
+import {
+  OBJECT_STORAGE,
+  ObjectRangeNotSatisfiableError,
+  type ObjectStorage,
+} from "../projects/application/object-storage.port.js";
 
 @ApiTags("vertical")
 @Controller("api/v1")
 export class VerticalController {
-  constructor(private readonly service: VerticalService) {}
+  constructor(
+    @Inject(VerticalService) private readonly service: VerticalService,
+    @Inject(OBJECT_STORAGE) private readonly storage: ObjectStorage,
+  ) {}
 
   @Post("projects/:projectId/vertical-renders")
   @ApiHeader({ name: "Idempotency-Key", required: true })
@@ -70,6 +84,46 @@ export class VerticalController {
   @Post("vertical-renders/:id/approve")
   approve(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.wrap(() => this.service.approve(id));
+  }
+
+  @Get("vertical-renders/:id/content")
+  async content(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Headers("range") range: string | undefined,
+    @Res() response: ServerResponse,
+  ): Promise<void> {
+    const object = await this.wrap(() => this.service.content(id));
+    if (!this.storage.readObject)
+      throw new Error("MEDIA_STORAGE_STREAMING_UNAVAILABLE");
+    let stored;
+    try {
+      stored = await this.storage.readObject(object.objectKey, range);
+    } catch (error) {
+      if (error instanceof ObjectRangeNotSatisfiableError) {
+        response.setHeader("Accept-Ranges", "bytes");
+        response.setHeader("Content-Range", `bytes */${object.sizeBytes}`);
+        throw new HttpException(
+          { code: "RANGE_NOT_SATISFIABLE" },
+          HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE,
+        );
+      }
+      throw error;
+    }
+    if (!stored)
+      throw new NotFoundException({ code: "MEDIA_OBJECT_NOT_FOUND" });
+    response.statusCode = stored.contentRange ? 206 : 200;
+    response.setHeader("Accept-Ranges", "bytes");
+    response.setHeader("Content-Type", "video/mp4");
+    response.setHeader("Content-Length", String(stored.contentLength));
+    if (stored.contentRange)
+      response.setHeader("Content-Range", stored.contentRange);
+    if (stored.etag) response.setHeader("ETag", stored.etag);
+    response.setHeader(
+      "Content-Disposition",
+      `inline; filename="vertical-${id}.mp4"`,
+    );
+    stored.body.on("error", () => response.destroy());
+    stored.body.pipe(response);
   }
 
   private async wrap<T>(work: () => Promise<T>): Promise<T> {
