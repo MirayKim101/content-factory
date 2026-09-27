@@ -57,6 +57,31 @@ function percent(value: EditorialExport): number | undefined {
     ? Math.round(value.job.progress.basisPoints / 100)
     : undefined;
 }
+const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+function formatCompletedAt(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "время неизвестно"
+    : dateTimeFormatter.format(date);
+}
+function formatBytes(value: string): string {
+  const bytes = Number(value);
+  if (!Number.isFinite(bytes) || bytes < 0) return "размер неизвестен";
+  if (bytes < 1_024) return `${bytes} Б`;
+  const units = ["КБ", "МБ", "ГБ", "ТБ"];
+  let amount = bytes / 1_024;
+  let unitIndex = 0;
+  while (amount >= 1_024 && unitIndex < units.length - 1) {
+    amount /= 1_024;
+    unitIndex += 1;
+  }
+  return `${new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 }).format(amount)} ${units[unitIndex]}`;
+}
 </script>
 
 <template>
@@ -79,6 +104,7 @@ function percent(value: EditorialExport): number | undefined {
       :key="item.id"
       class="export-card"
       :aria-busy="item.job.state === 'PROCESSING'"
+      aria-live="polite"
     >
       <div class="export-heading">
         <strong>Пакет для публикации</strong>
@@ -118,8 +144,11 @@ function percent(value: EditorialExport): number | undefined {
       >
         <p>
           ZIP готов: {{ item.result.filename }} ·
-          {{ item.result.sizeBytes }} байт.
+          {{ formatBytes(item.result.sizeBytes) }}.
         </p>
+        <time :datetime="item.result.completedAt" class="completed-at">
+          Подготовлен {{ formatCompletedAt(item.result.completedAt) }}
+        </time>
         <a class="download" :href="item.result.downloadUrl"
           >Скачать ZIP-пакет</a
         >
@@ -145,9 +174,9 @@ function percent(value: EditorialExport): number | undefined {
   display: grid;
   gap: 0.55rem;
   padding: 0.8rem;
-  border: 1px solid #cfdad2;
-  border-radius: 0.65rem;
-  background: #f8fbf8;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: var(--cf-surface-subtle);
 }
 .export-card p {
   margin: 0;
@@ -162,7 +191,8 @@ function percent(value: EditorialExport): number | undefined {
 .status-tag {
   padding: 0.2rem 0.5rem;
   border-radius: 99px;
-  background: #e3eee5;
+  background: var(--cf-brand-soft);
+  color: var(--cf-brand-strong);
   font-weight: 700;
   font-size: 0.85rem;
 }
@@ -174,16 +204,23 @@ progress {
   display: inline-flex;
   width: fit-content;
   padding: 0.6rem 0.8rem;
-  border-radius: 0.45rem;
-  background: #234d35;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-brand);
   color: #fff;
   font-weight: 700;
   text-decoration: none;
 }
+.download:hover {
+  background: var(--cf-brand-strong);
+}
+.completed-at {
+  color: var(--cf-text-muted);
+  font-size: 0.8rem;
+}
 .warning {
-  color: #7c4a03;
+  color: var(--cf-warning);
 }
 .error {
-  color: #991b1b;
+  color: var(--cf-danger);
 }
 </style>
