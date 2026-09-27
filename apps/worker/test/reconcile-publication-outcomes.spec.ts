@@ -95,4 +95,38 @@ describe("ReconcilePublicationOutcomes", () => {
     expect(repo.finalizePublished).not.toHaveBeenCalled();
     expect(repo.failUnknownRemoteState).not.toHaveBeenCalled();
   });
+
+  it("isolates a provider failure and reconciles the next outcome", async () => {
+    const second = { ...claim, id: "00000000-0000-4000-8000-000000000009" };
+    const repo = repository();
+    vi.mocked(repo.unknownRemoteOutcomes).mockResolvedValue([claim, second]);
+    const onFailure = vi.fn();
+    const provider = {
+      platform: "YOUTUBE" as const,
+      publish: vi.fn(),
+      reconcile: vi
+        .fn()
+        .mockRejectedValueOnce(new Error("YOUTUBE_STATUS_FAILED_503"))
+        .mockResolvedValueOnce({
+          state: "PENDING",
+          remoteStatus: "processing",
+        } as const),
+    };
+
+    await expect(
+      new ReconcilePublicationOutcomes(
+        repo,
+        [provider],
+        undefined,
+        onFailure,
+      ).execute(),
+    ).resolves.toBe(1);
+
+    expect(onFailure).toHaveBeenCalledWith(claim.id, expect.any(Error));
+    expect(repo.refreshUnknownRemoteState).toHaveBeenCalledWith(
+      second,
+      "processing",
+      expect.any(Date),
+    );
+  });
 });

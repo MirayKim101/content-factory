@@ -276,6 +276,16 @@ async function startPublicationWorker(): Promise<void> {
   const outcomeReconciler = new ReconcilePublicationOutcomes(
     repository,
     providers,
+    undefined,
+    (intentId, error) =>
+      console.error(
+        JSON.stringify({
+          event: "publication_outcome_reconciliation_failed",
+          workerId,
+          intentId,
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
   );
   let recoveringPublications = false;
   const processDue = async (): Promise<void> => {
