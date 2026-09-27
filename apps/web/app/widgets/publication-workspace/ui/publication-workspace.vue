@@ -356,8 +356,7 @@ async function createChannel(): Promise<void> {
     saving.value = false;
   }
 }
-async function revokeActiveChannel(): Promise<void> {
-  const channel = activeChannel.value;
+async function revokeChannel(channel: PublicationChannel): Promise<void> {
   if (!projectId.value || !channel || saving.value) return;
   if (
     !confirm(
@@ -370,7 +369,7 @@ async function revokeActiveChannel(): Promise<void> {
   notice.value = null;
   try {
     await publicationsApi.revokeChannel(projectId.value, channel.id);
-    channelId.value = "";
+    if (channelId.value === channel.id) channelId.value = "";
     notice.value = "Канал отключён, ожидавшие публикации отменены.";
     await loadWorkspace();
   } catch (cause) {
@@ -509,6 +508,13 @@ async function retry(item: PublicationIntent): Promise<void> {
 }
 function projectName(id: string): string {
   return projects.value.find((item) => item.id === id)?.name ?? "Публикация";
+}
+function platformLabel(platform: PublicationChannel["platform"]): string {
+  return platform === "LOCAL_DRY_RUN"
+    ? "Dry run"
+    : platform === "YOUTUBE"
+      ? "YouTube"
+      : "TikTok";
 }
 function metadataTitle(item: PublicationIntent): string {
   const value = item.metadataSnapshot.title;
@@ -784,6 +790,30 @@ onUnmounted(() => {
                   : "Dry run"
           }}</span>
         </div>
+        <section v-if="channels.length" class="channel-management">
+          <div class="channel-management-heading">
+            <strong>Подключённые каналы</strong>
+            <small>Управление доступно даже при выключенной публикации</small>
+          </div>
+          <article v-for="channel in channels" :key="channel.id">
+            <div>
+              <strong>{{ channel.displayName }}</strong>
+              <small
+                >{{ platformLabel(channel.platform) }} ·
+                {{ channel.state === "ENABLED" ? "активен" : "отключён" }}</small
+              >
+            </div>
+            <Button
+              v-if="channel.state === 'ENABLED'"
+              type="button"
+              severity="secondary"
+              :disabled="saving"
+              :aria-label="`Отключить канал ${channel.displayName}`"
+              @click="revokeChannel(channel)"
+              >Отключить</Button
+            >
+          </article>
+        </section>
         <template v-if="!projectId"
           ><p class="hint">Сначала создайте или выберите проект.</p></template
         >
@@ -874,14 +904,6 @@ onUnmounted(() => {
               option-label="label"
               option-value="id"
           /></label>
-          <Button
-            type="button"
-            class="revoke-channel"
-            severity="secondary"
-            :disabled="saving"
-            @click="revokeActiveChannel"
-            >Отключить выбранный канал</Button
-          >
           <label
             ><span>Формат контента</span
             ><Select
@@ -1231,6 +1253,36 @@ h1 {
   padding: 1.25rem;
   position: sticky;
   top: 1rem;
+}
+.channel-management {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: color-mix(in srgb, var(--cf-surface) 94%, var(--cf-canvas));
+}
+.channel-management-heading,
+.channel-management article > div {
+  display: grid;
+  gap: 0.15rem;
+}
+.channel-management-heading small,
+.channel-management article small {
+  color: var(--cf-text-muted);
+  font-size: 0.75rem;
+}
+.channel-management article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--cf-border);
+}
+.channel-management article strong {
+  font-size: 0.84rem;
 }
 .section-heading {
   align-items: center;

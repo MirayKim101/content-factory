@@ -421,3 +421,9 @@ S3 identity HEAD, Google/TikTok OAuth refresh, YouTube channel identity verify,
 init/chunk/status/metrics transport. Раньше OAuth и pre-upload identity могли
 игнорировать 30-минутный attempt deadline. Signal propagation закреплена
 тестами resolver-ов; worker `256/256`, typecheck и lint прошли.
+
+Управление publication channels вынесено из admission-зависимой формы в
+отдельный блок. Оператор видит активные и отозванные каналы и может применить
+kill switch даже когда `PUBLISHING_ENABLED=0`; подключение и создание новых
+intent при этом остаются скрыты/запрещены. Web typecheck, lint и production
+build прошли.
