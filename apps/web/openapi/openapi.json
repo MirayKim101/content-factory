@@ -5998,6 +5998,59 @@
         },
         "required": ["expectedRevision", "decision"],
         "type": "object"
+      },
+      "VerticalRenderResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "cutPipelineJobId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "framingMode": {
+            "enum": ["CENTER_CROP"],
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "job": {
+            "type": "object"
+          },
+          "outputHeight": {
+            "type": "number"
+          },
+          "outputWidth": {
+            "type": "number"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "renderContractVersion": {
+            "type": "string"
+          },
+          "result": {
+            "nullable": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "cutPipelineJobId",
+          "framingMode",
+          "outputWidth",
+          "outputHeight",
+          "renderContractVersion",
+          "job",
+          "result",
+          "createdAt"
+        ],
+        "type": "object"
       }
     }
   },
@@ -10369,6 +10422,54 @@
         "tags": ["ai-content-context"]
       }
     },
+    "/api/v1/projects/{projectId}/vertical-renders": {
+      "get": {
+        "operationId": "VerticalController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VerticalRenderResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["vertical"]
+      },
+      "post": {
+        "operationId": "VerticalController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerticalRenderResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["vertical"]
+      }
+    },
     "/api/v1/publications/{id}": {
       "get": {
         "operationId": "PublicationController_one",
@@ -10727,6 +10828,37 @@
           }
         },
         "tags": ["twitch-ingestion"]
+      }
+    },
+    "/api/v1/vertical-renders/{id}": {
+      "get": {
+        "operationId": "VerticalController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerticalRenderResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["vertical"]
+      }
+    },
+    "/api/v1/vertical-renders/{id}/approve": {
+      "post": {
+        "operationId": "VerticalController_approve",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["vertical"]
       }
     }
   },

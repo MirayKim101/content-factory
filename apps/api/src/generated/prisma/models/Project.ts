@@ -246,6 +246,7 @@ export type ProjectWhereInput = {
   publicationChannels?: Prisma.PublicationChannelListRelationFilter
   publicationIntents?: Prisma.PublicationIntentListRelationFilter
   twitchVodImports?: Prisma.TwitchVodCandidateListRelationFilter
+  verticalRenderIntents?: Prisma.VerticalRenderIntentListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -276,6 +277,7 @@ export type ProjectOrderByWithRelationInput = {
   publicationChannels?: Prisma.PublicationChannelOrderByRelationAggregateInput
   publicationIntents?: Prisma.PublicationIntentOrderByRelationAggregateInput
   twitchVodImports?: Prisma.TwitchVodCandidateOrderByRelationAggregateInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -309,6 +311,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   publicationChannels?: Prisma.PublicationChannelListRelationFilter
   publicationIntents?: Prisma.PublicationIntentListRelationFilter
   twitchVodImports?: Prisma.TwitchVodCandidateListRelationFilter
+  verticalRenderIntents?: Prisma.VerticalRenderIntentListRelationFilter
 }, "id" | "idempotencyKey">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -373,6 +376,7 @@ export type ProjectCreateInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -403,6 +407,7 @@ export type ProjectUncheckedCreateInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -433,6 +438,7 @@ export type ProjectUpdateInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -463,6 +469,7 @@ export type ProjectUncheckedUpdateInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -805,6 +812,20 @@ export type ProjectUpdateOneWithoutTwitchVodImportsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutTwitchVodImportsInput, Prisma.ProjectUpdateWithoutTwitchVodImportsInput>, Prisma.ProjectUncheckedUpdateWithoutTwitchVodImportsInput>
 }
 
+export type ProjectCreateNestedOneWithoutVerticalRenderIntentsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutVerticalRenderIntentsInput, Prisma.ProjectUncheckedCreateWithoutVerticalRenderIntentsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutVerticalRenderIntentsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutVerticalRenderIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutVerticalRenderIntentsInput, Prisma.ProjectUncheckedCreateWithoutVerticalRenderIntentsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutVerticalRenderIntentsInput
+  upsert?: Prisma.ProjectUpsertWithoutVerticalRenderIntentsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutVerticalRenderIntentsInput, Prisma.ProjectUpdateWithoutVerticalRenderIntentsInput>, Prisma.ProjectUncheckedUpdateWithoutVerticalRenderIntentsInput>
+}
+
 export type ProjectCreateWithoutSourceInput = {
   id: string
   idempotencyKey: string
@@ -832,6 +853,7 @@ export type ProjectCreateWithoutSourceInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutSourceInput = {
@@ -861,6 +883,7 @@ export type ProjectUncheckedCreateWithoutSourceInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutSourceInput = {
@@ -906,6 +929,7 @@ export type ProjectUpdateWithoutSourceInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutSourceInput = {
@@ -935,6 +959,7 @@ export type ProjectUncheckedUpdateWithoutSourceInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutArtifactsInput = {
@@ -964,6 +989,7 @@ export type ProjectCreateWithoutArtifactsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutArtifactsInput = {
@@ -993,6 +1019,7 @@ export type ProjectUncheckedCreateWithoutArtifactsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutArtifactsInput = {
@@ -1038,6 +1065,7 @@ export type ProjectUpdateWithoutArtifactsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutArtifactsInput = {
@@ -1067,6 +1095,7 @@ export type ProjectUncheckedUpdateWithoutArtifactsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutCutRequestsInput = {
@@ -1096,6 +1125,7 @@ export type ProjectCreateWithoutCutRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutCutRequestsInput = {
@@ -1125,6 +1155,7 @@ export type ProjectUncheckedCreateWithoutCutRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutCutRequestsInput = {
@@ -1170,6 +1201,7 @@ export type ProjectUpdateWithoutCutRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutCutRequestsInput = {
@@ -1199,6 +1231,7 @@ export type ProjectUncheckedUpdateWithoutCutRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutPipelineJobsInput = {
@@ -1228,6 +1261,7 @@ export type ProjectCreateWithoutPipelineJobsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutPipelineJobsInput = {
@@ -1257,6 +1291,7 @@ export type ProjectUncheckedCreateWithoutPipelineJobsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutPipelineJobsInput = {
@@ -1302,6 +1337,7 @@ export type ProjectUpdateWithoutPipelineJobsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutPipelineJobsInput = {
@@ -1331,6 +1367,7 @@ export type ProjectUncheckedUpdateWithoutPipelineJobsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutMontageAssetsInput = {
@@ -1360,6 +1397,7 @@ export type ProjectCreateWithoutMontageAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutMontageAssetsInput = {
@@ -1389,6 +1427,7 @@ export type ProjectUncheckedCreateWithoutMontageAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutMontageAssetsInput = {
@@ -1434,6 +1473,7 @@ export type ProjectUpdateWithoutMontageAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutMontageAssetsInput = {
@@ -1463,6 +1503,7 @@ export type ProjectUncheckedUpdateWithoutMontageAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutAssemblyRecipesInput = {
@@ -1492,6 +1533,7 @@ export type ProjectCreateWithoutAssemblyRecipesInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutAssemblyRecipesInput = {
@@ -1521,6 +1563,7 @@ export type ProjectUncheckedCreateWithoutAssemblyRecipesInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutAssemblyRecipesInput = {
@@ -1566,6 +1609,7 @@ export type ProjectUpdateWithoutAssemblyRecipesInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutAssemblyRecipesInput = {
@@ -1595,6 +1639,7 @@ export type ProjectUncheckedUpdateWithoutAssemblyRecipesInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutAssemblyRenderIntentsInput = {
@@ -1624,6 +1669,7 @@ export type ProjectCreateWithoutAssemblyRenderIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutAssemblyRenderIntentsInput = {
@@ -1653,6 +1699,7 @@ export type ProjectUncheckedCreateWithoutAssemblyRenderIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutAssemblyRenderIntentsInput = {
@@ -1698,6 +1745,7 @@ export type ProjectUpdateWithoutAssemblyRenderIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutAssemblyRenderIntentsInput = {
@@ -1727,6 +1775,7 @@ export type ProjectUncheckedUpdateWithoutAssemblyRenderIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialAssetsInput = {
@@ -1756,6 +1805,7 @@ export type ProjectCreateWithoutEditorialAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialAssetsInput = {
@@ -1785,6 +1835,7 @@ export type ProjectUncheckedCreateWithoutEditorialAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialAssetsInput = {
@@ -1830,6 +1881,7 @@ export type ProjectUpdateWithoutEditorialAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialAssetsInput = {
@@ -1859,6 +1911,7 @@ export type ProjectUncheckedUpdateWithoutEditorialAssetsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialPackagesInput = {
@@ -1888,6 +1941,7 @@ export type ProjectCreateWithoutEditorialPackagesInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialPackagesInput = {
@@ -1917,6 +1971,7 @@ export type ProjectUncheckedCreateWithoutEditorialPackagesInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialPackagesInput = {
@@ -1962,6 +2017,7 @@ export type ProjectUpdateWithoutEditorialPackagesInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialPackagesInput = {
@@ -1991,6 +2047,7 @@ export type ProjectUncheckedUpdateWithoutEditorialPackagesInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialApprovalsInput = {
@@ -2020,6 +2077,7 @@ export type ProjectCreateWithoutEditorialApprovalsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialApprovalsInput = {
@@ -2049,6 +2107,7 @@ export type ProjectUncheckedCreateWithoutEditorialApprovalsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialApprovalsInput = {
@@ -2094,6 +2153,7 @@ export type ProjectUpdateWithoutEditorialApprovalsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialApprovalsInput = {
@@ -2123,6 +2183,7 @@ export type ProjectUncheckedUpdateWithoutEditorialApprovalsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialOperationRequestsInput = {
@@ -2152,6 +2213,7 @@ export type ProjectCreateWithoutEditorialOperationRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialOperationRequestsInput = {
@@ -2181,6 +2243,7 @@ export type ProjectUncheckedCreateWithoutEditorialOperationRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialOperationRequestsInput = {
@@ -2226,6 +2289,7 @@ export type ProjectUpdateWithoutEditorialOperationRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialOperationRequestsInput = {
@@ -2255,6 +2319,7 @@ export type ProjectUncheckedUpdateWithoutEditorialOperationRequestsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutEditorialExportIntentsInput = {
@@ -2284,6 +2349,7 @@ export type ProjectCreateWithoutEditorialExportIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutEditorialExportIntentsInput = {
@@ -2313,6 +2379,7 @@ export type ProjectUncheckedCreateWithoutEditorialExportIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutEditorialExportIntentsInput = {
@@ -2358,6 +2425,7 @@ export type ProjectUpdateWithoutEditorialExportIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutEditorialExportIntentsInput = {
@@ -2387,6 +2455,7 @@ export type ProjectUncheckedUpdateWithoutEditorialExportIntentsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutPublicationChannelsInput = {
@@ -2416,6 +2485,7 @@ export type ProjectCreateWithoutPublicationChannelsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutPublicationChannelsInput = {
@@ -2445,6 +2515,7 @@ export type ProjectUncheckedCreateWithoutPublicationChannelsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutPublicationChannelsInput = {
@@ -2490,6 +2561,7 @@ export type ProjectUpdateWithoutPublicationChannelsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutPublicationChannelsInput = {
@@ -2519,6 +2591,7 @@ export type ProjectUncheckedUpdateWithoutPublicationChannelsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutPublicationIntentsInput = {
@@ -2548,6 +2621,7 @@ export type ProjectCreateWithoutPublicationIntentsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutPublicationIntentsInput = {
@@ -2577,6 +2651,7 @@ export type ProjectUncheckedCreateWithoutPublicationIntentsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutPublicationIntentsInput = {
@@ -2622,6 +2697,7 @@ export type ProjectUpdateWithoutPublicationIntentsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutPublicationIntentsInput = {
@@ -2651,6 +2727,7 @@ export type ProjectUncheckedUpdateWithoutPublicationIntentsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutSourceEditorialContextsInput = {
@@ -2680,6 +2757,7 @@ export type ProjectCreateWithoutSourceEditorialContextsInput = {
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutSourceEditorialContextsInput = {
@@ -2709,6 +2787,7 @@ export type ProjectUncheckedCreateWithoutSourceEditorialContextsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutSourceEditorialContextsInput = {
@@ -2754,6 +2833,7 @@ export type ProjectUpdateWithoutSourceEditorialContextsInput = {
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutSourceEditorialContextsInput = {
@@ -2783,6 +2863,7 @@ export type ProjectUncheckedUpdateWithoutSourceEditorialContextsInput = {
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
   twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutTwitchVodImportsInput = {
@@ -2812,6 +2893,7 @@ export type ProjectCreateWithoutTwitchVodImportsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
   publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutTwitchVodImportsInput = {
@@ -2841,6 +2923,7 @@ export type ProjectUncheckedCreateWithoutTwitchVodImportsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
   publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
   publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutTwitchVodImportsInput = {
@@ -2886,6 +2969,7 @@ export type ProjectUpdateWithoutTwitchVodImportsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
   publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutTwitchVodImportsInput = {
@@ -2915,6 +2999,143 @@ export type ProjectUncheckedUpdateWithoutTwitchVodImportsInput = {
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
   publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
   publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutVerticalRenderIntentsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageCreateNestedManyWithoutProjectInput
+  montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutProjectInput
+  assemblyRecipes?: Prisma.AssemblyRecipeCreateNestedManyWithoutProjectInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutProjectInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutProjectInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestCreateNestedManyWithoutResolvedProjectInput
+  editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutProjectInput
+  publicationChannels?: Prisma.PublicationChannelCreateNestedManyWithoutProjectInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutProjectInput
+  twitchVodImports?: Prisma.TwitchVodCandidateCreateNestedManyWithoutImportedProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutVerticalRenderIntentsInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  name: string
+  status?: $Enums.ProjectStatus
+  rightsConfirmedAt?: Date | string | null
+  rightsDeclarationVersion?: string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  source?: Prisma.VideoSourceUncheckedCreateNestedOneWithoutProjectInput
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutProjectInput
+  cutRequests?: Prisma.CutRequestUncheckedCreateNestedManyWithoutProjectInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutProjectInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedCreateNestedManyWithoutProjectInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedCreateNestedManyWithoutProjectInput
+  montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutProjectInput
+  assemblyRecipes?: Prisma.AssemblyRecipeUncheckedCreateNestedManyWithoutProjectInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutProjectInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutProjectInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedCreateNestedManyWithoutResolvedProjectInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutProjectInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutProjectInput
+  publicationChannels?: Prisma.PublicationChannelUncheckedCreateNestedManyWithoutProjectInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutProjectInput
+  twitchVodImports?: Prisma.TwitchVodCandidateUncheckedCreateNestedManyWithoutImportedProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutVerticalRenderIntentsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutVerticalRenderIntentsInput, Prisma.ProjectUncheckedCreateWithoutVerticalRenderIntentsInput>
+}
+
+export type ProjectUpsertWithoutVerticalRenderIntentsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutVerticalRenderIntentsInput, Prisma.ProjectUncheckedUpdateWithoutVerticalRenderIntentsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutVerticalRenderIntentsInput, Prisma.ProjectUncheckedCreateWithoutVerticalRenderIntentsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutVerticalRenderIntentsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutVerticalRenderIntentsInput, Prisma.ProjectUncheckedUpdateWithoutVerticalRenderIntentsInput>
+}
+
+export type ProjectUpdateWithoutVerticalRenderIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUpdateManyWithoutProjectNestedInput
+  montageAssets?: Prisma.MontageAssetUpdateManyWithoutProjectNestedInput
+  assemblyRecipes?: Prisma.AssemblyRecipeUpdateManyWithoutProjectNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutProjectNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutProjectNestedInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestUpdateManyWithoutResolvedProjectNestedInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutProjectNestedInput
+  publicationChannels?: Prisma.PublicationChannelUpdateManyWithoutProjectNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutProjectNestedInput
+  twitchVodImports?: Prisma.TwitchVodCandidateUpdateManyWithoutImportedProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutVerticalRenderIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  rightsConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  rightsDeclarationVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.VideoSourceUncheckedUpdateOneWithoutProjectNestedInput
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutProjectNestedInput
+  cutRequests?: Prisma.CutRequestUncheckedUpdateManyWithoutProjectNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutProjectNestedInput
+  editorialAssets?: Prisma.EditorialAssetUncheckedUpdateManyWithoutProjectNestedInput
+  editorialPackages?: Prisma.EditorialPackageUncheckedUpdateManyWithoutProjectNestedInput
+  montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutProjectNestedInput
+  assemblyRecipes?: Prisma.AssemblyRecipeUncheckedUpdateManyWithoutProjectNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutProjectNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutProjectNestedInput
+  editorialOperationRequests?: Prisma.EditorialOperationRequestUncheckedUpdateManyWithoutResolvedProjectNestedInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutProjectNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutProjectNestedInput
+  publicationChannels?: Prisma.PublicationChannelUncheckedUpdateManyWithoutProjectNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutProjectNestedInput
+  twitchVodImports?: Prisma.TwitchVodCandidateUncheckedUpdateManyWithoutImportedProjectNestedInput
 }
 
 
@@ -2938,6 +3159,7 @@ export type ProjectCountOutputType = {
   publicationChannels: number
   publicationIntents: number
   twitchVodImports: number
+  verticalRenderIntents: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2956,6 +3178,7 @@ export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   publicationChannels?: boolean | ProjectCountOutputTypeCountPublicationChannelsArgs
   publicationIntents?: boolean | ProjectCountOutputTypeCountPublicationIntentsArgs
   twitchVodImports?: boolean | ProjectCountOutputTypeCountTwitchVodImportsArgs
+  verticalRenderIntents?: boolean | ProjectCountOutputTypeCountVerticalRenderIntentsArgs
 }
 
 /**
@@ -3073,6 +3296,13 @@ export type ProjectCountOutputTypeCountTwitchVodImportsArgs<ExtArgs extends runt
   where?: Prisma.TwitchVodCandidateWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountVerticalRenderIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VerticalRenderIntentWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3102,6 +3332,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   publicationChannels?: boolean | Prisma.Project$publicationChannelsArgs<ExtArgs>
   publicationIntents?: boolean | Prisma.Project$publicationIntentsArgs<ExtArgs>
   twitchVodImports?: boolean | Prisma.Project$twitchVodImportsArgs<ExtArgs>
+  verticalRenderIntents?: boolean | Prisma.Project$verticalRenderIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -3165,6 +3396,7 @@ export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   publicationChannels?: boolean | Prisma.Project$publicationChannelsArgs<ExtArgs>
   publicationIntents?: boolean | Prisma.Project$publicationIntentsArgs<ExtArgs>
   twitchVodImports?: boolean | Prisma.Project$twitchVodImportsArgs<ExtArgs>
+  verticalRenderIntents?: boolean | Prisma.Project$verticalRenderIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -3189,6 +3421,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     publicationChannels: Prisma.$PublicationChannelPayload<ExtArgs>[]
     publicationIntents: Prisma.$PublicationIntentPayload<ExtArgs>[]
     twitchVodImports: Prisma.$TwitchVodCandidatePayload<ExtArgs>[]
+    verticalRenderIntents: Prisma.$VerticalRenderIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3612,6 +3845,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   publicationChannels<T extends Prisma.Project$publicationChannelsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$publicationChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PublicationChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   publicationIntents<T extends Prisma.Project$publicationIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$publicationIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PublicationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   twitchVodImports<T extends Prisma.Project$twitchVodImportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$twitchVodImportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TwitchVodCandidatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  verticalRenderIntents<T extends Prisma.Project$verticalRenderIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$verticalRenderIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VerticalRenderIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4421,6 +4655,30 @@ export type Project$twitchVodImportsArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.TwitchVodCandidateScalarFieldEnum | Prisma.TwitchVodCandidateScalarFieldEnum[]
+}
+
+/**
+ * Project.verticalRenderIntents
+ */
+export type Project$verticalRenderIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalRenderIntent
+   */
+  select?: Prisma.VerticalRenderIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VerticalRenderIntent
+   */
+  omit?: Prisma.VerticalRenderIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VerticalRenderIntentInclude<ExtArgs> | null
+  where?: Prisma.VerticalRenderIntentWhereInput
+  orderBy?: Prisma.VerticalRenderIntentOrderByWithRelationInput | Prisma.VerticalRenderIntentOrderByWithRelationInput[]
+  cursor?: Prisma.VerticalRenderIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VerticalRenderIntentScalarFieldEnum | Prisma.VerticalRenderIntentScalarFieldEnum[]
 }
 
 /**

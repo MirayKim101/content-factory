@@ -62,6 +62,7 @@ const API_ENVIRONMENT_KEYS = [
   "PUBLISHING_ENABLED",
   "TWITCH_INGESTION_ENABLED",
   "TWITCH_EVENTSUB_SECRET",
+  "VERTICAL_RENDER_ENABLED",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -181,6 +182,7 @@ export interface ApiEnvironment {
   publishingEnabled: boolean;
   twitchIngestionEnabled: boolean;
   twitchEventSubSecret: string | null;
+  verticalRenderEnabled: boolean;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -270,6 +272,7 @@ export function apiEnvironment(): ApiEnvironment {
     publishingEnabled: publishingAdmissionEnabled(process.env),
     twitchIngestionEnabled: twitchIngestionAdmissionEnabled(process.env),
     twitchEventSubSecret: twitchEventSubSecret(process.env),
+    verticalRenderEnabled: verticalRenderAdmissionEnabled(process.env),
   };
 }
 
@@ -311,4 +314,10 @@ export function twitchEventSubSecret(
   if (!secret || secret.length < 10 || secret.length > 100)
     throw new Error("CONFIG_TWITCH_EVENTSUB_SECRET_INVALID");
   return secret;
+}
+
+export function verticalRenderAdmissionEnabled(
+  environment: NodeJS.ProcessEnv,
+): boolean {
+  return environment.VERTICAL_RENDER_ENABLED === "1";
 }

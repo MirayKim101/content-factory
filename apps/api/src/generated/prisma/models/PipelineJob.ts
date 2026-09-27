@@ -90,6 +90,7 @@ export type PipelineJobMinAggregateOutputType = {
   progressPhase: $Enums.AssemblyProgressPhase | null
   progressBasisPoints: number | null
   progressUpdatedAt: Date | null
+  verticalRenderIntentId: string | null
 }
 
 export type PipelineJobMaxAggregateOutputType = {
@@ -130,6 +131,7 @@ export type PipelineJobMaxAggregateOutputType = {
   progressPhase: $Enums.AssemblyProgressPhase | null
   progressBasisPoints: number | null
   progressUpdatedAt: Date | null
+  verticalRenderIntentId: string | null
 }
 
 export type PipelineJobCountAggregateOutputType = {
@@ -170,6 +172,7 @@ export type PipelineJobCountAggregateOutputType = {
   progressPhase: number
   progressBasisPoints: number
   progressUpdatedAt: number
+  verticalRenderIntentId: number
   _all: number
 }
 
@@ -238,6 +241,7 @@ export type PipelineJobMinAggregateInputType = {
   progressPhase?: true
   progressBasisPoints?: true
   progressUpdatedAt?: true
+  verticalRenderIntentId?: true
 }
 
 export type PipelineJobMaxAggregateInputType = {
@@ -278,6 +282,7 @@ export type PipelineJobMaxAggregateInputType = {
   progressPhase?: true
   progressBasisPoints?: true
   progressUpdatedAt?: true
+  verticalRenderIntentId?: true
 }
 
 export type PipelineJobCountAggregateInputType = {
@@ -318,6 +323,7 @@ export type PipelineJobCountAggregateInputType = {
   progressPhase?: true
   progressBasisPoints?: true
   progressUpdatedAt?: true
+  verticalRenderIntentId?: true
   _all?: true
 }
 
@@ -445,6 +451,7 @@ export type PipelineJobGroupByOutputType = {
   progressPhase: $Enums.AssemblyProgressPhase | null
   progressBasisPoints: number | null
   progressUpdatedAt: Date | null
+  verticalRenderIntentId: string | null
   _count: PipelineJobCountAggregateOutputType | null
   _avg: PipelineJobAvgAggregateOutputType | null
   _sum: PipelineJobSumAggregateOutputType | null
@@ -508,6 +515,7 @@ export type PipelineJobWhereInput = {
   progressPhase?: Prisma.EnumAssemblyProgressPhaseNullableFilter<"PipelineJob"> | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.IntNullableFilter<"PipelineJob"> | number | null
   progressUpdatedAt?: Prisma.DateTimeNullableFilter<"PipelineJob"> | Date | string | null
+  verticalRenderIntentId?: Prisma.UuidNullableFilter<"PipelineJob"> | string | null
   frameEvidenceJob?: Prisma.XOR<Prisma.FrameEvidenceIntentNullableScalarRelationFilter, Prisma.FrameEvidenceIntentWhereInput> | null
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentListRelationFilter
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentListRelationFilter
@@ -526,6 +534,9 @@ export type PipelineJobWhereInput = {
   editorialExportIntent?: Prisma.XOR<Prisma.EditorialExportIntentNullableScalarRelationFilter, Prisma.EditorialExportIntentWhereInput> | null
   editorialExportResult?: Prisma.XOR<Prisma.EditorialExportResultNullableScalarRelationFilter, Prisma.EditorialExportResultWhereInput> | null
   cutEditorialPrompt?: Prisma.XOR<Prisma.CutEditorialPromptNullableScalarRelationFilter, Prisma.CutEditorialPromptWhereInput> | null
+  verticalRenderIntent?: Prisma.XOR<Prisma.VerticalRenderIntentNullableScalarRelationFilter, Prisma.VerticalRenderIntentWhereInput> | null
+  verticalRenderInputs?: Prisma.VerticalRenderIntentListRelationFilter
+  verticalRenderResult?: Prisma.XOR<Prisma.VerticalRenderResultNullableScalarRelationFilter, Prisma.VerticalRenderResultWhereInput> | null
 }
 
 export type PipelineJobOrderByWithRelationInput = {
@@ -566,6 +577,7 @@ export type PipelineJobOrderByWithRelationInput = {
   progressPhase?: Prisma.SortOrderInput | Prisma.SortOrder
   progressBasisPoints?: Prisma.SortOrderInput | Prisma.SortOrder
   progressUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verticalRenderIntentId?: Prisma.SortOrderInput | Prisma.SortOrder
   frameEvidenceJob?: Prisma.FrameEvidenceIntentOrderByWithRelationInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentOrderByRelationAggregateInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentOrderByRelationAggregateInput
@@ -584,6 +596,9 @@ export type PipelineJobOrderByWithRelationInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentOrderByWithRelationInput
   editorialExportResult?: Prisma.EditorialExportResultOrderByWithRelationInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptOrderByWithRelationInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentOrderByWithRelationInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentOrderByRelationAggregateInput
+  verticalRenderResult?: Prisma.VerticalRenderResultOrderByWithRelationInput
 }
 
 export type PipelineJobWhereUniqueInput = Prisma.AtLeast<{
@@ -593,9 +608,11 @@ export type PipelineJobWhereUniqueInput = Prisma.AtLeast<{
   montageAssetId?: string
   assemblyRenderIntentId?: string
   editorialExportIntentId?: string
+  verticalRenderIntentId?: string
   id_projectId_sourceId_sourceVersion?: Prisma.PipelineJobIdProjectIdSourceIdSourceVersionCompoundUniqueInput
   assemblyRenderIntentId_projectId_sourceId_sourceVersion?: Prisma.PipelineJobAssemblyRenderIntentIdProjectIdSourceIdSourceVersionCompoundUniqueInput
   editorialExportIntentId_projectId_sourceId_sourceVersion?: Prisma.PipelineJobEditorialExportIntentIdProjectIdSourceIdSourceVersionCompoundUniqueInput
+  verticalRenderIntentId_projectId_sourceId_sourceVersion?: Prisma.PipelineJobVerticalRenderIntentIdProjectIdSourceIdSourceVersionCompoundUniqueInput
   AND?: Prisma.PipelineJobWhereInput | Prisma.PipelineJobWhereInput[]
   OR?: Prisma.PipelineJobWhereInput[]
   NOT?: Prisma.PipelineJobWhereInput | Prisma.PipelineJobWhereInput[]
@@ -648,7 +665,10 @@ export type PipelineJobWhereUniqueInput = Prisma.AtLeast<{
   editorialExportIntent?: Prisma.XOR<Prisma.EditorialExportIntentNullableScalarRelationFilter, Prisma.EditorialExportIntentWhereInput> | null
   editorialExportResult?: Prisma.XOR<Prisma.EditorialExportResultNullableScalarRelationFilter, Prisma.EditorialExportResultWhereInput> | null
   cutEditorialPrompt?: Prisma.XOR<Prisma.CutEditorialPromptNullableScalarRelationFilter, Prisma.CutEditorialPromptWhereInput> | null
-}, "id" | "idempotencyKey" | "leaseToken" | "montageAssetId" | "assemblyRenderIntentId" | "editorialExportIntentId" | "id_projectId_sourceId_sourceVersion" | "assemblyRenderIntentId_projectId_sourceId_sourceVersion" | "editorialExportIntentId_projectId_sourceId_sourceVersion">
+  verticalRenderIntent?: Prisma.XOR<Prisma.VerticalRenderIntentNullableScalarRelationFilter, Prisma.VerticalRenderIntentWhereInput> | null
+  verticalRenderInputs?: Prisma.VerticalRenderIntentListRelationFilter
+  verticalRenderResult?: Prisma.XOR<Prisma.VerticalRenderResultNullableScalarRelationFilter, Prisma.VerticalRenderResultWhereInput> | null
+}, "id" | "idempotencyKey" | "leaseToken" | "montageAssetId" | "assemblyRenderIntentId" | "editorialExportIntentId" | "verticalRenderIntentId" | "id_projectId_sourceId_sourceVersion" | "assemblyRenderIntentId_projectId_sourceId_sourceVersion" | "editorialExportIntentId_projectId_sourceId_sourceVersion" | "verticalRenderIntentId_projectId_sourceId_sourceVersion">
 
 export type PipelineJobOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -688,6 +708,7 @@ export type PipelineJobOrderByWithAggregationInput = {
   progressPhase?: Prisma.SortOrderInput | Prisma.SortOrder
   progressBasisPoints?: Prisma.SortOrderInput | Prisma.SortOrder
   progressUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  verticalRenderIntentId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PipelineJobCountOrderByAggregateInput
   _avg?: Prisma.PipelineJobAvgOrderByAggregateInput
   _max?: Prisma.PipelineJobMaxOrderByAggregateInput
@@ -736,6 +757,7 @@ export type PipelineJobScalarWhereWithAggregatesInput = {
   progressPhase?: Prisma.EnumAssemblyProgressPhaseNullableWithAggregatesFilter<"PipelineJob"> | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.IntNullableWithAggregatesFilter<"PipelineJob"> | number | null
   progressUpdatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PipelineJob"> | Date | string | null
+  verticalRenderIntentId?: Prisma.UuidNullableWithAggregatesFilter<"PipelineJob"> | string | null
 }
 
 export type PipelineJobCreateInput = {
@@ -787,6 +809,9 @@ export type PipelineJobCreateInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateInput = {
@@ -827,6 +852,7 @@ export type PipelineJobUncheckedCreateInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -839,6 +865,8 @@ export type PipelineJobUncheckedCreateInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUpdateInput = {
@@ -890,6 +918,9 @@ export type PipelineJobUpdateInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateInput = {
@@ -930,6 +961,7 @@ export type PipelineJobUncheckedUpdateInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -942,6 +974,8 @@ export type PipelineJobUncheckedUpdateInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateManyInput = {
@@ -982,6 +1016,7 @@ export type PipelineJobCreateManyInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
 }
 
 export type PipelineJobUpdateManyMutationInput = {
@@ -1055,6 +1090,7 @@ export type PipelineJobUncheckedUpdateManyInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PipelineJobListRelationFilter = {
@@ -1088,6 +1124,13 @@ export type PipelineJobAssemblyRenderIntentIdProjectIdSourceIdSourceVersionCompo
 
 export type PipelineJobEditorialExportIntentIdProjectIdSourceIdSourceVersionCompoundUniqueInput = {
   editorialExportIntentId: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+}
+
+export type PipelineJobVerticalRenderIntentIdProjectIdSourceIdSourceVersionCompoundUniqueInput = {
+  verticalRenderIntentId: string
   projectId: string
   sourceId: string
   sourceVersion: number
@@ -1131,6 +1174,7 @@ export type PipelineJobCountOrderByAggregateInput = {
   progressPhase?: Prisma.SortOrder
   progressBasisPoints?: Prisma.SortOrder
   progressUpdatedAt?: Prisma.SortOrder
+  verticalRenderIntentId?: Prisma.SortOrder
 }
 
 export type PipelineJobAvgOrderByAggregateInput = {
@@ -1184,6 +1228,7 @@ export type PipelineJobMaxOrderByAggregateInput = {
   progressPhase?: Prisma.SortOrder
   progressBasisPoints?: Prisma.SortOrder
   progressUpdatedAt?: Prisma.SortOrder
+  verticalRenderIntentId?: Prisma.SortOrder
 }
 
 export type PipelineJobMinOrderByAggregateInput = {
@@ -1224,6 +1269,7 @@ export type PipelineJobMinOrderByAggregateInput = {
   progressPhase?: Prisma.SortOrder
   progressBasisPoints?: Prisma.SortOrder
   progressUpdatedAt?: Prisma.SortOrder
+  verticalRenderIntentId?: Prisma.SortOrder
 }
 
 export type PipelineJobSumOrderByAggregateInput = {
@@ -1652,6 +1698,66 @@ export type PipelineJobUpdateOneRequiredWithoutTranscriptEvidenceInputsNestedInp
   update?: Prisma.XOR<Prisma.XOR<Prisma.PipelineJobUpdateToOneWithWhereWithoutTranscriptEvidenceInputsInput, Prisma.PipelineJobUpdateWithoutTranscriptEvidenceInputsInput>, Prisma.PipelineJobUncheckedUpdateWithoutTranscriptEvidenceInputsInput>
 }
 
+export type PipelineJobCreateNestedOneWithoutVerticalRenderInputsInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderInputsInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderInputsInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderInputsInput
+  connect?: Prisma.PipelineJobWhereUniqueInput
+}
+
+export type PipelineJobCreateNestedOneWithoutVerticalRenderIntentInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderIntentInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderIntentInput
+  connect?: Prisma.PipelineJobWhereUniqueInput
+}
+
+export type PipelineJobUncheckedCreateNestedOneWithoutVerticalRenderIntentInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderIntentInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderIntentInput
+  connect?: Prisma.PipelineJobWhereUniqueInput
+}
+
+export type PipelineJobUpdateOneRequiredWithoutVerticalRenderInputsNestedInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderInputsInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderInputsInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderInputsInput
+  upsert?: Prisma.PipelineJobUpsertWithoutVerticalRenderInputsInput
+  connect?: Prisma.PipelineJobWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PipelineJobUpdateToOneWithWhereWithoutVerticalRenderInputsInput, Prisma.PipelineJobUpdateWithoutVerticalRenderInputsInput>, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderInputsInput>
+}
+
+export type PipelineJobUpdateOneWithoutVerticalRenderIntentNestedInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderIntentInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderIntentInput
+  upsert?: Prisma.PipelineJobUpsertWithoutVerticalRenderIntentInput
+  disconnect?: Prisma.PipelineJobWhereInput | boolean
+  delete?: Prisma.PipelineJobWhereInput | boolean
+  connect?: Prisma.PipelineJobWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PipelineJobUpdateToOneWithWhereWithoutVerticalRenderIntentInput, Prisma.PipelineJobUpdateWithoutVerticalRenderIntentInput>, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderIntentInput>
+}
+
+export type PipelineJobUncheckedUpdateOneWithoutVerticalRenderIntentNestedInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderIntentInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderIntentInput
+  upsert?: Prisma.PipelineJobUpsertWithoutVerticalRenderIntentInput
+  disconnect?: Prisma.PipelineJobWhereInput | boolean
+  delete?: Prisma.PipelineJobWhereInput | boolean
+  connect?: Prisma.PipelineJobWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PipelineJobUpdateToOneWithWhereWithoutVerticalRenderIntentInput, Prisma.PipelineJobUpdateWithoutVerticalRenderIntentInput>, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderIntentInput>
+}
+
+export type PipelineJobCreateNestedOneWithoutVerticalRenderResultInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderResultInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderResultInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderResultInput
+  connect?: Prisma.PipelineJobWhereUniqueInput
+}
+
+export type PipelineJobUpdateOneRequiredWithoutVerticalRenderResultNestedInput = {
+  create?: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderResultInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderResultInput>
+  connectOrCreate?: Prisma.PipelineJobCreateOrConnectWithoutVerticalRenderResultInput
+  upsert?: Prisma.PipelineJobUpsertWithoutVerticalRenderResultInput
+  connect?: Prisma.PipelineJobWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PipelineJobUpdateToOneWithWhereWithoutVerticalRenderResultInput, Prisma.PipelineJobUpdateWithoutVerticalRenderResultInput>, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderResultInput>
+}
+
 export type PipelineJobCreateWithoutProjectInput = {
   id: string
   type: $Enums.PipelineJobType
@@ -1700,6 +1806,9 @@ export type PipelineJobCreateWithoutProjectInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutProjectInput = {
@@ -1739,6 +1848,7 @@ export type PipelineJobUncheckedCreateWithoutProjectInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -1751,6 +1861,8 @@ export type PipelineJobUncheckedCreateWithoutProjectInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutProjectInput = {
@@ -1820,6 +1932,7 @@ export type PipelineJobScalarWhereInput = {
   progressPhase?: Prisma.EnumAssemblyProgressPhaseNullableFilter<"PipelineJob"> | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.IntNullableFilter<"PipelineJob"> | number | null
   progressUpdatedAt?: Prisma.DateTimeNullableFilter<"PipelineJob"> | Date | string | null
+  verticalRenderIntentId?: Prisma.UuidNullableFilter<"PipelineJob"> | string | null
 }
 
 export type PipelineJobCreateWithoutSourceInput = {
@@ -1870,6 +1983,9 @@ export type PipelineJobCreateWithoutSourceInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutSourceInput = {
@@ -1909,6 +2025,7 @@ export type PipelineJobUncheckedCreateWithoutSourceInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -1921,6 +2038,8 @@ export type PipelineJobUncheckedCreateWithoutSourceInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutSourceInput = {
@@ -1997,6 +2116,9 @@ export type PipelineJobCreateWithoutResultArtifactInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutResultArtifactInput = {
@@ -2037,6 +2159,7 @@ export type PipelineJobUncheckedCreateWithoutResultArtifactInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -2048,6 +2171,8 @@ export type PipelineJobUncheckedCreateWithoutResultArtifactInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutResultArtifactInput = {
@@ -2114,6 +2239,9 @@ export type PipelineJobUpdateWithoutResultArtifactInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutResultArtifactInput = {
@@ -2154,6 +2282,7 @@ export type PipelineJobUncheckedUpdateWithoutResultArtifactInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -2165,6 +2294,8 @@ export type PipelineJobUncheckedUpdateWithoutResultArtifactInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutCutRequestInput = {
@@ -2215,6 +2346,9 @@ export type PipelineJobCreateWithoutCutRequestInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutCutRequestInput = {
@@ -2254,6 +2388,7 @@ export type PipelineJobUncheckedCreateWithoutCutRequestInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -2266,6 +2401,8 @@ export type PipelineJobUncheckedCreateWithoutCutRequestInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutCutRequestInput = {
@@ -2342,6 +2479,9 @@ export type PipelineJobCreateWithoutMontageAssetInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutMontageAssetInput = {
@@ -2381,6 +2521,7 @@ export type PipelineJobUncheckedCreateWithoutMontageAssetInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -2393,6 +2534,8 @@ export type PipelineJobUncheckedCreateWithoutMontageAssetInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutMontageAssetInput = {
@@ -2459,6 +2602,9 @@ export type PipelineJobUpdateWithoutMontageAssetInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutMontageAssetInput = {
@@ -2498,6 +2644,7 @@ export type PipelineJobUncheckedUpdateWithoutMontageAssetInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -2510,6 +2657,8 @@ export type PipelineJobUncheckedUpdateWithoutMontageAssetInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutAssemblyRecipeInput = {
@@ -2560,6 +2709,9 @@ export type PipelineJobCreateWithoutAssemblyRecipeInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutAssemblyRecipeInput = {
@@ -2600,6 +2752,7 @@ export type PipelineJobUncheckedCreateWithoutAssemblyRecipeInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -2611,6 +2764,8 @@ export type PipelineJobUncheckedCreateWithoutAssemblyRecipeInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutAssemblyRecipeInput = {
@@ -2677,6 +2832,9 @@ export type PipelineJobUpdateWithoutAssemblyRecipeInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutAssemblyRecipeInput = {
@@ -2717,6 +2875,7 @@ export type PipelineJobUncheckedUpdateWithoutAssemblyRecipeInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -2728,6 +2887,8 @@ export type PipelineJobUncheckedUpdateWithoutAssemblyRecipeInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutAssemblyRenderInputsInput = {
@@ -2778,6 +2939,9 @@ export type PipelineJobCreateWithoutAssemblyRenderInputsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutAssemblyRenderInputsInput = {
@@ -2818,6 +2982,7 @@ export type PipelineJobUncheckedCreateWithoutAssemblyRenderInputsInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -2829,6 +2994,8 @@ export type PipelineJobUncheckedCreateWithoutAssemblyRenderInputsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutAssemblyRenderInputsInput = {
@@ -2884,6 +3051,9 @@ export type PipelineJobCreateWithoutAssemblyRenderIntentInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutAssemblyRenderIntentInput = {
@@ -2920,6 +3090,7 @@ export type PipelineJobUncheckedCreateWithoutAssemblyRenderIntentInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -2932,6 +3103,8 @@ export type PipelineJobUncheckedCreateWithoutAssemblyRenderIntentInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutAssemblyRenderIntentInput = {
@@ -2998,6 +3171,9 @@ export type PipelineJobUpdateWithoutAssemblyRenderInputsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutAssemblyRenderInputsInput = {
@@ -3038,6 +3214,7 @@ export type PipelineJobUncheckedUpdateWithoutAssemblyRenderInputsInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -3049,6 +3226,8 @@ export type PipelineJobUncheckedUpdateWithoutAssemblyRenderInputsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUpsertWithoutAssemblyRenderIntentInput = {
@@ -3110,6 +3289,9 @@ export type PipelineJobUpdateWithoutAssemblyRenderIntentInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutAssemblyRenderIntentInput = {
@@ -3146,6 +3328,7 @@ export type PipelineJobUncheckedUpdateWithoutAssemblyRenderIntentInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -3158,6 +3341,8 @@ export type PipelineJobUncheckedUpdateWithoutAssemblyRenderIntentInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutEditorialPackageInput = {
@@ -3208,6 +3393,9 @@ export type PipelineJobCreateWithoutEditorialPackageInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutEditorialPackageInput = {
@@ -3248,6 +3436,7 @@ export type PipelineJobUncheckedCreateWithoutEditorialPackageInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -3259,6 +3448,8 @@ export type PipelineJobUncheckedCreateWithoutEditorialPackageInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutEditorialPackageInput = {
@@ -3325,6 +3516,9 @@ export type PipelineJobUpdateWithoutEditorialPackageInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutEditorialPackageInput = {
@@ -3365,6 +3559,7 @@ export type PipelineJobUncheckedUpdateWithoutEditorialPackageInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -3376,6 +3571,8 @@ export type PipelineJobUncheckedUpdateWithoutEditorialPackageInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutEditorialApprovalsInput = {
@@ -3426,6 +3623,9 @@ export type PipelineJobCreateWithoutEditorialApprovalsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutEditorialApprovalsInput = {
@@ -3466,6 +3666,7 @@ export type PipelineJobUncheckedCreateWithoutEditorialApprovalsInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -3477,6 +3678,8 @@ export type PipelineJobUncheckedCreateWithoutEditorialApprovalsInput = {
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutEditorialApprovalsInput = {
@@ -3543,6 +3746,9 @@ export type PipelineJobUpdateWithoutEditorialApprovalsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutEditorialApprovalsInput = {
@@ -3583,6 +3789,7 @@ export type PipelineJobUncheckedUpdateWithoutEditorialApprovalsInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -3594,6 +3801,8 @@ export type PipelineJobUncheckedUpdateWithoutEditorialApprovalsInput = {
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutEditorialExportIntentInput = {
@@ -3644,6 +3853,9 @@ export type PipelineJobCreateWithoutEditorialExportIntentInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutEditorialExportIntentInput = {
@@ -3680,6 +3892,7 @@ export type PipelineJobUncheckedCreateWithoutEditorialExportIntentInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -3692,6 +3905,8 @@ export type PipelineJobUncheckedCreateWithoutEditorialExportIntentInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutEditorialExportIntentInput = {
@@ -3758,6 +3973,9 @@ export type PipelineJobUpdateWithoutEditorialExportIntentInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutEditorialExportIntentInput = {
@@ -3794,6 +4012,7 @@ export type PipelineJobUncheckedUpdateWithoutEditorialExportIntentInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -3806,6 +4025,8 @@ export type PipelineJobUncheckedUpdateWithoutEditorialExportIntentInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutEditorialExportResultInput = {
@@ -3856,6 +4077,9 @@ export type PipelineJobCreateWithoutEditorialExportResultInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutCutPipelineJobInput
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutEditorialExportResultInput = {
@@ -3896,6 +4120,7 @@ export type PipelineJobUncheckedCreateWithoutEditorialExportResultInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -3907,6 +4132,8 @@ export type PipelineJobUncheckedCreateWithoutEditorialExportResultInput = {
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutEditorialExportResultInput = {
@@ -3973,6 +4200,9 @@ export type PipelineJobUpdateWithoutEditorialExportResultInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutEditorialExportResultInput = {
@@ -4013,6 +4243,7 @@ export type PipelineJobUncheckedUpdateWithoutEditorialExportResultInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -4024,6 +4255,8 @@ export type PipelineJobUncheckedUpdateWithoutEditorialExportResultInput = {
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutSegmentInput = {
@@ -4074,6 +4307,9 @@ export type PipelineJobCreateWithoutSegmentInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutSegmentInput = {
@@ -4114,6 +4350,7 @@ export type PipelineJobUncheckedCreateWithoutSegmentInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -4125,6 +4362,8 @@ export type PipelineJobUncheckedCreateWithoutSegmentInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutSegmentInput = {
@@ -4191,6 +4430,9 @@ export type PipelineJobUpdateWithoutSegmentInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutSegmentInput = {
@@ -4231,6 +4473,7 @@ export type PipelineJobUncheckedUpdateWithoutSegmentInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -4242,6 +4485,8 @@ export type PipelineJobUncheckedUpdateWithoutSegmentInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutAttemptsInput = {
@@ -4292,6 +4537,9 @@ export type PipelineJobCreateWithoutAttemptsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutAttemptsInput = {
@@ -4332,6 +4580,7 @@ export type PipelineJobUncheckedCreateWithoutAttemptsInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -4343,6 +4592,8 @@ export type PipelineJobUncheckedCreateWithoutAttemptsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutAttemptsInput = {
@@ -4409,6 +4660,9 @@ export type PipelineJobUpdateWithoutAttemptsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutAttemptsInput = {
@@ -4449,6 +4703,7 @@ export type PipelineJobUncheckedUpdateWithoutAttemptsInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -4460,6 +4715,8 @@ export type PipelineJobUncheckedUpdateWithoutAttemptsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutCutEditorialPromptInput = {
@@ -4510,6 +4767,9 @@ export type PipelineJobCreateWithoutCutEditorialPromptInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutCutPipelineJobInput
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutCutEditorialPromptInput = {
@@ -4550,6 +4810,7 @@ export type PipelineJobUncheckedCreateWithoutCutEditorialPromptInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
@@ -4561,6 +4822,8 @@ export type PipelineJobUncheckedCreateWithoutCutEditorialPromptInput = {
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutCutEditorialPromptInput = {
@@ -4627,6 +4890,9 @@ export type PipelineJobUpdateWithoutCutEditorialPromptInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutCutEditorialPromptInput = {
@@ -4667,6 +4933,7 @@ export type PipelineJobUncheckedUpdateWithoutCutEditorialPromptInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -4678,6 +4945,8 @@ export type PipelineJobUncheckedUpdateWithoutCutEditorialPromptInput = {
   assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutFrameEvidenceJobInput = {
@@ -4728,6 +4997,9 @@ export type PipelineJobCreateWithoutFrameEvidenceJobInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutFrameEvidenceJobInput = {
@@ -4768,6 +5040,7 @@ export type PipelineJobUncheckedCreateWithoutFrameEvidenceJobInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   segment?: Prisma.CutSegmentUncheckedCreateNestedOneWithoutJobInput
@@ -4779,6 +5052,8 @@ export type PipelineJobUncheckedCreateWithoutFrameEvidenceJobInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutFrameEvidenceJobInput = {
@@ -4834,6 +5109,9 @@ export type PipelineJobCreateWithoutFrameEvidenceInputsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutFrameEvidenceInputsInput = {
@@ -4874,6 +5152,7 @@ export type PipelineJobUncheckedCreateWithoutFrameEvidenceInputsInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   segment?: Prisma.CutSegmentUncheckedCreateNestedOneWithoutJobInput
@@ -4885,6 +5164,8 @@ export type PipelineJobUncheckedCreateWithoutFrameEvidenceInputsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutFrameEvidenceInputsInput = {
@@ -4951,6 +5232,9 @@ export type PipelineJobUpdateWithoutFrameEvidenceJobInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutFrameEvidenceJobInput = {
@@ -4991,6 +5275,7 @@ export type PipelineJobUncheckedUpdateWithoutFrameEvidenceJobInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   segment?: Prisma.CutSegmentUncheckedUpdateOneWithoutJobNestedInput
@@ -5002,6 +5287,8 @@ export type PipelineJobUncheckedUpdateWithoutFrameEvidenceJobInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUpsertWithoutFrameEvidenceInputsInput = {
@@ -5063,6 +5350,9 @@ export type PipelineJobUpdateWithoutFrameEvidenceInputsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutFrameEvidenceInputsInput = {
@@ -5103,6 +5393,7 @@ export type PipelineJobUncheckedUpdateWithoutFrameEvidenceInputsInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   segment?: Prisma.CutSegmentUncheckedUpdateOneWithoutJobNestedInput
@@ -5114,6 +5405,8 @@ export type PipelineJobUncheckedUpdateWithoutFrameEvidenceInputsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateWithoutTranscriptEvidenceInputsInput = {
@@ -5164,6 +5457,9 @@ export type PipelineJobCreateWithoutTranscriptEvidenceInputsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobUncheckedCreateWithoutTranscriptEvidenceInputsInput = {
@@ -5204,6 +5500,7 @@ export type PipelineJobUncheckedCreateWithoutTranscriptEvidenceInputsInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
   segment?: Prisma.CutSegmentUncheckedCreateNestedOneWithoutJobInput
@@ -5215,6 +5512,8 @@ export type PipelineJobUncheckedCreateWithoutTranscriptEvidenceInputsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
 }
 
 export type PipelineJobCreateOrConnectWithoutTranscriptEvidenceInputsInput = {
@@ -5281,6 +5580,9 @@ export type PipelineJobUpdateWithoutTranscriptEvidenceInputsInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutTranscriptEvidenceInputsInput = {
@@ -5321,6 +5623,7 @@ export type PipelineJobUncheckedUpdateWithoutTranscriptEvidenceInputsInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   segment?: Prisma.CutSegmentUncheckedUpdateOneWithoutJobNestedInput
@@ -5332,6 +5635,692 @@ export type PipelineJobUncheckedUpdateWithoutTranscriptEvidenceInputsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
+}
+
+export type PipelineJobCreateWithoutVerticalRenderInputsInput = {
+  id: string
+  type: $Enums.PipelineJobType
+  state?: $Enums.PipelineJobState
+  payloadVersion?: number
+  idempotencyKey: string
+  revision?: number
+  priority?: number
+  retryBudget?: number
+  attemptCount?: number
+  processedMs?: number | null
+  totalMs?: number | null
+  leaseOwner?: string | null
+  leaseToken?: string | null
+  leaseExpiresAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  failureRetryable?: boolean | null
+  recipeVersion: string
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nextAttemptAt?: Date | string | null
+  admissionReason?: string | null
+  progressAttemptNumber?: number | null
+  progressPhase?: $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: number | null
+  progressUpdatedAt?: Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentCreateNestedOneWithoutPipelineJobInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutPipelineJobInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutPipelineJobInput
+  project: Prisma.ProjectCreateNestedOneWithoutPipelineJobsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutPipelineJobsInput
+  cutRequest?: Prisma.CutRequestCreateNestedOneWithoutJobsInput
+  segment?: Prisma.CutSegmentCreateNestedOneWithoutJobInput
+  attempts?: Prisma.JobAttemptCreateNestedManyWithoutJobInput
+  resultArtifact?: Prisma.MediaArtifactCreateNestedOneWithoutPipelineJobInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutPipelineJobInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutPipelineJobInput
+  montageAsset?: Prisma.MontageAssetCreateNestedOneWithoutProbeJobInput
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentCreateNestedOneWithoutPipelineJobInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutCutPipelineJobInput
+  editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
+}
+
+export type PipelineJobUncheckedCreateWithoutVerticalRenderInputsInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  cutRequestId?: string | null
+  type: $Enums.PipelineJobType
+  state?: $Enums.PipelineJobState
+  payloadVersion?: number
+  idempotencyKey: string
+  revision?: number
+  priority?: number
+  retryBudget?: number
+  attemptCount?: number
+  processedMs?: number | null
+  totalMs?: number | null
+  leaseOwner?: string | null
+  leaseToken?: string | null
+  leaseExpiresAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  failureRetryable?: boolean | null
+  recipeVersion: string
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  montageAssetId?: string | null
+  assemblyRenderIntentId?: string | null
+  editorialExportIntentId?: string | null
+  nextAttemptAt?: Date | string | null
+  admissionReason?: string | null
+  progressAttemptNumber?: number | null
+  progressPhase?: $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: number | null
+  progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  segment?: Prisma.CutSegmentUncheckedCreateNestedOneWithoutJobInput
+  attempts?: Prisma.JobAttemptUncheckedCreateNestedManyWithoutJobInput
+  resultArtifact?: Prisma.MediaArtifactUncheckedCreateNestedOneWithoutPipelineJobInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutPipelineJobInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutPipelineJobInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
+}
+
+export type PipelineJobCreateOrConnectWithoutVerticalRenderInputsInput = {
+  where: Prisma.PipelineJobWhereUniqueInput
+  create: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderInputsInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderInputsInput>
+}
+
+export type PipelineJobCreateWithoutVerticalRenderIntentInput = {
+  id: string
+  type: $Enums.PipelineJobType
+  state?: $Enums.PipelineJobState
+  payloadVersion?: number
+  idempotencyKey: string
+  revision?: number
+  priority?: number
+  retryBudget?: number
+  attemptCount?: number
+  processedMs?: number | null
+  totalMs?: number | null
+  leaseOwner?: string | null
+  leaseToken?: string | null
+  leaseExpiresAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  failureRetryable?: boolean | null
+  recipeVersion: string
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nextAttemptAt?: Date | string | null
+  admissionReason?: string | null
+  progressAttemptNumber?: number | null
+  progressPhase?: $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: number | null
+  progressUpdatedAt?: Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentCreateNestedOneWithoutPipelineJobInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutPipelineJobInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutPipelineJobInput
+  project: Prisma.ProjectCreateNestedOneWithoutPipelineJobsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutPipelineJobsInput
+  cutRequest?: Prisma.CutRequestCreateNestedOneWithoutJobsInput
+  segment?: Prisma.CutSegmentCreateNestedOneWithoutJobInput
+  attempts?: Prisma.JobAttemptCreateNestedManyWithoutJobInput
+  resultArtifact?: Prisma.MediaArtifactCreateNestedOneWithoutPipelineJobInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutPipelineJobInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutPipelineJobInput
+  montageAsset?: Prisma.MontageAssetCreateNestedOneWithoutProbeJobInput
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentCreateNestedOneWithoutPipelineJobInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutCutPipelineJobInput
+  editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPipelineJobInput
+}
+
+export type PipelineJobUncheckedCreateWithoutVerticalRenderIntentInput = {
+  id: string
+  cutRequestId?: string | null
+  type: $Enums.PipelineJobType
+  state?: $Enums.PipelineJobState
+  payloadVersion?: number
+  idempotencyKey: string
+  revision?: number
+  priority?: number
+  retryBudget?: number
+  attemptCount?: number
+  processedMs?: number | null
+  totalMs?: number | null
+  leaseOwner?: string | null
+  leaseToken?: string | null
+  leaseExpiresAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  failureRetryable?: boolean | null
+  recipeVersion: string
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  montageAssetId?: string | null
+  assemblyRenderIntentId?: string | null
+  editorialExportIntentId?: string | null
+  nextAttemptAt?: Date | string | null
+  admissionReason?: string | null
+  progressAttemptNumber?: number | null
+  progressPhase?: $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: number | null
+  progressUpdatedAt?: Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  segment?: Prisma.CutSegmentUncheckedCreateNestedOneWithoutJobInput
+  attempts?: Prisma.JobAttemptUncheckedCreateNestedManyWithoutJobInput
+  resultArtifact?: Prisma.MediaArtifactUncheckedCreateNestedOneWithoutPipelineJobInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutPipelineJobInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutPipelineJobInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedCreateNestedOneWithoutPipelineJobInput
+}
+
+export type PipelineJobCreateOrConnectWithoutVerticalRenderIntentInput = {
+  where: Prisma.PipelineJobWhereUniqueInput
+  create: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderIntentInput>
+}
+
+export type PipelineJobUpsertWithoutVerticalRenderInputsInput = {
+  update: Prisma.XOR<Prisma.PipelineJobUpdateWithoutVerticalRenderInputsInput, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderInputsInput>
+  create: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderInputsInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderInputsInput>
+  where?: Prisma.PipelineJobWhereInput
+}
+
+export type PipelineJobUpdateToOneWithWhereWithoutVerticalRenderInputsInput = {
+  where?: Prisma.PipelineJobWhereInput
+  data: Prisma.XOR<Prisma.PipelineJobUpdateWithoutVerticalRenderInputsInput, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderInputsInput>
+}
+
+export type PipelineJobUpdateWithoutVerticalRenderInputsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
+  state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
+  payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  processedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  totalMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureRetryable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  admissionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressAttemptNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUpdateOneWithoutPipelineJobNestedInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutPipelineJobNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutPipelineJobNestedInput
+  project?: Prisma.ProjectUpdateOneRequiredWithoutPipelineJobsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutPipelineJobsNestedInput
+  cutRequest?: Prisma.CutRequestUpdateOneWithoutJobsNestedInput
+  segment?: Prisma.CutSegmentUpdateOneWithoutJobNestedInput
+  attempts?: Prisma.JobAttemptUpdateManyWithoutJobNestedInput
+  resultArtifact?: Prisma.MediaArtifactUpdateOneWithoutPipelineJobNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutPipelineJobNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutPipelineJobNestedInput
+  montageAsset?: Prisma.MontageAssetUpdateOneWithoutProbeJobNestedInput
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentUpdateOneWithoutPipelineJobNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutCutPipelineJobNestedInput
+  editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
+}
+
+export type PipelineJobUncheckedUpdateWithoutVerticalRenderInputsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
+  state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
+  payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  processedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  totalMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureRetryable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  montageAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assemblyRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  editorialExportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  admissionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressAttemptNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  segment?: Prisma.CutSegmentUncheckedUpdateOneWithoutJobNestedInput
+  attempts?: Prisma.JobAttemptUncheckedUpdateManyWithoutJobNestedInput
+  resultArtifact?: Prisma.MediaArtifactUncheckedUpdateOneWithoutPipelineJobNestedInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutPipelineJobNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutPipelineJobNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
+}
+
+export type PipelineJobUpsertWithoutVerticalRenderIntentInput = {
+  update: Prisma.XOR<Prisma.PipelineJobUpdateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderIntentInput>
+  create: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderIntentInput>
+  where?: Prisma.PipelineJobWhereInput
+}
+
+export type PipelineJobUpdateToOneWithWhereWithoutVerticalRenderIntentInput = {
+  where?: Prisma.PipelineJobWhereInput
+  data: Prisma.XOR<Prisma.PipelineJobUpdateWithoutVerticalRenderIntentInput, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderIntentInput>
+}
+
+export type PipelineJobUpdateWithoutVerticalRenderIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
+  state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
+  payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  processedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  totalMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureRetryable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  admissionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressAttemptNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUpdateOneWithoutPipelineJobNestedInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutPipelineJobNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutPipelineJobNestedInput
+  project?: Prisma.ProjectUpdateOneRequiredWithoutPipelineJobsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutPipelineJobsNestedInput
+  cutRequest?: Prisma.CutRequestUpdateOneWithoutJobsNestedInput
+  segment?: Prisma.CutSegmentUpdateOneWithoutJobNestedInput
+  attempts?: Prisma.JobAttemptUpdateManyWithoutJobNestedInput
+  resultArtifact?: Prisma.MediaArtifactUpdateOneWithoutPipelineJobNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutPipelineJobNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutPipelineJobNestedInput
+  montageAsset?: Prisma.MontageAssetUpdateOneWithoutProbeJobNestedInput
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentUpdateOneWithoutPipelineJobNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutCutPipelineJobNestedInput
+  editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
+}
+
+export type PipelineJobUncheckedUpdateWithoutVerticalRenderIntentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
+  state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
+  payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  processedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  totalMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureRetryable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  montageAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assemblyRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  editorialExportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  admissionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressAttemptNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  segment?: Prisma.CutSegmentUncheckedUpdateOneWithoutJobNestedInput
+  attempts?: Prisma.JobAttemptUncheckedUpdateManyWithoutJobNestedInput
+  resultArtifact?: Prisma.MediaArtifactUncheckedUpdateOneWithoutPipelineJobNestedInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutPipelineJobNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutPipelineJobNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
+}
+
+export type PipelineJobCreateWithoutVerticalRenderResultInput = {
+  id: string
+  type: $Enums.PipelineJobType
+  state?: $Enums.PipelineJobState
+  payloadVersion?: number
+  idempotencyKey: string
+  revision?: number
+  priority?: number
+  retryBudget?: number
+  attemptCount?: number
+  processedMs?: number | null
+  totalMs?: number | null
+  leaseOwner?: string | null
+  leaseToken?: string | null
+  leaseExpiresAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  failureRetryable?: boolean | null
+  recipeVersion: string
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nextAttemptAt?: Date | string | null
+  admissionReason?: string | null
+  progressAttemptNumber?: number | null
+  progressPhase?: $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: number | null
+  progressUpdatedAt?: Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentCreateNestedOneWithoutPipelineJobInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentCreateNestedManyWithoutCutPipelineJobInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentCreateNestedManyWithoutCutPipelineJobInput
+  project: Prisma.ProjectCreateNestedOneWithoutPipelineJobsInput
+  source: Prisma.VideoSourceCreateNestedOneWithoutPipelineJobsInput
+  cutRequest?: Prisma.CutRequestCreateNestedOneWithoutJobsInput
+  segment?: Prisma.CutSegmentCreateNestedOneWithoutJobInput
+  attempts?: Prisma.JobAttemptCreateNestedManyWithoutJobInput
+  resultArtifact?: Prisma.MediaArtifactCreateNestedOneWithoutPipelineJobInput
+  editorialPackage?: Prisma.EditorialPackageCreateNestedOneWithoutPipelineJobInput
+  assemblyRecipe?: Prisma.AssemblyRecipeCreateNestedOneWithoutPipelineJobInput
+  montageAsset?: Prisma.MontageAssetCreateNestedOneWithoutProbeJobInput
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentCreateNestedOneWithoutPipelineJobInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutCutPipelineJobInput
+  editorialExportIntent?: Prisma.EditorialExportIntentCreateNestedOneWithoutPipelineJobInput
+  editorialExportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPipelineJobInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentCreateNestedOneWithoutJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentCreateNestedManyWithoutCutPipelineJobInput
+}
+
+export type PipelineJobUncheckedCreateWithoutVerticalRenderResultInput = {
+  id: string
+  projectId: string
+  sourceId: string
+  sourceVersion: number
+  cutRequestId?: string | null
+  type: $Enums.PipelineJobType
+  state?: $Enums.PipelineJobState
+  payloadVersion?: number
+  idempotencyKey: string
+  revision?: number
+  priority?: number
+  retryBudget?: number
+  attemptCount?: number
+  processedMs?: number | null
+  totalMs?: number | null
+  leaseOwner?: string | null
+  leaseToken?: string | null
+  leaseExpiresAt?: Date | string | null
+  heartbeatAt?: Date | string | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  failureRetryable?: boolean | null
+  recipeVersion: string
+  queuedAt?: Date | string
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  montageAssetId?: string | null
+  assemblyRenderIntentId?: string | null
+  editorialExportIntentId?: string | null
+  nextAttemptAt?: Date | string | null
+  admissionReason?: string | null
+  progressAttemptNumber?: number | null
+  progressPhase?: $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: number | null
+  progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedCreateNestedOneWithoutPipelineJobInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  segment?: Prisma.CutSegmentUncheckedCreateNestedOneWithoutJobInput
+  attempts?: Prisma.JobAttemptUncheckedCreateNestedManyWithoutJobInput
+  resultArtifact?: Prisma.MediaArtifactUncheckedCreateNestedOneWithoutPipelineJobInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedCreateNestedOneWithoutPipelineJobInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedCreateNestedOneWithoutPipelineJobInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutCutPipelineJobInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedCreateNestedOneWithoutPipelineJobInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedCreateNestedOneWithoutCutPipelineJobInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutCutPipelineJobInput
+}
+
+export type PipelineJobCreateOrConnectWithoutVerticalRenderResultInput = {
+  where: Prisma.PipelineJobWhereUniqueInput
+  create: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderResultInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderResultInput>
+}
+
+export type PipelineJobUpsertWithoutVerticalRenderResultInput = {
+  update: Prisma.XOR<Prisma.PipelineJobUpdateWithoutVerticalRenderResultInput, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderResultInput>
+  create: Prisma.XOR<Prisma.PipelineJobCreateWithoutVerticalRenderResultInput, Prisma.PipelineJobUncheckedCreateWithoutVerticalRenderResultInput>
+  where?: Prisma.PipelineJobWhereInput
+}
+
+export type PipelineJobUpdateToOneWithWhereWithoutVerticalRenderResultInput = {
+  where?: Prisma.PipelineJobWhereInput
+  data: Prisma.XOR<Prisma.PipelineJobUpdateWithoutVerticalRenderResultInput, Prisma.PipelineJobUncheckedUpdateWithoutVerticalRenderResultInput>
+}
+
+export type PipelineJobUpdateWithoutVerticalRenderResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
+  state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
+  payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  processedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  totalMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureRetryable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  admissionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressAttemptNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUpdateOneWithoutPipelineJobNestedInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUpdateManyWithoutCutPipelineJobNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUpdateManyWithoutCutPipelineJobNestedInput
+  project?: Prisma.ProjectUpdateOneRequiredWithoutPipelineJobsNestedInput
+  source?: Prisma.VideoSourceUpdateOneRequiredWithoutPipelineJobsNestedInput
+  cutRequest?: Prisma.CutRequestUpdateOneWithoutJobsNestedInput
+  segment?: Prisma.CutSegmentUpdateOneWithoutJobNestedInput
+  attempts?: Prisma.JobAttemptUpdateManyWithoutJobNestedInput
+  resultArtifact?: Prisma.MediaArtifactUpdateOneWithoutPipelineJobNestedInput
+  editorialPackage?: Prisma.EditorialPackageUpdateOneWithoutPipelineJobNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUpdateOneWithoutPipelineJobNestedInput
+  montageAsset?: Prisma.MontageAssetUpdateOneWithoutProbeJobNestedInput
+  assemblyRenderIntent?: Prisma.AssemblyRenderIntentUpdateOneWithoutPipelineJobNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutCutPipelineJobNestedInput
+  editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+}
+
+export type PipelineJobUncheckedUpdateWithoutVerticalRenderResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  cutRequestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumPipelineJobTypeFieldUpdateOperationsInput | $Enums.PipelineJobType
+  state?: Prisma.EnumPipelineJobStateFieldUpdateOperationsInput | $Enums.PipelineJobState
+  payloadVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  processedMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  totalMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  heartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureRetryable?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  recipeVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  queuedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  montageAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assemblyRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  editorialExportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nextAttemptAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  admissionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  progressAttemptNumber?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
+  progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
+  frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  segment?: Prisma.CutSegmentUncheckedUpdateOneWithoutJobNestedInput
+  attempts?: Prisma.JobAttemptUncheckedUpdateManyWithoutJobNestedInput
+  resultArtifact?: Prisma.MediaArtifactUncheckedUpdateOneWithoutPipelineJobNestedInput
+  editorialPackage?: Prisma.EditorialPackageUncheckedUpdateOneWithoutPipelineJobNestedInput
+  assemblyRecipe?: Prisma.AssemblyRecipeUncheckedUpdateOneWithoutPipelineJobNestedInput
+  assemblyRenderInputs?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
+  cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
 }
 
 export type PipelineJobCreateManyProjectInput = {
@@ -5371,6 +6360,7 @@ export type PipelineJobCreateManyProjectInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
 }
 
 export type PipelineJobUpdateWithoutProjectInput = {
@@ -5421,6 +6411,9 @@ export type PipelineJobUpdateWithoutProjectInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutProjectInput = {
@@ -5460,6 +6453,7 @@ export type PipelineJobUncheckedUpdateWithoutProjectInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -5472,6 +6466,8 @@ export type PipelineJobUncheckedUpdateWithoutProjectInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateManyWithoutProjectInput = {
@@ -5511,6 +6507,7 @@ export type PipelineJobUncheckedUpdateManyWithoutProjectInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PipelineJobCreateManySourceInput = {
@@ -5550,6 +6547,7 @@ export type PipelineJobCreateManySourceInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
 }
 
 export type PipelineJobUpdateWithoutSourceInput = {
@@ -5600,6 +6598,9 @@ export type PipelineJobUpdateWithoutSourceInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutSourceInput = {
@@ -5639,6 +6640,7 @@ export type PipelineJobUncheckedUpdateWithoutSourceInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -5651,6 +6653,8 @@ export type PipelineJobUncheckedUpdateWithoutSourceInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateManyWithoutSourceInput = {
@@ -5690,6 +6694,7 @@ export type PipelineJobUncheckedUpdateManyWithoutSourceInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PipelineJobCreateManyCutRequestInput = {
@@ -5729,6 +6734,7 @@ export type PipelineJobCreateManyCutRequestInput = {
   progressPhase?: $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: number | null
   progressUpdatedAt?: Date | string | null
+  verticalRenderIntentId?: string | null
 }
 
 export type PipelineJobUpdateWithoutCutRequestInput = {
@@ -5779,6 +6785,9 @@ export type PipelineJobUpdateWithoutCutRequestInput = {
   editorialExportIntent?: Prisma.EditorialExportIntentUpdateOneWithoutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderIntent?: Prisma.VerticalRenderIntentUpdateOneWithoutJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateWithoutCutRequestInput = {
@@ -5818,6 +6827,7 @@ export type PipelineJobUncheckedUpdateWithoutCutRequestInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   frameEvidenceJob?: Prisma.FrameEvidenceIntentUncheckedUpdateOneWithoutPipelineJobNestedInput
   frameEvidenceInputs?: Prisma.FrameEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   transcriptEvidenceInputs?: Prisma.TranscriptEvidenceIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
@@ -5830,6 +6840,8 @@ export type PipelineJobUncheckedUpdateWithoutCutRequestInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutCutPipelineJobNestedInput
   editorialExportResult?: Prisma.EditorialExportResultUncheckedUpdateOneWithoutPipelineJobNestedInput
   cutEditorialPrompt?: Prisma.CutEditorialPromptUncheckedUpdateOneWithoutCutPipelineJobNestedInput
+  verticalRenderInputs?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutCutPipelineJobNestedInput
+  verticalRenderResult?: Prisma.VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput
 }
 
 export type PipelineJobUncheckedUpdateManyWithoutCutRequestInput = {
@@ -5869,6 +6881,7 @@ export type PipelineJobUncheckedUpdateManyWithoutCutRequestInput = {
   progressPhase?: Prisma.NullableEnumAssemblyProgressPhaseFieldUpdateOperationsInput | $Enums.AssemblyProgressPhase | null
   progressBasisPoints?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   progressUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  verticalRenderIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -5882,6 +6895,7 @@ export type PipelineJobCountOutputType = {
   attempts: number
   assemblyRenderInputs: number
   editorialApprovals: number
+  verticalRenderInputs: number
 }
 
 export type PipelineJobCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -5890,6 +6904,7 @@ export type PipelineJobCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   attempts?: boolean | PipelineJobCountOutputTypeCountAttemptsArgs
   assemblyRenderInputs?: boolean | PipelineJobCountOutputTypeCountAssemblyRenderInputsArgs
   editorialApprovals?: boolean | PipelineJobCountOutputTypeCountEditorialApprovalsArgs
+  verticalRenderInputs?: boolean | PipelineJobCountOutputTypeCountVerticalRenderInputsArgs
 }
 
 /**
@@ -5937,6 +6952,13 @@ export type PipelineJobCountOutputTypeCountEditorialApprovalsArgs<ExtArgs extend
   where?: Prisma.EditorialApprovalWhereInput
 }
 
+/**
+ * PipelineJobCountOutputType without action
+ */
+export type PipelineJobCountOutputTypeCountVerticalRenderInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VerticalRenderIntentWhereInput
+}
+
 
 export type PipelineJobSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -5976,6 +6998,7 @@ export type PipelineJobSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   progressPhase?: boolean
   progressBasisPoints?: boolean
   progressUpdatedAt?: boolean
+  verticalRenderIntentId?: boolean
   frameEvidenceJob?: boolean | Prisma.PipelineJob$frameEvidenceJobArgs<ExtArgs>
   frameEvidenceInputs?: boolean | Prisma.PipelineJob$frameEvidenceInputsArgs<ExtArgs>
   transcriptEvidenceInputs?: boolean | Prisma.PipelineJob$transcriptEvidenceInputsArgs<ExtArgs>
@@ -5994,6 +7017,9 @@ export type PipelineJobSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   editorialExportIntent?: boolean | Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs>
   editorialExportResult?: boolean | Prisma.PipelineJob$editorialExportResultArgs<ExtArgs>
   cutEditorialPrompt?: boolean | Prisma.PipelineJob$cutEditorialPromptArgs<ExtArgs>
+  verticalRenderIntent?: boolean | Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs>
+  verticalRenderInputs?: boolean | Prisma.PipelineJob$verticalRenderInputsArgs<ExtArgs>
+  verticalRenderResult?: boolean | Prisma.PipelineJob$verticalRenderResultArgs<ExtArgs>
   _count?: boolean | Prisma.PipelineJobCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pipelineJob"]>
 
@@ -6035,12 +7061,14 @@ export type PipelineJobSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   progressPhase?: boolean
   progressBasisPoints?: boolean
   progressUpdatedAt?: boolean
+  verticalRenderIntentId?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
   cutRequest?: boolean | Prisma.PipelineJob$cutRequestArgs<ExtArgs>
   montageAsset?: boolean | Prisma.PipelineJob$montageAssetArgs<ExtArgs>
   assemblyRenderIntent?: boolean | Prisma.PipelineJob$assemblyRenderIntentArgs<ExtArgs>
   editorialExportIntent?: boolean | Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs>
+  verticalRenderIntent?: boolean | Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs>
 }, ExtArgs["result"]["pipelineJob"]>
 
 export type PipelineJobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -6081,12 +7109,14 @@ export type PipelineJobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   progressPhase?: boolean
   progressBasisPoints?: boolean
   progressUpdatedAt?: boolean
+  verticalRenderIntentId?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   source?: boolean | Prisma.VideoSourceDefaultArgs<ExtArgs>
   cutRequest?: boolean | Prisma.PipelineJob$cutRequestArgs<ExtArgs>
   montageAsset?: boolean | Prisma.PipelineJob$montageAssetArgs<ExtArgs>
   assemblyRenderIntent?: boolean | Prisma.PipelineJob$assemblyRenderIntentArgs<ExtArgs>
   editorialExportIntent?: boolean | Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs>
+  verticalRenderIntent?: boolean | Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs>
 }, ExtArgs["result"]["pipelineJob"]>
 
 export type PipelineJobSelectScalar = {
@@ -6127,9 +7157,10 @@ export type PipelineJobSelectScalar = {
   progressPhase?: boolean
   progressBasisPoints?: boolean
   progressUpdatedAt?: boolean
+  verticalRenderIntentId?: boolean
 }
 
-export type PipelineJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "sourceVersion" | "cutRequestId" | "type" | "state" | "payloadVersion" | "idempotencyKey" | "revision" | "priority" | "retryBudget" | "attemptCount" | "processedMs" | "totalMs" | "leaseOwner" | "leaseToken" | "leaseExpiresAt" | "heartbeatAt" | "failureCode" | "failureMessage" | "failureRetryable" | "recipeVersion" | "queuedAt" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt" | "montageAssetId" | "assemblyRenderIntentId" | "editorialExportIntentId" | "nextAttemptAt" | "admissionReason" | "progressAttemptNumber" | "progressPhase" | "progressBasisPoints" | "progressUpdatedAt", ExtArgs["result"]["pipelineJob"]>
+export type PipelineJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "sourceId" | "sourceVersion" | "cutRequestId" | "type" | "state" | "payloadVersion" | "idempotencyKey" | "revision" | "priority" | "retryBudget" | "attemptCount" | "processedMs" | "totalMs" | "leaseOwner" | "leaseToken" | "leaseExpiresAt" | "heartbeatAt" | "failureCode" | "failureMessage" | "failureRetryable" | "recipeVersion" | "queuedAt" | "startedAt" | "finishedAt" | "createdAt" | "updatedAt" | "montageAssetId" | "assemblyRenderIntentId" | "editorialExportIntentId" | "nextAttemptAt" | "admissionReason" | "progressAttemptNumber" | "progressPhase" | "progressBasisPoints" | "progressUpdatedAt" | "verticalRenderIntentId", ExtArgs["result"]["pipelineJob"]>
 export type PipelineJobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   frameEvidenceJob?: boolean | Prisma.PipelineJob$frameEvidenceJobArgs<ExtArgs>
   frameEvidenceInputs?: boolean | Prisma.PipelineJob$frameEvidenceInputsArgs<ExtArgs>
@@ -6149,6 +7180,9 @@ export type PipelineJobInclude<ExtArgs extends runtime.Types.Extensions.Internal
   editorialExportIntent?: boolean | Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs>
   editorialExportResult?: boolean | Prisma.PipelineJob$editorialExportResultArgs<ExtArgs>
   cutEditorialPrompt?: boolean | Prisma.PipelineJob$cutEditorialPromptArgs<ExtArgs>
+  verticalRenderIntent?: boolean | Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs>
+  verticalRenderInputs?: boolean | Prisma.PipelineJob$verticalRenderInputsArgs<ExtArgs>
+  verticalRenderResult?: boolean | Prisma.PipelineJob$verticalRenderResultArgs<ExtArgs>
   _count?: boolean | Prisma.PipelineJobCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PipelineJobIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -6158,6 +7192,7 @@ export type PipelineJobIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.
   montageAsset?: boolean | Prisma.PipelineJob$montageAssetArgs<ExtArgs>
   assemblyRenderIntent?: boolean | Prisma.PipelineJob$assemblyRenderIntentArgs<ExtArgs>
   editorialExportIntent?: boolean | Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs>
+  verticalRenderIntent?: boolean | Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs>
 }
 export type PipelineJobIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -6166,6 +7201,7 @@ export type PipelineJobIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.
   montageAsset?: boolean | Prisma.PipelineJob$montageAssetArgs<ExtArgs>
   assemblyRenderIntent?: boolean | Prisma.PipelineJob$assemblyRenderIntentArgs<ExtArgs>
   editorialExportIntent?: boolean | Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs>
+  verticalRenderIntent?: boolean | Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs>
 }
 
 export type $PipelineJobPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -6189,6 +7225,9 @@ export type $PipelineJobPayload<ExtArgs extends runtime.Types.Extensions.Interna
     editorialExportIntent: Prisma.$EditorialExportIntentPayload<ExtArgs> | null
     editorialExportResult: Prisma.$EditorialExportResultPayload<ExtArgs> | null
     cutEditorialPrompt: Prisma.$CutEditorialPromptPayload<ExtArgs> | null
+    verticalRenderIntent: Prisma.$VerticalRenderIntentPayload<ExtArgs> | null
+    verticalRenderInputs: Prisma.$VerticalRenderIntentPayload<ExtArgs>[]
+    verticalRenderResult: Prisma.$VerticalRenderResultPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -6228,6 +7267,7 @@ export type $PipelineJobPayload<ExtArgs extends runtime.Types.Extensions.Interna
     progressPhase: $Enums.AssemblyProgressPhase | null
     progressBasisPoints: number | null
     progressUpdatedAt: Date | null
+    verticalRenderIntentId: string | null
   }, ExtArgs["result"]["pipelineJob"]>
   composites: {}
 }
@@ -6640,6 +7680,9 @@ export interface Prisma__PipelineJobClient<T, Null = never, ExtArgs extends runt
   editorialExportIntent<T extends Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJob$editorialExportIntentArgs<ExtArgs>>): Prisma.Prisma__EditorialExportIntentClient<runtime.Types.Result.GetResult<Prisma.$EditorialExportIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   editorialExportResult<T extends Prisma.PipelineJob$editorialExportResultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJob$editorialExportResultArgs<ExtArgs>>): Prisma.Prisma__EditorialExportResultClient<runtime.Types.Result.GetResult<Prisma.$EditorialExportResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   cutEditorialPrompt<T extends Prisma.PipelineJob$cutEditorialPromptArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJob$cutEditorialPromptArgs<ExtArgs>>): Prisma.Prisma__CutEditorialPromptClient<runtime.Types.Result.GetResult<Prisma.$CutEditorialPromptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  verticalRenderIntent<T extends Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJob$verticalRenderIntentArgs<ExtArgs>>): Prisma.Prisma__VerticalRenderIntentClient<runtime.Types.Result.GetResult<Prisma.$VerticalRenderIntentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  verticalRenderInputs<T extends Prisma.PipelineJob$verticalRenderInputsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJob$verticalRenderInputsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VerticalRenderIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  verticalRenderResult<T extends Prisma.PipelineJob$verticalRenderResultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJob$verticalRenderResultArgs<ExtArgs>>): Prisma.Prisma__VerticalRenderResultClient<runtime.Types.Result.GetResult<Prisma.$VerticalRenderResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6706,6 +7749,7 @@ export interface PipelineJobFieldRefs {
   readonly progressPhase: Prisma.FieldRef<"PipelineJob", 'AssemblyProgressPhase'>
   readonly progressBasisPoints: Prisma.FieldRef<"PipelineJob", 'Int'>
   readonly progressUpdatedAt: Prisma.FieldRef<"PipelineJob", 'DateTime'>
+  readonly verticalRenderIntentId: Prisma.FieldRef<"PipelineJob", 'String'>
 }
     
 
@@ -7433,6 +8477,68 @@ export type PipelineJob$cutEditorialPromptArgs<ExtArgs extends runtime.Types.Ext
    */
   include?: Prisma.CutEditorialPromptInclude<ExtArgs> | null
   where?: Prisma.CutEditorialPromptWhereInput
+}
+
+/**
+ * PipelineJob.verticalRenderIntent
+ */
+export type PipelineJob$verticalRenderIntentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalRenderIntent
+   */
+  select?: Prisma.VerticalRenderIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VerticalRenderIntent
+   */
+  omit?: Prisma.VerticalRenderIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VerticalRenderIntentInclude<ExtArgs> | null
+  where?: Prisma.VerticalRenderIntentWhereInput
+}
+
+/**
+ * PipelineJob.verticalRenderInputs
+ */
+export type PipelineJob$verticalRenderInputsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalRenderIntent
+   */
+  select?: Prisma.VerticalRenderIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VerticalRenderIntent
+   */
+  omit?: Prisma.VerticalRenderIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VerticalRenderIntentInclude<ExtArgs> | null
+  where?: Prisma.VerticalRenderIntentWhereInput
+  orderBy?: Prisma.VerticalRenderIntentOrderByWithRelationInput | Prisma.VerticalRenderIntentOrderByWithRelationInput[]
+  cursor?: Prisma.VerticalRenderIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VerticalRenderIntentScalarFieldEnum | Prisma.VerticalRenderIntentScalarFieldEnum[]
+}
+
+/**
+ * PipelineJob.verticalRenderResult
+ */
+export type PipelineJob$verticalRenderResultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalRenderResult
+   */
+  select?: Prisma.VerticalRenderResultSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VerticalRenderResult
+   */
+  omit?: Prisma.VerticalRenderResultOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VerticalRenderResultInclude<ExtArgs> | null
+  where?: Prisma.VerticalRenderResultWhereInput
 }
 
 /**

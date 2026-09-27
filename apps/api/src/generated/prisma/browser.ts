@@ -332,3 +332,18 @@ export type TwitchEventInbox = Prisma.TwitchEventInboxModel
  * Provider metadata discovered by reconciliation; media bytes are ingested in Stage 3C.
  */
 export type TwitchVodCandidate = Prisma.TwitchVodCandidateModel
+/**
+ * Model VerticalRenderIntent
+ * 
+ */
+export type VerticalRenderIntent = Prisma.VerticalRenderIntentModel
+/**
+ * Model VerticalRenderResult
+ * 
+ */
+export type VerticalRenderResult = Prisma.VerticalRenderResultModel
+/**
+ * Model VerticalApproval
+ * 
+ */
+export type VerticalApproval = Prisma.VerticalApprovalModel

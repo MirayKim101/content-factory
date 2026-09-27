@@ -7,6 +7,7 @@ import {
   publishingAdmissionEnabled,
   twitchIngestionAdmissionEnabled,
   twitchEventSubSecret,
+  verticalRenderAdmissionEnabled,
 } from "../src/config/environment.js";
 
 describe("editorial export rollout flag", () => {
@@ -42,6 +43,16 @@ describe("twitch ingestion rollout flag", () => {
         TWITCH_EVENTSUB_SECRET: "0123456789abcdef",
       }),
     ).toBe("0123456789abcdef");
+  });
+});
+
+describe("vertical rendering rollout flag", () => {
+  it.each([
+    [{}, false],
+    [{ VERTICAL_RENDER_ENABLED: "0" }, false],
+    [{ VERTICAL_RENDER_ENABLED: "1" }, true],
+  ] as const)("resolves %o to %s", (environment, expected) => {
+    expect(verticalRenderAdmissionEnabled(environment)).toBe(expected);
   });
 });
 

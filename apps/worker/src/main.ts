@@ -5,7 +5,9 @@ import { join } from "node:path";
 import {
   parseMediaJobReference,
   parsePublicationJobReference,
+  parseVerticalJobReference,
   PUBLICATION_QUEUE_NAME,
+  VERTICAL_QUEUE_NAME,
 } from "@content-factory/contracts";
 import { Worker } from "bullmq";
 
@@ -32,6 +34,9 @@ import { PgPublicationWorkerRepository } from "./infrastructure/pg-publication-w
 import { ReconcileTwitchIngestion } from "./application/reconcile-twitch-ingestion.js";
 import { PgTwitchIngestionWorkerRepository } from "./infrastructure/pg-twitch-ingestion-worker.repository.js";
 import { TwitchHelixClient } from "./infrastructure/twitch-helix-client.js";
+import { ProcessVerticalRender } from "./application/process-vertical-render.js";
+import { FfmpegVerticalRenderer } from "./infrastructure/ffmpeg-vertical-renderer.js";
+import { PgVerticalRenderRepository } from "./infrastructure/pg-vertical-render.repository.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -49,7 +54,100 @@ if (process.argv.includes("--verify-admission-off-rollback")) {
       ? startPublicationWorker()
       : process.env.WORKER_ROLE === "twitch"
         ? startTwitchWorker()
-        : startWorker());
+        : process.env.WORKER_ROLE === "vertical"
+          ? startVerticalWorker()
+          : startWorker());
+}
+
+async function startVerticalWorker(): Promise<void> {
+  const config = workerConfig();
+  if (process.env.VERTICAL_RENDER_ENABLED !== "1")
+    throw new Error("CONFIG_VERTICAL_RENDER_DISABLED");
+  const workerId = `vertical-worker-${randomUUID()}`;
+  const repository = new PgVerticalRenderRepository(config.databaseUrl);
+  const storage = new S3WorkerObjectStorage(
+    config.storage.bucket,
+    config.storage,
+  );
+  const renderer = new FfmpegVerticalRenderer(
+    config.ffmpegPath,
+    config.ffprobePath,
+  );
+  await renderer.verifyAvailable();
+  const processor = new ProcessVerticalRender(
+    repository,
+    storage,
+    renderer,
+    config.scratchDirectory,
+    config.leaseMs,
+  );
+  const queue = new Worker(
+    VERTICAL_QUEUE_NAME,
+    async (delivery) => {
+      const reference = parseVerticalJobReference(delivery.data);
+      await processor.execute(reference.jobId);
+    },
+    {
+      connection: { ...config.redis, maxRetriesPerRequest: null },
+      concurrency: 1,
+    },
+  );
+  let reconciling = false;
+  const reconcile = async (): Promise<void> => {
+    if (reconciling) return;
+    reconciling = true;
+    try {
+      for (const jobId of await repository.due())
+        await processor.execute(jobId);
+    } finally {
+      reconciling = false;
+    }
+  };
+  await reconcile();
+  const timer = setInterval(() => {
+    void reconcile().catch((error) =>
+      console.error(
+        JSON.stringify({
+          event: "vertical_reconciliation_failed",
+          workerId,
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
+    );
+  }, 30_000);
+  timer.unref();
+  queue.on("error", (error) =>
+    console.error(
+      JSON.stringify({
+        event: "vertical_worker_error",
+        workerId,
+        error: error.message,
+      }),
+    ),
+  );
+  let shutdownPromise: Promise<void> | undefined;
+  const shutdown = (): Promise<void> => {
+    if (shutdownPromise) return shutdownPromise;
+    clearInterval(timer);
+    shutdownPromise = Promise.allSettled([
+      queue.close(),
+      repository.close(),
+    ]).then(() => {
+      storage.close();
+    });
+    return shutdownPromise;
+  };
+  for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.once(signal, () => void shutdown());
+  }
+  await queue.waitUntilReady();
+  console.log(
+    JSON.stringify({
+      event: "vertical_worker_started",
+      workerId,
+      queue: VERTICAL_QUEUE_NAME,
+    }),
+  );
 }
 
 async function startTwitchWorker(): Promise<void> {

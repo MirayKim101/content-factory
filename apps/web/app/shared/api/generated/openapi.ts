@@ -897,6 +897,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/vertical-renders": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["VerticalController_list"];
+    put?: never;
+    post: operations["VerticalController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/publications/{id}": {
     parameters: {
       query?: never;
@@ -1035,6 +1051,38 @@ export interface paths {
     get?: never;
     put?: never;
     post: operations["TwitchIngestionController_event"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/vertical-renders/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["VerticalController_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/vertical-renders/{id}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["VerticalController_approve"];
     delete?: never;
     options?: never;
     head?: never;
@@ -2849,6 +2897,23 @@ export interface components {
       expiresAt?: string | null;
       externalProviderTransferAllowed?: boolean;
       scope?: string | null;
+    };
+    VerticalRenderResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      cutPipelineJobId: string;
+      /** @enum {string} */
+      framingMode: "CENTER_CROP";
+      /** Format: uuid */
+      id: string;
+      job: Record<string, never>;
+      outputHeight: number;
+      outputWidth: number;
+      /** Format: uuid */
+      projectId: string;
+      renderContractVersion: string;
+      result: Record<string, never> | null;
     };
   };
   responses: never;
@@ -5864,6 +5929,46 @@ export interface operations {
       };
     };
   };
+  VerticalController_list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VerticalRenderResponseDto"][];
+        };
+      };
+    };
+  };
+  VerticalController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VerticalRenderResponseDto"];
+        };
+      };
+    };
+  };
   PublicationController_one: {
     parameters: {
       query?: never;
@@ -6157,6 +6262,42 @@ export interface operations {
     requestBody?: never;
     responses: {
       202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  VerticalController_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["VerticalRenderResponseDto"];
+        };
+      };
+    };
+  };
+  VerticalController_approve: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
         headers: {
           [name: string]: unknown;
         };

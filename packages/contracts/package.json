@@ -26,6 +26,7 @@
     "#editorial-approval-snapshot": "./src/editorial-approval-snapshot.ts",
     "#publication": "./src/publication.ts",
     "#thumbnail": "./src/thumbnail.ts",
-    "#twitch-ingestion": "./src/twitch-ingestion.ts"
+    "#twitch-ingestion": "./src/twitch-ingestion.ts",
+    "#vertical": "./src/vertical.ts"
   }
 }

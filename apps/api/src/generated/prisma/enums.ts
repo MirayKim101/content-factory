@@ -40,7 +40,8 @@ export const MediaArtifactRole = {
   SOURCE: 'SOURCE',
   CUT_RESULT: 'CUT_RESULT',
   HORIZONTAL_ASSEMBLY_RESULT: 'HORIZONTAL_ASSEMBLY_RESULT',
-  EDITORIAL_EXPORT_PACKAGE: 'EDITORIAL_EXPORT_PACKAGE'
+  EDITORIAL_EXPORT_PACKAGE: 'EDITORIAL_EXPORT_PACKAGE',
+  VERTICAL_RENDER_RESULT: 'VERTICAL_RENDER_RESULT'
 } as const
 
 export type MediaArtifactRole = (typeof MediaArtifactRole)[keyof typeof MediaArtifactRole]
@@ -52,10 +53,18 @@ export const PipelineJobType = {
   MONTAGE_ASSET_PROBE: 'MONTAGE_ASSET_PROBE',
   ASSEMBLE_HORIZONTAL: 'ASSEMBLE_HORIZONTAL',
   EXPORT_EDITORIAL_PACKAGE: 'EXPORT_EDITORIAL_PACKAGE',
-  EXTRACT_EDITORIAL_FRAMES: 'EXTRACT_EDITORIAL_FRAMES'
+  EXTRACT_EDITORIAL_FRAMES: 'EXTRACT_EDITORIAL_FRAMES',
+  RENDER_VERTICAL: 'RENDER_VERTICAL'
 } as const
 
 export type PipelineJobType = (typeof PipelineJobType)[keyof typeof PipelineJobType]
+
+
+export const VerticalFramingMode = {
+  CENTER_CROP: 'CENTER_CROP'
+} as const
+
+export type VerticalFramingMode = (typeof VerticalFramingMode)[keyof typeof VerticalFramingMode]
 
 
 export const AssemblyProgressPhase = {

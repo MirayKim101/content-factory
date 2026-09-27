@@ -1081,6 +1081,23 @@ export type EnumTwitchVodCandidateStateWithAggregatesFilter<$PrismaModel = never
   _max?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel>
 }
 
+export type EnumVerticalFramingModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.VerticalFramingMode | Prisma.EnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVerticalFramingModeFilter<$PrismaModel> | $Enums.VerticalFramingMode
+}
+
+export type EnumVerticalFramingModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.VerticalFramingMode | Prisma.EnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVerticalFramingModeWithAggregatesFilter<$PrismaModel> | $Enums.VerticalFramingMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumVerticalFramingModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumVerticalFramingModeFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -2090,6 +2107,23 @@ export type NestedEnumTwitchVodCandidateStateWithAggregatesFilter<$PrismaModel =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTwitchVodCandidateStateFilter<$PrismaModel>
+}
+
+export type NestedEnumVerticalFramingModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.VerticalFramingMode | Prisma.EnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVerticalFramingModeFilter<$PrismaModel> | $Enums.VerticalFramingMode
+}
+
+export type NestedEnumVerticalFramingModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.VerticalFramingMode | Prisma.EnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.VerticalFramingMode[] | Prisma.ListEnumVerticalFramingModeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumVerticalFramingModeWithAggregatesFilter<$PrismaModel> | $Enums.VerticalFramingMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumVerticalFramingModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumVerticalFramingModeFilter<$PrismaModel>
 }
 
 

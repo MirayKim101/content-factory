@@ -7,6 +7,7 @@ import { MediaPipelineModule } from "./media-pipeline/media-pipeline.module.js";
 import { AiContentModule } from "./ai-content/ai-content.module.js";
 import { PublishingModule } from "./publishing/publishing.module.js";
 import { TwitchIngestionModule } from "./twitch-ingestion/twitch-ingestion.module.js";
+import { VerticalModule } from "./vertical/vertical.module.js";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TwitchIngestionModule } from "./twitch-ingestion/twitch-ingestion.modul
     AiContentModule,
     PublishingModule,
     TwitchIngestionModule,
+    VerticalModule,
   ],
   controllers: [AppController],
 })

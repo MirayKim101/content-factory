@@ -459,7 +459,10 @@ export const ModelName = {
   TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact',
   TwitchIngestChannel: 'TwitchIngestChannel',
   TwitchEventInbox: 'TwitchEventInbox',
-  TwitchVodCandidate: 'TwitchVodCandidate'
+  TwitchVodCandidate: 'TwitchVodCandidate',
+  VerticalRenderIntent: 'VerticalRenderIntent',
+  VerticalRenderResult: 'VerticalRenderResult',
+  VerticalApproval: 'VerticalApproval'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -475,7 +478,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact" | "twitchIngestChannel" | "twitchEventInbox" | "twitchVodCandidate"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact" | "twitchIngestChannel" | "twitchEventInbox" | "twitchVodCandidate" | "verticalRenderIntent" | "verticalRenderResult" | "verticalApproval"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5141,6 +5144,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    VerticalRenderIntent: {
+      payload: Prisma.$VerticalRenderIntentPayload<ExtArgs>
+      fields: Prisma.VerticalRenderIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VerticalRenderIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VerticalRenderIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.VerticalRenderIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VerticalRenderIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>
+        }
+        findMany: {
+          args: Prisma.VerticalRenderIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>[]
+        }
+        create: {
+          args: Prisma.VerticalRenderIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>
+        }
+        createMany: {
+          args: Prisma.VerticalRenderIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VerticalRenderIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.VerticalRenderIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>
+        }
+        update: {
+          args: Prisma.VerticalRenderIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.VerticalRenderIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VerticalRenderIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VerticalRenderIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.VerticalRenderIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.VerticalRenderIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVerticalRenderIntent>
+        }
+        groupBy: {
+          args: Prisma.VerticalRenderIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerticalRenderIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VerticalRenderIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerticalRenderIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    VerticalRenderResult: {
+      payload: Prisma.$VerticalRenderResultPayload<ExtArgs>
+      fields: Prisma.VerticalRenderResultFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VerticalRenderResultFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VerticalRenderResultFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>
+        }
+        findFirst: {
+          args: Prisma.VerticalRenderResultFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VerticalRenderResultFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>
+        }
+        findMany: {
+          args: Prisma.VerticalRenderResultFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>[]
+        }
+        create: {
+          args: Prisma.VerticalRenderResultCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>
+        }
+        createMany: {
+          args: Prisma.VerticalRenderResultCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VerticalRenderResultCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>[]
+        }
+        delete: {
+          args: Prisma.VerticalRenderResultDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>
+        }
+        update: {
+          args: Prisma.VerticalRenderResultUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>
+        }
+        deleteMany: {
+          args: Prisma.VerticalRenderResultDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VerticalRenderResultUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VerticalRenderResultUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>[]
+        }
+        upsert: {
+          args: Prisma.VerticalRenderResultUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalRenderResultPayload>
+        }
+        aggregate: {
+          args: Prisma.VerticalRenderResultAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVerticalRenderResult>
+        }
+        groupBy: {
+          args: Prisma.VerticalRenderResultGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerticalRenderResultGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VerticalRenderResultCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerticalRenderResultCountAggregateOutputType> | number
+        }
+      }
+    }
+    VerticalApproval: {
+      payload: Prisma.$VerticalApprovalPayload<ExtArgs>
+      fields: Prisma.VerticalApprovalFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VerticalApprovalFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VerticalApprovalFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>
+        }
+        findFirst: {
+          args: Prisma.VerticalApprovalFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VerticalApprovalFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>
+        }
+        findMany: {
+          args: Prisma.VerticalApprovalFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>[]
+        }
+        create: {
+          args: Prisma.VerticalApprovalCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>
+        }
+        createMany: {
+          args: Prisma.VerticalApprovalCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VerticalApprovalCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>[]
+        }
+        delete: {
+          args: Prisma.VerticalApprovalDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>
+        }
+        update: {
+          args: Prisma.VerticalApprovalUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>
+        }
+        deleteMany: {
+          args: Prisma.VerticalApprovalDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VerticalApprovalUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VerticalApprovalUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>[]
+        }
+        upsert: {
+          args: Prisma.VerticalApprovalUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VerticalApprovalPayload>
+        }
+        aggregate: {
+          args: Prisma.VerticalApprovalAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVerticalApproval>
+        }
+        groupBy: {
+          args: Prisma.VerticalApprovalGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerticalApprovalGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VerticalApprovalCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VerticalApprovalCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -5309,7 +5534,8 @@ export const PipelineJobScalarFieldEnum = {
   progressAttemptNumber: 'progressAttemptNumber',
   progressPhase: 'progressPhase',
   progressBasisPoints: 'progressBasisPoints',
-  progressUpdatedAt: 'progressUpdatedAt'
+  progressUpdatedAt: 'progressUpdatedAt',
+  verticalRenderIntentId: 'verticalRenderIntentId'
 } as const
 
 export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
@@ -6502,6 +6728,54 @@ export const TwitchVodCandidateScalarFieldEnum = {
 export type TwitchVodCandidateScalarFieldEnum = (typeof TwitchVodCandidateScalarFieldEnum)[keyof typeof TwitchVodCandidateScalarFieldEnum]
 
 
+export const VerticalRenderIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  framingMode: 'framingMode',
+  outputWidth: 'outputWidth',
+  outputHeight: 'outputHeight',
+  renderContractVersion: 'renderContractVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type VerticalRenderIntentScalarFieldEnum = (typeof VerticalRenderIntentScalarFieldEnum)[keyof typeof VerticalRenderIntentScalarFieldEnum]
+
+
+export const VerticalRenderResultScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  pipelineJobId: 'pipelineJobId',
+  artifactId: 'artifactId',
+  renderContractVersion: 'renderContractVersion',
+  durationMs: 'durationMs',
+  width: 'width',
+  height: 'height',
+  sha256: 'sha256',
+  sizeBytes: 'sizeBytes',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type VerticalRenderResultScalarFieldEnum = (typeof VerticalRenderResultScalarFieldEnum)[keyof typeof VerticalRenderResultScalarFieldEnum]
+
+
+export const VerticalApprovalScalarFieldEnum = {
+  id: 'id',
+  resultId: 'resultId',
+  approvalVersion: 'approvalVersion',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type VerticalApprovalScalarFieldEnum = (typeof VerticalApprovalScalarFieldEnum)[keyof typeof VerticalApprovalScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -7150,6 +7424,20 @@ export type EnumTwitchVodCandidateStateFieldRefInput<$PrismaModel> = FieldRefInp
 export type ListEnumTwitchVodCandidateStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TwitchVodCandidateState[]'>
     
 
+
+/**
+ * Reference to a field of type 'VerticalFramingMode'
+ */
+export type EnumVerticalFramingModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerticalFramingMode'>
+    
+
+
+/**
+ * Reference to a field of type 'VerticalFramingMode[]'
+ */
+export type ListEnumVerticalFramingModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VerticalFramingMode[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -7364,6 +7652,9 @@ export type GlobalOmitConfig = {
   twitchIngestChannel?: Prisma.TwitchIngestChannelOmit
   twitchEventInbox?: Prisma.TwitchEventInboxOmit
   twitchVodCandidate?: Prisma.TwitchVodCandidateOmit
+  verticalRenderIntent?: Prisma.VerticalRenderIntentOmit
+  verticalRenderResult?: Prisma.VerticalRenderResultOmit
+  verticalApproval?: Prisma.VerticalApprovalOmit
 }
 
 /* Types for Logging */

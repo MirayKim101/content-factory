@@ -30,6 +30,7 @@ enum MediaArtifactRole {
   CUT_RESULT
   HORIZONTAL_ASSEMBLY_RESULT
   EDITORIAL_EXPORT_PACKAGE
+  VERTICAL_RENDER_RESULT
 }
 
 enum PipelineJobType {
@@ -39,6 +40,11 @@ enum PipelineJobType {
   ASSEMBLE_HORIZONTAL
   EXPORT_EDITORIAL_PACKAGE
   EXTRACT_EDITORIAL_FRAMES
+  RENDER_VERTICAL
+}
+
+enum VerticalFramingMode {
+  CENTER_CROP
 }
 
 enum AssemblyProgressPhase {
@@ -278,6 +284,7 @@ model Project {
   publicationChannels        PublicationChannel[]
   publicationIntents         PublicationIntent[]
   twitchVodImports           TwitchVodCandidate[]
+  verticalRenderIntents      VerticalRenderIntent[]
 }
 
 model VideoSource {
@@ -303,6 +310,7 @@ model VideoSource {
   editorialApprovals      EditorialApproval[]
   editorialExportIntents  EditorialExportIntent[]
   sourceEditorialContexts SourceEditorialContext[]
+  verticalRenderIntents   VerticalRenderIntent[]
 
   @@unique([id, projectId, sourceVersion], map: "VideoSource_ai_exact_source_key")
 }
@@ -361,6 +369,8 @@ model MediaArtifact {
   editorialApprovals       EditorialApproval[]
   editorialExportResult    EditorialExportResult?
   cutEditorialPrompt       CutEditorialPrompt?
+  verticalRenderInputs     VerticalRenderIntent[]     @relation("VerticalRenderInput")
+  verticalRenderResult     VerticalRenderResult?
 
   @@unique([id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], map: "MediaArtifact_id_projectId_lineage_pipelineJob_key")
   @@index([status, createdAt])
@@ -435,10 +445,15 @@ model PipelineJob {
   progressPhase            AssemblyProgressPhase?
   progressBasisPoints      Int?
   progressUpdatedAt        DateTime?
+  verticalRenderIntentId   String?                    @unique @db.Uuid
+  verticalRenderIntent     VerticalRenderIntent?      @relation("VerticalRenderJob", fields: [verticalRenderIntentId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "PipelineJob_exact_vertical_intent")
+  verticalRenderInputs     VerticalRenderIntent[]     @relation("VerticalRenderCutJob")
+  verticalRenderResult     VerticalRenderResult?
 
   @@unique([id, projectId, sourceId, sourceVersion])
   @@unique([assemblyRenderIntentId, projectId, sourceId, sourceVersion], map: "PipelineJob_assembly_intent_lineage_key")
   @@unique([editorialExportIntentId, projectId, sourceId, sourceVersion], map: "PipelineJob_editorial_export_intent_lineage_key")
+  @@unique([verticalRenderIntentId, projectId, sourceId, sourceVersion], map: "PipelineJob_vertical_intent_lineage_key")
   @@index([state, type, priority, queuedAt])
   @@index([leaseExpiresAt])
   @@index([projectId, createdAt])
@@ -1880,4 +1895,57 @@ model TwitchVodCandidate {
   updatedAt            DateTime                @updatedAt
 
   @@index([channelId, state, availableForIngestAt, id])
+}
+
+model VerticalRenderIntent {
+  id                    String                @id @db.Uuid
+  idempotencyKey        String                @unique
+  requestFingerprint    String
+  projectId             String                @db.Uuid
+  project               Project               @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  sourceId              String                @db.Uuid
+  source                VideoSource           @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+  sourceVersion         Int
+  cutPipelineJobId      String                @db.Uuid
+  cutPipelineJob        PipelineJob           @relation("VerticalRenderCutJob", fields: [cutPipelineJobId, projectId, sourceId, sourceVersion], references: [id, projectId, sourceId, sourceVersion], onDelete: Restrict, map: "VerticalRenderIntent_exact_cut_job")
+  cutResultArtifactId   String                @db.Uuid
+  cutResultArtifact     MediaArtifact         @relation("VerticalRenderInput", fields: [cutResultArtifactId, projectId, sourceId, sourceVersion, cutPipelineJobId], references: [id, projectId, lineageSourceId, lineageSourceVersion, pipelineJobId], onDelete: Restrict, map: "VerticalRenderIntent_exact_cut_artifact")
+  framingMode           VerticalFramingMode   @default(CENTER_CROP)
+  outputWidth           Int                   @default(1080)
+  outputHeight          Int                   @default(1920)
+  renderContractVersion String
+  createdAt             DateTime              @default(now())
+  job                   PipelineJob?          @relation("VerticalRenderJob")
+  result                VerticalRenderResult?
+
+  @@unique([id, projectId, sourceId, sourceVersion])
+  @@index([projectId, createdAt, id])
+}
+
+model VerticalRenderResult {
+  id                    String               @id @db.Uuid
+  intentId              String               @unique @db.Uuid
+  intent                VerticalRenderIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  pipelineJobId         String               @unique @db.Uuid
+  pipelineJob           PipelineJob          @relation(fields: [pipelineJobId], references: [id], onDelete: Restrict)
+  artifactId            String               @unique @db.Uuid
+  artifact              MediaArtifact        @relation(fields: [artifactId], references: [id], onDelete: Restrict)
+  renderContractVersion String
+  durationMs            Int
+  width                 Int
+  height                Int
+  sha256                String
+  sizeBytes             BigInt
+  completedAt           DateTime
+  createdAt             DateTime             @default(now())
+  approval              VerticalApproval?
+}
+
+model VerticalApproval {
+  id              String               @id @db.Uuid
+  resultId        String               @unique @db.Uuid
+  result          VerticalRenderResult @relation(fields: [resultId], references: [id], onDelete: Restrict)
+  approvalVersion String
+  approvedAt      DateTime             @default(now())
+  createdAt       DateTime             @default(now())
 }

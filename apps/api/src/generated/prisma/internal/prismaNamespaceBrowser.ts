@@ -113,7 +113,10 @@ export const ModelName = {
   TranscriptEvidenceArtifact: 'TranscriptEvidenceArtifact',
   TwitchIngestChannel: 'TwitchIngestChannel',
   TwitchEventInbox: 'TwitchEventInbox',
-  TwitchVodCandidate: 'TwitchVodCandidate'
+  TwitchVodCandidate: 'TwitchVodCandidate',
+  VerticalRenderIntent: 'VerticalRenderIntent',
+  VerticalRenderResult: 'VerticalRenderResult',
+  VerticalApproval: 'VerticalApproval'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -261,7 +264,8 @@ export const PipelineJobScalarFieldEnum = {
   progressAttemptNumber: 'progressAttemptNumber',
   progressPhase: 'progressPhase',
   progressBasisPoints: 'progressBasisPoints',
-  progressUpdatedAt: 'progressUpdatedAt'
+  progressUpdatedAt: 'progressUpdatedAt',
+  verticalRenderIntentId: 'verticalRenderIntentId'
 } as const
 
 export type PipelineJobScalarFieldEnum = (typeof PipelineJobScalarFieldEnum)[keyof typeof PipelineJobScalarFieldEnum]
@@ -1452,6 +1456,54 @@ export const TwitchVodCandidateScalarFieldEnum = {
 } as const
 
 export type TwitchVodCandidateScalarFieldEnum = (typeof TwitchVodCandidateScalarFieldEnum)[keyof typeof TwitchVodCandidateScalarFieldEnum]
+
+
+export const VerticalRenderIntentScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  requestFingerprint: 'requestFingerprint',
+  projectId: 'projectId',
+  sourceId: 'sourceId',
+  sourceVersion: 'sourceVersion',
+  cutPipelineJobId: 'cutPipelineJobId',
+  cutResultArtifactId: 'cutResultArtifactId',
+  framingMode: 'framingMode',
+  outputWidth: 'outputWidth',
+  outputHeight: 'outputHeight',
+  renderContractVersion: 'renderContractVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type VerticalRenderIntentScalarFieldEnum = (typeof VerticalRenderIntentScalarFieldEnum)[keyof typeof VerticalRenderIntentScalarFieldEnum]
+
+
+export const VerticalRenderResultScalarFieldEnum = {
+  id: 'id',
+  intentId: 'intentId',
+  pipelineJobId: 'pipelineJobId',
+  artifactId: 'artifactId',
+  renderContractVersion: 'renderContractVersion',
+  durationMs: 'durationMs',
+  width: 'width',
+  height: 'height',
+  sha256: 'sha256',
+  sizeBytes: 'sizeBytes',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type VerticalRenderResultScalarFieldEnum = (typeof VerticalRenderResultScalarFieldEnum)[keyof typeof VerticalRenderResultScalarFieldEnum]
+
+
+export const VerticalApprovalScalarFieldEnum = {
+  id: 'id',
+  resultId: 'resultId',
+  approvalVersion: 'approvalVersion',
+  approvedAt: 'approvedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type VerticalApprovalScalarFieldEnum = (typeof VerticalApprovalScalarFieldEnum)[keyof typeof VerticalApprovalScalarFieldEnum]
 
 
 export const SortOrder = {
