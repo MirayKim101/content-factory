@@ -44,6 +44,7 @@ export type VerticalRender = z.infer<typeof renderSchema>;
 const errorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string().optional() }),
 });
+const capabilitiesSchema = z.object({ renderEnabled: z.boolean() });
 
 export class VerticalRendersApiError extends Error {
   constructor(
@@ -62,6 +63,13 @@ export function createVerticalRendersApi(
 ) {
   const base = parseApiBasePath(apiBasePath);
   return {
+    capabilities: () =>
+      request(
+        fetcher,
+        `${base}/vertical-renders/capabilities`,
+        {},
+        capabilitiesSchema,
+      ),
     list: (projectId: string) =>
       request(
         fetcher,

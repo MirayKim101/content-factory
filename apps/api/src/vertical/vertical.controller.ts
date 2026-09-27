@@ -26,6 +26,7 @@ import {
 
 import {
   CreateVerticalRenderDto,
+  VerticalCapabilitiesResponseDto,
   VerticalRenderResponseDto,
 } from "./vertical.dto.js";
 import {
@@ -48,6 +49,12 @@ export class VerticalController {
     @Inject(VerticalService) private readonly service: VerticalService,
     @Inject(OBJECT_STORAGE) private readonly storage: ObjectStorage,
   ) {}
+
+  @Get("vertical-renders/capabilities")
+  @ApiOkResponse({ type: VerticalCapabilitiesResponseDto })
+  capabilities() {
+    return this.service.capabilities();
+  }
 
   @Post("projects/:projectId/vertical-renders")
   @ApiHeader({ name: "Idempotency-Key", required: true })

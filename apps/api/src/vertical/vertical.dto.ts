@@ -7,6 +7,10 @@ export class CreateVerticalRenderDto {
   cutPipelineJobId!: string;
 }
 
+export class VerticalCapabilitiesResponseDto {
+  @ApiProperty({ type: Boolean }) renderEnabled!: boolean;
+}
+
 export class VerticalJobResponseDto {
   @ApiProperty({ type: String, format: "uuid" }) id!: string;
   @ApiProperty({

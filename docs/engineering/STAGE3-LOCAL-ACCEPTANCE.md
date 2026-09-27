@@ -21,6 +21,9 @@
 - Publishing UI получает эффективные server-side capabilities без секретов;
   выключенные provider paths не выглядят доступными, а история остаётся
   читаемой в fail-closed режиме.
+- Vertical UI также получает эффективный server-side admission: при
+  выключенном render flag создание новых задач заблокировано и объяснено,
+  но история и подтверждение готовых результатов остаются доступны.
 - Publication uploads имеют 30-минутный bounded attempt deadline, status
   reconciliation — 60-секундный deadline; lease-loss по-прежнему имеет
   приоритет и не позволяет старому worker менять durable state.
@@ -64,10 +67,10 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     234/234 unit tests
+API:     235/235 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  259/259 unit tests
-Web:     252/252 tests
+Web:     253/253 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints

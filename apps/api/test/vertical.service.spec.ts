@@ -60,6 +60,15 @@ describe("VerticalService", () => {
     else process.env.VERTICAL_RENDER_ENABLED = original;
   });
 
+  it("reports effective render admission without exposing configuration", () => {
+    process.env.VERTICAL_RENDER_ENABLED = "0";
+    const { prisma, dispatch } = fixture();
+    const service = new VerticalService(prisma as never, dispatch);
+    expect(service.capabilities()).toEqual({ renderEnabled: false });
+    process.env.VERTICAL_RENDER_ENABLED = "1";
+    expect(service.capabilities()).toEqual({ renderEnabled: true });
+  });
+
   it("fails closed before persistence", async () => {
     process.env.VERTICAL_RENDER_ENABLED = "0";
     const { prisma, dispatch } = fixture();

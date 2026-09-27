@@ -24,6 +24,7 @@ const projects = ref<Array<{ id: string; name: string }>>([]);
 const projectId = ref("");
 const cuts = ref<PipelineJob[]>([]);
 const renders = ref<VerticalRender[]>([]);
+const renderEnabled = ref(false);
 const selectedCutId = ref("");
 const loading = ref(true);
 const saving = ref(false);
@@ -86,7 +87,13 @@ async function loadWorkspace() {
   }
 }
 async function createRender() {
-  if (!projectId.value || !selectedCutId.value || saving.value) return;
+  if (
+    !renderEnabled.value ||
+    !projectId.value ||
+    !selectedCutId.value ||
+    saving.value
+  )
+    return;
   saving.value = true;
   error.value = null;
   notice.value = null;
@@ -160,7 +167,11 @@ watch(projectId, () => {
 });
 onMounted(async () => {
   try {
-    await loadProjects();
+    const [capabilities] = await Promise.all([
+      verticalApi.capabilities(),
+      loadProjects(),
+    ]);
+    renderEnabled.value = capabilities.renderEnabled;
     initialized.value = true;
     await loadWorkspace();
   } catch (cause) {
@@ -290,10 +301,15 @@ onMounted(async () => {
           Исходник не изменяется. Результат сохраняется отдельным артефактом и
           требует подтверждения.
         </p>
+        <p v-if="!renderEnabled" class="admission-note" role="status">
+          Создание новых вертикальных версий выключено администратором.
+          Готовые результаты по-прежнему доступны для просмотра и подтверждения.
+        </p>
         <label
           ><span>Готовая нарезка</span
           ><Select
             v-model="selectedCutId"
+            :disabled="!renderEnabled"
             :options="availableCuts"
             option-value="id"
             :option-label="cutLabel"
@@ -304,7 +320,10 @@ onMounted(async () => {
           ><strong>H.264 / AAC</strong><span>Контроль</span
           ><strong>Ручное подтверждение</strong>
         </div>
-        <Button :disabled="!selectedCutId || saving" @click="createRender">{{
+        <Button
+          :disabled="!renderEnabled || !selectedCutId || saving"
+          @click="createRender"
+          >{{
           saving ? "Создаём…" : "Добавить в очередь"
         }}</Button>
         <p v-if="!loading && !availableCuts.length" class="hint">
@@ -355,6 +374,15 @@ h3 {
   max-width: 44rem;
   margin: 0.45rem 0 0;
   color: var(--cf-text-muted);
+}
+.admission-note {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface-muted);
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
 }
 .project-switcher {
   width: min(22rem, 100%);

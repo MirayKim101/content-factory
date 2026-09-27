@@ -456,3 +456,11 @@ Stage 3 project selectors больше не запрашивают запрещ�
 получили mobile min-width/ellipsis guards. Реальный Chromium render на 3100
 проверен в desktop и узком layout; web `252/252`, typecheck, lint и production
 build прошли. Порт 3000 не использовался.
+
+Vertical workspace больше не предлагает заведомо отклоняемое создание задачи
+при `VERTICAL_RENDER_ENABLED=0`. Новый read-only endpoint
+`GET /api/v1/vertical-renders/capabilities` возвращает только эффективный
+`renderEnabled`; UI блокирует admission с объяснением, сохраняя просмотр
+истории и approval готовых результатов. OpenAPI JSON/types синхронизированы;
+API `235/235`, web `253/253`, typecheck, lint, builds и двусторонние contract
+checks прошли.

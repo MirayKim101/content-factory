@@ -27,6 +27,10 @@ export class VerticalService {
     @Inject(VERTICAL_DISPATCH) private readonly dispatch: VerticalDispatch,
   ) {}
 
+  capabilities() {
+    return { renderEnabled: apiEnvironment().verticalRenderEnabled };
+  }
+
   async create(input: {
     projectId: string;
     cutPipelineJobId: string;

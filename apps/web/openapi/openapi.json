@@ -6337,6 +6337,15 @@
         "required": ["id", "createdAt"],
         "type": "object"
       },
+      "VerticalCapabilitiesResponseDto": {
+        "properties": {
+          "renderEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": ["renderEnabled"],
+        "type": "object"
+      },
       "VerticalJobResponseDto": {
         "properties": {
           "attemptCount": {
@@ -11621,6 +11630,25 @@
           }
         },
         "tags": ["twitch-ingestion"]
+      }
+    },
+    "/api/v1/vertical-renders/capabilities": {
+      "get": {
+        "operationId": "VerticalController_capabilities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerticalCapabilitiesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["vertical"]
       }
     },
     "/api/v1/vertical-renders/{id}": {
