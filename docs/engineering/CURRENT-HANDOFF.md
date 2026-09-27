@@ -394,3 +394,10 @@ result upload) двумя часами. Deadline использует общий
 lease fencing, поэтому зависший внешний процесс или I/O не сможет бесконечно
 продлевать lease. Добавлен тест renderer, который завершается только по abort;
 worker `255/255`, typecheck, lint и production build прошли.
+
+Deadline vertical attempt теперь также передаётся в post-encode `ffprobe` и
+чтение версии FFmpeg, поэтому покрывает adapter целиком. Twitch VOD ingest
+получил 24-часовой attempt deadline поверх resumable scratch: зависший gateway,
+stream или multipart upload больше не может бесконечно продлевать lease;
+timeout сохраняет partial file и идёт в bounded retry. Worker `256/256`,
+typecheck, lint и production build прошли.

@@ -54,15 +54,19 @@ export class FfmpegVerticalRenderer implements VerticalRenderer {
       ],
       signal,
     );
-    const { stdout } = await execFileAsync(this.ffprobePath, [
-      "-v",
-      "error",
-      "-show_entries",
-      "format=duration:stream=codec_type,codec_name,width,height",
-      "-of",
-      "json",
-      output,
-    ]);
+    const { stdout } = await execFileAsync(
+      this.ffprobePath,
+      [
+        "-v",
+        "error",
+        "-show_entries",
+        "format=duration:stream=codec_type,codec_name,width,height",
+        "-of",
+        "json",
+        output,
+      ],
+      { signal },
+    );
     const probe = JSON.parse(stdout) as {
       format?: { duration?: string };
       streams?: Array<{
@@ -86,7 +90,9 @@ export class FfmpegVerticalRenderer implements VerticalRenderer {
       durationMs <= 0
     )
       throw new Error("VERTICAL_PROBE_INVALID");
-    const version = await execFileAsync(this.ffmpegPath, ["-version"]);
+    const version = await execFileAsync(this.ffmpegPath, ["-version"], {
+      signal,
+    });
     return {
       durationMs,
       width: video.width ?? 0,

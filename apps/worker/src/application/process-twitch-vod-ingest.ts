@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
+import { createAbortDeadline } from "./abort-deadline.js";
 import type { TwitchVodMediaProvider } from "./twitch-vod-media.port.js";
 import type { TwitchVodIngestRepository } from "./twitch-vod-ingest.port.js";
 import type { WorkerObjectStorage } from "./ports.js";
@@ -19,6 +20,7 @@ export class ProcessTwitchVodIngest {
     private readonly scratchDirectory: string,
     private readonly maxBytes: bigint,
     private readonly leaseMs: number,
+    private readonly attemptTimeoutMs = 24 * 60 * 60 * 1_000,
   ) {}
 
   async execute(workerId: string): Promise<boolean> {
@@ -30,6 +32,11 @@ export class ProcessTwitchVodIngest {
       `${lease.id}.part`,
     );
     const controller = new AbortController();
+    const deadline = createAbortDeadline(
+      controller.signal,
+      this.attemptTimeoutMs,
+      "TWITCH_VOD_INGEST_TIMEOUT",
+    );
     const heartbeat = this.startHeartbeat(lease.id, workerId, controller);
     try {
       await mkdir(dirname(path), { recursive: true, mode: 0o700 });
@@ -46,7 +53,7 @@ export class ProcessTwitchVodIngest {
         const response = await this.media.open(
           lease.providerVideoId,
           offset,
-          controller.signal,
+          deadline.signal,
         );
         if (response.totalSizeBytes > this.maxBytes)
           throw new Error("TWITCH_VOD_TOO_LARGE");
@@ -94,14 +101,14 @@ export class ProcessTwitchVodIngest {
             flags: offset > 0n ? "a" : "w",
             mode: 0o600,
           }),
-          { signal: controller.signal },
+          { signal: deadline.signal },
         );
       }
       const sizeBytes = BigInt((await stat(path)).size);
       if (expectedBytes === null || sizeBytes !== expectedBytes)
         throw new Error("TWITCH_VOD_SIZE_MISMATCH");
       await this.assertMp4(path);
-      const sha256 = await this.hash(path, controller.signal);
+      const sha256 = await this.hash(path, deadline.signal);
       await this.repository.checkpoint(
         lease.id,
         workerId,
@@ -120,7 +127,7 @@ export class ProcessTwitchVodIngest {
         sizeBytes,
         contentType: "video/mp4",
         uploadMode: "MULTIPART",
-        signal: controller.signal,
+        signal: deadline.signal,
       });
       await this.repository.complete({
         intentId: lease.id,
@@ -140,8 +147,13 @@ export class ProcessTwitchVodIngest {
         controller.signal.reason instanceof TwitchVodIngestLeaseLostError
       )
         return false;
+      const deadlineReason = deadline.signal.reason;
       const code =
-        error instanceof Error ? error.message : "TWITCH_VOD_INGEST_FAILED";
+        deadline.signal.aborted && deadlineReason instanceof Error
+          ? deadlineReason.message
+          : error instanceof Error
+            ? error.message
+            : "TWITCH_VOD_INGEST_FAILED";
       const retryable =
         lease.attemptCount < 3 &&
         code !== "TWITCH_VOD_MP4_INVALID" &&
@@ -156,6 +168,7 @@ export class ProcessTwitchVodIngest {
       if (!retryable) await unlink(path).catch(() => undefined);
       return true;
     } finally {
+      deadline.dispose();
       clearInterval(heartbeat);
     }
   }
