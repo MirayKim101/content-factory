@@ -22,7 +22,14 @@ const base = {
 };
 
 function repository(): PublicationRepository {
-  return { create: vi.fn(async (input) => input as never) };
+  return {
+    create: vi.fn(async (input) => input as never),
+    createChannel: vi.fn(),
+    listChannels: vi.fn(),
+    get: vi.fn(),
+    listProject: vi.fn(),
+    cancel: vi.fn(),
+  };
 }
 
 describe("CreatePublicationIntent", () => {
@@ -69,6 +76,15 @@ describe("CreatePublicationIntent", () => {
     await expect(
       useCase.execute({ ...base, metadataSnapshot: [] }),
     ).rejects.toBeInstanceOf(PublicationMetadataInvalidError);
+    expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it("keeps external providers unavailable in the dry-run slice", async () => {
+    const repo = repository();
+    const useCase = new CreatePublicationIntent(repo, true);
+    await expect(
+      useCase.execute({ ...base, platform: "YOUTUBE" }),
+    ).rejects.toBeInstanceOf(PublishingUnavailableError);
     expect(repo.create).not.toHaveBeenCalled();
   });
 });

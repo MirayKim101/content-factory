@@ -1,6 +1,9 @@
 import type { PublicationPlatform } from "@content-factory/contracts";
 
-import type { PublicationIntentView } from "../domain/publication.js";
+import type {
+  PublicationChannelView,
+  PublicationIntentView,
+} from "../domain/publication.js";
 
 export const PUBLICATION_REPOSITORY = Symbol("PUBLICATION_REPOSITORY");
 export const PUBLISHING_ADMISSION_ENABLED = Symbol(
@@ -8,6 +11,15 @@ export const PUBLISHING_ADMISSION_ENABLED = Symbol(
 );
 
 export interface PublicationRepository {
+  createChannel(input: {
+    id: string;
+    projectId: string;
+    platform: PublicationPlatform;
+    displayName: string;
+    externalChannelRef: string;
+    timezone: string;
+  }): Promise<PublicationChannelView>;
+  listChannels(projectId: string): Promise<PublicationChannelView[]>;
   create(input: {
     id: string;
     idempotencyKey: string;
@@ -21,4 +33,12 @@ export interface PublicationRepository {
     timezone: string;
     metadataSnapshot: Record<string, unknown>;
   }): Promise<PublicationIntentView>;
+  get(id: string): Promise<PublicationIntentView | null>;
+  listProject(input: {
+    projectId: string;
+    channelId?: string;
+    cursor?: string;
+    limit: number;
+  }): Promise<PublicationIntentView[]>;
+  cancel(id: string, now: Date): Promise<PublicationIntentView>;
 }

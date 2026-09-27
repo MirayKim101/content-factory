@@ -4567,6 +4567,184 @@
         ],
         "type": "object"
       },
+      "PublicationChannelResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "externalChannelRef": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "platform": {
+            "enum": ["LOCAL_DRY_RUN", "YOUTUBE", "TIKTOK"],
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "state": {
+            "enum": ["ENABLED", "REVOKED"],
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "platform",
+          "displayName",
+          "externalChannelRef",
+          "timezone",
+          "state",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "PublicationIntentListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PublicationIntentResponseDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
+        "type": "object"
+      },
+      "PublicationIntentResponseDto": {
+        "properties": {
+          "approvalId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "attemptCount": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "channelId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "exportIntentId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "exportResultId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "failure": {
+            "nullable": true,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "metadataSnapshot": {
+            "type": "object"
+          },
+          "platform": {
+            "enum": ["LOCAL_DRY_RUN", "YOUTUBE", "TIKTOK"],
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "remotePublicationId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "remoteStatus": {
+            "nullable": true,
+            "type": "string"
+          },
+          "retryBudget": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "scheduledAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "SCHEDULED",
+              "QUEUED",
+              "PROCESSING",
+              "UNKNOWN_REMOTE_STATE",
+              "DRY_RUN_READY",
+              "PUBLISHED",
+              "FAILED_FINAL",
+              "CANCELED"
+            ],
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "channelId",
+          "approvalId",
+          "exportIntentId",
+          "exportResultId",
+          "platform",
+          "scheduledAt",
+          "timezone",
+          "metadataSnapshot",
+          "state",
+          "attemptCount",
+          "retryBudget",
+          "remotePublicationId",
+          "remoteStatus",
+          "failure",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "PutCutEditorialPromptDto": {
         "properties": {
           "cta": {
@@ -9691,6 +9869,90 @@
         "tags": ["thumbnail-suggestions"]
       }
     },
+    "/api/v1/projects/{projectId}/publication-channels": {
+      "get": {
+        "operationId": "PublicationController_channels",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublicationChannelResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      },
+      "post": {
+        "operationId": "PublicationController_channel",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationChannelResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      }
+    },
+    "/api/v1/projects/{projectId}/publications": {
+      "get": {
+        "operationId": "PublicationController_project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationIntentListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      },
+      "post": {
+        "operationId": "PublicationController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationIntentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      }
+    },
     "/api/v1/projects/{projectId}/source": {
       "get": {
         "operationId": "MediaPipelineController_source",
@@ -10034,6 +10296,44 @@
           }
         },
         "tags": ["ai-content-context"]
+      }
+    },
+    "/api/v1/publications/{id}": {
+      "get": {
+        "operationId": "PublicationController_one",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationIntentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
+      }
+    },
+    "/api/v1/publications/{id}/cancel": {
+      "post": {
+        "operationId": "PublicationController_cancel",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationIntentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["publishing"]
       }
     },
     "/api/v1/research-suggestions/{researchIntentId}": {

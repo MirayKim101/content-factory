@@ -4,6 +4,9 @@ import type { Prisma } from "../../generated/prisma/client.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import type { PublicationRepository } from "../application/publication-repository.port.js";
 import {
+  PublicationChannelConflictError,
+  PublicationCancellationConflictError,
+  PublicationCursorInvalidError,
   PublicationIdempotencyConflictError,
   PublicationLineageInvalidError,
   type PublicationIntentView,
@@ -20,6 +23,144 @@ type IntentRow = Prisma.PublicationIntentGetPayload<{
 @Injectable()
 export class PrismaPublicationRepository implements PublicationRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  async createChannel(
+    input: Parameters<PublicationRepository["createChannel"]>[0],
+  ) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: input.projectId },
+      select: { id: true },
+    });
+    if (!project) throw new PublicationLineageInvalidError();
+    const existing = await this.prisma.publicationChannel.findUnique({
+      where: {
+        projectId_platform_externalChannelRef: {
+          projectId: input.projectId,
+          platform: input.platform,
+          externalChannelRef: input.externalChannelRef,
+        },
+      },
+    });
+    if (existing) {
+      if (
+        existing.displayName !== input.displayName ||
+        existing.timezone !== input.timezone
+      )
+        throw new PublicationChannelConflictError();
+      return existing;
+    }
+    try {
+      return await this.prisma.publicationChannel.create({ data: input });
+    } catch (error) {
+      if (this.isRetryable(error)) {
+        const replay = await this.prisma.publicationChannel.findUnique({
+          where: {
+            projectId_platform_externalChannelRef: {
+              projectId: input.projectId,
+              platform: input.platform,
+              externalChannelRef: input.externalChannelRef,
+            },
+          },
+        });
+        if (
+          replay &&
+          replay.displayName === input.displayName &&
+          replay.timezone === input.timezone
+        )
+          return replay;
+        throw new PublicationChannelConflictError();
+      }
+      throw error;
+    }
+  }
+
+  listChannels(projectId: string) {
+    return this.prisma.publicationChannel.findMany({
+      where: { projectId },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    });
+  }
+
+  async get(id: string): Promise<PublicationIntentView | null> {
+    const row = await this.prisma.publicationIntent.findUnique({
+      where: { id },
+      include: intentInclude,
+    });
+    return row ? this.map(row) : null;
+  }
+
+  async listProject(input: {
+    projectId: string;
+    channelId?: string;
+    cursor?: string;
+    limit: number;
+  }): Promise<PublicationIntentView[]> {
+    const channel = input.channelId
+      ? await this.prisma.publicationChannel.findFirst({
+          where: { id: input.channelId, projectId: input.projectId },
+          select: { id: true },
+        })
+      : null;
+    if (input.channelId && !channel)
+      throw new PublicationCursorInvalidError();
+    const anchor = input.cursor
+      ? await this.prisma.publicationIntent.findFirst({
+          where: {
+            id: input.cursor,
+            projectId: input.projectId,
+            ...(input.channelId ? { channelId: input.channelId } : {}),
+          },
+          select: { id: true, scheduledAt: true },
+        })
+      : null;
+    if (input.cursor && !anchor) throw new PublicationCursorInvalidError();
+    const rows = await this.prisma.publicationIntent.findMany({
+      where: {
+        projectId: input.projectId,
+        ...(input.channelId ? { channelId: input.channelId } : {}),
+        ...(anchor
+          ? {
+              OR: [
+                { scheduledAt: { lt: anchor.scheduledAt } },
+                {
+                  scheduledAt: anchor.scheduledAt,
+                  id: { lt: anchor.id },
+                },
+              ],
+            }
+          : {}),
+      },
+      include: intentInclude,
+      orderBy: [{ scheduledAt: "desc" }, { id: "desc" }],
+      take: input.limit,
+    });
+    return rows.map((row) => this.map(row));
+  }
+
+  async cancel(id: string, now: Date): Promise<PublicationIntentView> {
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.publicationIntent.findUnique({
+        where: { id },
+        include: intentInclude,
+      });
+      if (!row) throw new PublicationLineageInvalidError();
+      if (row.state === "CANCELED") return this.map(row);
+      if (row.state !== "SCHEDULED" && row.state !== "QUEUED")
+        throw new PublicationCancellationConflictError();
+      const updated = await tx.publicationIntent.updateMany({
+        where: { id, state: { in: ["SCHEDULED", "QUEUED"] } },
+        data: { state: "CANCELED", canceledAt: now, finishedAt: now },
+      });
+      if (updated.count !== 1)
+        throw new PublicationCancellationConflictError();
+      const canceled = await tx.publicationIntent.findUnique({
+        where: { id },
+        include: intentInclude,
+      });
+      if (!canceled) throw new PublicationLineageInvalidError();
+      return this.map(canceled);
+    });
+  }
 
   create(input: Parameters<PublicationRepository["create"]>[0]) {
     return this.createWithRetry(input, 0);

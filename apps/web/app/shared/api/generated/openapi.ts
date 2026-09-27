@@ -801,6 +801,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/projects/{projectId}/publication-channels": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["PublicationController_channels"];
+    put?: never;
+    post: operations["PublicationController_channel"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/publications": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["PublicationController_project"];
+    put?: never;
+    post: operations["PublicationController_create"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/projects/{projectId}/source": {
     parameters: {
       query?: never;
@@ -859,6 +891,38 @@ export interface paths {
     get: operations["CreatorContextController_getSourceContextRevision"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/publications/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["PublicationController_one"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/publications/{id}/cancel": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["PublicationController_cancel"];
     delete?: never;
     options?: never;
     head?: never;
@@ -2324,6 +2388,70 @@ export interface components {
       source: components["schemas"]["SourceResponseDto"];
       /** @enum {string} */
       status: "SOURCE_PENDING" | "SOURCE_READY" | "FAILED_FINAL";
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    PublicationChannelResponseDto: {
+      /** Format: date-time */
+      createdAt: string;
+      displayName: string;
+      externalChannelRef: string;
+      /** Format: uuid */
+      id: string;
+      /** @enum {string} */
+      platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
+      /** Format: uuid */
+      projectId: string;
+      /** @enum {string} */
+      state: "ENABLED" | "REVOKED";
+      timezone: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    PublicationIntentListResponseDto: {
+      items: components["schemas"]["PublicationIntentResponseDto"][];
+      /** Format: uuid */
+      nextCursor: string | null;
+    };
+    PublicationIntentResponseDto: {
+      /** Format: uuid */
+      approvalId: string;
+      attemptCount: number;
+      /** Format: uuid */
+      channelId: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: uuid */
+      exportIntentId: string;
+      /** Format: uuid */
+      exportResultId: string;
+      failure: {
+        code?: string;
+        message?: string;
+      } | null;
+      /** Format: uuid */
+      id: string;
+      metadataSnapshot: Record<string, never>;
+      /** @enum {string} */
+      platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
+      /** Format: uuid */
+      projectId: string;
+      remotePublicationId: string | null;
+      remoteStatus: string | null;
+      retryBudget: number;
+      /** Format: date-time */
+      scheduledAt: string;
+      /** @enum {string} */
+      state:
+        | "SCHEDULED"
+        | "QUEUED"
+        | "PROCESSING"
+        | "UNKNOWN_REMOTE_STATE"
+        | "DRY_RUN_READY"
+        | "PUBLISHED"
+        | "FAILED_FINAL"
+        | "CANCELED";
+      timezone: string;
       /** Format: date-time */
       updatedAt: string;
     };
@@ -5421,6 +5549,84 @@ export interface operations {
       };
     };
   };
+  PublicationController_channels: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationChannelResponseDto"][];
+        };
+      };
+    };
+  };
+  PublicationController_channel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationChannelResponseDto"];
+        };
+      };
+    };
+  };
+  PublicationController_project: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationIntentListResponseDto"];
+        };
+      };
+    };
+  };
+  PublicationController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationIntentResponseDto"];
+        };
+      };
+    };
+  };
   MediaPipelineController_source: {
     parameters: {
       query?: never;
@@ -5599,6 +5805,44 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
+    };
+  };
+  PublicationController_one: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationIntentResponseDto"];
+        };
+      };
+    };
+  };
+  PublicationController_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PublicationIntentResponseDto"];
         };
       };
     };

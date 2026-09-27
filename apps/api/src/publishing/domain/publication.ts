@@ -24,6 +24,18 @@ export interface PublicationIntentView {
   updatedAt: Date;
 }
 
+export interface PublicationChannelView {
+  id: string;
+  projectId: string;
+  platform: PublicationPlatform;
+  displayName: string;
+  externalChannelRef: string;
+  timezone: string;
+  state: "ENABLED" | "REVOKED";
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class PublishingUnavailableError extends Error {}
 export class PublicationScheduleInvalidError extends Error {}
 export class PublicationTimezoneInvalidError extends Error {}
@@ -33,6 +45,7 @@ export class PublicationLineageInvalidError extends Error {}
 export class PublicationNotFoundError extends Error {}
 export class PublicationCursorInvalidError extends Error {}
 export class PublicationCancellationConflictError extends Error {}
+export class PublicationChannelConflictError extends Error {}
 
 export function requirePublicationTimezone(value: string): string {
   const timezone = value.trim();
@@ -57,4 +70,14 @@ export function requirePublicationMetadata(
   )
     throw new PublicationMetadataInvalidError();
   return structuredClone(value as Record<string, unknown>);
+}
+
+export function requirePublicationLabel(
+  value: string,
+  maximum: number,
+): string {
+  const normalized = value.trim();
+  if (!normalized || normalized.length > maximum)
+    throw new PublicationMetadataInvalidError();
+  return normalized;
 }

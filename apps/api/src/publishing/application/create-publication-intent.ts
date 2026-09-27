@@ -43,6 +43,8 @@ export class CreatePublicationIntent {
 
   async execute(input: CreatePublicationIntentInput) {
     if (!this.admissionEnabled) throw new PublishingUnavailableError();
+    if (input.platform !== "LOCAL_DRY_RUN")
+      throw new PublishingUnavailableError();
     const timezone = requirePublicationTimezone(input.timezone);
     const metadataSnapshot = requirePublicationMetadata(
       input.metadataSnapshot,
