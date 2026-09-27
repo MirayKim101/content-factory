@@ -988,7 +988,7 @@ watch(
   box-sizing: border-box;
   max-width: 112rem;
   margin: 0 auto;
-  padding: 2.25rem clamp(1rem, 3vw, 3rem) 5rem;
+  padding: 2rem clamp(1.25rem, 3vw, 3.25rem) 5rem;
 }
 .page-header {
   display: flex;
@@ -1013,7 +1013,7 @@ watch(
 }
 .eyebrow {
   margin: 0;
-  color: var(--cf-brand);
+  color: var(--cf-brand-strong);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -1021,9 +1021,10 @@ watch(
 }
 .page-header h1 {
   margin: 0.15rem 0 0;
-  font-size: clamp(1.8rem, 3vw, 2.55rem);
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  font-weight: 760;
   line-height: 1.12;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.045em;
 }
 .page-description {
   max-width: 44rem;
@@ -1069,7 +1070,7 @@ watch(
   font-weight: 600;
 }
 .summary-strip .summary-next {
-  background: linear-gradient(135deg, var(--cf-brand-soft), #f5fbf8);
+  background: linear-gradient(135deg, var(--cf-brand-soft), #f8f9ff);
 }
 .summary-next strong {
   color: var(--cf-brand-strong);
@@ -1218,7 +1219,7 @@ video {
   display: grid;
   gap: 0.75rem;
   padding: 1rem;
-  border-top: 1px solid #d9e0d8;
+  border-top: 1px solid var(--cf-border);
 }
 .segment h3 {
   margin: 0;
@@ -1240,14 +1241,14 @@ video {
   box-sizing: border-box;
   min-height: 2.5rem;
   padding: 0.55rem 0.7rem;
-  border: 1px solid #9aa89f;
+  border: 1px solid var(--cf-border-strong);
   border-radius: 0.45rem;
   background: #fff;
 }
 .time-fields :deep(input:focus) {
-  outline: 3px solid rgb(35 77 53 / 0.24);
+  outline: 3px solid rgb(79 95 215 / 0.18);
   outline-offset: 1px;
-  border-color: #234d35;
+  border-color: var(--cf-brand);
 }
 .warning {
   padding: 0.75rem;
@@ -1269,7 +1270,7 @@ video {
   margin: 1rem 0;
   padding: 1rem;
   border-radius: 0.75rem;
-  background: #edf7ef;
+  background: var(--cf-success-soft);
 }
 .dialog-content {
   display: grid;
@@ -1370,7 +1371,7 @@ video {
   width: min(38rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow: hidden;
-  border: 1px solid #d9e0d8;
+  border: 1px solid var(--cf-border);
   border-radius: 0.875rem;
   background: #fff;
   box-shadow: 0 24px 80px rgb(15 23 42 / 0.28);
@@ -1382,7 +1383,7 @@ video {
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #d9e0d8;
+  border-bottom: 1px solid var(--cf-border);
 }
 .cut-dialog-title {
   min-width: 0;
@@ -1404,7 +1405,7 @@ video {
 }
 .cut-dialog-close:hover,
 .cut-dialog-close:focus-visible {
-  background: #edf2ee;
+  background: var(--cf-surface-muted);
 }
 .cut-dialog-body {
   flex: 1 1 auto;

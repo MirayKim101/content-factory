@@ -246,7 +246,7 @@ progress {
   align-items: center;
   padding: 0.55rem 0.75rem;
   border-radius: 0.5rem;
-  background: #234d35;
+  background: var(--cf-brand);
   color: #fff;
   font-weight: 700;
   text-decoration: none;

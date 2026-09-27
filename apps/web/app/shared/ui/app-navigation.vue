@@ -261,11 +261,11 @@ onBeforeUnmount(() => {
 .nav-group a:focus-visible,
 .brand:focus-visible,
 .mobile-brand:focus-visible {
-  outline: 3px solid #69c59d;
+  outline: 3px solid #8d98f0;
   outline-offset: 2px;
 }
 .nav-group a[aria-current="page"] {
-  border-color: rgb(126 211 174 / 0.17);
+  border-color: rgb(141 152 240 / 0.22);
   background: rgb(103 119 232 / 0.16);
   color: #fff;
 }
@@ -379,7 +379,7 @@ onBeforeUnmount(() => {
     z-index: 1300;
     display: block;
     border: 0;
-    background: rgb(8 20 17 / 0.52);
+    background: rgb(12 17 31 / 0.56);
   }
 }
 </style>

@@ -428,7 +428,7 @@ async function submit(): Promise<void> {
 }
 .eyebrow {
   margin: 0;
-  color: #65736b;
+  color: var(--cf-text-muted);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -448,7 +448,7 @@ h1 {
 .source-meta,
 .source-selector {
   background: #fff;
-  border: 1px solid #d9e0d8;
+  border: 1px solid var(--cf-border);
 }
 .warning {
   background: #fff7d6;
@@ -467,7 +467,7 @@ h1 {
 .player-panel,
 .segments-panel {
   padding: 1rem;
-  border: 1px solid #d9e0d8;
+  border: 1px solid var(--cf-border);
   border-radius: 1rem;
   background: #fff;
 }
@@ -487,7 +487,7 @@ video {
   display: grid;
   gap: 0.45rem;
   padding: 1rem 0;
-  border-top: 1px solid #d9e0d8;
+  border-top: 1px solid var(--cf-border);
 }
 .segment-row h3 {
   margin: 0;
@@ -497,7 +497,7 @@ video {
   width: 100%;
   min-height: 44px;
   padding: 0.65rem;
-  border: 1px solid #829188;
+  border: 1px solid var(--cf-border-strong);
   border-radius: 0.5rem;
   font: inherit;
 }

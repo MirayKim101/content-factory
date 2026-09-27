@@ -276,6 +276,101 @@ a.action-link:hover {
   cursor: pointer;
 }
 
+:where(.p-dialog-mask) {
+  padding: 1rem;
+  background: rgb(12 17 31 / 0.56);
+  backdrop-filter: blur(3px);
+}
+
+:where(.p-dialog) {
+  max-width: min(56rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: hidden;
+  border: 1px solid var(--cf-border);
+  border-radius: 1.1rem;
+  background: var(--cf-surface);
+  color: var(--cf-text);
+  box-shadow: var(--cf-shadow-lg);
+}
+
+:where(.p-dialog-header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+:where(.p-dialog-title) {
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+}
+
+:where(.p-dialog-header-actions) {
+  display: flex;
+  gap: 0.35rem;
+}
+
+:where(.p-dialog-close-button) {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 0;
+  border-radius: var(--cf-radius-sm);
+  background: transparent;
+  color: var(--cf-text-muted);
+  cursor: pointer;
+}
+
+:where(.p-dialog-close-button:hover) {
+  background: var(--cf-surface-muted);
+  color: var(--cf-text);
+}
+
+:where(.p-dialog-content) {
+  overflow: auto;
+  padding: 1.25rem;
+}
+
+:where(.p-dialog-footer) {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--cf-border);
+  background: var(--cf-surface-subtle);
+}
+
+:where(progress) {
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--cf-surface-muted);
+  accent-color: var(--cf-brand);
+}
+
+:where(progress::-webkit-progress-bar) {
+  background: var(--cf-surface-muted);
+}
+
+:where(progress::-webkit-progress-value) {
+  background: var(--cf-brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 .sr-only {
   position: absolute !important;
   width: 1px !important;

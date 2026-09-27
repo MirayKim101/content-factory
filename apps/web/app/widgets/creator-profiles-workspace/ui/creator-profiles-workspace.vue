@@ -843,7 +843,7 @@ function setDefault(assetId?: string) {
 .workspace {
   max-width: 110rem;
   margin: auto;
-  padding: 2.25rem clamp(1rem, 3vw, 3rem) 5rem;
+  padding: 2rem clamp(1.25rem, 3vw, 3.25rem) 5rem;
 }
 .page-header {
   max-width: 58rem;
@@ -851,8 +851,9 @@ function setDefault(assetId?: string) {
 }
 .page-header h1 {
   margin: 0.15rem 0 0.35rem;
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-  letter-spacing: -0.035em;
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
 }
 .page-header > p:last-child {
   margin: 0;
@@ -891,7 +892,7 @@ function setDefault(assetId?: string) {
 }
 .profile:hover,
 .profile:focus-visible {
-  border-color: #8bb6a4;
+  border-color: var(--cf-brand);
   background: var(--cf-brand-soft);
   outline: none;
 }
@@ -927,7 +928,7 @@ label {
 }
 .eyebrow {
   margin: 0;
-  color: var(--cf-brand);
+  color: var(--cf-brand-strong);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.1em;

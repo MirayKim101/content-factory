@@ -194,7 +194,7 @@ void loadProjects();
   box-sizing: border-box;
   max-width: 90rem;
   margin: 0 auto;
-  padding: 2.25rem clamp(1rem, 3vw, 3rem) 5rem;
+  padding: 2rem clamp(1.25rem, 3vw, 3.25rem) 5rem;
 }
 .montage-header,
 .assets-heading {
@@ -209,8 +209,9 @@ void loadProjects();
   margin: 0.2rem 0 0.45rem;
 }
 .montage-header h1 {
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-  letter-spacing: -0.035em;
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
 }
 .montage-header p,
 .selected-project,
@@ -227,7 +228,7 @@ void loadProjects();
 }
 .eyebrow {
   margin: 0;
-  color: var(--cf-brand) !important;
+  color: var(--cf-brand-strong) !important;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.1em;
