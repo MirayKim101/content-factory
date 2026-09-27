@@ -16,6 +16,7 @@ import {
 import {
   PUBLICATION_REPOSITORY,
   PUBLISHING_ADMISSION_ENABLED,
+  YOUTUBE_PUBLISHING_ADMISSION_ENABLED,
   type PublicationRepository,
 } from "./publication-repository.port.js";
 import {
@@ -45,6 +46,8 @@ export class CreatePublicationIntent {
     private readonly repository: PublicationRepository,
     @Inject(PUBLISHING_ADMISSION_ENABLED)
     private readonly admissionEnabled: boolean,
+    @Inject(YOUTUBE_PUBLISHING_ADMISSION_ENABLED)
+    private readonly youtubeAdmissionEnabled: boolean,
     @Inject(PUBLICATION_DISPATCH)
     private readonly dispatch: PublicationDispatch,
     @Optional()
@@ -53,7 +56,10 @@ export class CreatePublicationIntent {
 
   async execute(input: CreatePublicationIntentInput) {
     if (!this.admissionEnabled) throw new PublishingUnavailableError();
-    if (input.platform !== "LOCAL_DRY_RUN")
+    if (
+      input.platform !== "LOCAL_DRY_RUN" &&
+      !(input.platform === "YOUTUBE" && this.youtubeAdmissionEnabled)
+    )
       throw new PublishingUnavailableError();
     const timezone = requirePublicationTimezone(input.timezone);
     const metadataSnapshot = requirePublicationMetadata(input.metadataSnapshot);

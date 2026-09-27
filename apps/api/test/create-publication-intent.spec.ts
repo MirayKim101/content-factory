@@ -39,7 +39,7 @@ describe("CreatePublicationIntent", () => {
   it("fails closed before touching persistence", async () => {
     const repo = repository();
     const dispatch = dispatcher();
-    const useCase = new CreatePublicationIntent(repo, false, dispatch);
+    const useCase = new CreatePublicationIntent(repo, false, false, dispatch);
     await expect(useCase.execute(base)).rejects.toBeInstanceOf(
       PublishingUnavailableError,
     );
@@ -51,7 +51,13 @@ describe("CreatePublicationIntent", () => {
     const repo = repository();
     const dispatch = dispatcher();
     const now = () => new Date("2026-09-27T00:00:00.000Z");
-    const useCase = new CreatePublicationIntent(repo, true, dispatch, now);
+    const useCase = new CreatePublicationIntent(
+      repo,
+      true,
+      false,
+      dispatch,
+      now,
+    );
     await useCase.execute(base);
     await useCase.execute({
       ...base,
@@ -76,6 +82,7 @@ describe("CreatePublicationIntent", () => {
     const useCase = new CreatePublicationIntent(
       repo,
       true,
+      false,
       dispatcher(),
       () => new Date("2026-09-27T00:00:00.000Z"),
     );
@@ -104,6 +111,7 @@ describe("CreatePublicationIntent", () => {
     const useCase = new CreatePublicationIntent(
       repo,
       true,
+      false,
       dispatch,
       () => new Date("2026-09-27T00:00:00.000Z"),
     );
@@ -122,10 +130,28 @@ describe("CreatePublicationIntent", () => {
   it("keeps external providers unavailable in the dry-run slice", async () => {
     const repo = repository();
     const dispatch = dispatcher();
-    const useCase = new CreatePublicationIntent(repo, true, dispatch);
+    const useCase = new CreatePublicationIntent(repo, true, false, dispatch);
     await expect(
       useCase.execute({ ...base, platform: "YOUTUBE" }),
     ).rejects.toBeInstanceOf(PublishingUnavailableError);
     expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it("admits a YouTube intent only behind its dedicated gate", async () => {
+    const repo = repository();
+    const dispatch = dispatcher();
+    const useCase = new CreatePublicationIntent(
+      repo,
+      true,
+      true,
+      dispatch,
+      () => new Date("2026-09-27T00:00:00.000Z"),
+    );
+
+    await useCase.execute({ ...base, platform: "YOUTUBE" });
+
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ platform: "YOUTUBE" }),
+    );
   });
 });

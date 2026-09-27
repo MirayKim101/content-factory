@@ -28,7 +28,7 @@ describe("CreatePublicationChannel", () => {
     const repo = repository();
 
     await expect(
-      new CreatePublicationChannel(repo, false).execute(input),
+      new CreatePublicationChannel(repo, false, false).execute(input),
     ).rejects.toBeInstanceOf(PublishingUnavailableError);
     expect(repo.createChannel).not.toHaveBeenCalled();
   });
@@ -37,7 +37,7 @@ describe("CreatePublicationChannel", () => {
     const repo = repository();
 
     await expect(
-      new CreatePublicationChannel(repo, true).execute({
+      new CreatePublicationChannel(repo, true, false).execute({
         ...input,
         platform: "YOUTUBE",
       }),
@@ -48,7 +48,7 @@ describe("CreatePublicationChannel", () => {
   it("creates only the bounded local dry-run channel", async () => {
     const repo = repository();
 
-    await new CreatePublicationChannel(repo, true).execute(input);
+    await new CreatePublicationChannel(repo, true, false).execute(input);
 
     expect(repo.createChannel).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -56,6 +56,20 @@ describe("CreatePublicationChannel", () => {
         displayName: "Local verification",
         timezone: "Asia/Novosibirsk",
       }),
+    );
+  });
+
+  it("admits a YouTube channel only behind its dedicated gate", async () => {
+    const repo = repository();
+
+    await new CreatePublicationChannel(repo, true, true).execute({
+      ...input,
+      platform: "YOUTUBE",
+      externalChannelRef: "UC1234567890123456789012",
+    });
+
+    expect(repo.createChannel).toHaveBeenCalledWith(
+      expect.objectContaining({ platform: "YOUTUBE" }),
     );
   });
 });

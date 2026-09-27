@@ -60,6 +60,7 @@ const API_ENVIRONMENT_KEYS = [
   "RESEARCH_TEXT_ENABLED",
   "THUMBNAIL_SUGGESTIONS_ENABLED",
   "PUBLISHING_ENABLED",
+  "YOUTUBE_PUBLISHING_ENABLED",
   "TWITCH_INGESTION_ENABLED",
   "TWITCH_EVENTSUB_SECRET",
   "VERTICAL_RENDER_ENABLED",
@@ -180,6 +181,7 @@ export interface ApiEnvironment {
   researchTextEnabled: boolean;
   thumbnailSuggestionsEnabled: boolean;
   publishingEnabled: boolean;
+  youtubePublishingEnabled: boolean;
   twitchIngestionEnabled: boolean;
   twitchEventSubSecret: string | null;
   verticalRenderEnabled: boolean;
@@ -270,6 +272,8 @@ export function apiEnvironment(): ApiEnvironment {
     thumbnailSuggestionsEnabled:
       process.env.THUMBNAIL_SUGGESTIONS_ENABLED === "1",
     publishingEnabled: publishingAdmissionEnabled(process.env),
+    youtubePublishingEnabled:
+      process.env.YOUTUBE_PUBLISHING_ENABLED?.trim() === "1",
     twitchIngestionEnabled: twitchIngestionAdmissionEnabled(process.env),
     twitchEventSubSecret: twitchEventSubSecret(process.env),
     verticalRenderEnabled: verticalRenderAdmissionEnabled(process.env),

@@ -15,6 +15,7 @@ import {
 import {
   PUBLICATION_REPOSITORY,
   PUBLISHING_ADMISSION_ENABLED,
+  YOUTUBE_PUBLISHING_ADMISSION_ENABLED,
 } from "./application/publication-repository.port.js";
 import { PrismaPublicationRepository } from "./infrastructure/prisma-publication.repository.js";
 import { PublicationController } from "./presentation/publication.controller.js";
@@ -40,6 +41,10 @@ import { BullMqPublicationDispatch } from "./infrastructure/bullmq-publication-d
     {
       provide: PUBLISHING_ADMISSION_ENABLED,
       useFactory: () => publishingAdmissionEnabled(process.env),
+    },
+    {
+      provide: YOUTUBE_PUBLISHING_ADMISSION_ENABLED,
+      useFactory: () => process.env.YOUTUBE_PUBLISHING_ENABLED?.trim() === "1",
     },
     {
       provide: PUBLICATION_DISPATCH,

@@ -11,6 +11,7 @@ import {
 import {
   PUBLICATION_REPOSITORY,
   PUBLISHING_ADMISSION_ENABLED,
+  YOUTUBE_PUBLISHING_ADMISSION_ENABLED,
   type PublicationRepository,
 } from "./publication-repository.port.js";
 
@@ -21,6 +22,8 @@ export class CreatePublicationChannel {
     private readonly repository: PublicationRepository,
     @Inject(PUBLISHING_ADMISSION_ENABLED)
     private readonly admissionEnabled: boolean,
+    @Inject(YOUTUBE_PUBLISHING_ADMISSION_ENABLED)
+    private readonly youtubeAdmissionEnabled: boolean,
   ) {}
 
   async execute(input: {
@@ -30,7 +33,11 @@ export class CreatePublicationChannel {
     externalChannelRef: string;
     timezone: string;
   }) {
-    if (!this.admissionEnabled || input.platform !== "LOCAL_DRY_RUN")
+    if (
+      !this.admissionEnabled ||
+      (input.platform !== "LOCAL_DRY_RUN" &&
+        !(input.platform === "YOUTUBE" && this.youtubeAdmissionEnabled))
+    )
       throw new PublishingUnavailableError();
     return this.repository.createChannel({
       id: randomUUID(),

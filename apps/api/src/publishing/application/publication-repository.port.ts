@@ -12,6 +12,9 @@ export const PUBLICATION_REPOSITORY = Symbol("PUBLICATION_REPOSITORY");
 export const PUBLISHING_ADMISSION_ENABLED = Symbol(
   "PUBLISHING_ADMISSION_ENABLED",
 );
+export const YOUTUBE_PUBLISHING_ADMISSION_ENABLED = Symbol(
+  "YOUTUBE_PUBLISHING_ADMISSION_ENABLED",
+);
 
 export interface PublicationRepository {
   createChannel(input: {
