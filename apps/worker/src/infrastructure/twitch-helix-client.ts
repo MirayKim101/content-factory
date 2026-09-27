@@ -5,7 +5,7 @@ import type {
 } from "../application/twitch-reconciliation.port.js";
 
 export interface TwitchAccessTokenProvider {
-  resolve(): Promise<string>;
+  resolve(signal?: AbortSignal): Promise<string>;
   invalidate?(): void;
 }
 
@@ -29,14 +29,14 @@ export class TwitchHelixClient implements TwitchVideoProvider {
     if (cursor) params.set("after", cursor);
     let response = await this.requestArchives(
       params,
-      await this.accessToken.resolve(),
+      await this.accessToken.resolve(signal),
       signal,
     );
     if (response.status === 401 && this.accessToken.invalidate) {
       this.accessToken.invalidate();
       response = await this.requestArchives(
         params,
-        await this.accessToken.resolve(),
+        await this.accessToken.resolve(signal),
         signal,
       );
     }

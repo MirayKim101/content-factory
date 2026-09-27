@@ -62,4 +62,29 @@ describe("TwitchAppAccessTokenResolver", () => {
     );
     expect(request).toHaveBeenCalledTimes(2);
   });
+
+  it("aborts active token acquisition during worker shutdown", async () => {
+    const request = vi.fn(
+      async (_input: string | URL | Request, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(init.signal?.reason),
+            { once: true },
+          );
+        }),
+    );
+    const resolver = new TwitchAppAccessTokenResolver(
+      "client-id",
+      "client-secret",
+      request as typeof fetch,
+    );
+    const controller = new AbortController();
+    const pending = resolver.resolve(controller.signal);
+
+    controller.abort(new Error("worker shutdown"));
+
+    await expect(pending).rejects.toThrow("worker shutdown");
+    expect(request).toHaveBeenCalledOnce();
+  });
 });

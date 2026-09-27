@@ -109,7 +109,7 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
     let response = await this.requestWithToken(
       input,
       init,
-      await this.accessToken.resolve(),
+      await this.accessToken.resolve(signal),
       signal,
     );
     if (response.status === 401 && this.accessToken.invalidate) {
@@ -117,7 +117,7 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       response = await this.requestWithToken(
         input,
         init,
-        await this.accessToken.resolve(),
+        await this.accessToken.resolve(signal),
         signal,
       );
     }
