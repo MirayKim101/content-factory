@@ -169,11 +169,15 @@ async function loadWorkspace(): Promise<void> {
         verticalApi.list(projectId.value),
       ]);
     channels.value = nextChannels;
-    if (!nextChannels.some((item) => item.id === channelId.value))
+    const selectableChannels = nextChannels.filter(
+      (item) => item.state === "ENABLED" && platformEnabled(item.platform),
+    );
+    if (!selectableChannels.some((item) => item.id === channelId.value))
       channelId.value =
-        nextChannels.find((item) => item.platform === "YOUTUBE")?.id ??
-        nextChannels.find((item) => item.platform === "TIKTOK")?.id ??
-        nextChannels.find((item) => item.platform === "LOCAL_DRY_RUN")?.id ??
+        selectableChannels.find((item) => item.platform === "YOUTUBE")?.id ??
+        selectableChannels.find((item) => item.platform === "TIKTOK")?.id ??
+        selectableChannels.find((item) => item.platform === "LOCAL_DRY_RUN")
+          ?.id ??
         "";
     publications.value = nextPublications.items;
     exports.value = nextExports;
