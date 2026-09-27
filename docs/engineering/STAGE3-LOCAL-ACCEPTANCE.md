@@ -76,11 +76,13 @@
 - Production dependency overrides закрепляют исправленные `multer 2.3.0`,
   `deepmerge-ts 8.0.0` и `mysql2 3.23.1`; `pnpm audit --prod` не находит
   известных уязвимостей.
+- API responses, включая health и Swagger UI, получают единый Helmet baseline:
+  CSP, HSTS, frame/referrer policy, COOP и MIME sniffing protection.
 
 ## Воспроизведённые проверки
 
 ```text
-API:     235/235 unit tests
+API:     236/236 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  266/266 unit tests
 Web:     266/266 tests

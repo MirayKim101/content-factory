@@ -508,3 +508,9 @@ Publication workspace больше не опрашивает API каждые 15
 `mysql2 3.23.1`. Повторный `pnpm audit --prod --audit-level moderate` вернул
 `No known vulnerabilities found`; Prisma validate/generate, API `235/235`,
 worker `266/266`, web `266/266`, typecheck, lint и все production builds прошли.
+
+API HTTP perimeter получил единый `helmet 8.3.0` baseline до глобальных pipes и
+Swagger setup. Health, API и документация теперь защищены CSP, HSTS,
+`X-Content-Type-Options`, `X-Frame-Options`, referrer policy и COOP. Поведение
+закреплено изолированным Nest HTTP test без внешних БД/S3; API `236/236`,
+typecheck, lint, production build и повторный dependency audit прошли.

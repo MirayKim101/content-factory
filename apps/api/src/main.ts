@@ -21,6 +21,7 @@ import {
   sourceAuthorizationRuntime,
 } from "./config/environment.js";
 import { HttpExceptionFilter } from "./http-exception.filter.js";
+import { configureHttpSecurity } from "./http-security.js";
 import { verifyAdmissionOffRollbackCompatibility } from "./rollback-compatibility.js";
 
 loadEnvironment();
@@ -28,6 +29,7 @@ loadEnvironment();
 export async function createApp(): Promise<INestApplication> {
   sourceAuthorizationRuntime();
   const app = await NestFactory.create(AppModule, { rawBody: true });
+  configureHttpSecurity(app);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
