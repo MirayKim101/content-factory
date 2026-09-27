@@ -388,3 +388,9 @@ Publication history UI больше не обрезает историю без 
 «Показать более ранние», дедуплицирует границы страниц, а 15-секундный refresh
 обновляет свежую страницу без удаления уже загруженных старых записей. После
 изменения web `249/249`, typecheck, lint и production build прошли.
+
+Vertical worker теперь ограничивает весь attempt (source download, FFmpeg и
+result upload) двумя часами. Deadline использует общий abort signal вместе с
+lease fencing, поэтому зависший внешний процесс или I/O не сможет бесконечно
+продлевать lease. Добавлен тест renderer, который завершается только по abort;
+worker `255/255`, typecheck, lint и production build прошли.

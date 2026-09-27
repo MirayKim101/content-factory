@@ -181,4 +181,40 @@ describe("ProcessVerticalRender", () => {
     expect(objectStorage.upload).not.toHaveBeenCalled();
     expect(repo.fail).toHaveBeenCalled();
   });
+
+  it("bounds a renderer that never settles on its own", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "cf-vertical-test-"));
+    directories.push(scratch);
+    const repo = repository();
+    const objectStorage = storage();
+    const hangingRenderer: VerticalRenderer = {
+      ...renderer,
+      render: vi.fn(
+        async (_input, _output, signal) =>
+          new Promise<never>((_resolve, reject) =>
+            signal.addEventListener("abort", () => reject(signal.reason), {
+              once: true,
+            }),
+          ),
+      ),
+    };
+    const process = new ProcessVerticalRender(
+      repo,
+      objectStorage,
+      hangingRenderer,
+      scratch,
+      60_000,
+      10,
+    );
+
+    await expect(process.execute(claim.jobId)).rejects.toThrow(
+      "VERTICAL_RENDER_TIMEOUT",
+    );
+    expect(repo.complete).not.toHaveBeenCalled();
+    expect(repo.fail).toHaveBeenCalledWith(
+      claim,
+      "VERTICAL_RENDER_TIMEOUT",
+      expect.any(String),
+    );
+  });
 });

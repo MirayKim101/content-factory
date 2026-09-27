@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { WorkerObjectStorage } from "./ports.js";
+import { createAbortDeadline } from "./abort-deadline.js";
 import type {
   VerticalRenderer,
   VerticalRenderRepository,
@@ -16,6 +17,7 @@ export class ProcessVerticalRender {
     private readonly renderer: VerticalRenderer,
     private readonly scratchRoot: string,
     private readonly leaseMs: number,
+    private readonly attemptTimeoutMs = 2 * 60 * 60 * 1_000,
   ) {}
 
   async execute(jobId: string): Promise<boolean> {
@@ -26,6 +28,11 @@ export class ProcessVerticalRender {
     const input = join(scratch, "input.mp4");
     const output = join(scratch, "vertical.mp4");
     const abort = new AbortController();
+    const deadline = createAbortDeadline(
+      abort.signal,
+      this.attemptTimeoutMs,
+      "VERTICAL_RENDER_TIMEOUT",
+    );
     let heartbeatRunning = false;
     const heartbeat = setInterval(
       () => {
@@ -48,10 +55,10 @@ export class ProcessVerticalRender {
       await this.storage.download(
         claim.inputObjectKey,
         input,
-        abort.signal,
+        deadline.signal,
         claim.inputSizeBytes,
       );
-      const rendered = await this.renderer.render(input, output, abort.signal);
+      const rendered = await this.renderer.render(input, output, deadline.signal);
       if (
         rendered.width !== 1080 ||
         rendered.height !== 1920 ||
@@ -75,7 +82,7 @@ export class ProcessVerticalRender {
         sizeBytes: BigInt(file.size),
         contentType: "video/mp4",
         uploadMode: "MULTIPART",
-        signal: abort.signal,
+        signal: deadline.signal,
       });
       const completed = await this.repository.complete(claim, {
         ...rendered,
@@ -98,6 +105,7 @@ export class ProcessVerticalRender {
       );
       throw error;
     } finally {
+      deadline.dispose();
       clearInterval(heartbeat);
       await rm(scratch, { recursive: true, force: true }).catch(
         () => undefined,

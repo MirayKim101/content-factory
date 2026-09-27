@@ -34,12 +34,15 @@
 - История публикаций загружается ограниченными cursor-страницами; оператор
   может открыть более ранние записи, а фоновое обновление не удаляет уже
   загруженную историю.
+- Полный vertical attempt (download, FFmpeg и upload) ограничен двумя часами;
+  timeout прерывает I/O тем же abort signal и освобождает durable lease через
+  штатный bounded failure path.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     232/232 unit tests
-Worker:  254/254 unit tests
+Worker:  255/255 unit tests
 Web:     249/249 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
