@@ -71,11 +71,41 @@ describe("CreatePublicationIntent", () => {
     });
   });
 
+  it("preserves approved vertical lineage in the durable request", async () => {
+    const repo = repository();
+    const useCase = new CreatePublicationIntent(
+      repo,
+      true,
+      dispatcher(),
+      () => new Date("2026-09-27T00:00:00.000Z"),
+    );
+    await useCase.execute({
+      ...base,
+      contentKind: "VERTICAL_RESULT",
+      approvalId: undefined,
+      exportResultId: undefined,
+      verticalApprovalId: "00000000-0000-4000-8000-000000000005",
+      verticalResultId: "00000000-0000-4000-8000-000000000006",
+    });
+    expect(repo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contentKind: "VERTICAL_RESULT",
+        approvalId: undefined,
+        exportResultId: undefined,
+        verticalApprovalId: "00000000-0000-4000-8000-000000000005",
+        verticalResultId: "00000000-0000-4000-8000-000000000006",
+      }),
+    );
+  });
+
   it("rejects past schedules, invalid timezones, and non-object metadata", async () => {
     const repo = repository();
     const dispatch = dispatcher();
-    const useCase = new CreatePublicationIntent(repo, true, dispatch, () =>
-      new Date("2026-09-27T00:00:00.000Z"),
+    const useCase = new CreatePublicationIntent(
+      repo,
+      true,
+      dispatch,
+      () => new Date("2026-09-27T00:00:00.000Z"),
     );
     await expect(
       useCase.execute({ ...base, scheduledAt: "2020-01-01T00:00:00Z" }),

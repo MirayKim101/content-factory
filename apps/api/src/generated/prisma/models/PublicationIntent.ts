@@ -42,9 +42,12 @@ export type PublicationIntentMinAggregateOutputType = {
   requestFingerprint: string | null
   projectId: string | null
   channelId: string | null
+  contentKind: $Enums.PublicationContentKind | null
   approvalId: string | null
   exportIntentId: string | null
   exportResultId: string | null
+  verticalApprovalId: string | null
+  verticalResultId: string | null
   platform: $Enums.PublicationPlatform | null
   scheduledAt: Date | null
   timezone: string | null
@@ -69,9 +72,12 @@ export type PublicationIntentMaxAggregateOutputType = {
   requestFingerprint: string | null
   projectId: string | null
   channelId: string | null
+  contentKind: $Enums.PublicationContentKind | null
   approvalId: string | null
   exportIntentId: string | null
   exportResultId: string | null
+  verticalApprovalId: string | null
+  verticalResultId: string | null
   platform: $Enums.PublicationPlatform | null
   scheduledAt: Date | null
   timezone: string | null
@@ -96,9 +102,12 @@ export type PublicationIntentCountAggregateOutputType = {
   requestFingerprint: number
   projectId: number
   channelId: number
+  contentKind: number
   approvalId: number
   exportIntentId: number
   exportResultId: number
+  verticalApprovalId: number
+  verticalResultId: number
   platform: number
   scheduledAt: number
   timezone: number
@@ -136,9 +145,12 @@ export type PublicationIntentMinAggregateInputType = {
   requestFingerprint?: true
   projectId?: true
   channelId?: true
+  contentKind?: true
   approvalId?: true
   exportIntentId?: true
   exportResultId?: true
+  verticalApprovalId?: true
+  verticalResultId?: true
   platform?: true
   scheduledAt?: true
   timezone?: true
@@ -163,9 +175,12 @@ export type PublicationIntentMaxAggregateInputType = {
   requestFingerprint?: true
   projectId?: true
   channelId?: true
+  contentKind?: true
   approvalId?: true
   exportIntentId?: true
   exportResultId?: true
+  verticalApprovalId?: true
+  verticalResultId?: true
   platform?: true
   scheduledAt?: true
   timezone?: true
@@ -190,9 +205,12 @@ export type PublicationIntentCountAggregateInputType = {
   requestFingerprint?: true
   projectId?: true
   channelId?: true
+  contentKind?: true
   approvalId?: true
   exportIntentId?: true
   exportResultId?: true
+  verticalApprovalId?: true
+  verticalResultId?: true
   platform?: true
   scheduledAt?: true
   timezone?: true
@@ -305,9 +323,12 @@ export type PublicationIntentGroupByOutputType = {
   requestFingerprint: string
   projectId: string
   channelId: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind: $Enums.PublicationContentKind
+  approvalId: string | null
+  exportIntentId: string | null
+  exportResultId: string | null
+  verticalApprovalId: string | null
+  verticalResultId: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date
   timezone: string
@@ -356,9 +377,12 @@ export type PublicationIntentWhereInput = {
   requestFingerprint?: Prisma.StringFilter<"PublicationIntent"> | string
   projectId?: Prisma.UuidFilter<"PublicationIntent"> | string
   channelId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  approvalId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  exportIntentId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  exportResultId?: Prisma.UuidFilter<"PublicationIntent"> | string
+  contentKind?: Prisma.EnumPublicationContentKindFilter<"PublicationIntent"> | $Enums.PublicationContentKind
+  approvalId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  exportIntentId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  exportResultId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  verticalApprovalId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  verticalResultId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
   platform?: Prisma.EnumPublicationPlatformFilter<"PublicationIntent"> | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFilter<"PublicationIntent"> | Date | string
   timezone?: Prisma.StringFilter<"PublicationIntent"> | string
@@ -378,8 +402,10 @@ export type PublicationIntentWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"PublicationIntent"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   channel?: Prisma.XOR<Prisma.PublicationChannelScalarRelationFilter, Prisma.PublicationChannelWhereInput>
-  approval?: Prisma.XOR<Prisma.EditorialApprovalScalarRelationFilter, Prisma.EditorialApprovalWhereInput>
-  exportResult?: Prisma.XOR<Prisma.EditorialExportResultScalarRelationFilter, Prisma.EditorialExportResultWhereInput>
+  approval?: Prisma.XOR<Prisma.EditorialApprovalNullableScalarRelationFilter, Prisma.EditorialApprovalWhereInput> | null
+  exportResult?: Prisma.XOR<Prisma.EditorialExportResultNullableScalarRelationFilter, Prisma.EditorialExportResultWhereInput> | null
+  verticalApproval?: Prisma.XOR<Prisma.VerticalApprovalNullableScalarRelationFilter, Prisma.VerticalApprovalWhereInput> | null
+  verticalResult?: Prisma.XOR<Prisma.VerticalRenderResultNullableScalarRelationFilter, Prisma.VerticalRenderResultWhereInput> | null
   result?: Prisma.XOR<Prisma.PublicationResultNullableScalarRelationFilter, Prisma.PublicationResultWhereInput> | null
 }
 
@@ -389,9 +415,12 @@ export type PublicationIntentOrderByWithRelationInput = {
   requestFingerprint?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
-  approvalId?: Prisma.SortOrder
-  exportIntentId?: Prisma.SortOrder
-  exportResultId?: Prisma.SortOrder
+  contentKind?: Prisma.SortOrder
+  approvalId?: Prisma.SortOrderInput | Prisma.SortOrder
+  exportIntentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  exportResultId?: Prisma.SortOrderInput | Prisma.SortOrder
+  verticalApprovalId?: Prisma.SortOrderInput | Prisma.SortOrder
+  verticalResultId?: Prisma.SortOrderInput | Prisma.SortOrder
   platform?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -413,6 +442,8 @@ export type PublicationIntentOrderByWithRelationInput = {
   channel?: Prisma.PublicationChannelOrderByWithRelationInput
   approval?: Prisma.EditorialApprovalOrderByWithRelationInput
   exportResult?: Prisma.EditorialExportResultOrderByWithRelationInput
+  verticalApproval?: Prisma.VerticalApprovalOrderByWithRelationInput
+  verticalResult?: Prisma.VerticalRenderResultOrderByWithRelationInput
   result?: Prisma.PublicationResultOrderByWithRelationInput
 }
 
@@ -421,15 +452,19 @@ export type PublicationIntentWhereUniqueInput = Prisma.AtLeast<{
   idempotencyKey?: string
   remotePublicationId?: string
   channelId_exportResultId_platform?: Prisma.PublicationIntentChannelIdExportResultIdPlatformCompoundUniqueInput
+  channelId_verticalResultId_platform?: Prisma.PublicationIntentChannelIdVerticalResultIdPlatformCompoundUniqueInput
   AND?: Prisma.PublicationIntentWhereInput | Prisma.PublicationIntentWhereInput[]
   OR?: Prisma.PublicationIntentWhereInput[]
   NOT?: Prisma.PublicationIntentWhereInput | Prisma.PublicationIntentWhereInput[]
   requestFingerprint?: Prisma.StringFilter<"PublicationIntent"> | string
   projectId?: Prisma.UuidFilter<"PublicationIntent"> | string
   channelId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  approvalId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  exportIntentId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  exportResultId?: Prisma.UuidFilter<"PublicationIntent"> | string
+  contentKind?: Prisma.EnumPublicationContentKindFilter<"PublicationIntent"> | $Enums.PublicationContentKind
+  approvalId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  exportIntentId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  exportResultId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  verticalApprovalId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  verticalResultId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
   platform?: Prisma.EnumPublicationPlatformFilter<"PublicationIntent"> | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFilter<"PublicationIntent"> | Date | string
   timezone?: Prisma.StringFilter<"PublicationIntent"> | string
@@ -448,10 +483,12 @@ export type PublicationIntentWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"PublicationIntent"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   channel?: Prisma.XOR<Prisma.PublicationChannelScalarRelationFilter, Prisma.PublicationChannelWhereInput>
-  approval?: Prisma.XOR<Prisma.EditorialApprovalScalarRelationFilter, Prisma.EditorialApprovalWhereInput>
-  exportResult?: Prisma.XOR<Prisma.EditorialExportResultScalarRelationFilter, Prisma.EditorialExportResultWhereInput>
+  approval?: Prisma.XOR<Prisma.EditorialApprovalNullableScalarRelationFilter, Prisma.EditorialApprovalWhereInput> | null
+  exportResult?: Prisma.XOR<Prisma.EditorialExportResultNullableScalarRelationFilter, Prisma.EditorialExportResultWhereInput> | null
+  verticalApproval?: Prisma.XOR<Prisma.VerticalApprovalNullableScalarRelationFilter, Prisma.VerticalApprovalWhereInput> | null
+  verticalResult?: Prisma.XOR<Prisma.VerticalRenderResultNullableScalarRelationFilter, Prisma.VerticalRenderResultWhereInput> | null
   result?: Prisma.XOR<Prisma.PublicationResultNullableScalarRelationFilter, Prisma.PublicationResultWhereInput> | null
-}, "id" | "idempotencyKey" | "remotePublicationId" | "channelId_exportResultId_platform">
+}, "id" | "idempotencyKey" | "remotePublicationId" | "channelId_exportResultId_platform" | "channelId_verticalResultId_platform">
 
 export type PublicationIntentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -459,9 +496,12 @@ export type PublicationIntentOrderByWithAggregationInput = {
   requestFingerprint?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
-  approvalId?: Prisma.SortOrder
-  exportIntentId?: Prisma.SortOrder
-  exportResultId?: Prisma.SortOrder
+  contentKind?: Prisma.SortOrder
+  approvalId?: Prisma.SortOrderInput | Prisma.SortOrder
+  exportIntentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  exportResultId?: Prisma.SortOrderInput | Prisma.SortOrder
+  verticalApprovalId?: Prisma.SortOrderInput | Prisma.SortOrder
+  verticalResultId?: Prisma.SortOrderInput | Prisma.SortOrder
   platform?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -495,9 +535,12 @@ export type PublicationIntentScalarWhereWithAggregatesInput = {
   requestFingerprint?: Prisma.StringWithAggregatesFilter<"PublicationIntent"> | string
   projectId?: Prisma.UuidWithAggregatesFilter<"PublicationIntent"> | string
   channelId?: Prisma.UuidWithAggregatesFilter<"PublicationIntent"> | string
-  approvalId?: Prisma.UuidWithAggregatesFilter<"PublicationIntent"> | string
-  exportIntentId?: Prisma.UuidWithAggregatesFilter<"PublicationIntent"> | string
-  exportResultId?: Prisma.UuidWithAggregatesFilter<"PublicationIntent"> | string
+  contentKind?: Prisma.EnumPublicationContentKindWithAggregatesFilter<"PublicationIntent"> | $Enums.PublicationContentKind
+  approvalId?: Prisma.UuidNullableWithAggregatesFilter<"PublicationIntent"> | string | null
+  exportIntentId?: Prisma.UuidNullableWithAggregatesFilter<"PublicationIntent"> | string | null
+  exportResultId?: Prisma.UuidNullableWithAggregatesFilter<"PublicationIntent"> | string | null
+  verticalApprovalId?: Prisma.UuidNullableWithAggregatesFilter<"PublicationIntent"> | string | null
+  verticalResultId?: Prisma.UuidNullableWithAggregatesFilter<"PublicationIntent"> | string | null
   platform?: Prisma.EnumPublicationPlatformWithAggregatesFilter<"PublicationIntent"> | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeWithAggregatesFilter<"PublicationIntent"> | Date | string
   timezone?: Prisma.StringWithAggregatesFilter<"PublicationIntent"> | string
@@ -521,6 +564,7 @@ export type PublicationIntentCreateInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -539,8 +583,10 @@ export type PublicationIntentCreateInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutPublicationIntentsInput
   channel: Prisma.PublicationChannelCreateNestedOneWithoutIntentsInput
-  approval: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
-  exportResult: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  exportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  verticalApproval?: Prisma.VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput
+  verticalResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput
   result?: Prisma.PublicationResultCreateNestedOneWithoutPublicationIntentInput
 }
 
@@ -550,9 +596,12 @@ export type PublicationIntentUncheckedCreateInput = {
   requestFingerprint: string
   projectId: string
   channelId: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -577,6 +626,7 @@ export type PublicationIntentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -595,8 +645,10 @@ export type PublicationIntentUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutPublicationIntentsNestedInput
   channel?: Prisma.PublicationChannelUpdateOneRequiredWithoutIntentsNestedInput
-  approval?: Prisma.EditorialApprovalUpdateOneRequiredWithoutPublicationIntentsNestedInput
-  exportResult?: Prisma.EditorialExportResultUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  exportResult?: Prisma.EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput
+  verticalApproval?: Prisma.VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  verticalResult?: Prisma.VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput
   result?: Prisma.PublicationResultUpdateOneWithoutPublicationIntentNestedInput
 }
 
@@ -606,9 +658,12 @@ export type PublicationIntentUncheckedUpdateInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -635,9 +690,12 @@ export type PublicationIntentCreateManyInput = {
   requestFingerprint: string
   projectId: string
   channelId: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -661,6 +719,7 @@ export type PublicationIntentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -685,9 +744,12 @@ export type PublicationIntentUncheckedUpdateManyInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -723,15 +785,24 @@ export type PublicationIntentChannelIdExportResultIdPlatformCompoundUniqueInput 
   platform: $Enums.PublicationPlatform
 }
 
+export type PublicationIntentChannelIdVerticalResultIdPlatformCompoundUniqueInput = {
+  channelId: string
+  verticalResultId: string
+  platform: $Enums.PublicationPlatform
+}
+
 export type PublicationIntentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
   requestFingerprint?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  contentKind?: Prisma.SortOrder
   approvalId?: Prisma.SortOrder
   exportIntentId?: Prisma.SortOrder
   exportResultId?: Prisma.SortOrder
+  verticalApprovalId?: Prisma.SortOrder
+  verticalResultId?: Prisma.SortOrder
   platform?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -762,9 +833,12 @@ export type PublicationIntentMaxOrderByAggregateInput = {
   requestFingerprint?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  contentKind?: Prisma.SortOrder
   approvalId?: Prisma.SortOrder
   exportIntentId?: Prisma.SortOrder
   exportResultId?: Prisma.SortOrder
+  verticalApprovalId?: Prisma.SortOrder
+  verticalResultId?: Prisma.SortOrder
   platform?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -789,9 +863,12 @@ export type PublicationIntentMinOrderByAggregateInput = {
   requestFingerprint?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
+  contentKind?: Prisma.SortOrder
   approvalId?: Prisma.SortOrder
   exportIntentId?: Prisma.SortOrder
   exportResultId?: Prisma.SortOrder
+  verticalApprovalId?: Prisma.SortOrder
+  verticalResultId?: Prisma.SortOrder
   platform?: Prisma.SortOrder
   scheduledAt?: Prisma.SortOrder
   timezone?: Prisma.SortOrder
@@ -988,6 +1065,10 @@ export type PublicationIntentUncheckedUpdateManyWithoutChannelNestedInput = {
   deleteMany?: Prisma.PublicationIntentScalarWhereInput | Prisma.PublicationIntentScalarWhereInput[]
 }
 
+export type EnumPublicationContentKindFieldUpdateOperationsInput = {
+  set?: $Enums.PublicationContentKind
+}
+
 export type EnumPublicationIntentStateFieldUpdateOperationsInput = {
   set?: $Enums.PublicationIntentState
 }
@@ -1006,10 +1087,95 @@ export type PublicationIntentUpdateOneRequiredWithoutResultNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PublicationIntentUpdateToOneWithWhereWithoutResultInput, Prisma.PublicationIntentUpdateWithoutResultInput>, Prisma.PublicationIntentUncheckedUpdateWithoutResultInput>
 }
 
+export type PublicationIntentCreateNestedManyWithoutVerticalResultInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput> | Prisma.PublicationIntentCreateWithoutVerticalResultInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalResultInputEnvelope
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+}
+
+export type PublicationIntentUncheckedCreateNestedManyWithoutVerticalResultInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput> | Prisma.PublicationIntentCreateWithoutVerticalResultInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalResultInputEnvelope
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+}
+
+export type PublicationIntentUpdateManyWithoutVerticalResultNestedInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput> | Prisma.PublicationIntentCreateWithoutVerticalResultInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput[]
+  upsert?: Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalResultInput | Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalResultInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalResultInputEnvelope
+  set?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  disconnect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  delete?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  update?: Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalResultInput | Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalResultInput[]
+  updateMany?: Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalResultInput | Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalResultInput[]
+  deleteMany?: Prisma.PublicationIntentScalarWhereInput | Prisma.PublicationIntentScalarWhereInput[]
+}
+
+export type PublicationIntentUncheckedUpdateManyWithoutVerticalResultNestedInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput> | Prisma.PublicationIntentCreateWithoutVerticalResultInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalResultInput[]
+  upsert?: Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalResultInput | Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalResultInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalResultInputEnvelope
+  set?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  disconnect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  delete?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  update?: Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalResultInput | Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalResultInput[]
+  updateMany?: Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalResultInput | Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalResultInput[]
+  deleteMany?: Prisma.PublicationIntentScalarWhereInput | Prisma.PublicationIntentScalarWhereInput[]
+}
+
+export type PublicationIntentCreateNestedManyWithoutVerticalApprovalInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput> | Prisma.PublicationIntentCreateWithoutVerticalApprovalInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalApprovalInputEnvelope
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+}
+
+export type PublicationIntentUncheckedCreateNestedManyWithoutVerticalApprovalInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput> | Prisma.PublicationIntentCreateWithoutVerticalApprovalInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalApprovalInputEnvelope
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+}
+
+export type PublicationIntentUpdateManyWithoutVerticalApprovalNestedInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput> | Prisma.PublicationIntentCreateWithoutVerticalApprovalInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput[]
+  upsert?: Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalApprovalInput | Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalApprovalInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalApprovalInputEnvelope
+  set?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  disconnect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  delete?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  update?: Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalApprovalInput | Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalApprovalInput[]
+  updateMany?: Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalApprovalInput | Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalApprovalInput[]
+  deleteMany?: Prisma.PublicationIntentScalarWhereInput | Prisma.PublicationIntentScalarWhereInput[]
+}
+
+export type PublicationIntentUncheckedUpdateManyWithoutVerticalApprovalNestedInput = {
+  create?: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput> | Prisma.PublicationIntentCreateWithoutVerticalApprovalInput[] | Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput[]
+  connectOrCreate?: Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput | Prisma.PublicationIntentCreateOrConnectWithoutVerticalApprovalInput[]
+  upsert?: Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalApprovalInput | Prisma.PublicationIntentUpsertWithWhereUniqueWithoutVerticalApprovalInput[]
+  createMany?: Prisma.PublicationIntentCreateManyVerticalApprovalInputEnvelope
+  set?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  disconnect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  delete?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  connect?: Prisma.PublicationIntentWhereUniqueInput | Prisma.PublicationIntentWhereUniqueInput[]
+  update?: Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalApprovalInput | Prisma.PublicationIntentUpdateWithWhereUniqueWithoutVerticalApprovalInput[]
+  updateMany?: Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalApprovalInput | Prisma.PublicationIntentUpdateManyWithWhereWithoutVerticalApprovalInput[]
+  deleteMany?: Prisma.PublicationIntentScalarWhereInput | Prisma.PublicationIntentScalarWhereInput[]
+}
+
 export type PublicationIntentCreateWithoutProjectInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1027,8 +1193,10 @@ export type PublicationIntentCreateWithoutProjectInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   channel: Prisma.PublicationChannelCreateNestedOneWithoutIntentsInput
-  approval: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
-  exportResult: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  exportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  verticalApproval?: Prisma.VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput
+  verticalResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput
   result?: Prisma.PublicationResultCreateNestedOneWithoutPublicationIntentInput
 }
 
@@ -1037,9 +1205,12 @@ export type PublicationIntentUncheckedCreateWithoutProjectInput = {
   idempotencyKey: string
   requestFingerprint: string
   channelId: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -1095,9 +1266,12 @@ export type PublicationIntentScalarWhereInput = {
   requestFingerprint?: Prisma.StringFilter<"PublicationIntent"> | string
   projectId?: Prisma.UuidFilter<"PublicationIntent"> | string
   channelId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  approvalId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  exportIntentId?: Prisma.UuidFilter<"PublicationIntent"> | string
-  exportResultId?: Prisma.UuidFilter<"PublicationIntent"> | string
+  contentKind?: Prisma.EnumPublicationContentKindFilter<"PublicationIntent"> | $Enums.PublicationContentKind
+  approvalId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  exportIntentId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  exportResultId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  verticalApprovalId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
+  verticalResultId?: Prisma.UuidNullableFilter<"PublicationIntent"> | string | null
   platform?: Prisma.EnumPublicationPlatformFilter<"PublicationIntent"> | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFilter<"PublicationIntent"> | Date | string
   timezone?: Prisma.StringFilter<"PublicationIntent"> | string
@@ -1121,6 +1295,7 @@ export type PublicationIntentCreateWithoutApprovalInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1139,7 +1314,9 @@ export type PublicationIntentCreateWithoutApprovalInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutPublicationIntentsInput
   channel: Prisma.PublicationChannelCreateNestedOneWithoutIntentsInput
-  exportResult: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  exportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  verticalApproval?: Prisma.VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput
+  verticalResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput
   result?: Prisma.PublicationResultCreateNestedOneWithoutPublicationIntentInput
 }
 
@@ -1148,8 +1325,11 @@ export type PublicationIntentUncheckedCreateWithoutApprovalInput = {
   idempotencyKey: string
   requestFingerprint: string
   channelId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -1200,6 +1380,7 @@ export type PublicationIntentCreateWithoutExportResultInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1218,7 +1399,9 @@ export type PublicationIntentCreateWithoutExportResultInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutPublicationIntentsInput
   channel: Prisma.PublicationChannelCreateNestedOneWithoutIntentsInput
-  approval: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  verticalApproval?: Prisma.VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput
+  verticalResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput
   result?: Prisma.PublicationResultCreateNestedOneWithoutPublicationIntentInput
 }
 
@@ -1228,7 +1411,10 @@ export type PublicationIntentUncheckedCreateWithoutExportResultInput = {
   requestFingerprint: string
   projectId: string
   channelId: string
-  approvalId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -1279,6 +1465,7 @@ export type PublicationIntentCreateWithoutChannelInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1296,8 +1483,10 @@ export type PublicationIntentCreateWithoutChannelInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutPublicationIntentsInput
-  approval: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
-  exportResult: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  exportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  verticalApproval?: Prisma.VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput
+  verticalResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput
   result?: Prisma.PublicationResultCreateNestedOneWithoutPublicationIntentInput
 }
 
@@ -1305,9 +1494,12 @@ export type PublicationIntentUncheckedCreateWithoutChannelInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1357,6 +1549,7 @@ export type PublicationIntentCreateWithoutResultInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1375,8 +1568,10 @@ export type PublicationIntentCreateWithoutResultInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutPublicationIntentsInput
   channel: Prisma.PublicationChannelCreateNestedOneWithoutIntentsInput
-  approval: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
-  exportResult: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  exportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  verticalApproval?: Prisma.VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput
+  verticalResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput
 }
 
 export type PublicationIntentUncheckedCreateWithoutResultInput = {
@@ -1385,9 +1580,12 @@ export type PublicationIntentUncheckedCreateWithoutResultInput = {
   requestFingerprint: string
   projectId: string
   channelId: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -1427,6 +1625,7 @@ export type PublicationIntentUpdateWithoutResultInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1445,8 +1644,10 @@ export type PublicationIntentUpdateWithoutResultInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutPublicationIntentsNestedInput
   channel?: Prisma.PublicationChannelUpdateOneRequiredWithoutIntentsNestedInput
-  approval?: Prisma.EditorialApprovalUpdateOneRequiredWithoutPublicationIntentsNestedInput
-  exportResult?: Prisma.EditorialExportResultUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  exportResult?: Prisma.EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput
+  verticalApproval?: Prisma.VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  verticalResult?: Prisma.VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput
 }
 
 export type PublicationIntentUncheckedUpdateWithoutResultInput = {
@@ -1455,9 +1656,12 @@ export type PublicationIntentUncheckedUpdateWithoutResultInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1477,14 +1681,189 @@ export type PublicationIntentUncheckedUpdateWithoutResultInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type PublicationIntentCreateWithoutVerticalResultInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
+  scheduledAt: Date | string
+  timezone: string
+  metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.PublicationIntentState
+  remotePublicationId?: string | null
+  remoteStatus?: string | null
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string | null
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutPublicationIntentsInput
+  channel: Prisma.PublicationChannelCreateNestedOneWithoutIntentsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  exportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  verticalApproval?: Prisma.VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput
+  result?: Prisma.PublicationResultCreateNestedOneWithoutPublicationIntentInput
+}
+
+export type PublicationIntentUncheckedCreateWithoutVerticalResultInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  projectId: string
+  channelId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  platform: $Enums.PublicationPlatform
+  scheduledAt: Date | string
+  timezone: string
+  metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.PublicationIntentState
+  remotePublicationId?: string | null
+  remoteStatus?: string | null
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string | null
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  result?: Prisma.PublicationResultUncheckedCreateNestedOneWithoutPublicationIntentInput
+}
+
+export type PublicationIntentCreateOrConnectWithoutVerticalResultInput = {
+  where: Prisma.PublicationIntentWhereUniqueInput
+  create: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput>
+}
+
+export type PublicationIntentCreateManyVerticalResultInputEnvelope = {
+  data: Prisma.PublicationIntentCreateManyVerticalResultInput | Prisma.PublicationIntentCreateManyVerticalResultInput[]
+  skipDuplicates?: boolean
+}
+
+export type PublicationIntentUpsertWithWhereUniqueWithoutVerticalResultInput = {
+  where: Prisma.PublicationIntentWhereUniqueInput
+  update: Prisma.XOR<Prisma.PublicationIntentUpdateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedUpdateWithoutVerticalResultInput>
+  create: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalResultInput>
+}
+
+export type PublicationIntentUpdateWithWhereUniqueWithoutVerticalResultInput = {
+  where: Prisma.PublicationIntentWhereUniqueInput
+  data: Prisma.XOR<Prisma.PublicationIntentUpdateWithoutVerticalResultInput, Prisma.PublicationIntentUncheckedUpdateWithoutVerticalResultInput>
+}
+
+export type PublicationIntentUpdateManyWithWhereWithoutVerticalResultInput = {
+  where: Prisma.PublicationIntentScalarWhereInput
+  data: Prisma.XOR<Prisma.PublicationIntentUpdateManyMutationInput, Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalResultInput>
+}
+
+export type PublicationIntentCreateWithoutVerticalApprovalInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  contentKind?: $Enums.PublicationContentKind
+  scheduledAt: Date | string
+  timezone: string
+  metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.PublicationIntentState
+  remotePublicationId?: string | null
+  remoteStatus?: string | null
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string | null
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutPublicationIntentsInput
+  channel: Prisma.PublicationChannelCreateNestedOneWithoutIntentsInput
+  approval?: Prisma.EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput
+  exportResult?: Prisma.EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput
+  verticalResult?: Prisma.VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput
+  result?: Prisma.PublicationResultCreateNestedOneWithoutPublicationIntentInput
+}
+
+export type PublicationIntentUncheckedCreateWithoutVerticalApprovalInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  projectId: string
+  channelId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalResultId?: string | null
+  platform: $Enums.PublicationPlatform
+  scheduledAt: Date | string
+  timezone: string
+  metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.PublicationIntentState
+  remotePublicationId?: string | null
+  remoteStatus?: string | null
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string | null
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  result?: Prisma.PublicationResultUncheckedCreateNestedOneWithoutPublicationIntentInput
+}
+
+export type PublicationIntentCreateOrConnectWithoutVerticalApprovalInput = {
+  where: Prisma.PublicationIntentWhereUniqueInput
+  create: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput>
+}
+
+export type PublicationIntentCreateManyVerticalApprovalInputEnvelope = {
+  data: Prisma.PublicationIntentCreateManyVerticalApprovalInput | Prisma.PublicationIntentCreateManyVerticalApprovalInput[]
+  skipDuplicates?: boolean
+}
+
+export type PublicationIntentUpsertWithWhereUniqueWithoutVerticalApprovalInput = {
+  where: Prisma.PublicationIntentWhereUniqueInput
+  update: Prisma.XOR<Prisma.PublicationIntentUpdateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedUpdateWithoutVerticalApprovalInput>
+  create: Prisma.XOR<Prisma.PublicationIntentCreateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedCreateWithoutVerticalApprovalInput>
+}
+
+export type PublicationIntentUpdateWithWhereUniqueWithoutVerticalApprovalInput = {
+  where: Prisma.PublicationIntentWhereUniqueInput
+  data: Prisma.XOR<Prisma.PublicationIntentUpdateWithoutVerticalApprovalInput, Prisma.PublicationIntentUncheckedUpdateWithoutVerticalApprovalInput>
+}
+
+export type PublicationIntentUpdateManyWithWhereWithoutVerticalApprovalInput = {
+  where: Prisma.PublicationIntentScalarWhereInput
+  data: Prisma.XOR<Prisma.PublicationIntentUpdateManyMutationInput, Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalApprovalInput>
+}
+
 export type PublicationIntentCreateManyProjectInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
   channelId: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -1508,6 +1887,7 @@ export type PublicationIntentUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1525,8 +1905,10 @@ export type PublicationIntentUpdateWithoutProjectInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.PublicationChannelUpdateOneRequiredWithoutIntentsNestedInput
-  approval?: Prisma.EditorialApprovalUpdateOneRequiredWithoutPublicationIntentsNestedInput
-  exportResult?: Prisma.EditorialExportResultUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  exportResult?: Prisma.EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput
+  verticalApproval?: Prisma.VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  verticalResult?: Prisma.VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput
   result?: Prisma.PublicationResultUpdateOneWithoutPublicationIntentNestedInput
 }
 
@@ -1535,9 +1917,12 @@ export type PublicationIntentUncheckedUpdateWithoutProjectInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1563,9 +1948,12 @@ export type PublicationIntentUncheckedUpdateManyWithoutProjectInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1590,8 +1978,11 @@ export type PublicationIntentCreateManyApprovalInput = {
   idempotencyKey: string
   requestFingerprint: string
   channelId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -1615,6 +2006,7 @@ export type PublicationIntentUpdateWithoutApprovalInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1633,7 +2025,9 @@ export type PublicationIntentUpdateWithoutApprovalInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutPublicationIntentsNestedInput
   channel?: Prisma.PublicationChannelUpdateOneRequiredWithoutIntentsNestedInput
-  exportResult?: Prisma.EditorialExportResultUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  exportResult?: Prisma.EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput
+  verticalApproval?: Prisma.VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  verticalResult?: Prisma.VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput
   result?: Prisma.PublicationResultUpdateOneWithoutPublicationIntentNestedInput
 }
 
@@ -1642,8 +2036,11 @@ export type PublicationIntentUncheckedUpdateWithoutApprovalInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1669,8 +2066,11 @@ export type PublicationIntentUncheckedUpdateManyWithoutApprovalInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1696,7 +2096,10 @@ export type PublicationIntentCreateManyExportResultInput = {
   requestFingerprint: string
   projectId: string
   channelId: string
-  approvalId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   platform: $Enums.PublicationPlatform
   scheduledAt: Date | string
   timezone: string
@@ -1720,6 +2123,7 @@ export type PublicationIntentUpdateWithoutExportResultInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1738,7 +2142,9 @@ export type PublicationIntentUpdateWithoutExportResultInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutPublicationIntentsNestedInput
   channel?: Prisma.PublicationChannelUpdateOneRequiredWithoutIntentsNestedInput
-  approval?: Prisma.EditorialApprovalUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  verticalApproval?: Prisma.VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  verticalResult?: Prisma.VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput
   result?: Prisma.PublicationResultUpdateOneWithoutPublicationIntentNestedInput
 }
 
@@ -1748,7 +2154,10 @@ export type PublicationIntentUncheckedUpdateWithoutExportResultInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1775,7 +2184,10 @@ export type PublicationIntentUncheckedUpdateManyWithoutExportResultInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1799,9 +2211,12 @@ export type PublicationIntentCreateManyChannelInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
-  approvalId: string
-  exportIntentId: string
-  exportResultId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  verticalResultId?: string | null
   scheduledAt: Date | string
   timezone: string
   metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1824,6 +2239,7 @@ export type PublicationIntentUpdateWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1841,8 +2257,10 @@ export type PublicationIntentUpdateWithoutChannelInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutPublicationIntentsNestedInput
-  approval?: Prisma.EditorialApprovalUpdateOneRequiredWithoutPublicationIntentsNestedInput
-  exportResult?: Prisma.EditorialExportResultUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  exportResult?: Prisma.EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput
+  verticalApproval?: Prisma.VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  verticalResult?: Prisma.VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput
   result?: Prisma.PublicationResultUpdateOneWithoutPublicationIntentNestedInput
 }
 
@@ -1850,9 +2268,12 @@ export type PublicationIntentUncheckedUpdateWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1876,9 +2297,252 @@ export type PublicationIntentUncheckedUpdateManyWithoutChannelInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  approvalId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportIntentId?: Prisma.StringFieldUpdateOperationsInput | string
-  exportResultId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumPublicationIntentStateFieldUpdateOperationsInput | $Enums.PublicationIntentState
+  remotePublicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remoteStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PublicationIntentCreateManyVerticalResultInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  projectId: string
+  channelId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalApprovalId?: string | null
+  platform: $Enums.PublicationPlatform
+  scheduledAt: Date | string
+  timezone: string
+  metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.PublicationIntentState
+  remotePublicationId?: string | null
+  remoteStatus?: string | null
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string | null
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PublicationIntentUpdateWithoutVerticalResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumPublicationIntentStateFieldUpdateOperationsInput | $Enums.PublicationIntentState
+  remotePublicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remoteStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  channel?: Prisma.PublicationChannelUpdateOneRequiredWithoutIntentsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  exportResult?: Prisma.EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput
+  verticalApproval?: Prisma.VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  result?: Prisma.PublicationResultUpdateOneWithoutPublicationIntentNestedInput
+}
+
+export type PublicationIntentUncheckedUpdateWithoutVerticalResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
+  scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumPublicationIntentStateFieldUpdateOperationsInput | $Enums.PublicationIntentState
+  remotePublicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remoteStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  result?: Prisma.PublicationResultUncheckedUpdateOneWithoutPublicationIntentNestedInput
+}
+
+export type PublicationIntentUncheckedUpdateManyWithoutVerticalResultInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalApprovalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
+  scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumPublicationIntentStateFieldUpdateOperationsInput | $Enums.PublicationIntentState
+  remotePublicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remoteStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PublicationIntentCreateManyVerticalApprovalInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  projectId: string
+  channelId: string
+  contentKind?: $Enums.PublicationContentKind
+  approvalId?: string | null
+  exportIntentId?: string | null
+  exportResultId?: string | null
+  verticalResultId?: string | null
+  platform: $Enums.PublicationPlatform
+  scheduledAt: Date | string
+  timezone: string
+  metadataSnapshot: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: $Enums.PublicationIntentState
+  remotePublicationId?: string | null
+  remoteStatus?: string | null
+  attemptCount?: number
+  retryBudget?: number
+  failureCode?: string | null
+  failureMessage?: string | null
+  queuedAt?: Date | string | null
+  startedAt?: Date | string | null
+  finishedAt?: Date | string | null
+  canceledAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PublicationIntentUpdateWithoutVerticalApprovalInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumPublicationIntentStateFieldUpdateOperationsInput | $Enums.PublicationIntentState
+  remotePublicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remoteStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutPublicationIntentsNestedInput
+  channel?: Prisma.PublicationChannelUpdateOneRequiredWithoutIntentsNestedInput
+  approval?: Prisma.EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput
+  exportResult?: Prisma.EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput
+  verticalResult?: Prisma.VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput
+  result?: Prisma.PublicationResultUpdateOneWithoutPublicationIntentNestedInput
+}
+
+export type PublicationIntentUncheckedUpdateWithoutVerticalApprovalInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
+  scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  state?: Prisma.EnumPublicationIntentStateFieldUpdateOperationsInput | $Enums.PublicationIntentState
+  remotePublicationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remoteStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
+  retryBudget?: Prisma.IntFieldUpdateOperationsInput | number
+  failureCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failureMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  queuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  canceledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  result?: Prisma.PublicationResultUncheckedUpdateOneWithoutPublicationIntentNestedInput
+}
+
+export type PublicationIntentUncheckedUpdateManyWithoutVerticalApprovalInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  channelId?: Prisma.StringFieldUpdateOperationsInput | string
+  contentKind?: Prisma.EnumPublicationContentKindFieldUpdateOperationsInput | $Enums.PublicationContentKind
+  approvalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportIntentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  exportResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verticalResultId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  platform?: Prisma.EnumPublicationPlatformFieldUpdateOperationsInput | $Enums.PublicationPlatform
   scheduledAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   timezone?: Prisma.StringFieldUpdateOperationsInput | string
   metadataSnapshot?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1905,9 +2569,12 @@ export type PublicationIntentSelect<ExtArgs extends runtime.Types.Extensions.Int
   requestFingerprint?: boolean
   projectId?: boolean
   channelId?: boolean
+  contentKind?: boolean
   approvalId?: boolean
   exportIntentId?: boolean
   exportResultId?: boolean
+  verticalApprovalId?: boolean
+  verticalResultId?: boolean
   platform?: boolean
   scheduledAt?: boolean
   timezone?: boolean
@@ -1927,8 +2594,10 @@ export type PublicationIntentSelect<ExtArgs extends runtime.Types.Extensions.Int
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PublicationChannelDefaultArgs<ExtArgs>
-  approval?: boolean | Prisma.EditorialApprovalDefaultArgs<ExtArgs>
-  exportResult?: boolean | Prisma.EditorialExportResultDefaultArgs<ExtArgs>
+  approval?: boolean | Prisma.PublicationIntent$approvalArgs<ExtArgs>
+  exportResult?: boolean | Prisma.PublicationIntent$exportResultArgs<ExtArgs>
+  verticalApproval?: boolean | Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs>
+  verticalResult?: boolean | Prisma.PublicationIntent$verticalResultArgs<ExtArgs>
   result?: boolean | Prisma.PublicationIntent$resultArgs<ExtArgs>
 }, ExtArgs["result"]["publicationIntent"]>
 
@@ -1938,9 +2607,12 @@ export type PublicationIntentSelectCreateManyAndReturn<ExtArgs extends runtime.T
   requestFingerprint?: boolean
   projectId?: boolean
   channelId?: boolean
+  contentKind?: boolean
   approvalId?: boolean
   exportIntentId?: boolean
   exportResultId?: boolean
+  verticalApprovalId?: boolean
+  verticalResultId?: boolean
   platform?: boolean
   scheduledAt?: boolean
   timezone?: boolean
@@ -1960,8 +2632,10 @@ export type PublicationIntentSelectCreateManyAndReturn<ExtArgs extends runtime.T
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PublicationChannelDefaultArgs<ExtArgs>
-  approval?: boolean | Prisma.EditorialApprovalDefaultArgs<ExtArgs>
-  exportResult?: boolean | Prisma.EditorialExportResultDefaultArgs<ExtArgs>
+  approval?: boolean | Prisma.PublicationIntent$approvalArgs<ExtArgs>
+  exportResult?: boolean | Prisma.PublicationIntent$exportResultArgs<ExtArgs>
+  verticalApproval?: boolean | Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs>
+  verticalResult?: boolean | Prisma.PublicationIntent$verticalResultArgs<ExtArgs>
 }, ExtArgs["result"]["publicationIntent"]>
 
 export type PublicationIntentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1970,9 +2644,12 @@ export type PublicationIntentSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   requestFingerprint?: boolean
   projectId?: boolean
   channelId?: boolean
+  contentKind?: boolean
   approvalId?: boolean
   exportIntentId?: boolean
   exportResultId?: boolean
+  verticalApprovalId?: boolean
+  verticalResultId?: boolean
   platform?: boolean
   scheduledAt?: boolean
   timezone?: boolean
@@ -1992,8 +2669,10 @@ export type PublicationIntentSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PublicationChannelDefaultArgs<ExtArgs>
-  approval?: boolean | Prisma.EditorialApprovalDefaultArgs<ExtArgs>
-  exportResult?: boolean | Prisma.EditorialExportResultDefaultArgs<ExtArgs>
+  approval?: boolean | Prisma.PublicationIntent$approvalArgs<ExtArgs>
+  exportResult?: boolean | Prisma.PublicationIntent$exportResultArgs<ExtArgs>
+  verticalApproval?: boolean | Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs>
+  verticalResult?: boolean | Prisma.PublicationIntent$verticalResultArgs<ExtArgs>
 }, ExtArgs["result"]["publicationIntent"]>
 
 export type PublicationIntentSelectScalar = {
@@ -2002,9 +2681,12 @@ export type PublicationIntentSelectScalar = {
   requestFingerprint?: boolean
   projectId?: boolean
   channelId?: boolean
+  contentKind?: boolean
   approvalId?: boolean
   exportIntentId?: boolean
   exportResultId?: boolean
+  verticalApprovalId?: boolean
+  verticalResultId?: boolean
   platform?: boolean
   scheduledAt?: boolean
   timezone?: boolean
@@ -2024,25 +2706,31 @@ export type PublicationIntentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PublicationIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "projectId" | "channelId" | "approvalId" | "exportIntentId" | "exportResultId" | "platform" | "scheduledAt" | "timezone" | "metadataSnapshot" | "state" | "remotePublicationId" | "remoteStatus" | "attemptCount" | "retryBudget" | "failureCode" | "failureMessage" | "queuedAt" | "startedAt" | "finishedAt" | "canceledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["publicationIntent"]>
+export type PublicationIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "projectId" | "channelId" | "contentKind" | "approvalId" | "exportIntentId" | "exportResultId" | "verticalApprovalId" | "verticalResultId" | "platform" | "scheduledAt" | "timezone" | "metadataSnapshot" | "state" | "remotePublicationId" | "remoteStatus" | "attemptCount" | "retryBudget" | "failureCode" | "failureMessage" | "queuedAt" | "startedAt" | "finishedAt" | "canceledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["publicationIntent"]>
 export type PublicationIntentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PublicationChannelDefaultArgs<ExtArgs>
-  approval?: boolean | Prisma.EditorialApprovalDefaultArgs<ExtArgs>
-  exportResult?: boolean | Prisma.EditorialExportResultDefaultArgs<ExtArgs>
+  approval?: boolean | Prisma.PublicationIntent$approvalArgs<ExtArgs>
+  exportResult?: boolean | Prisma.PublicationIntent$exportResultArgs<ExtArgs>
+  verticalApproval?: boolean | Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs>
+  verticalResult?: boolean | Prisma.PublicationIntent$verticalResultArgs<ExtArgs>
   result?: boolean | Prisma.PublicationIntent$resultArgs<ExtArgs>
 }
 export type PublicationIntentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PublicationChannelDefaultArgs<ExtArgs>
-  approval?: boolean | Prisma.EditorialApprovalDefaultArgs<ExtArgs>
-  exportResult?: boolean | Prisma.EditorialExportResultDefaultArgs<ExtArgs>
+  approval?: boolean | Prisma.PublicationIntent$approvalArgs<ExtArgs>
+  exportResult?: boolean | Prisma.PublicationIntent$exportResultArgs<ExtArgs>
+  verticalApproval?: boolean | Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs>
+  verticalResult?: boolean | Prisma.PublicationIntent$verticalResultArgs<ExtArgs>
 }
 export type PublicationIntentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.PublicationChannelDefaultArgs<ExtArgs>
-  approval?: boolean | Prisma.EditorialApprovalDefaultArgs<ExtArgs>
-  exportResult?: boolean | Prisma.EditorialExportResultDefaultArgs<ExtArgs>
+  approval?: boolean | Prisma.PublicationIntent$approvalArgs<ExtArgs>
+  exportResult?: boolean | Prisma.PublicationIntent$exportResultArgs<ExtArgs>
+  verticalApproval?: boolean | Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs>
+  verticalResult?: boolean | Prisma.PublicationIntent$verticalResultArgs<ExtArgs>
 }
 
 export type $PublicationIntentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2050,8 +2738,10 @@ export type $PublicationIntentPayload<ExtArgs extends runtime.Types.Extensions.I
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
     channel: Prisma.$PublicationChannelPayload<ExtArgs>
-    approval: Prisma.$EditorialApprovalPayload<ExtArgs>
-    exportResult: Prisma.$EditorialExportResultPayload<ExtArgs>
+    approval: Prisma.$EditorialApprovalPayload<ExtArgs> | null
+    exportResult: Prisma.$EditorialExportResultPayload<ExtArgs> | null
+    verticalApproval: Prisma.$VerticalApprovalPayload<ExtArgs> | null
+    verticalResult: Prisma.$VerticalRenderResultPayload<ExtArgs> | null
     result: Prisma.$PublicationResultPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -2060,9 +2750,12 @@ export type $PublicationIntentPayload<ExtArgs extends runtime.Types.Extensions.I
     requestFingerprint: string
     projectId: string
     channelId: string
-    approvalId: string
-    exportIntentId: string
-    exportResultId: string
+    contentKind: $Enums.PublicationContentKind
+    approvalId: string | null
+    exportIntentId: string | null
+    exportResultId: string | null
+    verticalApprovalId: string | null
+    verticalResultId: string | null
     platform: $Enums.PublicationPlatform
     scheduledAt: Date
     timezone: string
@@ -2476,8 +3169,10 @@ export interface Prisma__PublicationIntentClient<T, Null = never, ExtArgs extend
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   channel<T extends Prisma.PublicationChannelDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PublicationChannelDefaultArgs<ExtArgs>>): Prisma.Prisma__PublicationChannelClient<runtime.Types.Result.GetResult<Prisma.$PublicationChannelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  approval<T extends Prisma.EditorialApprovalDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialApprovalDefaultArgs<ExtArgs>>): Prisma.Prisma__EditorialApprovalClient<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  exportResult<T extends Prisma.EditorialExportResultDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EditorialExportResultDefaultArgs<ExtArgs>>): Prisma.Prisma__EditorialExportResultClient<runtime.Types.Result.GetResult<Prisma.$EditorialExportResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  approval<T extends Prisma.PublicationIntent$approvalArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PublicationIntent$approvalArgs<ExtArgs>>): Prisma.Prisma__EditorialApprovalClient<runtime.Types.Result.GetResult<Prisma.$EditorialApprovalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  exportResult<T extends Prisma.PublicationIntent$exportResultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PublicationIntent$exportResultArgs<ExtArgs>>): Prisma.Prisma__EditorialExportResultClient<runtime.Types.Result.GetResult<Prisma.$EditorialExportResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  verticalApproval<T extends Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PublicationIntent$verticalApprovalArgs<ExtArgs>>): Prisma.Prisma__VerticalApprovalClient<runtime.Types.Result.GetResult<Prisma.$VerticalApprovalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  verticalResult<T extends Prisma.PublicationIntent$verticalResultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PublicationIntent$verticalResultArgs<ExtArgs>>): Prisma.Prisma__VerticalRenderResultClient<runtime.Types.Result.GetResult<Prisma.$VerticalRenderResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   result<T extends Prisma.PublicationIntent$resultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PublicationIntent$resultArgs<ExtArgs>>): Prisma.Prisma__PublicationResultClient<runtime.Types.Result.GetResult<Prisma.$PublicationResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2513,9 +3208,12 @@ export interface PublicationIntentFieldRefs {
   readonly requestFingerprint: Prisma.FieldRef<"PublicationIntent", 'String'>
   readonly projectId: Prisma.FieldRef<"PublicationIntent", 'String'>
   readonly channelId: Prisma.FieldRef<"PublicationIntent", 'String'>
+  readonly contentKind: Prisma.FieldRef<"PublicationIntent", 'PublicationContentKind'>
   readonly approvalId: Prisma.FieldRef<"PublicationIntent", 'String'>
   readonly exportIntentId: Prisma.FieldRef<"PublicationIntent", 'String'>
   readonly exportResultId: Prisma.FieldRef<"PublicationIntent", 'String'>
+  readonly verticalApprovalId: Prisma.FieldRef<"PublicationIntent", 'String'>
+  readonly verticalResultId: Prisma.FieldRef<"PublicationIntent", 'String'>
   readonly platform: Prisma.FieldRef<"PublicationIntent", 'PublicationPlatform'>
   readonly scheduledAt: Prisma.FieldRef<"PublicationIntent", 'DateTime'>
   readonly timezone: Prisma.FieldRef<"PublicationIntent", 'String'>
@@ -2931,6 +3629,82 @@ export type PublicationIntentDeleteManyArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many PublicationIntents to delete.
    */
   limit?: number
+}
+
+/**
+ * PublicationIntent.approval
+ */
+export type PublicationIntent$approvalArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialApproval
+   */
+  select?: Prisma.EditorialApprovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialApproval
+   */
+  omit?: Prisma.EditorialApprovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialApprovalInclude<ExtArgs> | null
+  where?: Prisma.EditorialApprovalWhereInput
+}
+
+/**
+ * PublicationIntent.exportResult
+ */
+export type PublicationIntent$exportResultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EditorialExportResult
+   */
+  select?: Prisma.EditorialExportResultSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EditorialExportResult
+   */
+  omit?: Prisma.EditorialExportResultOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EditorialExportResultInclude<ExtArgs> | null
+  where?: Prisma.EditorialExportResultWhereInput
+}
+
+/**
+ * PublicationIntent.verticalApproval
+ */
+export type PublicationIntent$verticalApprovalArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalApproval
+   */
+  select?: Prisma.VerticalApprovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VerticalApproval
+   */
+  omit?: Prisma.VerticalApprovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VerticalApprovalInclude<ExtArgs> | null
+  where?: Prisma.VerticalApprovalWhereInput
+}
+
+/**
+ * PublicationIntent.verticalResult
+ */
+export type PublicationIntent$verticalResultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalRenderResult
+   */
+  select?: Prisma.VerticalRenderResultSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VerticalRenderResult
+   */
+  omit?: Prisma.VerticalRenderResultOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VerticalRenderResultInclude<ExtArgs> | null
+  where?: Prisma.VerticalRenderResultWhereInput
 }
 
 /**

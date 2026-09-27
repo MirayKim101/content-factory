@@ -30,9 +30,14 @@ const intentSchema: z.ZodType<PublicationIntent> = z.object({
   id: uuid,
   projectId: uuid,
   channelId: uuid,
-  approvalId: uuid,
-  exportIntentId: uuid,
-  exportResultId: uuid,
+  contentKind: z
+    .enum(["EDITORIAL_EXPORT", "VERTICAL_RESULT"])
+    .default("EDITORIAL_EXPORT"),
+  approvalId: uuid.nullable(),
+  exportIntentId: uuid.nullable(),
+  exportResultId: uuid.nullable(),
+  verticalApprovalId: uuid.nullable().default(null),
+  verticalResultId: uuid.nullable().default(null),
   platform,
   scheduledAt: z.iso.datetime(),
   timezone: z.string(),
@@ -118,12 +123,21 @@ export function createPublicationsApi(
       projectId: string,
       input: {
         channelId: string;
-        approvalId: string;
-        exportResultId: string;
         scheduledAt: string;
         timezone: string;
         metadataSnapshot: Record<string, unknown>;
-      },
+      } & (
+        | {
+            contentKind: "EDITORIAL_EXPORT";
+            approvalId: string;
+            exportResultId: string;
+          }
+        | {
+            contentKind: "VERTICAL_RESULT";
+            verticalApprovalId: string;
+            verticalResultId: string;
+          }
+      ),
       idempotencyKey: string,
     ) =>
       request(

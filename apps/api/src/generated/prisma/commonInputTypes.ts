@@ -796,11 +796,28 @@ export type EnumPublicationChannelStateWithAggregatesFilter<$PrismaModel = never
   _max?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel>
 }
 
+export type EnumPublicationContentKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationContentKind | Prisma.EnumPublicationContentKindFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationContentKindFilter<$PrismaModel> | $Enums.PublicationContentKind
+}
+
 export type EnumPublicationIntentStateFilter<$PrismaModel = never> = {
   equals?: $Enums.PublicationIntentState | Prisma.EnumPublicationIntentStateFieldRefInput<$PrismaModel>
   in?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
   notIn?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel> | $Enums.PublicationIntentState
+}
+
+export type EnumPublicationContentKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationContentKind | Prisma.EnumPublicationContentKindFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationContentKindWithAggregatesFilter<$PrismaModel> | $Enums.PublicationContentKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationContentKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationContentKindFilter<$PrismaModel>
 }
 
 export type EnumPublicationIntentStateWithAggregatesFilter<$PrismaModel = never> = {
@@ -1824,11 +1841,28 @@ export type NestedEnumPublicationChannelStateWithAggregatesFilter<$PrismaModel =
   _max?: Prisma.NestedEnumPublicationChannelStateFilter<$PrismaModel>
 }
 
+export type NestedEnumPublicationContentKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationContentKind | Prisma.EnumPublicationContentKindFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationContentKindFilter<$PrismaModel> | $Enums.PublicationContentKind
+}
+
 export type NestedEnumPublicationIntentStateFilter<$PrismaModel = never> = {
   equals?: $Enums.PublicationIntentState | Prisma.EnumPublicationIntentStateFieldRefInput<$PrismaModel>
   in?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
   notIn?: $Enums.PublicationIntentState[] | Prisma.ListEnumPublicationIntentStateFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumPublicationIntentStateFilter<$PrismaModel> | $Enums.PublicationIntentState
+}
+
+export type NestedEnumPublicationContentKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PublicationContentKind | Prisma.EnumPublicationContentKindFieldRefInput<$PrismaModel>
+  in?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PublicationContentKind[] | Prisma.ListEnumPublicationContentKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPublicationContentKindWithAggregatesFilter<$PrismaModel> | $Enums.PublicationContentKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPublicationContentKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPublicationContentKindFilter<$PrismaModel>
 }
 
 export type NestedEnumPublicationIntentStateWithAggregatesFilter<$PrismaModel = never> = {

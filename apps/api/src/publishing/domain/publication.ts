@@ -1,5 +1,6 @@
 import type {
   PublicationPlatform,
+  PublicationContentKind,
   PublicationState,
 } from "@content-factory/contracts";
 
@@ -7,9 +8,12 @@ export interface PublicationIntentView {
   id: string;
   projectId: string;
   channelId: string;
-  approvalId: string;
-  exportIntentId: string;
-  exportResultId: string;
+  contentKind: PublicationContentKind;
+  approvalId: string | null;
+  exportIntentId: string | null;
+  exportResultId: string | null;
+  verticalApprovalId: string | null;
+  verticalResultId: string | null;
   platform: PublicationPlatform;
   scheduledAt: Date;
   timezone: string;

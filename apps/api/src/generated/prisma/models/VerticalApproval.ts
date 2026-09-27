@@ -183,6 +183,7 @@ export type VerticalApprovalWhereInput = {
   approvedAt?: Prisma.DateTimeFilter<"VerticalApproval"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"VerticalApproval"> | Date | string
   result?: Prisma.XOR<Prisma.VerticalRenderResultScalarRelationFilter, Prisma.VerticalRenderResultWhereInput>
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
 }
 
 export type VerticalApprovalOrderByWithRelationInput = {
@@ -192,6 +193,7 @@ export type VerticalApprovalOrderByWithRelationInput = {
   approvedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   result?: Prisma.VerticalRenderResultOrderByWithRelationInput
+  publicationIntents?: Prisma.PublicationIntentOrderByRelationAggregateInput
 }
 
 export type VerticalApprovalWhereUniqueInput = Prisma.AtLeast<{
@@ -204,6 +206,7 @@ export type VerticalApprovalWhereUniqueInput = Prisma.AtLeast<{
   approvedAt?: Prisma.DateTimeFilter<"VerticalApproval"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"VerticalApproval"> | Date | string
   result?: Prisma.XOR<Prisma.VerticalRenderResultScalarRelationFilter, Prisma.VerticalRenderResultWhereInput>
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
 }, "id" | "resultId">
 
 export type VerticalApprovalOrderByWithAggregationInput = {
@@ -234,6 +237,7 @@ export type VerticalApprovalCreateInput = {
   approvedAt?: Date | string
   createdAt?: Date | string
   result: Prisma.VerticalRenderResultCreateNestedOneWithoutApprovalInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutVerticalApprovalInput
 }
 
 export type VerticalApprovalUncheckedCreateInput = {
@@ -242,6 +246,7 @@ export type VerticalApprovalUncheckedCreateInput = {
   approvalVersion: string
   approvedAt?: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutVerticalApprovalInput
 }
 
 export type VerticalApprovalUpdateInput = {
@@ -250,6 +255,7 @@ export type VerticalApprovalUpdateInput = {
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   result?: Prisma.VerticalRenderResultUpdateOneRequiredWithoutApprovalNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutVerticalApprovalNestedInput
 }
 
 export type VerticalApprovalUncheckedUpdateInput = {
@@ -258,6 +264,7 @@ export type VerticalApprovalUncheckedUpdateInput = {
   approvalVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalApprovalNestedInput
 }
 
 export type VerticalApprovalCreateManyInput = {
@@ -312,6 +319,22 @@ export type VerticalApprovalMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
+export type VerticalApprovalCreateNestedOneWithoutPublicationIntentsInput = {
+  create?: Prisma.XOR<Prisma.VerticalApprovalCreateWithoutPublicationIntentsInput, Prisma.VerticalApprovalUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.VerticalApprovalCreateOrConnectWithoutPublicationIntentsInput
+  connect?: Prisma.VerticalApprovalWhereUniqueInput
+}
+
+export type VerticalApprovalUpdateOneWithoutPublicationIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.VerticalApprovalCreateWithoutPublicationIntentsInput, Prisma.VerticalApprovalUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.VerticalApprovalCreateOrConnectWithoutPublicationIntentsInput
+  upsert?: Prisma.VerticalApprovalUpsertWithoutPublicationIntentsInput
+  disconnect?: Prisma.VerticalApprovalWhereInput | boolean
+  delete?: Prisma.VerticalApprovalWhereInput | boolean
+  connect?: Prisma.VerticalApprovalWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VerticalApprovalUpdateToOneWithWhereWithoutPublicationIntentsInput, Prisma.VerticalApprovalUpdateWithoutPublicationIntentsInput>, Prisma.VerticalApprovalUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
 export type VerticalApprovalCreateNestedOneWithoutResultInput = {
   create?: Prisma.XOR<Prisma.VerticalApprovalCreateWithoutResultInput, Prisma.VerticalApprovalUncheckedCreateWithoutResultInput>
   connectOrCreate?: Prisma.VerticalApprovalCreateOrConnectWithoutResultInput
@@ -344,11 +367,60 @@ export type VerticalApprovalUncheckedUpdateOneWithoutResultNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.VerticalApprovalUpdateToOneWithWhereWithoutResultInput, Prisma.VerticalApprovalUpdateWithoutResultInput>, Prisma.VerticalApprovalUncheckedUpdateWithoutResultInput>
 }
 
+export type VerticalApprovalCreateWithoutPublicationIntentsInput = {
+  id: string
+  approvalVersion: string
+  approvedAt?: Date | string
+  createdAt?: Date | string
+  result: Prisma.VerticalRenderResultCreateNestedOneWithoutApprovalInput
+}
+
+export type VerticalApprovalUncheckedCreateWithoutPublicationIntentsInput = {
+  id: string
+  resultId: string
+  approvalVersion: string
+  approvedAt?: Date | string
+  createdAt?: Date | string
+}
+
+export type VerticalApprovalCreateOrConnectWithoutPublicationIntentsInput = {
+  where: Prisma.VerticalApprovalWhereUniqueInput
+  create: Prisma.XOR<Prisma.VerticalApprovalCreateWithoutPublicationIntentsInput, Prisma.VerticalApprovalUncheckedCreateWithoutPublicationIntentsInput>
+}
+
+export type VerticalApprovalUpsertWithoutPublicationIntentsInput = {
+  update: Prisma.XOR<Prisma.VerticalApprovalUpdateWithoutPublicationIntentsInput, Prisma.VerticalApprovalUncheckedUpdateWithoutPublicationIntentsInput>
+  create: Prisma.XOR<Prisma.VerticalApprovalCreateWithoutPublicationIntentsInput, Prisma.VerticalApprovalUncheckedCreateWithoutPublicationIntentsInput>
+  where?: Prisma.VerticalApprovalWhereInput
+}
+
+export type VerticalApprovalUpdateToOneWithWhereWithoutPublicationIntentsInput = {
+  where?: Prisma.VerticalApprovalWhereInput
+  data: Prisma.XOR<Prisma.VerticalApprovalUpdateWithoutPublicationIntentsInput, Prisma.VerticalApprovalUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
+export type VerticalApprovalUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  result?: Prisma.VerticalRenderResultUpdateOneRequiredWithoutApprovalNestedInput
+}
+
+export type VerticalApprovalUncheckedUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  resultId?: Prisma.StringFieldUpdateOperationsInput | string
+  approvalVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type VerticalApprovalCreateWithoutResultInput = {
   id: string
   approvalVersion: string
   approvedAt?: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutVerticalApprovalInput
 }
 
 export type VerticalApprovalUncheckedCreateWithoutResultInput = {
@@ -356,6 +428,7 @@ export type VerticalApprovalUncheckedCreateWithoutResultInput = {
   approvalVersion: string
   approvedAt?: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutVerticalApprovalInput
 }
 
 export type VerticalApprovalCreateOrConnectWithoutResultInput = {
@@ -379,6 +452,7 @@ export type VerticalApprovalUpdateWithoutResultInput = {
   approvalVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutVerticalApprovalNestedInput
 }
 
 export type VerticalApprovalUncheckedUpdateWithoutResultInput = {
@@ -386,8 +460,38 @@ export type VerticalApprovalUncheckedUpdateWithoutResultInput = {
   approvalVersion?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalApprovalNestedInput
 }
 
+
+/**
+ * Count Type VerticalApprovalCountOutputType
+ */
+
+export type VerticalApprovalCountOutputType = {
+  publicationIntents: number
+}
+
+export type VerticalApprovalCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  publicationIntents?: boolean | VerticalApprovalCountOutputTypeCountPublicationIntentsArgs
+}
+
+/**
+ * VerticalApprovalCountOutputType without action
+ */
+export type VerticalApprovalCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalApprovalCountOutputType
+   */
+  select?: Prisma.VerticalApprovalCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * VerticalApprovalCountOutputType without action
+ */
+export type VerticalApprovalCountOutputTypeCountPublicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PublicationIntentWhereInput
+}
 
 
 export type VerticalApprovalSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -397,6 +501,8 @@ export type VerticalApprovalSelect<ExtArgs extends runtime.Types.Extensions.Inte
   approvedAt?: boolean
   createdAt?: boolean
   result?: boolean | Prisma.VerticalRenderResultDefaultArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.VerticalApproval$publicationIntentsArgs<ExtArgs>
+  _count?: boolean | Prisma.VerticalApprovalCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["verticalApproval"]>
 
 export type VerticalApprovalSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -428,6 +534,8 @@ export type VerticalApprovalSelectScalar = {
 export type VerticalApprovalOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "resultId" | "approvalVersion" | "approvedAt" | "createdAt", ExtArgs["result"]["verticalApproval"]>
 export type VerticalApprovalInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   result?: boolean | Prisma.VerticalRenderResultDefaultArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.VerticalApproval$publicationIntentsArgs<ExtArgs>
+  _count?: boolean | Prisma.VerticalApprovalCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VerticalApprovalIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   result?: boolean | Prisma.VerticalRenderResultDefaultArgs<ExtArgs>
@@ -440,6 +548,7 @@ export type $VerticalApprovalPayload<ExtArgs extends runtime.Types.Extensions.In
   name: "VerticalApproval"
   objects: {
     result: Prisma.$VerticalRenderResultPayload<ExtArgs>
+    publicationIntents: Prisma.$PublicationIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -842,6 +951,7 @@ readonly fields: VerticalApprovalFieldRefs;
 export interface Prisma__VerticalApprovalClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   result<T extends Prisma.VerticalRenderResultDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VerticalRenderResultDefaultArgs<ExtArgs>>): Prisma.Prisma__VerticalRenderResultClient<runtime.Types.Result.GetResult<Prisma.$VerticalRenderResultPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  publicationIntents<T extends Prisma.VerticalApproval$publicationIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VerticalApproval$publicationIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PublicationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1274,6 +1384,30 @@ export type VerticalApprovalDeleteManyArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many VerticalApprovals to delete.
    */
   limit?: number
+}
+
+/**
+ * VerticalApproval.publicationIntents
+ */
+export type VerticalApproval$publicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PublicationIntent
+   */
+  select?: Prisma.PublicationIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PublicationIntent
+   */
+  omit?: Prisma.PublicationIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PublicationIntentInclude<ExtArgs> | null
+  where?: Prisma.PublicationIntentWhereInput
+  orderBy?: Prisma.PublicationIntentOrderByWithRelationInput | Prisma.PublicationIntentOrderByWithRelationInput[]
+  cursor?: Prisma.PublicationIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PublicationIntentScalarFieldEnum | Prisma.PublicationIntentScalarFieldEnum[]
 }
 
 /**

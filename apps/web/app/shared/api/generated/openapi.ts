@@ -2529,16 +2529,18 @@ export interface components {
     };
     PublicationIntentResponseDto: {
       /** Format: uuid */
-      approvalId: string;
+      approvalId: string | null;
       attemptCount: number;
       /** Format: uuid */
       channelId: string;
+      /** @enum {string} */
+      contentKind: "EDITORIAL_EXPORT" | "VERTICAL_RESULT";
       /** Format: date-time */
       createdAt: string;
       /** Format: uuid */
-      exportIntentId: string;
+      exportIntentId: string | null;
       /** Format: uuid */
-      exportResultId: string;
+      exportResultId: string | null;
       failure: {
         code?: string;
         message?: string;
@@ -2568,6 +2570,10 @@ export interface components {
       timezone: string;
       /** Format: date-time */
       updatedAt: string;
+      /** Format: uuid */
+      verticalApprovalId: string | null;
+      /** Format: uuid */
+      verticalResultId: string | null;
     };
     PutCutEditorialPromptDto: {
       cta: string;

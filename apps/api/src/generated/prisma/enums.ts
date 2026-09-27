@@ -367,3 +367,11 @@ export const TwitchVodCandidateState = {
 } as const
 
 export type TwitchVodCandidateState = (typeof TwitchVodCandidateState)[keyof typeof TwitchVodCandidateState]
+
+
+export const PublicationContentKind = {
+  EDITORIAL_EXPORT: 'EDITORIAL_EXPORT',
+  VERTICAL_RESULT: 'VERTICAL_RESULT'
+} as const
+
+export type PublicationContentKind = (typeof PublicationContentKind)[keyof typeof PublicationContentKind]

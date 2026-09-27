@@ -1548,10 +1548,12 @@ export type EditorialApprovalCreateNestedOneWithoutPublicationIntentsInput = {
   connect?: Prisma.EditorialApprovalWhereUniqueInput
 }
 
-export type EditorialApprovalUpdateOneRequiredWithoutPublicationIntentsNestedInput = {
+export type EditorialApprovalUpdateOneWithoutPublicationIntentsNestedInput = {
   create?: Prisma.XOR<Prisma.EditorialApprovalCreateWithoutPublicationIntentsInput, Prisma.EditorialApprovalUncheckedCreateWithoutPublicationIntentsInput>
   connectOrCreate?: Prisma.EditorialApprovalCreateOrConnectWithoutPublicationIntentsInput
   upsert?: Prisma.EditorialApprovalUpsertWithoutPublicationIntentsInput
+  disconnect?: Prisma.EditorialApprovalWhereInput | boolean
+  delete?: Prisma.EditorialApprovalWhereInput | boolean
   connect?: Prisma.EditorialApprovalWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialApprovalUpdateToOneWithWhereWithoutPublicationIntentsInput, Prisma.EditorialApprovalUpdateWithoutPublicationIntentsInput>, Prisma.EditorialApprovalUncheckedUpdateWithoutPublicationIntentsInput>
 }

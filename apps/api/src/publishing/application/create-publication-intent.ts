@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { Inject, Injectable, Optional } from "@nestjs/common";
 import {
   requirePublicationSchedule,
+  type PublicationContentKind,
   type PublicationPlatform,
 } from "@content-factory/contracts";
 
@@ -26,8 +27,11 @@ export interface CreatePublicationIntentInput {
   idempotencyKey: string;
   projectId: string;
   channelId: string;
-  approvalId: string;
-  exportResultId: string;
+  contentKind?: PublicationContentKind;
+  approvalId?: string;
+  exportResultId?: string;
+  verticalApprovalId?: string;
+  verticalResultId?: string;
   platform: PublicationPlatform;
   scheduledAt: string;
   timezone: string;
@@ -52,9 +56,7 @@ export class CreatePublicationIntent {
     if (input.platform !== "LOCAL_DRY_RUN")
       throw new PublishingUnavailableError();
     const timezone = requirePublicationTimezone(input.timezone);
-    const metadataSnapshot = requirePublicationMetadata(
-      input.metadataSnapshot,
-    );
+    const metadataSnapshot = requirePublicationMetadata(input.metadataSnapshot);
     let scheduledAt: Date;
     try {
       scheduledAt = new Date(
@@ -66,8 +68,11 @@ export class CreatePublicationIntent {
     const canonical = {
       projectId: input.projectId,
       channelId: input.channelId,
+      contentKind: input.contentKind ?? "EDITORIAL_EXPORT",
       approvalId: input.approvalId,
       exportResultId: input.exportResultId,
+      verticalApprovalId: input.verticalApprovalId,
+      verticalResultId: input.verticalResultId,
       platform: input.platform,
       scheduledAt: scheduledAt.toISOString(),
       timezone,
@@ -83,7 +88,10 @@ export class CreatePublicationIntent {
       scheduledAt,
     });
     await Promise.allSettled([
-      this.dispatch.dispatch({ id: intent.id, scheduledAt: intent.scheduledAt }),
+      this.dispatch.dispatch({
+        id: intent.id,
+        scheduledAt: intent.scheduledAt,
+      }),
     ]);
     return intent;
   }

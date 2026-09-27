@@ -1,9 +1,13 @@
-import type { PublicationPlatform } from "@content-factory/contracts";
+import type {
+  PublicationContentKind,
+  PublicationPlatform,
+} from "@content-factory/contracts";
 
 export interface PublicationClaim {
   id: string;
   platform: PublicationPlatform;
-  exportResultId: string;
+  contentKind: PublicationContentKind;
+  contentId: string;
   metadataSnapshot: Record<string, unknown>;
   attemptNumber: number;
 }

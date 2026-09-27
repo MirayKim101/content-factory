@@ -101,8 +101,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
           select: { id: true },
         })
       : null;
-    if (input.channelId && !channel)
-      throw new PublicationCursorInvalidError();
+    if (input.channelId && !channel) throw new PublicationCursorInvalidError();
     const anchor = input.cursor
       ? await this.prisma.publicationIntent.findFirst({
           where: {
@@ -151,8 +150,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
         where: { id, state: { in: ["SCHEDULED", "QUEUED"] } },
         data: { state: "CANCELED", canceledAt: now, finishedAt: now },
       });
-      if (updated.count !== 1)
-        throw new PublicationCancellationConflictError();
+      if (updated.count !== 1) throw new PublicationCancellationConflictError();
       const canceled = await tx.publicationIntent.findUnique({
         where: { id },
         include: intentInclude,
@@ -191,47 +189,91 @@ export class PrismaPublicationRepository implements PublicationRepository {
           )
             throw new PublicationLineageInvalidError();
 
-          const exportResult = await tx.editorialExportResult.findUnique({
-            where: { id: input.exportResultId },
-            include: {
-              artifact: true,
-              pipelineJob: true,
-              exportIntent: {
-                include: {
-                  approval: {
-                    include: {
-                      source: true,
-                      editorialPackage: true,
-                      assemblyRecipe: true,
+          let exportIntentId: string | undefined;
+          if (input.contentKind === "EDITORIAL_EXPORT") {
+            if (
+              !input.approvalId ||
+              !input.exportResultId ||
+              input.verticalApprovalId ||
+              input.verticalResultId
+            )
+              throw new PublicationLineageInvalidError();
+            const exportResult = await tx.editorialExportResult.findUnique({
+              where: { id: input.exportResultId },
+              include: {
+                artifact: true,
+                pipelineJob: true,
+                exportIntent: {
+                  include: {
+                    approval: {
+                      include: {
+                        source: true,
+                        editorialPackage: true,
+                        assemblyRecipe: true,
+                      },
                     },
                   },
                 },
               },
-            },
-          });
-          if (!exportResult) throw new PublicationLineageInvalidError();
-          const exportIntent = exportResult.exportIntent;
-          const approval = exportIntent.approval;
-          if (
-            exportIntent.projectId !== input.projectId ||
-            exportIntent.approvalId !== input.approvalId ||
-            approval.projectId !== input.projectId ||
-            approval.source.sourceVersion !== approval.sourceVersion ||
-            approval.editorialPackage.currentRevision !==
-              approval.editorialRevision ||
-            approval.assemblyRecipe.currentRevision !==
-              approval.recipeRevision ||
-            exportResult.pipelineJob.state !== "READY" ||
-            exportResult.pipelineJob.editorialExportIntentId !==
-              exportIntent.id ||
-            exportResult.pipelineJobId !== exportResult.artifact.pipelineJobId ||
-            exportResult.artifact.status !== "READY" ||
-            exportResult.artifact.role !== "EDITORIAL_EXPORT_PACKAGE" ||
-            exportResult.artifact.projectId !== input.projectId ||
-            exportResult.archiveSha256 !== exportResult.artifact.sha256 ||
-            exportResult.archiveSizeBytes !== exportResult.artifact.sizeBytes
-          )
-            throw new PublicationLineageInvalidError();
+            });
+            if (!exportResult) throw new PublicationLineageInvalidError();
+            const exportIntent = exportResult.exportIntent;
+            const approval = exportIntent.approval;
+            if (
+              exportIntent.projectId !== input.projectId ||
+              exportIntent.approvalId !== input.approvalId ||
+              approval.projectId !== input.projectId ||
+              approval.source.sourceVersion !== approval.sourceVersion ||
+              approval.editorialPackage.currentRevision !==
+                approval.editorialRevision ||
+              approval.assemblyRecipe.currentRevision !==
+                approval.recipeRevision ||
+              exportResult.pipelineJob.state !== "READY" ||
+              exportResult.pipelineJob.editorialExportIntentId !==
+                exportIntent.id ||
+              exportResult.pipelineJobId !==
+                exportResult.artifact.pipelineJobId ||
+              exportResult.artifact.status !== "READY" ||
+              exportResult.artifact.role !== "EDITORIAL_EXPORT_PACKAGE" ||
+              exportResult.artifact.projectId !== input.projectId ||
+              exportResult.archiveSha256 !== exportResult.artifact.sha256 ||
+              exportResult.archiveSizeBytes !== exportResult.artifact.sizeBytes
+            )
+              throw new PublicationLineageInvalidError();
+            exportIntentId = exportIntent.id;
+          } else {
+            if (
+              !input.verticalApprovalId ||
+              !input.verticalResultId ||
+              input.approvalId ||
+              input.exportResultId
+            )
+              throw new PublicationLineageInvalidError();
+            const vertical = await tx.verticalRenderResult.findUnique({
+              where: { id: input.verticalResultId },
+              include: {
+                approval: true,
+                artifact: true,
+                pipelineJob: true,
+                intent: true,
+              },
+            });
+            if (
+              !vertical ||
+              vertical.approval?.id !== input.verticalApprovalId ||
+              vertical.intent.projectId !== input.projectId ||
+              vertical.pipelineJob.state !== "READY" ||
+              vertical.pipelineJob.verticalRenderIntentId !==
+                vertical.intentId ||
+              vertical.artifact.projectId !== input.projectId ||
+              vertical.artifact.pipelineJobId !== vertical.pipelineJobId ||
+              vertical.artifact.status !== "READY" ||
+              vertical.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+              vertical.sha256 !== vertical.artifact.sha256 ||
+              vertical.sizeBytes !== vertical.artifact.sizeBytes
+            )
+              throw new PublicationLineageInvalidError();
+          }
 
           const row = await tx.publicationIntent.create({
             data: {
@@ -240,9 +282,12 @@ export class PrismaPublicationRepository implements PublicationRepository {
               requestFingerprint: input.requestFingerprint,
               projectId: input.projectId,
               channelId: input.channelId,
+              contentKind: input.contentKind,
               approvalId: input.approvalId,
-              exportIntentId: exportIntent.id,
-              exportResultId: exportResult.id,
+              exportIntentId,
+              exportResultId: input.exportResultId,
+              verticalApprovalId: input.verticalApprovalId,
+              verticalResultId: input.verticalResultId,
               platform: input.platform,
               scheduledAt: input.scheduledAt,
               timezone: input.timezone,
@@ -286,8 +331,11 @@ export class PrismaPublicationRepository implements PublicationRepository {
       row.requestFingerprint !== input.requestFingerprint ||
       row.projectId !== input.projectId ||
       row.channelId !== input.channelId ||
-      row.approvalId !== input.approvalId ||
-      row.exportResultId !== input.exportResultId ||
+      row.contentKind !== input.contentKind ||
+      row.approvalId !== (input.approvalId ?? null) ||
+      row.exportResultId !== (input.exportResultId ?? null) ||
+      row.verticalApprovalId !== (input.verticalApprovalId ?? null) ||
+      row.verticalResultId !== (input.verticalResultId ?? null) ||
       row.platform !== input.platform
     )
       throw new PublicationIdempotencyConflictError();
@@ -302,9 +350,12 @@ export class PrismaPublicationRepository implements PublicationRepository {
       id: row.id,
       projectId: row.projectId,
       channelId: row.channelId,
+      contentKind: row.contentKind,
       approvalId: row.approvalId,
       exportIntentId: row.exportIntentId,
       exportResultId: row.exportResultId,
+      verticalApprovalId: row.verticalApprovalId,
+      verticalResultId: row.verticalResultId,
       platform: row.platform,
       scheduledAt: row.scheduledAt,
       timezone: row.timezone,

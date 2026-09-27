@@ -4642,6 +4642,7 @@
         "properties": {
           "approvalId": {
             "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
           "attemptCount": {
@@ -4652,16 +4653,22 @@
             "format": "uuid",
             "type": "string"
           },
+          "contentKind": {
+            "enum": ["EDITORIAL_EXPORT", "VERTICAL_RESULT"],
+            "type": "string"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
           },
           "exportIntentId": {
             "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
           "exportResultId": {
             "format": "uuid",
+            "nullable": true,
             "type": "string"
           },
           "failure": {
@@ -4726,15 +4733,28 @@
           "updatedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "verticalApprovalId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "verticalResultId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
           "id",
           "projectId",
           "channelId",
+          "contentKind",
           "approvalId",
           "exportIntentId",
           "exportResultId",
+          "verticalApprovalId",
+          "verticalResultId",
           "platform",
           "scheduledAt",
           "timezone",

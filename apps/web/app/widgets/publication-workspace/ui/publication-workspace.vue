@@ -15,6 +15,10 @@ import {
   type PublicationChannel,
   type PublicationIntent,
 } from "~/shared/api/publications";
+import {
+  createVerticalRendersApi,
+  type VerticalRender,
+} from "~/shared/api/vertical-renders";
 
 type ProjectOption = { id: string; name: string };
 
@@ -25,17 +29,23 @@ const projectsApi = createProjectsApi({
 });
 const exportsApi = createEditorialExportsApi(config.public.apiBasePath);
 const publicationsApi = createPublicationsApi(config.public.apiBasePath);
+const verticalApi = createVerticalRendersApi(config.public.apiBasePath);
 const projects = ref<ProjectOption[]>([]);
 const projectId = ref("");
 const channels = ref<PublicationChannel[]>([]);
 const publications = ref<PublicationIntent[]>([]);
 const exports = ref<EditorialExport[]>([]);
+const verticals = ref<VerticalRender[]>([]);
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
 const notice = ref<string | null>(null);
 const initialized = ref(false);
 const exportId = ref("");
+const contentKind = ref<"EDITORIAL_EXPORT" | "VERTICAL_RESULT">(
+  "EDITORIAL_EXPORT",
+);
+const verticalId = ref("");
 const title = ref("");
 const description = ref("");
 const scheduledLocal = ref(defaultSchedule());
@@ -44,6 +54,11 @@ const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 const readyExports = computed(() =>
   exports.value.filter(
     (item) => item.job.state === "READY" && item.approvalCurrent && item.result,
+  ),
+);
+const readyVerticals = computed(() =>
+  verticals.value.filter(
+    (item) => item.job.state === "READY" && item.result?.approval,
   ),
 );
 const activeChannel = computed(() =>
@@ -80,22 +95,28 @@ async function loadWorkspace(): Promise<void> {
     channels.value = [];
     publications.value = [];
     exports.value = [];
+    verticals.value = [];
     loading.value = false;
     return;
   }
   loading.value = true;
   error.value = null;
   try {
-    const [nextChannels, nextPublications, nextExports] = await Promise.all([
-      publicationsApi.listChannels(projectId.value),
-      publicationsApi.list(projectId.value),
-      exportsApi.list(projectId.value),
-    ]);
+    const [nextChannels, nextPublications, nextExports, nextVerticals] =
+      await Promise.all([
+        publicationsApi.listChannels(projectId.value),
+        publicationsApi.list(projectId.value),
+        exportsApi.list(projectId.value),
+        verticalApi.list(projectId.value),
+      ]);
     channels.value = nextChannels;
     publications.value = nextPublications.items;
     exports.value = nextExports;
+    verticals.value = nextVerticals;
     if (!readyExports.value.some((item) => item.id === exportId.value))
       exportId.value = readyExports.value[0]?.id ?? "";
+    if (!readyVerticals.value.some((item) => item.id === verticalId.value))
+      verticalId.value = readyVerticals.value[0]?.id ?? "";
   } catch (cause) {
     error.value =
       cause instanceof Error ? cause.message : "Не удалось загрузить очередь.";
@@ -125,10 +146,15 @@ async function schedule(): Promise<void> {
   const selectedExport = readyExports.value.find(
     (item) => item.id === exportId.value,
   );
+  const selectedVertical = readyVerticals.value.find(
+    (item) => item.id === verticalId.value,
+  );
   if (
     !projectId.value ||
     !activeChannel.value ||
-    !selectedExport?.result ||
+    (contentKind.value === "EDITORIAL_EXPORT"
+      ? !selectedExport?.result
+      : !selectedVertical?.result?.approval) ||
     saving.value
   )
     return;
@@ -136,12 +162,23 @@ async function schedule(): Promise<void> {
   error.value = null;
   notice.value = null;
   try {
+    const lineage =
+      contentKind.value === "EDITORIAL_EXPORT"
+        ? {
+            contentKind: "EDITORIAL_EXPORT" as const,
+            approvalId: selectedExport!.approvalId,
+            exportResultId: selectedExport!.result!.id,
+          }
+        : {
+            contentKind: "VERTICAL_RESULT" as const,
+            verticalApprovalId: selectedVertical!.result!.approval!.id,
+            verticalResultId: selectedVertical!.result!.id,
+          };
     await publicationsApi.create(
       projectId.value,
       {
         channelId: activeChannel.value.id,
-        approvalId: selectedExport.approvalId,
-        exportResultId: selectedExport.result.id,
+        ...lineage,
         scheduledAt: new Date(scheduledLocal.value).toISOString(),
         timezone,
         metadataSnapshot: {
@@ -320,6 +357,11 @@ onMounted(async () => {
               </div>
               <p>
                 {{
+                  item.contentKind === "VERTICAL_RESULT"
+                    ? "Вертикальный ролик · "
+                    : "Горизонтальный пакет · "
+                }}
+                {{
                   item.platform === "LOCAL_DRY_RUN"
                     ? "Безопасная локальная проверка без внешней отправки"
                     : item.platform
@@ -370,6 +412,17 @@ onMounted(async () => {
         </template>
         <form v-else class="schedule-form" @submit.prevent="schedule">
           <label
+            ><span>Формат контента</span
+            ><Select
+              v-model="contentKind"
+              :options="[
+                { label: 'Горизонтальный пакет', value: 'EDITORIAL_EXPORT' },
+                { label: 'Вертикальный ролик', value: 'VERTICAL_RESULT' },
+              ]"
+              option-label="label"
+              option-value="value"
+          /></label>
+          <label v-if="contentKind === 'EDITORIAL_EXPORT'"
             ><span>Готовый пакет</span
             ><Select
               v-model="exportId"
@@ -381,6 +434,34 @@ onMounted(async () => {
           <p v-if="!readyExports.length" class="hint">
             Нет актуального готового экспорта. Завершите согласование и экспорт
             в контент-плане.
+          </p>
+          <label v-if="contentKind === 'VERTICAL_RESULT'"
+            ><span>Одобренный vertical</span
+            ><Select
+              v-model="verticalId"
+              :options="readyVerticals"
+              option-value="id"
+              placeholder="Выберите вертикальный ролик"
+            >
+              <template #option="slotProps">
+                9:16 · {{ slotProps.option.result.width }} ×
+                {{ slotProps.option.result.height }} ·
+                {{ formatDate(slotProps.option.createdAt) }}
+              </template>
+              <template #value="slotProps">
+                <span v-if="slotProps.value"
+                  >Одобренный vertical · {{ slotProps.value.slice(0, 8) }}</span
+                >
+                <span v-else>Выберите вертикальный ролик</span>
+              </template>
+            </Select></label
+          >
+          <p
+            v-if="contentKind === 'VERTICAL_RESULT' && !readyVerticals.length"
+            class="hint"
+          >
+            Нет одобренных vertical-роликов. Подтвердите готовый результат в
+            разделе «Вертикальные».
           </p>
           <label
             ><span>Заголовок</span
@@ -410,7 +491,10 @@ onMounted(async () => {
           </p>
           <Button
             type="submit"
-            :disabled="!exportId || saving"
+            :disabled="
+              (contentKind === 'EDITORIAL_EXPORT' ? !exportId : !verticalId) ||
+              saving
+            "
             :loading="saving"
             >Добавить в расписание</Button
           >

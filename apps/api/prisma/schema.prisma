@@ -1018,11 +1018,16 @@ model PublicationIntent {
   project             Project                @relation(fields: [projectId], references: [id], onDelete: Restrict)
   channelId           String                 @db.Uuid
   channel             PublicationChannel     @relation(fields: [channelId, projectId, platform], references: [id, projectId, platform], onDelete: Restrict, map: "PublicationIntent_exact_channel_target")
-  approvalId          String                 @db.Uuid
-  approval            EditorialApproval      @relation(fields: [approvalId, projectId], references: [id, projectId], onDelete: Restrict, map: "PublicationIntent_exact_approval_project")
-  exportIntentId      String                 @db.Uuid
-  exportResultId      String                 @db.Uuid
-  exportResult        EditorialExportResult  @relation(fields: [exportResultId, exportIntentId], references: [id, exportIntentId], onDelete: Restrict, map: "PublicationIntent_exact_export_result")
+  contentKind         PublicationContentKind @default(EDITORIAL_EXPORT)
+  approvalId          String?                @db.Uuid
+  approval            EditorialApproval?     @relation(fields: [approvalId, projectId], references: [id, projectId], onDelete: Restrict, map: "PublicationIntent_exact_approval_project")
+  exportIntentId      String?                @db.Uuid
+  exportResultId      String?                @db.Uuid
+  exportResult        EditorialExportResult? @relation(fields: [exportResultId, exportIntentId], references: [id, exportIntentId], onDelete: Restrict, map: "PublicationIntent_exact_export_result")
+  verticalApprovalId  String?                @db.Uuid
+  verticalApproval    VerticalApproval?      @relation(fields: [verticalApprovalId], references: [id], onDelete: Restrict, map: "PublicationIntent_vertical_approval")
+  verticalResultId    String?                @db.Uuid
+  verticalResult      VerticalRenderResult?  @relation(fields: [verticalResultId], references: [id], onDelete: Restrict, map: "PublicationIntent_vertical_result")
   platform            PublicationPlatform
   scheduledAt         DateTime
   timezone            String
@@ -1043,6 +1048,7 @@ model PublicationIntent {
   result              PublicationResult?
 
   @@unique([channelId, exportResultId, platform], map: "PublicationIntent_logical_target_key")
+  @@unique([channelId, verticalResultId, platform], map: "PublicationIntent_vertical_target_key")
   @@index([projectId, scheduledAt, id])
   @@index([state, scheduledAt, id])
   @@index([channelId, createdAt, id])
@@ -1939,13 +1945,20 @@ model VerticalRenderResult {
   completedAt           DateTime
   createdAt             DateTime             @default(now())
   approval              VerticalApproval?
+  publicationIntents    PublicationIntent[]
 }
 
 model VerticalApproval {
-  id              String               @id @db.Uuid
-  resultId        String               @unique @db.Uuid
-  result          VerticalRenderResult @relation(fields: [resultId], references: [id], onDelete: Restrict)
-  approvalVersion String
-  approvedAt      DateTime             @default(now())
-  createdAt       DateTime             @default(now())
+  id                 String               @id @db.Uuid
+  resultId           String               @unique @db.Uuid
+  result             VerticalRenderResult @relation(fields: [resultId], references: [id], onDelete: Restrict)
+  approvalVersion    String
+  approvedAt         DateTime             @default(now())
+  createdAt          DateTime             @default(now())
+  publicationIntents PublicationIntent[]
+}
+
+enum PublicationContentKind {
+  EDITORIAL_EXPORT
+  VERTICAL_RESULT
 }

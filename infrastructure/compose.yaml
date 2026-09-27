@@ -227,6 +227,8 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=64m
     environment:
       WORKER_ROLE: publication
       POSTGRES_DB: ${POSTGRES_DB:?copy .env.example to .env and set POSTGRES_DB}
@@ -266,6 +268,8 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=64m
     environment:
       WORKER_ROLE: twitch
       TWITCH_INGESTION_ENABLED: ${TWITCH_INGESTION_ENABLED:-0}

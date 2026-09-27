@@ -13,7 +13,8 @@ import {
 const claim: PublicationClaim = {
   id: "00000000-0000-4000-8000-000000000001",
   platform: "LOCAL_DRY_RUN",
-  exportResultId: "00000000-0000-4000-8000-000000000002",
+  contentKind: "EDITORIAL_EXPORT",
+  contentId: "00000000-0000-4000-8000-000000000002",
   metadataSnapshot: { title: "Release" },
   attemptNumber: 1,
 };

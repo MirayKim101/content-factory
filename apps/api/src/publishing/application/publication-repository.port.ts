@@ -1,4 +1,7 @@
-import type { PublicationPlatform } from "@content-factory/contracts";
+import type {
+  PublicationContentKind,
+  PublicationPlatform,
+} from "@content-factory/contracts";
 
 import type {
   PublicationChannelView,
@@ -26,8 +29,11 @@ export interface PublicationRepository {
     requestFingerprint: string;
     projectId: string;
     channelId: string;
-    approvalId: string;
-    exportResultId: string;
+    contentKind: PublicationContentKind;
+    approvalId?: string;
+    exportResultId?: string;
+    verticalApprovalId?: string;
+    verticalResultId?: string;
     platform: PublicationPlatform;
     scheduledAt: Date;
     timezone: string;

@@ -506,11 +506,6 @@ export type EditorialExportResultSumOrderByAggregateInput = {
   archiveSizeBytes?: Prisma.SortOrder
 }
 
-export type EditorialExportResultScalarRelationFilter = {
-  is?: Prisma.EditorialExportResultWhereInput
-  isNot?: Prisma.EditorialExportResultWhereInput
-}
-
 export type EditorialExportResultCreateNestedOneWithoutArtifactInput = {
   create?: Prisma.XOR<Prisma.EditorialExportResultCreateWithoutArtifactInput, Prisma.EditorialExportResultUncheckedCreateWithoutArtifactInput>
   connectOrCreate?: Prisma.EditorialExportResultCreateOrConnectWithoutArtifactInput
@@ -613,10 +608,12 @@ export type EditorialExportResultCreateNestedOneWithoutPublicationIntentsInput =
   connect?: Prisma.EditorialExportResultWhereUniqueInput
 }
 
-export type EditorialExportResultUpdateOneRequiredWithoutPublicationIntentsNestedInput = {
+export type EditorialExportResultUpdateOneWithoutPublicationIntentsNestedInput = {
   create?: Prisma.XOR<Prisma.EditorialExportResultCreateWithoutPublicationIntentsInput, Prisma.EditorialExportResultUncheckedCreateWithoutPublicationIntentsInput>
   connectOrCreate?: Prisma.EditorialExportResultCreateOrConnectWithoutPublicationIntentsInput
   upsert?: Prisma.EditorialExportResultUpsertWithoutPublicationIntentsInput
+  disconnect?: Prisma.EditorialExportResultWhereInput | boolean
+  delete?: Prisma.EditorialExportResultWhereInput | boolean
   connect?: Prisma.EditorialExportResultWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.EditorialExportResultUpdateToOneWithWhereWithoutPublicationIntentsInput, Prisma.EditorialExportResultUpdateWithoutPublicationIntentsInput>, Prisma.EditorialExportResultUncheckedUpdateWithoutPublicationIntentsInput>
 }

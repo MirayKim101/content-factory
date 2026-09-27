@@ -9,7 +9,8 @@ import type {
 type ClaimRow = {
   id: string;
   platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
-  exportResultId: string;
+  contentKind: "EDITORIAL_EXPORT" | "VERTICAL_RESULT";
+  contentId: string;
   metadataSnapshot: Record<string, unknown>;
   attemptCount: number;
   retryBudget: number;
@@ -18,9 +19,7 @@ type ClaimRow = {
   lineageCurrent: boolean;
 };
 
-export class PgPublicationWorkerRepository
-  implements PublicationWorkerRepository
-{
+export class PgPublicationWorkerRepository implements PublicationWorkerRepository {
   private readonly pool: Pool;
 
   constructor(databaseUrl: string) {
@@ -32,9 +31,11 @@ export class PgPublicationWorkerRepository
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
       const result = await client.query<ClaimRow>(
-        `SELECT i."id", i."platform", i."exportResultId", i."metadataSnapshot",
+        `SELECT i."id", i."platform", i."contentKind",
+                COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
+                i."metadataSnapshot",
                 i."attemptCount", i."retryBudget", i."state", i."startedAt",
-                (
+                CASE WHEN i."contentKind" = 'EDITORIAL_EXPORT' THEN (
                   c."state" = 'ENABLED'
                   AND c."platform" = i."platform"
                   AND e."projectId" = i."projectId"
@@ -49,23 +50,47 @@ export class PgPublicationWorkerRepository
                   AND ar."role" = 'EDITORIAL_EXPORT_PACKAGE'
                   AND er."archiveSha256" = ar."sha256"
                   AND er."archiveSizeBytes" = ar."sizeBytes"
-                ) AS "lineageCurrent"
+                ) WHEN i."contentKind" = 'VERTICAL_RESULT' THEN (
+                  c."state" = 'ENABLED'
+                  AND c."platform" = i."platform"
+                  AND va."id" = i."verticalApprovalId"
+                  AND va."resultId" = i."verticalResultId"
+                  AND vi."projectId" = i."projectId"
+                  AND vj."state" = 'READY'
+                  AND vj."verticalRenderIntentId" = vi."id"
+                  AND vr."pipelineJobId" = var."pipelineJobId"
+                  AND vr."status" = 'READY'
+                  AND vr."role" = 'VERTICAL_RENDER_RESULT'
+                  AND vr."projectId" = i."projectId"
+                  AND var."sha256" = vr."sha256"
+                  AND var."sizeBytes" = vr."sizeBytes"
+                ) ELSE false END AS "lineageCurrent"
            FROM "PublicationIntent" i
            JOIN "PublicationChannel" c ON c."id" = i."channelId"
-           JOIN "EditorialExportResult" er ON er."id" = i."exportResultId"
-           JOIN "EditorialExportIntent" e ON e."id" = er."exportIntentId"
-           JOIN "EditorialApproval" a ON a."id" = i."approvalId"
-           JOIN "VideoSource" s ON s."id" = a."sourceId"
-           JOIN "EditorialPackage" p ON p."id" = a."editorialPackageId"
-           JOIN "AssemblyRecipe" r ON r."id" = a."assemblyRecipeId"
-           JOIN "PipelineJob" j ON j."id" = er."pipelineJobId"
-           JOIN "MediaArtifact" ar ON ar."id" = er."artifactId"
+           LEFT JOIN "EditorialExportResult" er ON er."id" = i."exportResultId"
+           LEFT JOIN "EditorialExportIntent" e ON e."id" = er."exportIntentId"
+           LEFT JOIN "EditorialApproval" a ON a."id" = i."approvalId"
+           LEFT JOIN "VideoSource" s ON s."id" = a."sourceId"
+           LEFT JOIN "EditorialPackage" p ON p."id" = a."editorialPackageId"
+           LEFT JOIN "AssemblyRecipe" r ON r."id" = a."assemblyRecipeId"
+           LEFT JOIN "PipelineJob" j ON j."id" = er."pipelineJobId"
+           LEFT JOIN "MediaArtifact" ar ON ar."id" = er."artifactId"
+           LEFT JOIN "VerticalRenderResult" var ON var."id" = i."verticalResultId"
+           LEFT JOIN "VerticalApproval" va ON va."id" = i."verticalApprovalId"
+           LEFT JOIN "VerticalRenderIntent" vi ON vi."id" = var."intentId"
+           LEFT JOIN "PipelineJob" vj ON vj."id" = var."pipelineJobId"
+           LEFT JOIN "MediaArtifact" vr ON vr."id" = var."artifactId"
           WHERE i."id" = $1 AND i."scheduledAt" <= $2
           FOR UPDATE OF i`,
         [intentId, now],
       );
       const row = result.rows[0];
-      if (!row || ["DRY_RUN_READY", "PUBLISHED", "FAILED_FINAL", "CANCELED"].includes(row.state)) {
+      if (
+        !row ||
+        ["DRY_RUN_READY", "PUBLISHED", "FAILED_FINAL", "CANCELED"].includes(
+          row.state,
+        )
+      ) {
         await client.query("ROLLBACK");
         return null;
       }
@@ -73,10 +98,7 @@ export class PgPublicationWorkerRepository
         row.state === "PROCESSING" &&
         row.startedAt !== null &&
         row.startedAt.getTime() <= now.getTime() - 300_000;
-      if (
-        !["SCHEDULED", "QUEUED"].includes(row.state) &&
-        !staleProcessing
-      ) {
+      if (!["SCHEDULED", "QUEUED"].includes(row.state) && !staleProcessing) {
         await client.query("ROLLBACK");
         return null;
       }
@@ -105,7 +127,8 @@ export class PgPublicationWorkerRepository
       return {
         id: row.id,
         platform: row.platform,
-        exportResultId: row.exportResultId,
+        contentKind: row.contentKind,
+        contentId: row.contentId,
         metadataSnapshot: row.metadataSnapshot,
         attemptNumber,
       };
@@ -125,13 +148,20 @@ export class PgPublicationWorkerRepository
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
-      const locked = await client.query<{ state: string; attemptCount: number }>(
+      const locked = await client.query<{
+        state: string;
+        attemptCount: number;
+      }>(
         `SELECT "state", "attemptCount" FROM "PublicationIntent"
           WHERE "id" = $1 FOR UPDATE`,
         [claim.id],
       );
       const row = locked.rows[0];
-      if (!row || row.state !== "PROCESSING" || row.attemptCount !== claim.attemptNumber) {
+      if (
+        !row ||
+        row.state !== "PROCESSING" ||
+        row.attemptCount !== claim.attemptNumber
+      ) {
         await client.query("ROLLBACK");
         return;
       }
@@ -175,7 +205,13 @@ export class PgPublicationWorkerRepository
           SET "state" = 'FAILED_FINAL', "failureCode" = $2,
               "failureMessage" = $3, "finishedAt" = $4, "updatedAt" = $4
         WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $5`,
-      [claim.id, code.slice(0, 120), message.slice(0, 1000), now, claim.attemptNumber],
+      [
+        claim.id,
+        code.slice(0, 120),
+        message.slice(0, 1000),
+        now,
+        claim.attemptNumber,
+      ],
     );
   }
 

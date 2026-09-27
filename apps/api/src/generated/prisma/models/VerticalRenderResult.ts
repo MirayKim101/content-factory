@@ -288,6 +288,7 @@ export type VerticalRenderResultWhereInput = {
   pipelineJob?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
   artifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
   approval?: Prisma.XOR<Prisma.VerticalApprovalNullableScalarRelationFilter, Prisma.VerticalApprovalWhereInput> | null
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
 }
 
 export type VerticalRenderResultOrderByWithRelationInput = {
@@ -307,6 +308,7 @@ export type VerticalRenderResultOrderByWithRelationInput = {
   pipelineJob?: Prisma.PipelineJobOrderByWithRelationInput
   artifact?: Prisma.MediaArtifactOrderByWithRelationInput
   approval?: Prisma.VerticalApprovalOrderByWithRelationInput
+  publicationIntents?: Prisma.PublicationIntentOrderByRelationAggregateInput
 }
 
 export type VerticalRenderResultWhereUniqueInput = Prisma.AtLeast<{
@@ -329,6 +331,7 @@ export type VerticalRenderResultWhereUniqueInput = Prisma.AtLeast<{
   pipelineJob?: Prisma.XOR<Prisma.PipelineJobScalarRelationFilter, Prisma.PipelineJobWhereInput>
   artifact?: Prisma.XOR<Prisma.MediaArtifactScalarRelationFilter, Prisma.MediaArtifactWhereInput>
   approval?: Prisma.XOR<Prisma.VerticalApprovalNullableScalarRelationFilter, Prisma.VerticalApprovalWhereInput> | null
+  publicationIntents?: Prisma.PublicationIntentListRelationFilter
 }, "id" | "intentId" | "pipelineJobId" | "artifactId">
 
 export type VerticalRenderResultOrderByWithAggregationInput = {
@@ -383,6 +386,7 @@ export type VerticalRenderResultCreateInput = {
   pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutVerticalRenderResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutVerticalRenderResultInput
   approval?: Prisma.VerticalApprovalCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultUncheckedCreateInput = {
@@ -399,6 +403,7 @@ export type VerticalRenderResultUncheckedCreateInput = {
   completedAt: Date | string
   createdAt?: Date | string
   approval?: Prisma.VerticalApprovalUncheckedCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultUpdateInput = {
@@ -415,6 +420,7 @@ export type VerticalRenderResultUpdateInput = {
   pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutVerticalRenderResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutVerticalRenderResultNestedInput
   approval?: Prisma.VerticalApprovalUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultUncheckedUpdateInput = {
@@ -431,6 +437,7 @@ export type VerticalRenderResultUncheckedUpdateInput = {
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   approval?: Prisma.VerticalApprovalUncheckedUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultCreateManyInput = {
@@ -608,6 +615,22 @@ export type VerticalRenderResultUncheckedUpdateOneWithoutPipelineJobNestedInput 
   update?: Prisma.XOR<Prisma.XOR<Prisma.VerticalRenderResultUpdateToOneWithWhereWithoutPipelineJobInput, Prisma.VerticalRenderResultUpdateWithoutPipelineJobInput>, Prisma.VerticalRenderResultUncheckedUpdateWithoutPipelineJobInput>
 }
 
+export type VerticalRenderResultCreateNestedOneWithoutPublicationIntentsInput = {
+  create?: Prisma.XOR<Prisma.VerticalRenderResultCreateWithoutPublicationIntentsInput, Prisma.VerticalRenderResultUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.VerticalRenderResultCreateOrConnectWithoutPublicationIntentsInput
+  connect?: Prisma.VerticalRenderResultWhereUniqueInput
+}
+
+export type VerticalRenderResultUpdateOneWithoutPublicationIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.VerticalRenderResultCreateWithoutPublicationIntentsInput, Prisma.VerticalRenderResultUncheckedCreateWithoutPublicationIntentsInput>
+  connectOrCreate?: Prisma.VerticalRenderResultCreateOrConnectWithoutPublicationIntentsInput
+  upsert?: Prisma.VerticalRenderResultUpsertWithoutPublicationIntentsInput
+  disconnect?: Prisma.VerticalRenderResultWhereInput | boolean
+  delete?: Prisma.VerticalRenderResultWhereInput | boolean
+  connect?: Prisma.VerticalRenderResultWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VerticalRenderResultUpdateToOneWithWhereWithoutPublicationIntentsInput, Prisma.VerticalRenderResultUpdateWithoutPublicationIntentsInput>, Prisma.VerticalRenderResultUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
 export type VerticalRenderResultCreateNestedOneWithoutIntentInput = {
   create?: Prisma.XOR<Prisma.VerticalRenderResultCreateWithoutIntentInput, Prisma.VerticalRenderResultUncheckedCreateWithoutIntentInput>
   connectOrCreate?: Prisma.VerticalRenderResultCreateOrConnectWithoutIntentInput
@@ -667,6 +690,7 @@ export type VerticalRenderResultCreateWithoutArtifactInput = {
   intent: Prisma.VerticalRenderIntentCreateNestedOneWithoutResultInput
   pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutVerticalRenderResultInput
   approval?: Prisma.VerticalApprovalCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultUncheckedCreateWithoutArtifactInput = {
@@ -682,6 +706,7 @@ export type VerticalRenderResultUncheckedCreateWithoutArtifactInput = {
   completedAt: Date | string
   createdAt?: Date | string
   approval?: Prisma.VerticalApprovalUncheckedCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultCreateOrConnectWithoutArtifactInput = {
@@ -713,6 +738,7 @@ export type VerticalRenderResultUpdateWithoutArtifactInput = {
   intent?: Prisma.VerticalRenderIntentUpdateOneRequiredWithoutResultNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutVerticalRenderResultNestedInput
   approval?: Prisma.VerticalApprovalUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultUncheckedUpdateWithoutArtifactInput = {
@@ -728,6 +754,7 @@ export type VerticalRenderResultUncheckedUpdateWithoutArtifactInput = {
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   approval?: Prisma.VerticalApprovalUncheckedUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultCreateWithoutPipelineJobInput = {
@@ -743,6 +770,7 @@ export type VerticalRenderResultCreateWithoutPipelineJobInput = {
   intent: Prisma.VerticalRenderIntentCreateNestedOneWithoutResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutVerticalRenderResultInput
   approval?: Prisma.VerticalApprovalCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultUncheckedCreateWithoutPipelineJobInput = {
@@ -758,6 +786,7 @@ export type VerticalRenderResultUncheckedCreateWithoutPipelineJobInput = {
   completedAt: Date | string
   createdAt?: Date | string
   approval?: Prisma.VerticalApprovalUncheckedCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultCreateOrConnectWithoutPipelineJobInput = {
@@ -789,11 +818,93 @@ export type VerticalRenderResultUpdateWithoutPipelineJobInput = {
   intent?: Prisma.VerticalRenderIntentUpdateOneRequiredWithoutResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutVerticalRenderResultNestedInput
   approval?: Prisma.VerticalApprovalUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultUncheckedUpdateWithoutPipelineJobInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   intentId?: Prisma.StringFieldUpdateOperationsInput | string
+  artifactId?: Prisma.StringFieldUpdateOperationsInput | string
+  renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  approval?: Prisma.VerticalApprovalUncheckedUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalResultNestedInput
+}
+
+export type VerticalRenderResultCreateWithoutPublicationIntentsInput = {
+  id: string
+  renderContractVersion: string
+  durationMs: number
+  width: number
+  height: number
+  sha256: string
+  sizeBytes: bigint | number
+  completedAt: Date | string
+  createdAt?: Date | string
+  intent: Prisma.VerticalRenderIntentCreateNestedOneWithoutResultInput
+  pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutVerticalRenderResultInput
+  artifact: Prisma.MediaArtifactCreateNestedOneWithoutVerticalRenderResultInput
+  approval?: Prisma.VerticalApprovalCreateNestedOneWithoutResultInput
+}
+
+export type VerticalRenderResultUncheckedCreateWithoutPublicationIntentsInput = {
+  id: string
+  intentId: string
+  pipelineJobId: string
+  artifactId: string
+  renderContractVersion: string
+  durationMs: number
+  width: number
+  height: number
+  sha256: string
+  sizeBytes: bigint | number
+  completedAt: Date | string
+  createdAt?: Date | string
+  approval?: Prisma.VerticalApprovalUncheckedCreateNestedOneWithoutResultInput
+}
+
+export type VerticalRenderResultCreateOrConnectWithoutPublicationIntentsInput = {
+  where: Prisma.VerticalRenderResultWhereUniqueInput
+  create: Prisma.XOR<Prisma.VerticalRenderResultCreateWithoutPublicationIntentsInput, Prisma.VerticalRenderResultUncheckedCreateWithoutPublicationIntentsInput>
+}
+
+export type VerticalRenderResultUpsertWithoutPublicationIntentsInput = {
+  update: Prisma.XOR<Prisma.VerticalRenderResultUpdateWithoutPublicationIntentsInput, Prisma.VerticalRenderResultUncheckedUpdateWithoutPublicationIntentsInput>
+  create: Prisma.XOR<Prisma.VerticalRenderResultCreateWithoutPublicationIntentsInput, Prisma.VerticalRenderResultUncheckedCreateWithoutPublicationIntentsInput>
+  where?: Prisma.VerticalRenderResultWhereInput
+}
+
+export type VerticalRenderResultUpdateToOneWithWhereWithoutPublicationIntentsInput = {
+  where?: Prisma.VerticalRenderResultWhereInput
+  data: Prisma.XOR<Prisma.VerticalRenderResultUpdateWithoutPublicationIntentsInput, Prisma.VerticalRenderResultUncheckedUpdateWithoutPublicationIntentsInput>
+}
+
+export type VerticalRenderResultUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.IntFieldUpdateOperationsInput | number
+  width?: Prisma.IntFieldUpdateOperationsInput | number
+  height?: Prisma.IntFieldUpdateOperationsInput | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  intent?: Prisma.VerticalRenderIntentUpdateOneRequiredWithoutResultNestedInput
+  pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutVerticalRenderResultNestedInput
+  artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutVerticalRenderResultNestedInput
+  approval?: Prisma.VerticalApprovalUpdateOneWithoutResultNestedInput
+}
+
+export type VerticalRenderResultUncheckedUpdateWithoutPublicationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  intentId?: Prisma.StringFieldUpdateOperationsInput | string
+  pipelineJobId?: Prisma.StringFieldUpdateOperationsInput | string
   artifactId?: Prisma.StringFieldUpdateOperationsInput | string
   renderContractVersion?: Prisma.StringFieldUpdateOperationsInput | string
   durationMs?: Prisma.IntFieldUpdateOperationsInput | number
@@ -819,6 +930,7 @@ export type VerticalRenderResultCreateWithoutIntentInput = {
   pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutVerticalRenderResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutVerticalRenderResultInput
   approval?: Prisma.VerticalApprovalCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultUncheckedCreateWithoutIntentInput = {
@@ -834,6 +946,7 @@ export type VerticalRenderResultUncheckedCreateWithoutIntentInput = {
   completedAt: Date | string
   createdAt?: Date | string
   approval?: Prisma.VerticalApprovalUncheckedCreateNestedOneWithoutResultInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultCreateOrConnectWithoutIntentInput = {
@@ -865,6 +978,7 @@ export type VerticalRenderResultUpdateWithoutIntentInput = {
   pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutVerticalRenderResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutVerticalRenderResultNestedInput
   approval?: Prisma.VerticalApprovalUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultUncheckedUpdateWithoutIntentInput = {
@@ -880,6 +994,7 @@ export type VerticalRenderResultUncheckedUpdateWithoutIntentInput = {
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   approval?: Prisma.VerticalApprovalUncheckedUpdateOneWithoutResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultCreateWithoutApprovalInput = {
@@ -895,6 +1010,7 @@ export type VerticalRenderResultCreateWithoutApprovalInput = {
   intent: Prisma.VerticalRenderIntentCreateNestedOneWithoutResultInput
   pipelineJob: Prisma.PipelineJobCreateNestedOneWithoutVerticalRenderResultInput
   artifact: Prisma.MediaArtifactCreateNestedOneWithoutVerticalRenderResultInput
+  publicationIntents?: Prisma.PublicationIntentCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultUncheckedCreateWithoutApprovalInput = {
@@ -910,6 +1026,7 @@ export type VerticalRenderResultUncheckedCreateWithoutApprovalInput = {
   sizeBytes: bigint | number
   completedAt: Date | string
   createdAt?: Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedCreateNestedManyWithoutVerticalResultInput
 }
 
 export type VerticalRenderResultCreateOrConnectWithoutApprovalInput = {
@@ -941,6 +1058,7 @@ export type VerticalRenderResultUpdateWithoutApprovalInput = {
   intent?: Prisma.VerticalRenderIntentUpdateOneRequiredWithoutResultNestedInput
   pipelineJob?: Prisma.PipelineJobUpdateOneRequiredWithoutVerticalRenderResultNestedInput
   artifact?: Prisma.MediaArtifactUpdateOneRequiredWithoutVerticalRenderResultNestedInput
+  publicationIntents?: Prisma.PublicationIntentUpdateManyWithoutVerticalResultNestedInput
 }
 
 export type VerticalRenderResultUncheckedUpdateWithoutApprovalInput = {
@@ -956,8 +1074,38 @@ export type VerticalRenderResultUncheckedUpdateWithoutApprovalInput = {
   sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   completedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  publicationIntents?: Prisma.PublicationIntentUncheckedUpdateManyWithoutVerticalResultNestedInput
 }
 
+
+/**
+ * Count Type VerticalRenderResultCountOutputType
+ */
+
+export type VerticalRenderResultCountOutputType = {
+  publicationIntents: number
+}
+
+export type VerticalRenderResultCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  publicationIntents?: boolean | VerticalRenderResultCountOutputTypeCountPublicationIntentsArgs
+}
+
+/**
+ * VerticalRenderResultCountOutputType without action
+ */
+export type VerticalRenderResultCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VerticalRenderResultCountOutputType
+   */
+  select?: Prisma.VerticalRenderResultCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * VerticalRenderResultCountOutputType without action
+ */
+export type VerticalRenderResultCountOutputTypeCountPublicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PublicationIntentWhereInput
+}
 
 
 export type VerticalRenderResultSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -977,6 +1125,8 @@ export type VerticalRenderResultSelect<ExtArgs extends runtime.Types.Extensions.
   pipelineJob?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
   artifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.VerticalRenderResult$approvalArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.VerticalRenderResult$publicationIntentsArgs<ExtArgs>
+  _count?: boolean | Prisma.VerticalRenderResultCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["verticalRenderResult"]>
 
 export type VerticalRenderResultSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1036,6 +1186,8 @@ export type VerticalRenderResultInclude<ExtArgs extends runtime.Types.Extensions
   pipelineJob?: boolean | Prisma.PipelineJobDefaultArgs<ExtArgs>
   artifact?: boolean | Prisma.MediaArtifactDefaultArgs<ExtArgs>
   approval?: boolean | Prisma.VerticalRenderResult$approvalArgs<ExtArgs>
+  publicationIntents?: boolean | Prisma.VerticalRenderResult$publicationIntentsArgs<ExtArgs>
+  _count?: boolean | Prisma.VerticalRenderResultCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VerticalRenderResultIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   intent?: boolean | Prisma.VerticalRenderIntentDefaultArgs<ExtArgs>
@@ -1055,6 +1207,7 @@ export type $VerticalRenderResultPayload<ExtArgs extends runtime.Types.Extension
     pipelineJob: Prisma.$PipelineJobPayload<ExtArgs>
     artifact: Prisma.$MediaArtifactPayload<ExtArgs>
     approval: Prisma.$VerticalApprovalPayload<ExtArgs> | null
+    publicationIntents: Prisma.$PublicationIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1467,6 +1620,7 @@ export interface Prisma__VerticalRenderResultClient<T, Null = never, ExtArgs ext
   pipelineJob<T extends Prisma.PipelineJobDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PipelineJobDefaultArgs<ExtArgs>>): Prisma.Prisma__PipelineJobClient<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   artifact<T extends Prisma.MediaArtifactDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MediaArtifactDefaultArgs<ExtArgs>>): Prisma.Prisma__MediaArtifactClient<runtime.Types.Result.GetResult<Prisma.$MediaArtifactPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   approval<T extends Prisma.VerticalRenderResult$approvalArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VerticalRenderResult$approvalArgs<ExtArgs>>): Prisma.Prisma__VerticalApprovalClient<runtime.Types.Result.GetResult<Prisma.$VerticalApprovalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  publicationIntents<T extends Prisma.VerticalRenderResult$publicationIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VerticalRenderResult$publicationIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PublicationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1925,6 +2079,30 @@ export type VerticalRenderResult$approvalArgs<ExtArgs extends runtime.Types.Exte
    */
   include?: Prisma.VerticalApprovalInclude<ExtArgs> | null
   where?: Prisma.VerticalApprovalWhereInput
+}
+
+/**
+ * VerticalRenderResult.publicationIntents
+ */
+export type VerticalRenderResult$publicationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PublicationIntent
+   */
+  select?: Prisma.PublicationIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PublicationIntent
+   */
+  omit?: Prisma.PublicationIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PublicationIntentInclude<ExtArgs> | null
+  where?: Prisma.PublicationIntentWhereInput
+  orderBy?: Prisma.PublicationIntentOrderByWithRelationInput | Prisma.PublicationIntentOrderByWithRelationInput[]
+  cursor?: Prisma.PublicationIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PublicationIntentScalarFieldEnum | Prisma.PublicationIntentScalarFieldEnum[]
 }
 
 /**

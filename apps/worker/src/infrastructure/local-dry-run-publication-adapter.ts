@@ -15,7 +15,8 @@ export class LocalDryRunPublicationAdapter implements PublicationProvider {
       providerReceipt: {
         mode: "DRY_RUN",
         publicationIntentId: claim.id,
-        exportResultId: claim.exportResultId,
+        contentKind: claim.contentKind,
+        contentId: claim.contentId,
         metadataAccepted: true,
         externalWritePerformed: false,
       },

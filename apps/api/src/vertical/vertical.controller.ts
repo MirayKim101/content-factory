@@ -58,7 +58,10 @@ export class VerticalController {
     @Body() body: CreateVerticalRenderDto,
   ) {
     if (!key || !/^[A-Za-z0-9._:-]{8,200}$/.test(key))
-      throw new BadRequestException({ code: "IDEMPOTENCY_KEY_INVALID" });
+      throw new BadRequestException({
+        code: "IDEMPOTENCY_KEY_INVALID",
+        message: "Idempotency-Key is invalid.",
+      });
     return this.wrap(() =>
       this.service.create({ projectId, idempotencyKey: key, ...body }),
     );
@@ -77,7 +80,10 @@ export class VerticalController {
   async get(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     const value = await this.service.get(id);
     if (!value)
-      throw new NotFoundException({ code: "VERTICAL_RENDER_NOT_FOUND" });
+      throw new NotFoundException({
+        code: "VERTICAL_RENDER_NOT_FOUND",
+        message: "Vertical render was not found.",
+      });
     return value;
   }
 
@@ -133,14 +139,21 @@ export class VerticalController {
       if (error instanceof VerticalUnavailableError)
         throw new ServiceUnavailableException({
           code: "VERTICAL_RENDER_DISABLED",
+          message: "Vertical rendering is disabled.",
         });
       if (
         error instanceof VerticalLineageInvalidError ||
         error instanceof VerticalIdempotencyConflictError
       )
-        throw new ConflictException({ code: "VERTICAL_RENDER_CONFLICT" });
+        throw new ConflictException({
+          code: "VERTICAL_RENDER_CONFLICT",
+          message: "Vertical render lineage conflicts with this request.",
+        });
       if (error instanceof VerticalNotFoundError)
-        throw new NotFoundException({ code: "VERTICAL_RENDER_NOT_FOUND" });
+        throw new NotFoundException({
+          code: "VERTICAL_RENDER_NOT_FOUND",
+          message: "Vertical render was not found.",
+        });
       throw error;
     }
   }

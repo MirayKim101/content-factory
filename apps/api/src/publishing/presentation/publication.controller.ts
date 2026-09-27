@@ -15,7 +15,12 @@ import {
   Query,
   ServiceUnavailableException,
 } from "@nestjs/common";
-import { ApiHeader, ApiOkResponse, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiHeader,
+  ApiOkResponse,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 
 import { CreatePublicationIntent } from "../application/create-publication-intent.js";
 import {
@@ -114,7 +119,11 @@ export class PublicationController {
   @ApiOkResponse({ type: PublicationIntentResponseDto })
   async one(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     const value = await this.getIntent.execute(id);
-    if (!value) throw new NotFoundException({ code: "PUBLICATION_NOT_FOUND" });
+    if (!value)
+      throw new NotFoundException({
+        code: "PUBLICATION_NOT_FOUND",
+        message: "Publication was not found.",
+      });
     return publicationIntentResponse(value);
   }
 
@@ -134,7 +143,8 @@ export class PublicationController {
       const items = rows.slice(0, query.limit);
       return {
         items: items.map(publicationIntentResponse),
-        nextCursor: rows.length > query.limit ? (items.at(-1)?.id ?? null) : null,
+        nextCursor:
+          rows.length > query.limit ? (items.at(-1)?.id ?? null) : null,
       };
     } catch (error) {
       this.rethrow(error);
@@ -154,27 +164,39 @@ export class PublicationController {
   private rethrow(error: unknown): never {
     if (error instanceof HttpException) throw error;
     if (error instanceof PublishingUnavailableError)
-      throw new ServiceUnavailableException({ code: "PUBLISHING_DISABLED" });
+      throw new ServiceUnavailableException({
+        code: "PUBLISHING_DISABLED",
+        message: "Publishing is disabled.",
+      });
     if (
       error instanceof PublicationScheduleInvalidError ||
       error instanceof PublicationTimezoneInvalidError ||
       error instanceof PublicationMetadataInvalidError ||
       error instanceof PublicationCursorInvalidError
     )
-      throw new BadRequestException({ code: "PUBLICATION_REQUEST_INVALID" });
+      throw new BadRequestException({
+        code: "PUBLICATION_REQUEST_INVALID",
+        message: "Publication request is invalid.",
+      });
     if (
       error instanceof PublicationIdempotencyConflictError ||
       error instanceof PublicationChannelConflictError ||
       error instanceof PublicationCancellationConflictError ||
       error instanceof PublicationLineageInvalidError
     )
-      throw new ConflictException({ code: "PUBLICATION_CONFLICT" });
+      throw new ConflictException({
+        code: "PUBLICATION_CONFLICT",
+        message: "Publication state or lineage conflicts with this request.",
+      });
     throw error;
   }
 }
 
 function requireKey(value: string | undefined): string {
   if (!value || !/^[A-Za-z0-9._:-]{8,200}$/.test(value))
-    throw new BadRequestException({ code: "IDEMPOTENCY_KEY_INVALID" });
+    throw new BadRequestException({
+      code: "IDEMPOTENCY_KEY_INVALID",
+      message: "Idempotency-Key is invalid.",
+    });
   return value;
 }

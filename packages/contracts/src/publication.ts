@@ -8,6 +8,12 @@ export const PUBLICATION_PLATFORMS = [
 ] as const;
 export type PublicationPlatform = (typeof PUBLICATION_PLATFORMS)[number];
 
+export const PUBLICATION_CONTENT_KINDS = [
+  "EDITORIAL_EXPORT",
+  "VERTICAL_RESULT",
+] as const;
+export type PublicationContentKind = (typeof PUBLICATION_CONTENT_KINDS)[number];
+
 export const PUBLICATION_STATES = [
   "SCHEDULED",
   "QUEUED",
@@ -46,7 +52,9 @@ export function parsePublicationJobReference(
   };
 }
 
-const transitions: Readonly<Record<PublicationState, readonly PublicationState[]>> = {
+const transitions: Readonly<
+  Record<PublicationState, readonly PublicationState[]>
+> = {
   SCHEDULED: ["QUEUED", "CANCELED"],
   QUEUED: ["PROCESSING", "CANCELED"],
   PROCESSING: [
