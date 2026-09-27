@@ -160,13 +160,7 @@ function youtubeMetadata(snapshot: Record<string, unknown>) {
   if (!["private", "unlisted", "public"].includes(String(privacyStatus)))
     throw new Error("YOUTUBE_PRIVACY_STATUS_INVALID");
   const tags = snapshot.tags;
-  if (
-    tags !== undefined &&
-    (!Array.isArray(tags) ||
-      tags.some(
-        (tag) => typeof tag !== "string" || !tag.trim() || tag.length > 500,
-      ))
-  )
+  if (tags !== undefined && !validTags(tags))
     throw new Error("YOUTUBE_TAGS_INVALID");
   return {
     snippet: {
@@ -176,6 +170,17 @@ function youtubeMetadata(snapshot: Record<string, unknown>) {
     },
     status: { privacyStatus },
   };
+}
+
+function validTags(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= 100 &&
+    value.every(
+      (tag) => typeof tag === "string" && !!tag.trim() && tag.length <= 500,
+    ) &&
+    value.reduce((total, tag) => total + tag.length, 0) <= 500
+  );
 }
 
 function requiredText(value: unknown, maximum: number, code: string): string {

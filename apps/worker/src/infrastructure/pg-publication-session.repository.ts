@@ -64,6 +64,7 @@ export class PgPublicationSessionRepository implements PublicationSessionReposit
          JOIN "PublicationIntent" i ON i."id" = s."publicationIntentId"
                                    AND i."platform" = s."platform"
         WHERE s."publicationIntentId" = $1 AND s."platform" = $2
+          AND (s."expiresAt" IS NULL OR s."expiresAt" > now())
           AND i."state" IN ('PROCESSING', 'UNKNOWN_REMOTE_STATE')`,
       [publicationIntentId, platform],
     );
