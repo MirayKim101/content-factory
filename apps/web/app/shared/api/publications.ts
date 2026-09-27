@@ -84,6 +84,7 @@ const listSchema = z.object({
   items: z.array(intentSchema),
   nextCursor: uuid.nullable(),
 });
+export type PublicationPage = z.infer<typeof listSchema>;
 const errorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string().optional() }),
 });
@@ -182,13 +183,21 @@ export function createPublicationsApi(
         {},
         tiktokCreatorInfoSchema,
       ),
-    list: (projectId: string) =>
-      request(
+    list: (
+      projectId: string,
+      options: { cursor?: string; limit?: number } = {},
+    ) => {
+      const query = new URLSearchParams({
+        limit: String(options.limit ?? 100),
+      });
+      if (options.cursor) query.set("cursor", options.cursor);
+      return request(
         fetchImplementation,
-        `${basePath}/projects/${encodeURIComponent(projectId)}/publications?limit=100`,
+        `${basePath}/projects/${encodeURIComponent(projectId)}/publications?${query.toString()}`,
         {},
         listSchema,
-      ),
+      );
+    },
     create: (
       projectId: string,
       input: {

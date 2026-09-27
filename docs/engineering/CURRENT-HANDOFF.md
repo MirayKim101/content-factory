@@ -382,3 +382,9 @@ tables, 0 invalid constraints, колонка `nextAttemptAt` присутств
 для `QUEUED` retry, поэтому оператор отличает ожидающий backoff от зависшей
 задачи. API `232/232`, web `248/248`, оба typecheck/lint/build и двусторонний
 OpenAPI drift check прошли.
+
+Publication history UI больше не обрезает историю без объяснения после первых
+100 записей: API client принимает bounded cursor/limit, очередь показывает
+«Показать более ранние», дедуплицирует границы страниц, а 15-секундный refresh
+обновляет свежую страницу без удаления уже загруженных старых записей. После
+изменения web `249/249`, typecheck, lint и production build прошли.

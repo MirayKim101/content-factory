@@ -24,6 +24,27 @@ function channel() {
 }
 
 describe("publications api", () => {
+  it("requests the next cursor page without loading an unbounded history", async () => {
+    const cursor = "00000000-0000-4000-8000-000000000099";
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [], nextCursor: null }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+
+    await createPublicationsApi(
+      "/api/v1",
+      fetchMock as typeof fetch,
+    ).list(projectId, { cursor, limit: 50 });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/projects/${projectId}/publications?limit=50&cursor=${cursor}`,
+      {},
+    );
+  });
+
   it("loads effective publishing capabilities without provider secrets", async () => {
     const payload = {
       publishingEnabled: true,

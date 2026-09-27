@@ -31,13 +31,16 @@
 - Provider retry сохраняет отдельный `nextAttemptAt` с exponential backoff
   30/60/120 секунд и cap 15 минут; исходный publication schedule не меняется,
   API и UI явно показывают время следующей попытки.
+- История публикаций загружается ограниченными cursor-страницами; оператор
+  может открыть более ранние записи, а фоновое обновление не удаляет уже
+  загруженную историю.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     232/232 unit tests
 Worker:  254/254 unit tests
-Web:     248/248 tests
+Web:     249/249 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints

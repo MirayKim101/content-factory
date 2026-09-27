@@ -37,6 +37,9 @@ const projects = ref<ProjectOption[]>([]);
 const projectId = ref("");
 const channels = ref<PublicationChannel[]>([]);
 const publications = ref<PublicationIntent[]>([]);
+const nextPublicationCursor = ref<string | null>(null);
+const loadingMorePublications = ref(false);
+const hasLoadedOlderPublications = ref(false);
 const capabilities = ref<PublishingCapabilities>({
   publishingEnabled: false,
   localDryRunEnabled: false,
@@ -153,6 +156,8 @@ async function loadWorkspace(): Promise<void> {
   if (!projectId.value) {
     channels.value = [];
     publications.value = [];
+    nextPublicationCursor.value = null;
+    hasLoadedOlderPublications.value = false;
     exports.value = [];
     verticals.value = [];
     loading.value = false;
@@ -180,6 +185,8 @@ async function loadWorkspace(): Promise<void> {
           ?.id ??
         "";
     publications.value = nextPublications.items;
+    nextPublicationCursor.value = nextPublications.nextCursor;
+    hasLoadedOlderPublications.value = false;
     exports.value = nextExports;
     verticals.value = nextVerticals;
     if (!readyExports.value.some((item) => item.id === exportId.value))
@@ -207,11 +214,43 @@ async function refreshPublicationStatuses(): Promise<void> {
   refreshingPublications.value = true;
   try {
     const page = await publicationsApi.list(selectedProjectId);
-    if (projectId.value === selectedProjectId) publications.value = page.items;
+    if (projectId.value === selectedProjectId) {
+      const freshIds = new Set(page.items.map((item) => item.id));
+      publications.value = [
+        ...page.items,
+        ...publications.value.filter((item) => !freshIds.has(item.id)),
+      ];
+      if (!hasLoadedOlderPublications.value)
+        nextPublicationCursor.value = page.nextCursor;
+    }
   } catch {
     // Background refresh stays silent; foreground actions surface errors.
   } finally {
     refreshingPublications.value = false;
+  }
+}
+async function loadMorePublications(): Promise<void> {
+  const selectedProjectId = projectId.value;
+  const cursor = nextPublicationCursor.value;
+  if (!selectedProjectId || !cursor || loadingMorePublications.value) return;
+  loadingMorePublications.value = true;
+  error.value = null;
+  try {
+    const page = await publicationsApi.list(selectedProjectId, { cursor });
+    if (projectId.value !== selectedProjectId) return;
+    const knownIds = new Set(publications.value.map((item) => item.id));
+    publications.value.push(
+      ...page.items.filter((item) => !knownIds.has(item.id)),
+    );
+    nextPublicationCursor.value = page.nextCursor;
+    hasLoadedOlderPublications.value = true;
+  } catch (cause) {
+    error.value =
+      cause instanceof Error
+        ? cause.message
+        : "Не удалось загрузить предыдущие публикации.";
+  } finally {
+    loadingMorePublications.value = false;
   }
 }
 async function createTikTokChannel(): Promise<void> {
@@ -686,6 +725,14 @@ onUnmounted(() => {
               >Повторить</Button
             >
           </article>
+          <Button
+            v-if="nextPublicationCursor"
+            class="load-more"
+            severity="secondary"
+            :loading="loadingMorePublications"
+            @click="loadMorePublications"
+            >Показать более ранние</Button
+          >
         </div>
         <div v-else class="empty-state">
           <span aria-hidden="true">◷</span>
@@ -1174,8 +1221,12 @@ h2 {
   padding: 1rem 0.25rem;
   border-bottom: 1px solid var(--cf-border);
 }
-.publication-card:last-child {
+.publication-card:last-of-type {
   border: 0;
+}
+.load-more {
+  justify-self: center;
+  margin-top: 0.75rem;
 }
 .publication-card time {
   display: grid;
