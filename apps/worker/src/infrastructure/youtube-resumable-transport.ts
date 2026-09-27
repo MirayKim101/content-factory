@@ -4,6 +4,7 @@ const ALLOWED_SESSION_HOSTS = new Set([
   "www.googleapis.com",
   "upload.youtube.com",
 ]);
+const YOUTUBE_VIDEO_ENDPOINT = "https://www.googleapis.com/youtube/v3/videos";
 
 export type YoutubeUploadProgress =
   | { state: "INCOMPLETE"; nextOffset: bigint }
@@ -93,6 +94,41 @@ export class YoutubeResumableTransport {
       },
     );
     return this.parseProgress(response);
+  }
+
+  async status(input: {
+    accessToken: string;
+    videoId: string;
+    signal?: AbortSignal;
+  }): Promise<string> {
+    this.requireToken(input.accessToken);
+    if (!/^[A-Za-z0-9_-]{6,64}$/.test(input.videoId))
+      throw new Error("YOUTUBE_VIDEO_ID_INVALID");
+    const url = new URL(YOUTUBE_VIDEO_ENDPOINT);
+    url.searchParams.set("part", "status");
+    url.searchParams.set("id", input.videoId);
+    const response = await this.request(url, {
+      headers: { authorization: `Bearer ${input.accessToken}` },
+      signal: input.signal,
+    });
+    if (!response.ok)
+      throw new Error(`YOUTUBE_STATUS_FAILED_${response.status}`);
+    const payload = await response.json();
+    if (!payload || typeof payload !== "object" || Array.isArray(payload))
+      throw new Error("YOUTUBE_STATUS_RESPONSE_INVALID");
+    const items = (payload as Record<string, unknown>).items;
+    if (!Array.isArray(items) || items.length !== 1)
+      throw new Error("YOUTUBE_STATUS_RESPONSE_INVALID");
+    const item = items[0];
+    if (!item || typeof item !== "object" || Array.isArray(item))
+      throw new Error("YOUTUBE_STATUS_RESPONSE_INVALID");
+    const status = (item as Record<string, unknown>).status;
+    if (!status || typeof status !== "object" || Array.isArray(status))
+      throw new Error("YOUTUBE_STATUS_RESPONSE_INVALID");
+    const uploadStatus = (status as Record<string, unknown>).uploadStatus;
+    if (typeof uploadStatus !== "string" || uploadStatus.length > 64)
+      throw new Error("YOUTUBE_STATUS_RESPONSE_INVALID");
+    return uploadStatus;
   }
 
   private async parseProgress(

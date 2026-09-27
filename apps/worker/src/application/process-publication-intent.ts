@@ -30,12 +30,24 @@ export class ProcessPublicationIntent {
       const result = await provider.publish(claim);
       if (claim.platform === "LOCAL_DRY_RUN")
         await this.repository.finalizeDryRun(claim, result, this.clock());
-      else
-        await this.repository.finalizePublishedDirect(
-          claim,
-          result,
-          this.clock(),
-        );
+      else {
+        try {
+          await this.repository.finalizePublishedDirect(
+            claim,
+            result,
+            this.clock(),
+          );
+        } catch {
+          await this.repository.markUnknownRemoteState(
+            claim,
+            "PUBLICATION_FINALIZE_OUTCOME_UNKNOWN",
+            "Provider confirmed publication, but local finalization failed.",
+            providerResultId(result.providerReceipt),
+            "provider_confirmed",
+            this.clock(),
+          );
+        }
+      }
       return true;
     } catch (error) {
       if (error instanceof PublicationOutcomeUnknownError) {
@@ -67,4 +79,11 @@ export class ProcessPublicationIntent {
       throw error;
     }
   }
+}
+
+function providerResultId(receipt: Record<string, unknown>): string {
+  const value = receipt.videoId ?? receipt.publishId ?? receipt.id;
+  if (typeof value !== "string" || !value || value.length > 255)
+    throw new Error("PUBLICATION_PROVIDER_RECEIPT_INVALID");
+  return value;
 }

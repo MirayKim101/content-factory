@@ -45,6 +45,7 @@ function dependencies() {
         .fn()
         .mockResolvedValue("https://www.googleapis.com/upload/session"),
       probe: vi.fn(),
+      status: vi.fn(),
       uploadChunk: vi
         .fn()
         .mockResolvedValueOnce({ state: "INCOMPLETE", nextOffset: 3n })
@@ -121,5 +122,26 @@ describe("YoutubePublicationAdapter", () => {
     expect(deps.media.readRange).toHaveBeenCalledWith(
       expect.objectContaining({ offset: 3n, length: 3 }),
     );
+  });
+
+  it("reconciles a processed remote video without uploading it again", async () => {
+    const deps = dependencies();
+    deps.transport.status.mockResolvedValue("processed");
+    const adapter = new YoutubePublicationAdapter(
+      deps.tokens,
+      deps.media,
+      deps.sessions,
+      deps.cipher,
+      deps.transport,
+    );
+
+    await expect(
+      adapter.reconcile({ ...claim, remotePublicationId: "video_42" }),
+    ).resolves.toMatchObject({
+      state: "PUBLISHED",
+      remoteStatus: "processed",
+      providerReceipt: { videoId: "video_42" },
+    });
+    expect(deps.transport.uploadChunk).not.toHaveBeenCalled();
   });
 });

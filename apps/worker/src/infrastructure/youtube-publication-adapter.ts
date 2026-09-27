@@ -5,6 +5,8 @@ import type {
   PublicationAdapterResult,
   PublicationClaim,
   PublicationProvider,
+  PublicationReconciliationClaim,
+  PublicationReconciliationResult,
 } from "../application/publication.port.js";
 import { PublicationSessionCipher } from "./publication-session-cipher.js";
 import { YoutubeResumableTransport } from "./youtube-resumable-transport.js";
@@ -21,7 +23,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
     private readonly cipher: PublicationSessionCipher,
     private readonly transport: Pick<
       YoutubeResumableTransport,
-      "initiate" | "probe" | "uploadChunk"
+      "initiate" | "probe" | "uploadChunk" | "status"
     >,
     private readonly chunkBytes = DEFAULT_CHUNK_BYTES,
     private readonly clock: () => Date = () => new Date(),
@@ -138,6 +140,41 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       offset = progress.nextOffset;
     }
     throw new Error("YOUTUBE_UPLOAD_RECEIPT_MISSING");
+  }
+
+  async reconcile(
+    claim: PublicationReconciliationClaim,
+  ): Promise<PublicationReconciliationResult> {
+    const accessToken = await this.tokens.resolve({
+      channelId: claim.channelId,
+      platform: claim.platform,
+      externalChannelRef: claim.externalChannelRef,
+    });
+    const remoteStatus = await this.transport.status({
+      accessToken,
+      videoId: claim.remotePublicationId,
+    });
+    if (["uploaded", "processing"].includes(remoteStatus))
+      return { state: "PENDING", remoteStatus };
+    if (remoteStatus === "processed")
+      return {
+        state: "PUBLISHED",
+        remoteStatus,
+        adapterVersion: "youtube-resumable-v1",
+        providerReceipt: {
+          videoId: claim.remotePublicationId,
+          mediaSha256: claim.contentSha256,
+        },
+        publicUrl: `https://www.youtube.com/watch?v=${claim.remotePublicationId}`,
+      };
+    if (["failed", "rejected", "deleted"].includes(remoteStatus))
+      return {
+        state: "FAILED",
+        remoteStatus,
+        code: "YOUTUBE_PUBLICATION_FAILED",
+        message: "YouTube rejected or removed the uploaded video.",
+      };
+    throw new Error("YOUTUBE_STATUS_UNKNOWN");
   }
 
   private result(videoId: string, sha256: string): PublicationAdapterResult {

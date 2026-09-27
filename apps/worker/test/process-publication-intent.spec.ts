@@ -157,4 +157,34 @@ describe("ProcessPublicationIntent", () => {
     );
     expect(repo.failFinal).not.toHaveBeenCalled();
   });
+
+  it("quarantines a confirmed remote upload when local finalization fails", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    vi.mocked(repo.finalizePublishedDirect).mockRejectedValueOnce(
+      new Error("database unavailable"),
+    );
+
+    await new ProcessPublicationIntent(repo, [
+      {
+        platform: "YOUTUBE",
+        publish: vi.fn().mockResolvedValue({
+          adapterVersion: "youtube-resumable-v1",
+          providerReceipt: { videoId: "video_42" },
+          publicUrl: "https://www.youtube.com/watch?v=video_42",
+        }),
+      },
+    ]).execute(remoteClaim.id);
+
+    expect(repo.markUnknownRemoteState).toHaveBeenCalledWith(
+      remoteClaim,
+      "PUBLICATION_FINALIZE_OUTCOME_UNKNOWN",
+      expect.any(String),
+      "video_42",
+      "provider_confirmed",
+      expect.any(Date),
+    );
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
+  });
 });

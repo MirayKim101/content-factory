@@ -107,4 +107,25 @@ describe("YoutubeResumableTransport", () => {
       }),
     ).resolves.toEqual({ state: "INCOMPLETE", nextOffset: 10n });
   });
+
+  it("reads the provider processing status for reconciliation", async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            items: [{ status: { uploadStatus: "processed" } }],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      );
+
+    await expect(
+      new YoutubeResumableTransport(request).status({
+        accessToken: "token",
+        videoId: "video_42",
+      }),
+    ).resolves.toBe("processed");
+    expect(String(request.mock.calls[0]![0])).toContain("part=status");
+  });
 });
