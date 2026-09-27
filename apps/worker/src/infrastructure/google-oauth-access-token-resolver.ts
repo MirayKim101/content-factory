@@ -5,7 +5,7 @@ const YOUTUBE_MINE_ENDPOINT =
   "https://www.googleapis.com/youtube/v3/channels?part=id&mine=true";
 
 export interface YoutubeChannelCredential {
-  channelId: string;
+  channelId?: string;
   externalChannelRef: string;
   refreshToken: string;
 }
@@ -28,14 +28,15 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
     for (const credential of credentials) {
       requireSecret(credential.refreshToken, "YOUTUBE_REFRESH_TOKEN_INVALID");
       if (
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-          credential.channelId,
-        ) ||
+        (credential.channelId !== undefined &&
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            credential.channelId,
+          )) ||
         !/^UC[A-Za-z0-9_-]{20,40}$/.test(credential.externalChannelRef) ||
-        this.credentials.has(credential.channelId)
+        this.credentials.has(credential.externalChannelRef)
       )
         throw new Error("YOUTUBE_CHANNEL_CREDENTIAL_INVALID");
-      this.credentials.set(credential.channelId, { ...credential });
+      this.credentials.set(credential.externalChannelRef, { ...credential });
     }
   }
 
@@ -46,10 +47,11 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
   }): Promise<string> {
     if (input.platform !== "YOUTUBE")
       throw new Error("YOUTUBE_CREDENTIAL_PLATFORM_MISMATCH");
-    const credential = this.credentials.get(input.channelId);
+    const credential = this.credentials.get(input.externalChannelRef);
     if (
       !credential ||
-      credential.externalChannelRef !== input.externalChannelRef
+      (credential.channelId !== undefined &&
+        credential.channelId !== input.channelId)
     )
       throw new Error("YOUTUBE_CHANNEL_CREDENTIAL_UNAVAILABLE");
     const cached = this.cache.get(input.channelId);

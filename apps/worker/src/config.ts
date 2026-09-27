@@ -73,7 +73,7 @@ export interface YoutubePublishingConfig extends PublicationSessionKeyConfig {
   clientId: string;
   clientSecret: string;
   credentials: Array<{
-    channelId: string;
+    channelId?: string;
     externalChannelRef: string;
     refreshToken: string;
   }>;
@@ -108,13 +108,15 @@ export function youtubePublishingConfig(
         (key) =>
           !["channelId", "externalChannelRef", "refreshToken"].includes(key),
       ) ||
-      typeof value.channelId !== "string" ||
+      (value.channelId !== undefined && typeof value.channelId !== "string") ||
       typeof value.externalChannelRef !== "string" ||
       typeof value.refreshToken !== "string"
     )
       throw new Error("CONFIG_YOUTUBE_CHANNEL_CREDENTIALS_JSON_INVALID");
     return {
-      channelId: value.channelId,
+      ...(typeof value.channelId === "string"
+        ? { channelId: value.channelId }
+        : {}),
       externalChannelRef: value.externalChannelRef,
       refreshToken: value.refreshToken,
     };

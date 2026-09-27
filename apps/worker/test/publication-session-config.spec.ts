@@ -49,7 +49,6 @@ describe("youtubePublishingConfig", () => {
       YOUTUBE_OAUTH_CLIENT_SECRET: "client-secret",
       YOUTUBE_CHANNEL_CREDENTIALS_JSON: JSON.stringify([
         {
-          channelId: "00000000-0000-4000-8000-000000000001",
           externalChannelRef: "UC1234567890123456789012",
           refreshToken: "refresh-token",
         },
