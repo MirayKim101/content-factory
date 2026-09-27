@@ -426,6 +426,7 @@ export const ModelName = {
   EditorialExportResult: 'EditorialExportResult',
   PublicationChannel: 'PublicationChannel',
   PublicationIntent: 'PublicationIntent',
+  PublicationProviderSession: 'PublicationProviderSession',
   PublicationResult: 'PublicationResult',
   CutSegment: 'CutSegment',
   JobAttempt: 'JobAttempt',
@@ -478,7 +479,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact" | "twitchIngestChannel" | "twitchEventInbox" | "twitchVodCandidate" | "verticalRenderIntent" | "verticalRenderResult" | "verticalApproval"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationProviderSession" | "publicationResult" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact" | "twitchIngestChannel" | "twitchEventInbox" | "twitchVodCandidate" | "verticalRenderIntent" | "verticalRenderResult" | "verticalApproval"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2625,6 +2626,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.PublicationIntentCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.PublicationIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    PublicationProviderSession: {
+      payload: Prisma.$PublicationProviderSessionPayload<ExtArgs>
+      fields: Prisma.PublicationProviderSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PublicationProviderSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PublicationProviderSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.PublicationProviderSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PublicationProviderSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>
+        }
+        findMany: {
+          args: Prisma.PublicationProviderSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>[]
+        }
+        create: {
+          args: Prisma.PublicationProviderSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>
+        }
+        createMany: {
+          args: Prisma.PublicationProviderSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PublicationProviderSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.PublicationProviderSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>
+        }
+        update: {
+          args: Prisma.PublicationProviderSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.PublicationProviderSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PublicationProviderSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PublicationProviderSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.PublicationProviderSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PublicationProviderSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.PublicationProviderSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePublicationProviderSession>
+        }
+        groupBy: {
+          args: Prisma.PublicationProviderSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationProviderSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PublicationProviderSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PublicationProviderSessionCountAggregateOutputType> | number
         }
       }
     }
@@ -6024,6 +6099,22 @@ export const PublicationIntentScalarFieldEnum = {
 export type PublicationIntentScalarFieldEnum = (typeof PublicationIntentScalarFieldEnum)[keyof typeof PublicationIntentScalarFieldEnum]
 
 
+export const PublicationProviderSessionScalarFieldEnum = {
+  publicationIntentId: 'publicationIntentId',
+  platform: 'platform',
+  ciphertext: 'ciphertext',
+  iv: 'iv',
+  authTag: 'authTag',
+  keyVersion: 'keyVersion',
+  uploadOffset: 'uploadOffset',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PublicationProviderSessionScalarFieldEnum = (typeof PublicationProviderSessionScalarFieldEnum)[keyof typeof PublicationProviderSessionScalarFieldEnum]
+
+
 export const PublicationResultScalarFieldEnum = {
   id: 'id',
   publicationIntentId: 'publicationIntentId',
@@ -7247,6 +7338,20 @@ export type ListEnumPublicationIntentStateFieldRefInput<$PrismaModel> = FieldRef
 
 
 /**
+ * Reference to a field of type 'Bytes'
+ */
+export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+
+
+
+/**
+ * Reference to a field of type 'Bytes[]'
+ */
+export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
+
+
+
+/**
  * Reference to a field of type 'JobAttemptState'
  */
 export type EnumJobAttemptStateFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JobAttemptState'>
@@ -7635,6 +7740,7 @@ export type GlobalOmitConfig = {
   editorialExportResult?: Prisma.EditorialExportResultOmit
   publicationChannel?: Prisma.PublicationChannelOmit
   publicationIntent?: Prisma.PublicationIntentOmit
+  publicationProviderSession?: Prisma.PublicationProviderSessionOmit
   publicationResult?: Prisma.PublicationResultOmit
   cutSegment?: Prisma.CutSegmentOmit
   jobAttempt?: Prisma.JobAttemptOmit

@@ -204,6 +204,10 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
           WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $3`,
         [claim.id, now, claim.attemptNumber],
       );
+      await client.query(
+        `DELETE FROM "PublicationProviderSession" WHERE "publicationIntentId" = $1`,
+        [claim.id],
+      );
       await client.query("COMMIT");
     } catch (error) {
       await client.query("ROLLBACK").catch(() => undefined);
@@ -220,10 +224,15 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     now: Date,
   ): Promise<void> {
     await this.pool.query(
-      `UPDATE "PublicationIntent"
+      `WITH finalized AS (
+        UPDATE "PublicationIntent"
           SET "state" = 'FAILED_FINAL', "failureCode" = $2,
               "failureMessage" = $3, "finishedAt" = $4, "updatedAt" = $4
-        WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $5`,
+        WHERE "id" = $1 AND "state" = 'PROCESSING' AND "attemptCount" = $5
+        RETURNING "id"
+       )
+       DELETE FROM "PublicationProviderSession" s
+        USING finalized f WHERE s."publicationIntentId" = f."id"`,
       [
         claim.id,
         code.slice(0, 120),
@@ -373,6 +382,11 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
             now,
           ],
         );
+      if (updated.rowCount === 1)
+        await client.query(
+          `DELETE FROM "PublicationProviderSession" WHERE "publicationIntentId" = $1`,
+          [claim.id],
+        );
       await client.query("COMMIT");
     } catch (error) {
       await client.query("ROLLBACK").catch(() => undefined);
@@ -388,12 +402,17 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     now: Date,
   ): Promise<void> {
     await this.pool.query(
-      `UPDATE "PublicationIntent"
+      `WITH finalized AS (
+        UPDATE "PublicationIntent"
           SET "state" = 'FAILED_FINAL', "remoteStatus" = $2,
               "failureCode" = $3, "failureMessage" = $4,
               "finishedAt" = $5, "updatedAt" = $5
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
-          AND "attemptCount" = $6 AND "remotePublicationId" = $7`,
+          AND "attemptCount" = $6 AND "remotePublicationId" = $7
+        RETURNING "id"
+       )
+       DELETE FROM "PublicationProviderSession" s
+        USING finalized f WHERE s."publicationIntentId" = f."id"`,
       [
         claim.id,
         result.remoteStatus.slice(0, 120),

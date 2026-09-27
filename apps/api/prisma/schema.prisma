@@ -1046,12 +1046,32 @@ model PublicationIntent {
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
   result              PublicationResult?
+  providerSession     PublicationProviderSession?
 
+  @@unique([id, platform], map: "PublicationIntent_id_platform_key")
   @@unique([channelId, exportResultId, platform], map: "PublicationIntent_logical_target_key")
   @@unique([channelId, verticalResultId, platform], map: "PublicationIntent_vertical_target_key")
   @@index([projectId, scheduledAt, id])
   @@index([state, scheduledAt, id])
   @@index([channelId, createdAt, id])
+}
+
+/// Encrypted resumable-upload capability. Plain session URIs never enter API responses or logs.
+model PublicationProviderSession {
+  publicationIntentId String                @id @db.Uuid
+  platform            PublicationPlatform
+  publicationIntent   PublicationIntent     @relation(fields: [publicationIntentId, platform], references: [id, platform], onDelete: Restrict, map: "PublicationProviderSession_exact_intent_platform")
+  ciphertext          Bytes
+  iv                  Bytes
+  authTag             Bytes
+  keyVersion          String
+  uploadOffset        BigInt                @default(0)
+  expiresAt           DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@unique([publicationIntentId, platform], map: "PublicationProviderSession_intent_platform_key")
+  @@index([platform, expiresAt, updatedAt])
 }
 
 model PublicationResult {
