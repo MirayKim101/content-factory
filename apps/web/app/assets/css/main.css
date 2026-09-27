@@ -1,31 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --cf-bg: #f3f5f7;
+  --cf-bg: #f5f7fb;
   --cf-surface: #ffffff;
-  --cf-surface-subtle: #f7f9fa;
-  --cf-surface-muted: #eef2f3;
-  --cf-border: #dce3e5;
-  --cf-border-strong: #c7d1d4;
-  --cf-text: #172326;
-  --cf-text-muted: #637277;
-  --cf-brand: #176b51;
-  --cf-brand-strong: #0f513d;
-  --cf-brand-soft: #e5f4ee;
-  --cf-info: #245b78;
-  --cf-info-soft: #eaf3f8;
+  --cf-surface-subtle: #f8f9fc;
+  --cf-surface-muted: #f0f2f7;
+  --cf-border: #e2e6ef;
+  --cf-border-strong: #cbd2df;
+  --cf-text: #172033;
+  --cf-text-muted: #687287;
+  --cf-brand: #4f5fd7;
+  --cf-brand-strong: #3948bc;
+  --cf-brand-soft: #eef0ff;
+  --cf-info: #2563a8;
+  --cf-info-soft: #edf5ff;
   --cf-warning: #8b520c;
   --cf-warning-soft: #fff4dc;
   --cf-danger: #a13737;
   --cf-danger-soft: #fff0ef;
   --cf-success: #27754e;
   --cf-success-soft: #e9f6ee;
-  --cf-shadow-sm: 0 1px 2px rgb(15 34 40 / 0.06),
-    0 6px 18px rgb(15 34 40 / 0.04);
-  --cf-shadow-lg: 0 24px 72px rgb(15 34 40 / 0.2);
-  --cf-radius-sm: 0.55rem;
-  --cf-radius-md: 0.8rem;
-  --cf-radius-lg: 1rem;
+  --cf-shadow-sm: 0 1px 2px rgb(23 32 51 / 0.04),
+    0 8px 24px rgb(23 32 51 / 0.045);
+  --cf-shadow-lg: 0 24px 72px rgb(23 32 51 / 0.18);
+  --cf-radius-sm: 0.625rem;
+  --cf-radius-md: 0.875rem;
+  --cf-radius-lg: 1.125rem;
+  --cf-control-height: 2.75rem;
 }
 
 * {
@@ -50,7 +51,7 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -74,12 +75,12 @@ a {
 }
 
 ::selection {
-  background: #bce4d5;
+  background: #d8dcff;
 }
 
 :where(.p-button, [data-pc-name="button"]) {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: var(--cf-control-height);
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
@@ -89,7 +90,7 @@ a {
   background: var(--cf-brand);
   color: #fff;
   font: inherit;
-  font-weight: 680;
+  font-weight: 700;
   line-height: 1.2;
   text-decoration: none;
   cursor: pointer;
@@ -98,11 +99,11 @@ a {
 :where(.p-button, [data-pc-name="button"]):hover:not(:disabled) {
   border-color: var(--cf-brand-strong);
   background: var(--cf-brand-strong);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(79 95 215 / 0.18);
 }
 
 :where(.p-button, [data-pc-name="button"]):focus-visible {
-  outline: 3px solid #8ac7a5;
+  outline: 3px solid rgb(79 95 215 / 0.22);
   outline-offset: 2px;
 }
 
@@ -171,10 +172,10 @@ a.action-link:hover {
 
 :where(.p-inputtext, .p-textarea, .p-select) {
   width: 100%;
-  min-height: 2.75rem;
+  min-height: var(--cf-control-height);
   border: 1px solid var(--cf-border-strong);
   border-radius: var(--cf-radius-sm);
-  background: #fff;
+  background: var(--cf-surface);
   color: var(--cf-text);
 }
 
@@ -185,13 +186,15 @@ a.action-link:hover {
 :where(.p-inputtext, .p-textarea, .p-select):focus,
 :where(.p-inputtext, .p-textarea, .p-select):focus-within {
   border-color: var(--cf-brand);
-  outline: 3px solid rgb(23 107 81 / 0.16);
+  outline: 3px solid rgb(79 95 215 / 0.15);
   outline-offset: 1px;
 }
 
 :where(.p-select) {
   display: flex;
   align-items: center;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 :where(.p-select-label) {
@@ -203,8 +206,46 @@ a.action-link:hover {
 :where(.p-select-dropdown) {
   display: grid;
   flex: 0 0 2.4rem;
-  height: 2.75rem;
+  height: var(--cf-control-height);
   place-items: center;
+  color: var(--cf-text-muted);
+}
+
+:where(.p-select-dropdown svg, .p-select-dropdown-icon) {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+:where(.p-select-overlay, .p-select-list-container) {
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: var(--cf-surface);
+  box-shadow: var(--cf-shadow-lg);
+}
+
+:where(.p-select-list) {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+}
+
+:where(.p-select-option) {
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+:where(.p-select-option:hover, .p-select-option[data-p-focused="true"]) {
+  background: var(--cf-surface-muted);
+}
+
+:where(.p-select-option[data-p-selected="true"]) {
+  background: var(--cf-brand-soft);
+  color: var(--cf-brand-strong);
+  font-weight: 700;
 }
 
 :where(.p-checkbox) {

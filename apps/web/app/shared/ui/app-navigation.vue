@@ -18,15 +18,15 @@ const navigation = [
   {
     label: "Производство",
     items: [
-      { to: "/horizontal", label: "Горизонтальные видео", marker: "H" },
-      { to: "/library", label: "Медиатека", marker: "M" },
-      { to: "/montage-assets", label: "Монтажные материалы", marker: "A" },
+      { to: "/horizontal", label: "Контент-план", marker: "01" },
+      { to: "/library", label: "Медиатека", marker: "02" },
+      { to: "/montage-assets", label: "Материалы", marker: "03" },
     ],
   },
   {
     label: "Настройки",
     items: [
-      { to: "/creator-context", label: "Контекст автора", marker: "C" },
+      { to: "/creator-context", label: "Профиль автора", marker: "04" },
     ],
   },
 ] as const;
@@ -90,7 +90,7 @@ onBeforeUnmount(() => {
 <template>
   <header class="mobile-header">
     <NuxtLink to="/horizontal" class="mobile-brand" @click="close(true)">
-      <span class="brand-mark" aria-hidden="true">CF</span>
+      <span class="brand-mark" aria-hidden="true">C</span>
       <span>Content Factory</span>
     </NuxtLink>
     <button
@@ -119,10 +119,10 @@ onBeforeUnmount(() => {
       <span class="sr-only">Закрыть меню</span>
     </button>
     <NuxtLink to="/horizontal" class="brand" @click="close(true)">
-      <span class="brand-mark" aria-hidden="true">CF</span>
+      <span class="brand-mark" aria-hidden="true">C</span>
       <span class="brand-copy">
         <strong>Content Factory</strong>
-        <small>Production workspace</small>
+        <small>Контент-операции</small>
       </span>
     </NuxtLink>
 
@@ -143,16 +143,16 @@ onBeforeUnmount(() => {
     </nav>
 
     <div class="future-section" aria-disabled="true">
-      <span class="nav-marker" aria-hidden="true">V</span>
+      <span class="nav-marker" aria-hidden="true">05</span>
       <span>
-        <strong>Вертикальные видео</strong>
-        <small>Этап 3 · позже</small>
+        <strong>Публикации</strong>
+        <small>Скоро</small>
       </span>
     </div>
 
     <footer class="sidebar-footer">
       <span class="system-dot" aria-hidden="true"></span>
-      <span><strong>Локальный контур</strong><small>Данные не публикуются</small></span>
+      <span><strong>Локальный режим</strong><small>Публикация выключена</small></span>
     </footer>
   </aside>
   <button
@@ -171,16 +171,14 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  width: 17rem;
+  width: 15.5rem;
   height: 100vh;
   min-height: 100vh;
-  padding: 1.25rem 1rem 1rem;
+  padding: 1.1rem 0.8rem 0.9rem;
   overflow-y: auto;
-  border-right: 1px solid #203d35;
-  background:
-    radial-gradient(circle at 10% 0%, rgb(65 132 103 / 0.2), transparent 32%),
-    #112820;
-  color: #f5faf7;
+  border-right: 1px solid #202a46;
+  background: #151c31;
+  color: #f7f8fc;
 }
 .brand,
 .mobile-brand {
@@ -201,7 +199,7 @@ onBeforeUnmount(() => {
   place-items: center;
   border: 1px solid rgb(255 255 255 / 0.22);
   border-radius: 0.75rem;
-  background: linear-gradient(145deg, #4aaf84, #1b7655);
+  background: linear-gradient(145deg, #7180ef, #4f5fd7);
   box-shadow: inset 0 1px rgb(255 255 255 / 0.2);
   font-size: 0.78rem;
   font-weight: 800;
@@ -219,7 +217,7 @@ onBeforeUnmount(() => {
 .future-section small,
 .sidebar-footer small {
   display: block;
-  color: #a9bdb5;
+  color: #929db8;
   font-size: 0.72rem;
   font-weight: 400;
 }
@@ -233,7 +231,7 @@ onBeforeUnmount(() => {
 }
 .nav-group > p {
   margin: 0 0.55rem 0.35rem;
-  color: #8da69d;
+  color: #7f8aa5;
   font-size: 0.7rem;
   font-weight: 750;
   letter-spacing: 0.11em;
@@ -248,7 +246,7 @@ onBeforeUnmount(() => {
   padding: 0.55rem 0.65rem;
   border: 1px solid transparent;
   border-radius: 0.7rem;
-  color: #dbe8e2;
+  color: #cbd2e3;
   font-weight: 620;
   text-decoration: none;
   transition:
@@ -268,7 +266,7 @@ onBeforeUnmount(() => {
 }
 .nav-group a[aria-current="page"] {
   border-color: rgb(126 211 174 / 0.17);
-  background: rgb(82 164 128 / 0.2);
+  background: rgb(103 119 232 / 0.16);
   color: #fff;
 }
 .nav-marker {
@@ -279,13 +277,13 @@ onBeforeUnmount(() => {
   place-items: center;
   border-radius: 0.52rem;
   background: rgb(255 255 255 / 0.08);
-  color: #bcd9cd;
+  color: #9ca8c4;
   font-size: 0.72rem;
   font-weight: 800;
 }
 .nav-group a[aria-current="page"] .nav-marker {
-  background: #55aa82;
-  color: #0f3024;
+  background: #6978e6;
+  color: #fff;
 }
 .future-section {
   margin-top: 1.35rem;
@@ -301,15 +299,15 @@ onBeforeUnmount(() => {
   margin-top: auto;
   padding: 0.85rem 0.65rem 0.2rem;
   border-top: 1px solid rgb(255 255 255 / 0.09);
-  color: #dbe8e2;
+  color: #d5daea;
   font-size: 0.78rem;
 }
 .system-dot {
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 50%;
-  background: #5fd097;
-  box-shadow: 0 0 0 0.22rem rgb(95 208 151 / 0.13);
+  background: #69d29b;
+  box-shadow: 0 0 0 0.22rem rgb(105 210 155 / 0.13);
 }
 .mobile-header,
 .section-toggle,

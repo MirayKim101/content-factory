@@ -14,12 +14,15 @@ import AppNavigation from "~/shared/ui/app-navigation.vue";
 <style>
 .app-frame {
   display: grid;
-  grid-template-columns: 17rem minmax(0, 1fr);
+  grid-template-columns: 15.5rem minmax(0, 1fr);
   min-height: 100vh;
 }
 .app-stage {
   min-width: 0;
   min-height: 100vh;
+  background:
+    radial-gradient(circle at 80% -10%, rgb(79 95 215 / 0.06), transparent 28rem),
+    var(--cf-bg);
 }
 @media (max-width: 1023px) {
   .app-frame {

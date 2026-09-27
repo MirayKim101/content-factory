@@ -108,7 +108,10 @@ function formatBytes(bytes: number): string {
 
 <template>
   <section class="card" aria-labelledby="source-upload-title">
-    <h2 id="source-upload-title">Исходный файл</h2>
+    <header class="card-header">
+      <span class="step-number" aria-hidden="true">01</span>
+      <div><h2 id="source-upload-title">Данные исходника</h2><p>Название поможет быстро найти видео в производственной очереди.</p></div>
+    </header>
     <div v-if="recoveredAttempt" class="recovery" role="status">
       <p>
         Найдена незавершённая загрузка «{{ recoveredAttempt.name }}». Файл
@@ -160,7 +163,7 @@ function formatBytes(bytes: number): string {
         </p>
       </div>
       <div class="field">
-        <label for="source-file">MP4-файл</label
+        <label for="source-file">Видео для загрузки</label
         ><input
           id="source-file"
           class="w-full rounded-md border border-slate-400 p-3"
@@ -176,7 +179,7 @@ function formatBytes(bytes: number): string {
           @change="onFileChange"
         />
         <p id="source-file-help" class="help">
-          Пока доступна только ручная загрузка MP4.
+          MP4 · файл не будет опубликован без отдельного подтверждения.
         </p>
         <p v-if="errors.file" id="source-file-error" class="error">
           {{ errors.file }}
@@ -272,33 +275,80 @@ function formatBytes(bytes: number): string {
 
 <style scoped>
 .card {
-  margin-top: 2.5rem;
+  margin-top: 1.75rem;
   padding: 1.5rem;
-  background: #fff;
-  border: 1px solid #d9e0d8;
-  border-radius: 1rem;
-  box-shadow: 0 1rem 3rem rgb(24 34 29 / 7%);
+  background: var(--cf-surface);
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-lg);
+  box-shadow: var(--cf-shadow-sm);
+}
+.card-header {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--cf-border);
+}
+.card-header p {
+  margin: 0.3rem 0 0;
+  color: var(--cf-text-muted);
+}
+.step-number {
+  display: grid;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.7rem;
+  background: var(--cf-brand-soft);
+  color: var(--cf-brand-strong);
+  font-size: 0.75rem;
+  font-weight: 800;
 }
 h2 {
-  margin-top: 0;
-  font-size: 1.4rem;
+  margin: 0;
+  font-size: 1.15rem;
+  letter-spacing: -0.015em;
 }
 .field {
-  margin-top: 1.25rem;
+  max-width: 48rem;
+  margin-top: 1.35rem;
 }
 label {
   display: block;
-  font-weight: 650;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 input:not([type="checkbox"]) {
   box-sizing: border-box;
   display: block;
   width: 100%;
   margin-top: 0.5rem;
+  min-height: var(--cf-control-height);
   padding: 0.7rem;
-  border: 1px solid #9ba99e;
-  border-radius: 0.5rem;
+  border: 1px solid var(--cf-border-strong);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface);
+  color: var(--cf-text);
   font: inherit;
+}
+input[type="file"] {
+  padding: 0.45rem;
+  background: var(--cf-surface-subtle);
+}
+input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--cf-border-strong);
+  border-radius: 0.45rem;
+  background: var(--cf-surface);
+  color: var(--cf-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+input:focus-visible {
+  border-color: var(--cf-brand);
+  outline: 3px solid rgb(79 95 215 / 0.15);
 }
 .help,
 .error {
@@ -306,10 +356,10 @@ input:not([type="checkbox"]) {
   font-size: 0.9rem;
 }
 .help {
-  color: #526159;
+  color: var(--cf-text-muted);
 }
 .error {
-  color: #a61b1b;
+  color: var(--cf-danger);
 }
 .checkbox-row {
   display: flex;
@@ -323,20 +373,6 @@ input:not([type="checkbox"]) {
 }
 .actions {
   margin-top: 1.5rem;
-}
-button {
-  padding: 0.75rem 1rem;
-  color: white;
-  background: #234d35;
-  border: 0;
-  border-radius: 0.5rem;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-button:disabled {
-  cursor: wait;
-  opacity: 0.65;
 }
 .status {
   min-height: 1.5rem;
@@ -355,12 +391,12 @@ button:disabled {
   margin: 0.45rem 0 0;
 }
 .cut-help {
-  color: #385346;
+  color: var(--cf-text-muted);
 }
 .success {
   padding: 1rem;
-  background: #eaf6ed;
-  border-radius: 0.5rem;
+  background: var(--cf-success-soft);
+  border-radius: var(--cf-radius-md);
 }
 .success p {
   margin-top: 0;
@@ -374,7 +410,7 @@ dl div {
   gap: 0.5rem;
 }
 dt {
-  color: #526159;
+  color: var(--cf-text-muted);
 }
 dd {
   margin: 0;

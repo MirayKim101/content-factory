@@ -53,6 +53,15 @@ const authorizationTarget = ref<LibraryPage["items"][number] | null>(null);
 const attested = ref(false);
 const authorizationPending = ref(false);
 const authorizationError = ref<string | null>(null);
+const resultSummary = computed(() => {
+  const ready = visibleItems.value.filter(
+    (item) => item.status === "SOURCE_READY",
+  ).length;
+  const pending = visibleItems.value.filter(
+    (item) => item.status === "SOURCE_PENDING",
+  ).length;
+  return { ready, pending, total: visibleItems.value.length };
+});
 
 function updateFilters(next: ProjectListQuery): void {
   void navigateTo({
@@ -166,19 +175,19 @@ watch(
           <span>Производство</span><span aria-hidden="true">/</span
           ><strong>Медиатека</strong>
         </nav>
-        <p class="eyebrow">Управление источниками</p>
+        <p class="eyebrow">Контент · Источники</p>
         <h1 id="library-title">Медиатека</h1>
-        <p>Найдите разрешённый исходник и добавьте его в рабочую очередь.</p>
+        <p>Все исходные видео, права и готовность к производству — в одном месте.</p>
       </div>
-      <NuxtLink class="upload-link" to="/">+ Загрузить видео</NuxtLink>
+      <NuxtLink class="upload-link" to="/"><span aria-hidden="true">＋</span> Загрузить видео</NuxtLink>
     </header>
     <form class="filters" @submit.prevent="search">
       <label class="filter-field" for="library-search">
-        <span>Поиск</span>
+        <span>Поиск по медиатеке</span>
         <InputText
           id="library-search"
           v-model="draftQuery"
-          placeholder="Проект или имя файла"
+          placeholder="Название проекта или файла"
         />
       </label>
       <label class="filter-field" for="library-status">
@@ -194,8 +203,13 @@ watch(
           "
         />
       </label>
-      <Button type="submit">Найти</Button>
+      <Button type="submit">Применить</Button>
     </form>
+    <div v-if="visibleItems.length" class="library-summary" aria-label="Сводка медиатеки">
+      <p><strong>{{ resultSummary.total }}</strong><span>показано</span></p>
+      <p><strong>{{ resultSummary.ready }}</strong><span>готово</span></p>
+      <p><strong>{{ resultSummary.pending }}</strong><span>в обработке</span></p>
+    </div>
     <p v-if="selectedCount" class="selection" role="status">
       <span><strong>{{ selectedCount }}</strong> из {{ MAX_SELECTED_PROJECTS }} выбрано</span>
       <Button type="button" @click="openWorkspace"
@@ -208,13 +222,19 @@ watch(
     <template v-else-if="visibleItems.length">
       <section class="source-list" aria-label="Исходные видео">
         <article v-for="item in visibleItems" :key="item.id" class="source-row">
-          <div>
-            <h2>{{ item.name }}</h2>
-            <p>
+          <div class="source-main">
+            <div class="source-title-row">
+              <span class="file-icon" aria-hidden="true">▶</span>
+              <div>
+                <h2>{{ item.name }}</h2>
+                <p class="file-meta">
               {{ item.source.originalFilename }} ·
               {{ formatBytes(item.source.sizeBytes) }} · добавлено
               {{ new Date(item.source.addedAt).toLocaleString("ru-RU") }}
-            </p>
+                </p>
+              </div>
+            </div>
+            <div class="source-details">
             <p
               class="authorization-badge"
               :class="{
@@ -227,19 +247,23 @@ watch(
                   : "Требуется подтверждение прав"
               }}
             </p>
-            <p>
-              Длительность:
+            <p class="source-metric">
+              <span>Длительность</span><strong>
               {{
                 item.source.durationMs === undefined
                   ? "проверяется"
                   : formatDisplayTimecode(item.source.durationMs)
-              }}
-              · Нарезки: {{ item.cutJobCounts.total }}, готово:
-              {{ item.cutJobCounts.ready }}, ошибок:
-              {{ item.cutJobCounts.failed }}
+              }}</strong>
             </p>
+            <p class="source-metric">
+              <span>Нарезки</span><strong>{{ item.cutJobCounts.ready }} / {{ item.cutJobCounts.total }}</strong>
+            </p>
+            <p v-if="item.cutJobCounts.failed" class="source-metric failed">
+              <span>Ошибки</span><strong>{{ item.cutJobCounts.failed }}</strong>
+            </p>
+            </div>
           </div>
-          <label :for="`select-source-${item.id}`">
+          <label class="select-source" :for="`select-source-${item.id}`">
             <Checkbox
               :input-id="`select-source-${item.id}`"
               binary
@@ -253,7 +277,7 @@ watch(
               "
               @update:model-value="select(item.id)"
             />
-            Выбрать видео
+            <span>Выбрать</span>
           </label>
           <Button
             v-if="
@@ -369,19 +393,21 @@ watch(
   box-sizing: border-box;
   max-width: 90rem;
   margin: 0 auto;
-  padding: 2.25rem clamp(1rem, 3vw, 3rem) 5rem;
+  padding: 2rem clamp(1.25rem, 3vw, 3.25rem) 5rem;
 }
 .library-header {
   display: flex;
   gap: 1.5rem;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 .library-header h1 {
   margin: 0.15rem 0 0.35rem;
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-  letter-spacing: -0.035em;
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  font-weight: 760;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
 }
 .library-header p:last-child {
   margin: 0;
@@ -390,13 +416,13 @@ watch(
 .breadcrumbs {
   display: flex;
   gap: 0.45rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.15rem;
   color: var(--cf-text-muted);
   font-size: 0.78rem;
 }
 .eyebrow {
   margin: 0;
-  color: var(--cf-brand);
+  color: var(--cf-brand-strong);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -404,10 +430,10 @@ watch(
 }
 .filters {
   display: grid;
-  grid-template-columns: 1fr 12rem auto;
-  gap: 0.65rem;
+  grid-template-columns: minmax(16rem, 1fr) 14rem auto;
+  gap: 0.8rem;
   align-items: end;
-  padding: 1rem;
+  padding: 1.05rem;
   background: #fff;
   border: 1px solid var(--cf-border);
   border-radius: var(--cf-radius-lg);
@@ -420,7 +446,31 @@ watch(
 .filter-field > span {
   color: var(--cf-text-muted);
   font-size: 0.72rem;
-  font-weight: 650;
+  font-weight: 700;
+}
+.library-summary {
+  display: flex;
+  gap: 1.6rem;
+  align-items: center;
+  min-height: 3.5rem;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-md);
+  background: rgb(255 255 255 / 0.65);
+}
+.library-summary p {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin: 0;
+}
+.library-summary strong {
+  font-size: 1.05rem;
+}
+.library-summary span {
+  color: var(--cf-text-muted);
+  font-size: 0.78rem;
 }
 .selection {
   position: sticky;
@@ -447,23 +497,86 @@ watch(
 }
 .source-row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem;
-  padding: 1rem 1.1rem;
+  grid-template-columns: minmax(0, 1fr) 7.5rem;
+  gap: 1rem;
+  align-items: center;
+  min-height: 8.25rem;
+  padding: 1.15rem 1.25rem;
   border-bottom: 1px solid var(--cf-border);
   background: #fff;
 }
 .source-row:last-of-type {
   border-bottom: 0;
 }
+.source-row:hover {
+  background: #fafbfe;
+}
 .source-row h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  font-weight: 720;
+  letter-spacing: -0.01em;
 }
 .source-row p {
   margin: 0.35rem 0;
   color: var(--cf-text-muted);
-  font-size: 0.83rem;
+  font-size: 0.79rem;
+}
+.source-title-row {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+.file-icon {
+  display: grid;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.7rem;
+  background: var(--cf-brand-soft);
+  color: var(--cf-brand);
+  font-size: 0.7rem;
+}
+.file-meta {
+  color: var(--cf-text-muted);
+}
+.source-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+  margin: 0.7rem 0 0 3.35rem;
+}
+.source-details p {
+  margin: 0;
+}
+.source-metric {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+  padding-left: 0.65rem;
+  border-left: 1px solid var(--cf-border);
+}
+.source-metric span {
+  color: var(--cf-text-muted);
+}
+.source-metric strong {
+  color: var(--cf-text);
+}
+.source-metric.failed strong {
+  color: var(--cf-danger);
+}
+.select-source {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 2.75rem;
+  color: var(--cf-text);
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
 }
 .muted {
   grid-column: 1/-1;
@@ -474,6 +587,7 @@ watch(
   border-radius: 999px;
   background: var(--cf-warning-soft);
   color: var(--cf-warning);
+  font-size: 0.72rem !important;
   font-weight: 700;
 }
 .authorization-badge.cleared {
@@ -495,6 +609,7 @@ watch(
   border-radius: var(--cf-radius-sm);
   background: var(--cf-brand);
   color: #fff;
+  box-shadow: 0 5px 14px rgb(79 95 215 / 0.18);
   font-weight: 700;
   text-decoration: none;
 }
@@ -524,6 +639,16 @@ watch(
   }
   .source-row {
     grid-template-columns: 1fr;
+  }
+  .source-details {
+    margin-left: 0;
+  }
+  .library-summary {
+    gap: 0.9rem;
+    overflow-x: auto;
+  }
+  .select-source {
+    justify-content: flex-start;
   }
   .source-row label {
     min-height: 44px;
