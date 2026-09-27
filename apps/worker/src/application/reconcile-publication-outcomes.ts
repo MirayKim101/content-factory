@@ -39,21 +39,26 @@ export class ReconcilePublicationOutcomes {
       const heartbeat = this.startHeartbeat(claim, abortController);
       try {
         const result = await provider.reconcile(claim, abortController.signal);
+        let applied: boolean;
         if (result.state === "PENDING")
-          await this.repository.refreshUnknownRemoteState(
+          applied = await this.repository.refreshUnknownRemoteState(
             claim,
             result.remoteStatus,
             this.clock(),
           );
         else if (result.state === "PUBLISHED")
-          await this.repository.finalizePublished(claim, result, this.clock());
-        else
-          await this.repository.failUnknownRemoteState(
+          applied = await this.repository.finalizePublished(
             claim,
             result,
             this.clock(),
           );
-        reconciled += 1;
+        else
+          applied = await this.repository.failUnknownRemoteState(
+            claim,
+            result,
+            this.clock(),
+          );
+        if (applied) reconciled += 1;
       } catch (error) {
         if (
           abortController.signal.reason instanceof ReconciliationLeaseLostError

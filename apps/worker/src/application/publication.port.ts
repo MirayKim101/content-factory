@@ -93,17 +93,17 @@ export interface PublicationWorkerRepository {
     claim: PublicationReconciliationClaim,
     remoteStatus: string,
     now: Date,
-  ): Promise<void>;
+  ): Promise<boolean>;
   finalizePublished(
     claim: PublicationReconciliationClaim,
     result: Extract<PublicationReconciliationResult, { state: "PUBLISHED" }>,
     now: Date,
-  ): Promise<void>;
+  ): Promise<boolean>;
   failUnknownRemoteState(
     claim: PublicationReconciliationClaim,
     result: Extract<PublicationReconciliationResult, { state: "FAILED" }>,
     now: Date,
-  ): Promise<void>;
+  ): Promise<boolean>;
   releaseReconciliationClaim(
     claim: PublicationReconciliationClaim,
   ): Promise<void>;

@@ -37,9 +37,9 @@ function repository(): PublicationWorkerRepository {
     markUnknownRemoteState: vi.fn(),
     unknownRemoteOutcomes: vi.fn().mockResolvedValue([]),
     heartbeatReconciliationClaim: vi.fn().mockResolvedValue(true),
-    refreshUnknownRemoteState: vi.fn(),
-    finalizePublished: vi.fn(),
-    failUnknownRemoteState: vi.fn(),
+    refreshUnknownRemoteState: vi.fn().mockResolvedValue(true),
+    finalizePublished: vi.fn().mockResolvedValue(true),
+    failUnknownRemoteState: vi.fn().mockResolvedValue(true),
     releaseReconciliationClaim: vi.fn().mockResolvedValue(undefined),
   };
 }

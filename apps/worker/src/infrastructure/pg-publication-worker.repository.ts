@@ -459,8 +459,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     claim: PublicationReconciliationClaim,
     remoteStatus: string,
     now: Date,
-  ): Promise<void> {
-    await this.pool.query(
+  ): Promise<boolean> {
+    const result = await this.pool.query(
       `UPDATE "PublicationIntent" SET "remoteStatus" = $2, "updatedAt" = $3,
               "reconciliationLeaseToken" = NULL, "reconciliationLeaseExpiresAt" = NULL
         WHERE "id" = $1 AND "state" = 'UNKNOWN_REMOTE_STATE'
@@ -475,6 +475,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         claim.reconciliationLeaseToken,
       ],
     );
+    return result.rowCount === 1;
   }
 
   async heartbeatReconciliationClaim(
@@ -495,7 +496,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     claim: PublicationReconciliationClaim,
     result: Extract<PublicationReconciliationResult, { state: "PUBLISHED" }>,
     now: Date,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
@@ -538,6 +539,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
           [claim.id],
         );
       await client.query("COMMIT");
+      return updated.rowCount === 1;
     } catch (error) {
       await client.query("ROLLBACK").catch(() => undefined);
       throw error;
@@ -548,10 +550,10 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
 
   async failUnknownRemoteState(
     claim: PublicationReconciliationClaim,
-    result: Extract<PublicationReconciliationResult, { state: "FAILED" }>,
+    outcome: Extract<PublicationReconciliationResult, { state: "FAILED" }>,
     now: Date,
-  ): Promise<void> {
-    await this.pool.query(
+  ): Promise<boolean> {
+    const query = await this.pool.query<{ applied: boolean }>(
       `WITH finalized AS (
         UPDATE "PublicationIntent"
           SET "state" = 'FAILED_FINAL', "remoteStatus" = $2,
@@ -562,20 +564,24 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
           AND "attemptCount" = $6 AND "remotePublicationId" = $7
           AND "reconciliationLeaseToken" = $8
         RETURNING "id"
+       ), deleted AS (
+         DELETE FROM "PublicationProviderSession" s
+          USING finalized f WHERE s."publicationIntentId" = f."id"
+          RETURNING s."publicationIntentId"
        )
-       DELETE FROM "PublicationProviderSession" s
-        USING finalized f WHERE s."publicationIntentId" = f."id"`,
+       SELECT EXISTS(SELECT 1 FROM finalized) AS "applied"`,
       [
         claim.id,
-        result.remoteStatus.slice(0, 120),
-        result.code.slice(0, 120),
-        result.message.slice(0, 1000),
+        outcome.remoteStatus.slice(0, 120),
+        outcome.code.slice(0, 120),
+        outcome.message.slice(0, 1000),
         now,
         claim.attemptNumber,
         claim.remotePublicationId,
         claim.reconciliationLeaseToken,
       ],
     );
+    return query.rows[0]?.applied === true;
   }
 
   async releaseReconciliationClaim(

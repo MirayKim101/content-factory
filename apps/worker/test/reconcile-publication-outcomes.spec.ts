@@ -34,9 +34,9 @@ function repository(): PublicationWorkerRepository {
     markUnknownRemoteState: vi.fn(),
     unknownRemoteOutcomes: vi.fn().mockResolvedValue([claim]),
     heartbeatReconciliationClaim: vi.fn().mockResolvedValue(true),
-    refreshUnknownRemoteState: vi.fn(),
-    finalizePublished: vi.fn(),
-    failUnknownRemoteState: vi.fn(),
+    refreshUnknownRemoteState: vi.fn().mockResolvedValue(true),
+    finalizePublished: vi.fn().mockResolvedValue(true),
+    failUnknownRemoteState: vi.fn().mockResolvedValue(true),
     releaseReconciliationClaim: vi.fn().mockResolvedValue(undefined),
   };
 }
@@ -167,5 +167,21 @@ describe("ReconcilePublicationOutcomes", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("does not report reconciliation after a fenced update loses the lease", async () => {
+    const repo = repository();
+    vi.mocked(repo.refreshUnknownRemoteState).mockResolvedValue(false);
+    const provider = {
+      platform: "YOUTUBE" as const,
+      publish: vi.fn(),
+      reconcile: vi
+        .fn()
+        .mockResolvedValue({ state: "PENDING", remoteStatus: "processing" }),
+    };
+
+    await expect(
+      new ReconcilePublicationOutcomes(repo, [provider]).execute(),
+    ).resolves.toBe(0);
   });
 });
