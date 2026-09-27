@@ -16,6 +16,7 @@ import { ProcessFrameJob } from "./application/process-frame-job.js";
 import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.js";
 import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
 import {
+  openAiClipGenerationConfig,
   tiktokPublishingConfig,
   workerConfig,
   youtubePublishingConfig,
@@ -55,6 +56,8 @@ import { GoogleOAuthAccessTokenResolver } from "./infrastructure/google-oauth-ac
 import { TikTokOAuthAccessTokenResolver } from "./infrastructure/tiktok-oauth-access-token-resolver.js";
 import { TikTokDirectPostTransport } from "./infrastructure/tiktok-direct-post-transport.js";
 import { TikTokPublicationAdapter } from "./infrastructure/tiktok-publication-adapter.js";
+import { OpenAiClipGenerationAdapter } from "./infrastructure/openai-clip-generation-adapter.js";
+import { PgClipGenerationWorker } from "./infrastructure/pg-clip-generation-worker.js";
 
 const TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS = 5 * 60_000;
 
@@ -465,6 +468,7 @@ async function startPublicationWorker(): Promise<void> {
 
 async function startAiWorker(): Promise<void> {
   const config = workerConfig();
+  const clipConfig = openAiClipGenerationConfig(process.env);
   const transcriptWorker = new PgTranscriptWorker({
     databaseUrl: config.databaseUrl,
     bucket: config.storage.bucket,
@@ -483,6 +487,13 @@ async function startAiWorker(): Promise<void> {
     config.sourceAuthorizationPolicy,
     imageStorage,
   );
+  const clipWorker = clipConfig
+    ? new PgClipGenerationWorker(
+        config.databaseUrl,
+        new OpenAiClipGenerationAdapter(clipConfig),
+        clipConfig.timeoutMs + 30_000,
+      )
+    : null;
   const workerId = `ai-worker-${randomUUID()}`;
   const transcriptQueue = new Worker(
     "ai-transcript-v1",
@@ -521,6 +532,21 @@ async function startAiWorker(): Promise<void> {
       concurrency: 1,
     },
   );
+  const clipQueue = clipWorker
+    ? new Worker(
+        "ai-clip-generation-v1",
+        async (delivery) => {
+          const intentId = (delivery.data as { intentId?: unknown }).intentId;
+          if (typeof intentId !== "string")
+            throw new Error("CLIP_GENERATION_JOB_INVALID");
+          await clipWorker.process(intentId);
+        },
+        {
+          connection: { ...config.redis, maxRetriesPerRequest: null },
+          concurrency: 1,
+        },
+      )
+    : null;
   transcriptQueue.on("error", (error) =>
     console.error(
       JSON.stringify({
@@ -548,10 +574,20 @@ async function startAiWorker(): Promise<void> {
       }),
     ),
   );
+  clipQueue?.on("error", (error) =>
+    console.error(
+      JSON.stringify({
+        event: "ai_clip_generation_worker_error",
+        workerId,
+        error: error.message,
+      }),
+    ),
+  );
   await Promise.all([
     transcriptWorker.recover(),
     researchWorker.recover(),
     imageWorker.recover(),
+    clipWorker?.recover() ?? Promise.resolve(0),
   ]);
   const transcriptRecoveryTimer = setInterval(() => {
     void transcriptWorker
@@ -583,17 +619,32 @@ async function startAiWorker(): Promise<void> {
       );
   }, 5_000);
   imageRecoveryTimer.unref();
+  const clipRecoveryTimer = clipWorker
+    ? setInterval(() => {
+        void clipWorker.recover().catch(() =>
+          console.error(
+            JSON.stringify({
+              event: "ai_clip_generation_reconciliation_failed",
+            }),
+          ),
+        );
+      }, 5_000)
+    : null;
+  clipRecoveryTimer?.unref();
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.once(signal, async () => {
       clearInterval(researchRecoveryTimer);
       clearInterval(imageRecoveryTimer);
       clearInterval(transcriptRecoveryTimer);
+      if (clipRecoveryTimer) clearInterval(clipRecoveryTimer);
       await transcriptQueue.close().catch(() => undefined);
       await researchQueue.close().catch(() => undefined);
       await imageQueue.close().catch(() => undefined);
+      await clipQueue?.close().catch(() => undefined);
       await transcriptWorker.close().catch(() => undefined);
       await researchWorker.close().catch(() => undefined);
       await imageWorker.close().catch(() => undefined);
+      await clipWorker?.close().catch(() => undefined);
       imageStorage.close();
     });
   }
@@ -601,12 +652,18 @@ async function startAiWorker(): Promise<void> {
     transcriptQueue.waitUntilReady(),
     researchQueue.waitUntilReady(),
     imageQueue.waitUntilReady(),
+    clipQueue?.waitUntilReady() ?? Promise.resolve(),
   ]);
   console.log(
     JSON.stringify({
       event: "ai_worker_started",
       workerId,
-      queues: ["ai-transcript-v1", "ai-research-v1", "ai-image-suggestion-v1"],
+      queues: [
+        "ai-transcript-v1",
+        "ai-research-v1",
+        "ai-image-suggestion-v1",
+        ...(clipQueue ? ["ai-clip-generation-v1"] : []),
+      ],
     }),
   );
 }
