@@ -3094,6 +3094,8 @@ export interface components {
       id: string;
       /** Format: uuid */
       importedProjectId: string | null;
+      ingestIntent:
+        components["schemas"]["TwitchVodIngestIntentResponseDto"] | null;
       providerVideoId: string;
       /** Format: date-time */
       publishedAt: string;

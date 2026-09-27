@@ -73,6 +73,8 @@ export class TwitchVodCandidateResponseDto {
   state!: string;
   @ApiProperty({ type: String, format: "uuid", nullable: true })
   importedProjectId!: string | null;
+  @ApiProperty({ type: () => TwitchVodIngestIntentResponseDto, nullable: true })
+  ingestIntent!: TwitchVodIngestIntentResponseDto | null;
   @ApiProperty({ type: String, format: "date-time" }) createdAt!: Date;
   @ApiProperty({ type: String, format: "date-time" }) updatedAt!: Date;
 }

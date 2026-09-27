@@ -293,6 +293,7 @@ describe("TwitchIngestionService", () => {
             broadcasterDisplayName: true,
           },
         },
+        ingestIntent: true,
       },
       orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
       take: 200,

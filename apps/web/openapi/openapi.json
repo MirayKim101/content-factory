@@ -6046,6 +6046,15 @@
             "nullable": true,
             "type": "string"
           },
+          "ingestIntent": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TwitchVodIngestIntentResponseDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
           "providerVideoId": {
             "type": "string"
           },
@@ -6096,6 +6105,7 @@
           "availableForIngestAt",
           "state",
           "importedProjectId",
+          "ingestIntent",
           "createdAt",
           "updatedAt"
         ],

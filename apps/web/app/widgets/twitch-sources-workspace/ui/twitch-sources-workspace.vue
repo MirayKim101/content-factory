@@ -3,7 +3,7 @@ import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { createProjectsApi } from "~/shared/api/projects";
 import {
@@ -22,6 +22,7 @@ const vodCandidates = ref<TwitchVodCandidate[]>([]);
 const sourceReadyProjects = ref<{ label: string; value: string }[]>([]);
 const selectedProjects = ref<Record<string, string>>({});
 const sourceMatchConfirmations = ref<Record<string, boolean>>({});
+const importNames = ref<Record<string, string>>({});
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
@@ -95,6 +96,27 @@ async function linkProject(item: TwitchVodCandidate) {
   } catch (cause) {
     error.value =
       cause instanceof Error ? cause.message : "Не удалось привязать проект.";
+  } finally {
+    saving.value = false;
+  }
+}
+async function startAutomaticImport(item: TwitchVodCandidate) {
+  if (saving.value || item.ingestIntent) return;
+  saving.value = true;
+  error.value = null;
+  notice.value = null;
+  try {
+    await api.startVodImport(
+      item.id,
+      importNames.value[item.id]?.trim() || item.title,
+      `twitch-vod:${item.id}:${crypto.randomUUID()}`,
+    );
+    notice.value =
+      "Импорт поставлен в очередь. Права нужно подтвердить после загрузки.";
+    await load();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Не удалось начать импорт.";
   } finally {
     saving.value = false;
   }
@@ -192,7 +214,46 @@ function vodStateLabel(state: TwitchVodCandidate["state"]) {
     } as const
   )[state];
 }
-onMounted(load);
+function ingestStateLabel(
+  state: NonNullable<TwitchVodCandidate["ingestIntent"]>["state"],
+) {
+  return (
+    {
+      QUEUED: "В очереди",
+      DOWNLOADING: "Скачивание",
+      UPLOADING: "Загрузка в хранилище",
+      RETRY_WAIT: "Повтор после сбоя",
+      READY: "Импорт завершён",
+      FAILED_FINAL: "Импорт остановлен",
+      CANCELED: "Отменён",
+    } as const
+  )[state];
+}
+function ingestProgress(item: NonNullable<TwitchVodCandidate["ingestIntent"]>) {
+  if (!item.totalBytes || item.totalBytes === "0") return null;
+  return Math.min(
+    100,
+    Math.round((Number(item.downloadedBytes) / Number(item.totalBytes)) * 100),
+  );
+}
+let pollTimer: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  void load();
+  pollTimer = setInterval(() => {
+    if (
+      !saving.value &&
+      vodCandidates.value.some(
+        (item) =>
+          item.ingestIntent &&
+          ["QUEUED", "DOWNLOADING", "UPLOADING", "RETRY_WAIT"].includes(
+            item.ingestIntent.state,
+          ),
+      )
+    )
+      void load();
+  }, 5000);
+});
+onUnmounted(() => pollTimer && clearInterval(pollTimer));
 </script>
 
 <template>
@@ -317,9 +378,31 @@ onMounted(load);
                 class="ingest-action"
               >
                 <p class="ingest-note">
-                  Выберите уже загруженный исходник этой записи. Автозагрузка
-                  появится после подключения media provider.
+                  Запустите защищённый автоматический импорт или привяжите уже
+                  загруженный исходник вручную.
                 </p>
+                <div v-if="vod.ingestIntent" class="automatic-import-status">
+                  <strong>{{
+                    ingestStateLabel(vod.ingestIntent.state)
+                  }}</strong>
+                  <span v-if="ingestProgress(vod.ingestIntent) !== null">
+                    {{ ingestProgress(vod.ingestIntent) }}%
+                  </span>
+                  <small v-if="vod.ingestIntent.failureCode">
+                    {{ vod.ingestIntent.failureCode }}. Повторите после проверки
+                    gateway.
+                  </small>
+                </div>
+                <div v-else class="automatic-import-action">
+                  <InputText
+                    v-model="importNames[vod.id]"
+                    :placeholder="vod.title"
+                    aria-label="Название нового проекта"
+                  />
+                  <Button :disabled="saving" @click="startAutomaticImport(vod)">
+                    Импортировать автоматически
+                  </Button>
+                </div>
                 <div v-if="sourceReadyProjects.length" class="project-linker">
                   <Select
                     v-model="selectedProjects[vod.id]"
@@ -543,6 +626,27 @@ h3 {
   gap: 0.65rem;
   align-self: center;
 }
+.automatic-import-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  border: 1px solid var(--cf-border);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface-subtle);
+}
+.automatic-import-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  padding: 0.65rem;
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface-subtle);
+}
+.automatic-import-status small {
+  flex-basis: 100%;
+  color: var(--cf-danger);
+}
 .vod-actions {
   display: grid;
   gap: 0.65rem;
@@ -678,6 +782,9 @@ label span {
     grid-template-columns: 1fr;
   }
   .vod-card {
+    grid-template-columns: 1fr;
+  }
+  .automatic-import-action {
     grid-template-columns: 1fr;
   }
   .workspace-grid {

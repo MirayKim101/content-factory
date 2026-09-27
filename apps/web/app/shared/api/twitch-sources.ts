@@ -17,6 +17,29 @@ const channelSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 export type TwitchSourceChannel = z.infer<typeof channelSchema>;
+const vodIngestIntentSchema = z.object({
+  id: z.uuid(),
+  candidateId: z.uuid(),
+  projectName: z.string(),
+  state: z.enum([
+    "QUEUED",
+    "DOWNLOADING",
+    "UPLOADING",
+    "RETRY_WAIT",
+    "READY",
+    "FAILED_FINAL",
+    "CANCELED",
+  ]),
+  projectId: z.uuid().nullable(),
+  downloadedBytes: z.string().regex(/^\d+$/),
+  totalBytes: z.string().regex(/^\d+$/).nullable(),
+  attemptCount: z.number().int().nonnegative(),
+  failureCode: z.string().nullable(),
+  failureMessage: z.string().nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+});
+export type TwitchVodIngestIntent = z.infer<typeof vodIngestIntentSchema>;
 const vodCandidateSchema = z.object({
   id: z.uuid(),
   channelId: z.uuid(),
@@ -34,6 +57,9 @@ const vodCandidateSchema = z.object({
   availableForIngestAt: z.iso.datetime(),
   state: z.enum(["WAITING_DELAY", "READY_FOR_INGEST", "IMPORTED", "IGNORED"]),
   importedProjectId: z.uuid().nullable(),
+  ingestIntent: vodIngestIntentSchema
+    .nullish()
+    .transform((value) => value ?? null),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -86,6 +112,20 @@ export function createTwitchSourcesApi(
         `${base}/twitch/vod-candidates/${encodeURIComponent(id)}/ignore`,
         { method: "POST" },
         vodCandidateSchema,
+      ),
+    startVodImport: (id: string, projectName: string, idempotencyKey: string) =>
+      request(
+        fetcher,
+        `${base}/twitch/vod-candidates/${encodeURIComponent(id)}/import`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": idempotencyKey,
+          },
+          body: JSON.stringify({ projectName }),
+        },
+        vodIngestIntentSchema,
       ),
     linkVodProject: (
       id: string,

@@ -44,8 +44,8 @@ export class TwitchIngestionService {
     });
   }
 
-  listVodCandidates() {
-    return this.prisma.twitchVodCandidate.findMany({
+  async listVodCandidates() {
+    const candidates = await this.prisma.twitchVodCandidate.findMany({
       include: {
         channel: {
           select: {
@@ -53,10 +53,17 @@ export class TwitchIngestionService {
             broadcasterDisplayName: true,
           },
         },
+        ingestIntent: true,
       },
       orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
       take: 200,
     });
+    return candidates.map((candidate) => ({
+      ...candidate,
+      ingestIntent: candidate.ingestIntent
+        ? this.serializeIngestIntent(candidate.ingestIntent)
+        : null,
+    }));
   }
 
   async startVodIngest(
