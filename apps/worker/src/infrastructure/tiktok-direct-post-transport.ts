@@ -37,7 +37,12 @@ export class TikTokDirectPostTransport {
     const max = 64n * 1024n ** 2n;
     if (totalBytes < min)
       return { chunkSize: Number(totalBytes), totalChunkCount: 1 };
-    const chunkSize = totalBytes <= max ? totalBytes : max;
+    const chunkSize =
+      totalBytes <= max
+        ? totalBytes
+        : totalBytes < max * 2n
+          ? totalBytes / 2n
+          : max;
     const count = totalBytes / chunkSize;
     if (count < 1n || count > 1000n)
       throw new Error("TIKTOK_MEDIA_CHUNK_COUNT_INVALID");
@@ -132,9 +137,30 @@ export class TikTokDirectPostTransport {
     signal?: AbortSignal;
   }): Promise<{ complete: boolean; nextOffset: bigint }> {
     if (!input.chunk.byteLength) throw new Error("TIKTOK_UPLOAD_CHUNK_EMPTY");
-    const end = input.offset + BigInt(input.chunk.byteLength) - 1n;
+    const chunkBytes = BigInt(input.chunk.byteLength);
+    const minChunkBytes = 5n * 1024n ** 2n;
+    const maxChunkBytes = 64n * 1024n ** 2n;
+    const maxFinalChunkBytes = 128n * 1024n ** 2n;
+    const end = input.offset + chunkBytes - 1n;
     if (input.offset < 0n || end >= input.totalBytes)
       throw new Error("TIKTOK_UPLOAD_RANGE_INVALID");
+    const wholeSingleFile =
+      input.offset === 0n &&
+      chunkBytes === input.totalBytes &&
+      input.totalBytes <= maxChunkBytes;
+    if (
+      (!input.final &&
+        (chunkBytes < minChunkBytes || chunkBytes > maxChunkBytes)) ||
+      (input.final &&
+        !wholeSingleFile &&
+        (chunkBytes < minChunkBytes || chunkBytes > maxFinalChunkBytes)) ||
+      (input.final &&
+        input.offset === 0n &&
+        input.totalBytes > maxChunkBytes) ||
+      (input.final && end !== input.totalBytes - 1n) ||
+      (!input.final && end === input.totalBytes - 1n)
+    )
+      throw new Error("TIKTOK_UPLOAD_CHUNK_SIZE_INVALID");
     const response = await this.request(this.uploadUrl(input.uploadUrl), {
       method: "PUT",
       headers: {

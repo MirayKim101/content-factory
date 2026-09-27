@@ -61,14 +61,14 @@ describe("TikTokDirectPostTransport", () => {
       brandOrganicToggle: false,
     });
     expect(result.plan).toEqual({
-      chunkSize: 64 * 1024 * 1024,
-      totalChunkCount: 1,
+      chunkSize: 35 * 1024 * 1024,
+      totalChunkCount: 2,
     });
     expect(result.publishId).toBe("publish_42");
     const body = JSON.parse(String(request.mock.calls[0]![1]!.body));
     expect(body.source_info).toMatchObject({
       source: "FILE_UPLOAD",
-      total_chunk_count: 1,
+      total_chunk_count: 2,
     });
   });
 
@@ -76,33 +76,49 @@ describe("TikTokDirectPostTransport", () => {
     const request = vi
       .fn()
       .mockResolvedValue(new Response(null, { status: 206 }));
+    const chunkSize = 5 * 1024 * 1024;
     await expect(
       new TikTokDirectPostTransport(request).uploadChunk({
         uploadUrl: "https://open-upload.tiktokapis.com/video/?upload_id=42",
-        chunk: new Uint8Array(5),
+        chunk: new Uint8Array(chunkSize),
         offset: 0n,
-        totalBytes: 10n,
+        totalBytes: BigInt(chunkSize * 2),
         contentType: "video/mp4",
         final: false,
       }),
-    ).resolves.toEqual({ complete: false, nextOffset: 5n });
+    ).resolves.toEqual({ complete: false, nextOffset: BigInt(chunkSize) });
     expect(request).toHaveBeenCalledWith(
       expect.stringContaining("open-upload.tiktokapis.com"),
       expect.objectContaining({
-        headers: expect.objectContaining({ "content-range": "bytes 0-4/10" }),
+        headers: expect.objectContaining({
+          "content-range": `bytes 0-${chunkSize - 1}/${chunkSize * 2}`,
+        }),
       }),
     );
   });
 
+  it("rejects non-final chunks outside TikTok transfer bounds", async () => {
+    const request = vi.fn();
+    await expect(
+      new TikTokDirectPostTransport(request).uploadChunk({
+        uploadUrl: "https://open-upload.tiktokapis.com/video/?upload_id=42",
+        chunk: new Uint8Array(1024),
+        offset: 0n,
+        totalBytes: 10n * 1024n * 1024n,
+        contentType: "video/mp4",
+        final: false,
+      }),
+    ).rejects.toThrow("TIKTOK_UPLOAD_CHUNK_SIZE_INVALID");
+    expect(request).not.toHaveBeenCalled();
+  });
+
   it("rejects upload capabilities outside TikTok hosts", async () => {
-    const request = vi
-      .fn()
-      .mockResolvedValue(
-        ok({
-          publish_id: "publish_42",
-          upload_url: "https://attacker.example/video",
-        }),
-      );
+    const request = vi.fn().mockResolvedValue(
+      ok({
+        publish_id: "publish_42",
+        upload_url: "https://attacker.example/video",
+      }),
+    );
     await expect(
       new TikTokDirectPostTransport(request).initiate({
         accessToken: "token",
