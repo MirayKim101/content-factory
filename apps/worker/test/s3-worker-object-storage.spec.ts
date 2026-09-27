@@ -3,7 +3,12 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -22,6 +27,72 @@ afterEach(async () => {
 });
 
 describe("S3 worker object storage export upload", () => {
+  it("verifies immutable publication media before reading an exact range", async () => {
+    const storage = new S3WorkerObjectStorage("private", {
+      endpoint: "http://127.0.0.1:9000",
+      region: "us-east-1",
+      accessKey: "test",
+      secretKey: "test-secret",
+    });
+    const identity = {
+      objectKey: "vertical/release.mp4",
+      sizeBytes: 10n,
+      sha256: "a".repeat(64),
+      contentType: "video/mp4",
+    };
+    const send = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ContentLength: 10,
+        ContentType: "video/mp4",
+        Metadata: { sha256: identity.sha256 },
+      })
+      .mockResolvedValueOnce({
+        ContentRange: "bytes 2-5/10",
+        Body: { transformToByteArray: () => Promise.resolve([2, 3, 4, 5]) },
+      });
+    (storage as unknown as { client: { send: typeof send } }).client.send =
+      send;
+
+    await expect(storage.verifyIdentity(identity)).resolves.toBeUndefined();
+    await expect(
+      storage.readRange({ identity, offset: 2n, length: 4 }),
+    ).resolves.toEqual(Buffer.from([2, 3, 4, 5]));
+
+    expect(send.mock.calls[0]![0]).toBeInstanceOf(HeadObjectCommand);
+    expect(send.mock.calls[1]![0]).toBeInstanceOf(GetObjectCommand);
+    expect((send.mock.calls[1]![0] as GetObjectCommand).input.Range).toBe(
+      "bytes=2-5",
+    );
+    storage.close();
+  });
+
+  it("rejects publication media whose stored hash does not match the claim", async () => {
+    const storage = new S3WorkerObjectStorage("private", {
+      endpoint: "http://127.0.0.1:9000",
+      region: "us-east-1",
+      accessKey: "test",
+      secretKey: "test-secret",
+    });
+    const send = vi.fn().mockResolvedValue({
+      ContentLength: 10,
+      ContentType: "video/mp4",
+      Metadata: { sha256: "b".repeat(64) },
+    });
+    (storage as unknown as { client: { send: typeof send } }).client.send =
+      send;
+
+    await expect(
+      storage.verifyIdentity({
+        objectKey: "vertical/release.mp4",
+        sizeBytes: 10n,
+        sha256: "a".repeat(64),
+        contentType: "video/mp4",
+      }),
+    ).rejects.toThrow("PUBLICATION_MEDIA_IDENTITY_MISMATCH");
+    storage.close();
+  });
+
   it("uses one atomic streaming PutObject request for an export archive", async () => {
     const directory = await mkdtemp(join(tmpdir(), "cf-export-put-object-"));
     directories.push(directory);

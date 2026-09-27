@@ -6,16 +6,23 @@ import { ControlledMediaError } from "../domain/media-job.js";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 
 import type { WorkerObjectStorage } from "../application/ports.js";
+import type {
+  PublicationMediaIdentity,
+  PublicationMediaSource,
+} from "../application/publication-media.port.js";
 
 export const SINGLE_REQUEST_UPLOAD_MAX_BYTES = 5_000_000_000n;
 
-export class S3WorkerObjectStorage implements WorkerObjectStorage {
+export class S3WorkerObjectStorage
+  implements WorkerObjectStorage, PublicationMediaSource
+{
   private readonly client: S3Client;
 
   constructor(
@@ -87,6 +94,58 @@ export class S3WorkerObjectStorage implements WorkerObjectStorage {
         false,
       );
     return result.Body as NodeJS.ReadableStream;
+  }
+
+  async verifyIdentity(
+    identity: PublicationMediaIdentity,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const result = await this.client.send(
+      new HeadObjectCommand({ Bucket: this.bucket, Key: identity.objectKey }),
+      { abortSignal: signal },
+    );
+    if (
+      result.ContentLength === undefined ||
+      BigInt(result.ContentLength) !== identity.sizeBytes ||
+      result.Metadata?.sha256 !== identity.sha256 ||
+      result.ContentType !== identity.contentType
+    )
+      throw new Error("PUBLICATION_MEDIA_IDENTITY_MISMATCH");
+  }
+
+  async readRange(input: {
+    identity: PublicationMediaIdentity;
+    offset: bigint;
+    length: number;
+    signal?: AbortSignal;
+  }): Promise<Buffer> {
+    if (
+      input.offset < 0n ||
+      !Number.isSafeInteger(input.length) ||
+      input.length < 1 ||
+      input.length > 16 * 1024 * 1024 ||
+      input.offset + BigInt(input.length) > input.identity.sizeBytes
+    )
+      throw new Error("PUBLICATION_MEDIA_RANGE_INVALID");
+    const end = input.offset + BigInt(input.length) - 1n;
+    const result = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: input.identity.objectKey,
+        Range: `bytes=${input.offset}-${end}`,
+      }),
+      { abortSignal: input.signal },
+    );
+    if (
+      !result.Body ||
+      result.ContentRange !==
+        `bytes ${input.offset}-${end}/${input.identity.sizeBytes}`
+    )
+      throw new Error("PUBLICATION_MEDIA_RANGE_MISMATCH");
+    const bytes = Buffer.from(await result.Body.transformToByteArray());
+    if (bytes.length !== input.length)
+      throw new Error("PUBLICATION_MEDIA_RANGE_MISMATCH");
+    return bytes;
   }
 
   async upload(input: {
