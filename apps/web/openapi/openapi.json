@@ -11100,6 +11100,25 @@
         "tags": ["twitch-ingestion"]
       }
     },
+    "/api/v1/twitch/vod-candidates/{id}/ignore": {
+      "post": {
+        "operationId": "TwitchIngestionController_ignoreVodCandidate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwitchVodCandidateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
+      }
+    },
     "/api/v1/vertical-renders/{id}": {
       "get": {
         "operationId": "VerticalController_get",

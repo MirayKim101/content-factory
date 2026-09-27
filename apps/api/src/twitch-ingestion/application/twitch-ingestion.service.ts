@@ -20,6 +20,7 @@ import {
   TwitchEventInvalidError,
   TwitchIngestionDisabledError,
   TwitchSignatureInvalidError,
+  TwitchVodConflictError,
 } from "../domain/twitch-ingestion.js";
 
 interface TwitchHeaders {
@@ -54,6 +55,27 @@ export class TwitchIngestionService {
       orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
       take: 200,
     });
+  }
+
+  async ignoreVodCandidate(id: string) {
+    const updated = await this.prisma.twitchVodCandidate.updateMany({
+      where: { id, state: { in: ["WAITING_DELAY", "READY_FOR_INGEST"] } },
+      data: { state: "IGNORED" },
+    });
+    const candidate = await this.prisma.twitchVodCandidate.findUnique({
+      where: { id },
+      include: {
+        channel: {
+          select: {
+            broadcasterLogin: true,
+            broadcasterDisplayName: true,
+          },
+        },
+      },
+    });
+    if (candidate && updated.count === 0 && candidate.state !== "IGNORED")
+      throw new TwitchVodConflictError();
+    return candidate;
   }
 
   createChannel(input: {

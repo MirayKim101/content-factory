@@ -80,6 +80,13 @@ export function createTwitchSourcesApi(
         { method: "POST" },
         channelSchema,
       ),
+    ignoreVodCandidate: (id: string) =>
+      request(
+        fetcher,
+        `${base}/twitch/vod-candidates/${encodeURIComponent(id)}/ignore`,
+        { method: "POST" },
+        vodCandidateSchema,
+      ),
   };
 }
 

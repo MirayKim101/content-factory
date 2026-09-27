@@ -41,6 +41,8 @@ function repository(existingHash?: string) {
     },
     twitchVodCandidate: {
       findMany: vi.fn(async () => []),
+      updateMany: vi.fn(async () => ({ count: 1 })),
+      findUnique: vi.fn(async () => ({ id: "vod-1", state: "IGNORED" })),
     },
   };
 }
@@ -164,6 +166,22 @@ describe("TwitchIngestionService", () => {
       },
       orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
       take: 200,
+    });
+  });
+
+  it("ignores a pending VOD without deleting its history", async () => {
+    const prisma = repository();
+    const service = new TwitchIngestionService(prisma as never);
+    await expect(service.ignoreVodCandidate("vod-1")).resolves.toEqual({
+      id: "vod-1",
+      state: "IGNORED",
+    });
+    expect(prisma.twitchVodCandidate.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "vod-1",
+        state: { in: ["WAITING_DELAY", "READY_FOR_INGEST"] },
+      },
+      data: { state: "IGNORED" },
     });
   });
 });

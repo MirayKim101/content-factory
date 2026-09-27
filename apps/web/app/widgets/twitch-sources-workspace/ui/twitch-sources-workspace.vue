@@ -104,6 +104,25 @@ async function revoke(item: TwitchSourceChannel) {
     saving.value = false;
   }
 }
+async function ignoreVod(item: TwitchVodCandidate) {
+  if (
+    saving.value ||
+    !confirm(`Пропустить запись «${item.title}»? История останется в журнале.`)
+  )
+    return;
+  saving.value = true;
+  error.value = null;
+  try {
+    await api.ignoreVodCandidate(item.id);
+    notice.value = "Запись исключена из очереди импорта.";
+    await load();
+  } catch (cause) {
+    error.value =
+      cause instanceof Error ? cause.message : "Не удалось пропустить запись.";
+  } finally {
+    saving.value = false;
+  }
+}
 function formatDate(value: string | null) {
   return value
     ? new Intl.DateTimeFormat("ru-RU", {
@@ -251,6 +270,13 @@ onMounted(load);
             >
               Открыть проект
             </NuxtLink>
+            <Button
+              v-if="['WAITING_DELAY', 'READY_FOR_INGEST'].includes(vod.state)"
+              severity="secondary"
+              :disabled="saving"
+              @click="ignoreVod(vod)"
+              >Пропустить</Button
+            >
           </article>
         </div>
         <p v-else class="empty">

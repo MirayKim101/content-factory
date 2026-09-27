@@ -24,6 +24,7 @@ import {
   TwitchEventInvalidError,
   TwitchIngestionDisabledError,
   TwitchSignatureInvalidError,
+  TwitchVodConflictError,
 } from "../domain/twitch-ingestion.js";
 import {
   CreateTwitchIngestChannelDto,
@@ -46,6 +47,29 @@ export class TwitchIngestionController {
   @ApiOkResponse({ type: [TwitchVodCandidateResponseDto] })
   vodCandidates() {
     return this.service.listVodCandidates();
+  }
+
+  @Post("vod-candidates/:id/ignore")
+  @ApiOkResponse({ type: TwitchVodCandidateResponseDto })
+  async ignoreVodCandidate(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+  ) {
+    try {
+      const candidate = await this.service.ignoreVodCandidate(id);
+      if (!candidate)
+        throw new NotFoundException({
+          code: "TWITCH_VOD_NOT_FOUND",
+          message: "Twitch VOD candidate was not found.",
+        });
+      return candidate;
+    } catch (error) {
+      if (error instanceof TwitchVodConflictError)
+        throw new ConflictException({
+          code: "TWITCH_VOD_CONFLICT",
+          message: "Imported Twitch VOD cannot be ignored.",
+        });
+      throw error;
+    }
   }
 
   @Post("channels")
