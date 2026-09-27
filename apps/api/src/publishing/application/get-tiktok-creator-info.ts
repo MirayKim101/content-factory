@@ -10,6 +10,7 @@ import {
 const TOKEN_ENDPOINT = "https://open.tiktokapis.com/v2/oauth/token/";
 const CREATOR_INFO_ENDPOINT =
   "https://open.tiktokapis.com/v2/post/publish/creator_info/query/";
+const CREATOR_INFO_CACHE_TTL_MS = 30_000;
 
 export interface TikTokCreatorInfoView {
   creatorAvatarUrl: string;
@@ -25,6 +26,12 @@ export interface TikTokCreatorInfoView {
 
 @Injectable()
 export class GetTikTokCreatorInfo {
+  private readonly cache = new Map<
+    string,
+    { expiresAt: number; value: TikTokCreatorInfoView }
+  >();
+  private readonly pending = new Map<string, Promise<TikTokCreatorInfoView>>();
+
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(
@@ -53,7 +60,13 @@ export class GetTikTokCreatorInfo {
         (!item.channelId || item.channelId === channelId),
     );
     if (!credential) throw new TikTokCreatorInfoUnavailableError();
-    return queryTikTokCreatorInfo(
+    const now = Date.now();
+    const cached = this.cache.get(channelId);
+    if (cached && cached.expiresAt > now) return cached.value;
+    if (cached) this.cache.delete(channelId);
+    const existing = this.pending.get(channelId);
+    if (existing) return existing;
+    const request = queryTikTokCreatorInfo(
       {
         clientKey: config.clientKey,
         clientSecret: config.clientSecret,
@@ -61,8 +74,19 @@ export class GetTikTokCreatorInfo {
         expectedOpenId: channel.externalChannelRef,
       },
       fetch,
-      new Date(),
+      new Date(now),
     );
+    this.pending.set(channelId, request);
+    try {
+      const value = await request;
+      this.cache.set(channelId, {
+        expiresAt: Date.now() + CREATOR_INFO_CACHE_TTL_MS,
+        value,
+      });
+      return value;
+    } finally {
+      this.pending.delete(channelId);
+    }
   }
 }
 
