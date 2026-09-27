@@ -229,6 +229,7 @@ async function sourceIsCurrentAndCleared(
       WHERE i."id" = $1 AND i."externalTransferAllowed" = TRUE
         AND p."status" = 'SOURCE_READY' AND s."status" = 'READY'
         AND s."durationMs" = i."sourceDurationMs" AND a."status" = 'CLEARED'
+        AND a."basis" IS NOT NULL AND a."basis" <> 'LOCAL_DEVELOPMENT_AUTO'
       FOR SHARE OF p, s, a`,
     [intentId],
   );

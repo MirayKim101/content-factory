@@ -38,7 +38,10 @@ export class ClipGenerationService {
     });
     if (!source || source.status !== "READY" || !source.durationMs)
       throw new NotFoundException({ code: "CLIP_GENERATION_SOURCE_NOT_READY" });
-    if (!source.authorizations.length)
+    if (
+      !source.authorizations.length ||
+      source.authorizations[0]?.basis === "LOCAL_DEVELOPMENT_AUTO"
+    )
       throw new ConflictException({
         code: "CLIP_GENERATION_RIGHTS_NOT_CLEARED",
       });
