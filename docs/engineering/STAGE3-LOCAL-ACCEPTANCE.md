@@ -97,6 +97,12 @@
 - Media, AI, publication, Twitch и vertical containers имеют единый readiness
   marker/healthcheck: stale marker удаляется до старта, готовность публикуется
   после инициализации, а shutdown снимает её до drain.
+- Transcript, research, image и optional clip recovery в AI worker работают
+  single-flight. Shutdown сначала закрывает очереди, затем дожидается текущих
+  recovery-проходов и только после этого закрывает PostgreSQL/S3 ресурсы.
+- Frame, export-scratch и media-scratch reconciliation в основном media worker
+  также работают single-flight. SIGTERM синхронно останавливает новые ticks и
+  abort-ит frame I/O, затем дренирует активные проверки перед закрытием БД.
 
 ## Воспроизведённые проверки
 
