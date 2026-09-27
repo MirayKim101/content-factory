@@ -47,6 +47,7 @@ export interface EditorialExportView {
     failure: { code: string; message: string; retryable: boolean } | null;
   };
   result: {
+    id: string;
     filename: string;
     sizeBytes: bigint;
     sha256: string;

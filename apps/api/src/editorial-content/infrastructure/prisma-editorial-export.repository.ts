@@ -445,6 +445,7 @@ export class PrismaEditorialExportRepository implements EditorialExportRepositor
         : null;
     const result = row.result
       ? {
+          id: row.result.id,
           filename: row.result.filename,
           sizeBytes: row.result.archiveSizeBytes,
           sha256: row.result.archiveSha256,

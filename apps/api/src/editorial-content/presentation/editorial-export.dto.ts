@@ -61,6 +61,7 @@ export class EditorialExportJobResponseDto {
 }
 
 export class EditorialExportResultResponseDto {
+  @ApiProperty({ type: String, format: "uuid" }) id!: string;
   @ApiProperty({ type: String }) filename!: string;
   @ApiProperty({ type: String, pattern: "^\\d+$" }) sizeBytes!: string;
   @ApiProperty({ type: String, pattern: "^[a-f0-9]{64}$" }) sha256!: string;

@@ -61,6 +61,7 @@ const exportSchema: z.ZodType<EditorialExport> = z.object({
   }),
   result: z
     .object({
+      id: uuid,
       completedAt: z.iso.datetime(),
       downloadUrl: z.string(),
       filename: z.string(),

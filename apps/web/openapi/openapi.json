@@ -2746,6 +2746,10 @@
           "filename": {
             "type": "string"
           },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
           "manifest": {
             "type": "object"
           },
@@ -2759,6 +2763,7 @@
           }
         },
         "required": [
+          "id",
           "filename",
           "sizeBytes",
           "sha256",

@@ -1836,6 +1836,8 @@ export interface components {
       /** Format: uri-reference */
       downloadUrl: string;
       filename: string;
+      /** Format: uuid */
+      id: string;
       manifest: Record<string, never>;
       sha256: string;
       sizeBytes: string;

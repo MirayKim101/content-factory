@@ -21,13 +21,12 @@ const navigation = [
       { to: "/horizontal", label: "Контент-план", marker: "01" },
       { to: "/library", label: "Медиатека", marker: "02" },
       { to: "/montage-assets", label: "Материалы", marker: "03" },
+      { to: "/publications", label: "Публикации", marker: "04" },
     ],
   },
   {
     label: "Настройки",
-    items: [
-      { to: "/creator-context", label: "Профиль автора", marker: "04" },
-    ],
+    items: [{ to: "/creator-context", label: "Профиль автора", marker: "05" }],
   },
 ] as const;
 function close(restoreFocus = false): void {
@@ -142,17 +141,12 @@ onBeforeUnmount(() => {
       </section>
     </nav>
 
-    <div class="future-section" aria-disabled="true">
-      <span class="nav-marker" aria-hidden="true">05</span>
-      <span>
-        <strong>Публикации</strong>
-        <small>Скоро</small>
-      </span>
-    </div>
-
     <footer class="sidebar-footer">
       <span class="system-dot" aria-hidden="true"></span>
-      <span><strong>Локальный режим</strong><small>Публикация выключена</small></span>
+      <span
+        ><strong>Безопасный режим</strong
+        ><small>Внешняя отправка выключена</small></span
+      >
     </footer>
   </aside>
   <button
