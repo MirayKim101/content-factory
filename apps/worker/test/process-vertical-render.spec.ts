@@ -96,7 +96,12 @@ describe("ProcessVerticalRender", () => {
     );
     expect(repo.complete).toHaveBeenCalledWith(
       claim,
-      expect.objectContaining({ width: 1080, height: 1920, sizeBytes: 15n }),
+      expect.objectContaining({
+        width: 1080,
+        height: 1920,
+        sizeBytes: 15n,
+        objectKey: expect.stringContaining("/attempts/1-lease-1/"),
+      }),
     );
     expect(repo.fail).not.toHaveBeenCalled();
   });

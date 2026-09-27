@@ -65,7 +65,9 @@ export class ProcessVerticalRender {
       if (!file.isFile() || file.size <= 0)
         throw new Error("VERTICAL_OUTPUT_EMPTY");
       const sha256 = await hashFile(output);
-      const objectKey = `projects/${claim.projectId}/vertical/${claim.intentId}/${sha256}.mp4`;
+      const objectKey =
+        `projects/${claim.projectId}/vertical/${claim.intentId}/attempts/` +
+        `${claim.attemptNumber}-${claim.leaseToken}/${sha256}.mp4`;
       const uploaded = await this.storage.upload({
         objectKey,
         filePath: output,
