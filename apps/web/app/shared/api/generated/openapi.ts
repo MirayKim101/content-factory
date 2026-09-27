@@ -69,6 +69,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/clip-generations/{intentId}/accept": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["ClipGenerationController_accept"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/creator-profiles": {
     parameters: {
       query?: never;
@@ -3280,6 +3296,27 @@ export interface operations {
     responses: {
       /** @description Clip generation status and suggestions */
       200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  ClipGenerationController_accept: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        intentId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
         headers: {
           [name: string]: unknown;
         };

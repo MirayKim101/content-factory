@@ -22,14 +22,22 @@ import {
 import { Queue } from "bullmq";
 
 import { apiEnvironment } from "../../config/environment.js";
-import { CreateClipGenerationDto } from "./clip-generation.dto.js";
+import { CreateCuts } from "../../media-pipeline/application/create-cuts.js";
+import { toCreateCutsResponse } from "../../media-pipeline/presentation/pipeline-response.js";
+import {
+  AcceptClipSuggestionsDto,
+  CreateClipGenerationDto,
+} from "./clip-generation.dto.js";
 import { ClipGenerationService } from "./clip-generation.service.js";
 
 @ApiTags("clip-generation")
 @Controller("api/v1")
 export class ClipGenerationController implements OnModuleDestroy {
   private readonly queue: Queue | null;
-  constructor(private readonly service: ClipGenerationService) {
+  constructor(
+    private readonly service: ClipGenerationService,
+    private readonly createCuts: CreateCuts,
+  ) {
     const config = apiEnvironment();
     this.queue =
       config.clipGenerationEnabled && !config.mediaQueueDisabled
@@ -92,6 +100,36 @@ export class ClipGenerationController implements OnModuleDestroy {
   ) {
     this.requireEnabled();
     return this.service.detail(intentId);
+  }
+
+  @Post("clip-generations/:intentId/accept")
+  @ApiParam({ name: "intentId", format: "uuid" })
+  @ApiHeader({ name: "Idempotency-Key", required: true })
+  async accept(
+    @Param("intentId", new ParseUUIDPipe({ version: "4" })) intentId: string,
+    @Headers("idempotency-key") key: string | undefined,
+    @Body() body: AcceptClipSuggestionsDto,
+  ) {
+    this.requireEnabled();
+    const idempotencyKey = key?.trim();
+    if (!idempotencyKey || !/^[A-Za-z0-9._:-]{8,200}$/.test(idempotencyKey))
+      throw new BadRequestException({ code: "IDEMPOTENCY_KEY_INVALID" });
+    const resolved = await this.service.resolveAcceptance(
+      intentId,
+      body.suggestionIds,
+    );
+    const result = await this.createCuts.execute({
+      projectId: resolved.projectId,
+      idempotencyKey,
+      segments: resolved.segments,
+    });
+    await this.service.recordAcceptance({
+      intentId,
+      cutRequestId: result.requestId,
+      idempotencyKey,
+      suggestionIds: body.suggestionIds,
+    });
+    return toCreateCutsResponse(result);
   }
 
   private requireEnabled(): void {

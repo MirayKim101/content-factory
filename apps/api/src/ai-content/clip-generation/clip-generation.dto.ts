@@ -11,6 +11,7 @@ import {
   MaxLength,
   Min,
   ValidateNested,
+  IsUUID,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
@@ -64,4 +65,13 @@ export class CreateClipGenerationDto {
       "Explicit consent to transfer transcript text to the configured external provider.",
   })
   externalProviderTransferAllowed!: boolean;
+}
+
+export class AcceptClipSuggestionsDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(20)
+  @IsUUID("4", { each: true })
+  @ApiProperty({ type: [String], format: "uuid", minItems: 1, maxItems: 20 })
+  suggestionIds!: string[];
 }

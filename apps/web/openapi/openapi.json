@@ -6554,6 +6554,35 @@
         "tags": ["clip-generation"]
       }
     },
+    "/api/v1/clip-generations/{intentId}/accept": {
+      "post": {
+        "operationId": "ClipGenerationController_accept",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["clip-generation"]
+      }
+    },
     "/api/v1/creator-profiles": {
       "get": {
         "operationId": "CreatorContextController_listProfiles",

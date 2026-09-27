@@ -35,6 +35,6 @@ import { PrismaAiCutLineage } from "./infrastructure/prisma-ai-cut-lineage.js";
     { provide: MEDIA_QUEUE, useFactory: createMediaQueue },
     { provide: AI_CUT_LINEAGE, useExisting: PrismaAiCutLineage },
   ],
-  exports: [JOB_DISPATCH, AI_CUT_LINEAGE],
+  exports: [JOB_DISPATCH, AI_CUT_LINEAGE, CreateCuts],
 })
 export class MediaPipelineModule {}

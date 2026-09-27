@@ -387,13 +387,14 @@ model MediaArtifact {
 }
 
 model CutRequest {
-  id                 String        @id @db.Uuid
-  projectId          String        @db.Uuid
-  project            Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  idempotencyKey     String        @unique
+  id                 String                    @id @db.Uuid
+  projectId          String                    @db.Uuid
+  project            Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  idempotencyKey     String                    @unique
   requestFingerprint String
-  createdAt          DateTime      @default(now())
+  createdAt          DateTime                  @default(now())
   jobs               PipelineJob[]
+  clipAcceptance     ClipGenerationAcceptance?
 
   @@index([projectId, createdAt])
 }
@@ -2045,6 +2046,7 @@ model ClipGenerationIntent {
   createdAt               DateTime                   @default(now())
   updatedAt               DateTime                   @updatedAt
   suggestions             ClipGenerationSuggestion[]
+  acceptances             ClipGenerationAcceptance[]
 
   @@unique([id, projectId, sourceId, sourceVersion])
   @@index([state, leaseExpiresAt, createdAt, id])
@@ -2065,6 +2067,20 @@ model ClipGenerationSuggestion {
 
   @@unique([intentId, ordinal])
   @@index([intentId, startMs, endMs])
+}
+
+model ClipGenerationAcceptance {
+  id                 String               @id @db.Uuid
+  intentId           String               @db.Uuid
+  intent             ClipGenerationIntent @relation(fields: [intentId], references: [id], onDelete: Restrict)
+  cutRequestId       String               @unique @db.Uuid
+  cutRequest         CutRequest           @relation(fields: [cutRequestId], references: [id], onDelete: Restrict)
+  idempotencyKey     String               @unique
+  requestFingerprint String
+  suggestionIds      Json
+  createdAt          DateTime             @default(now())
+
+  @@index([intentId, createdAt, id])
 }
 
 enum PublicationContentKind {

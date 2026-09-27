@@ -101,6 +101,82 @@ export class ClipGenerationService {
     return rows[0];
   }
 
+  async resolveAcceptance(intentId: string, suggestionIds: readonly string[]) {
+    if (
+      suggestionIds.length < 1 ||
+      suggestionIds.length > 20 ||
+      new Set(suggestionIds).size !== suggestionIds.length
+    )
+      throw new ConflictException({
+        code: "CLIP_GENERATION_SUGGESTION_SELECTION_INVALID",
+      });
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        projectId: string;
+        sourceId: string;
+        sourceVersion: number;
+        sourceDurationMs: number;
+        suggestionId: string;
+        startMs: number;
+        endMs: number;
+      }>
+    >(Prisma.sql`
+      SELECT i."projectId", i."sourceId", i."sourceVersion", i."sourceDurationMs",
+             s."id" AS "suggestionId", s."startMs", s."endMs"
+        FROM "ClipGenerationIntent" i
+        JOIN "VideoSource" v ON v."id"=i."sourceId" AND v."projectId"=i."projectId" AND v."sourceVersion"=i."sourceVersion"
+        JOIN "Project" p ON p."id"=i."projectId"
+        JOIN "SourceAuthorization" a ON a."sourceId"=v."id" AND a."sourceVersion"=v."sourceVersion"
+        JOIN "ClipGenerationSuggestion" s ON s."intentId"=i."id"
+       WHERE i."id"=${intentId}::uuid AND i."state"='READY'
+         AND v."status"='READY' AND p."status"='SOURCE_READY'
+         AND v."durationMs"=i."sourceDurationMs" AND a."status"='CLEARED'
+         AND a."basis" IS NOT NULL AND a."basis" <> 'LOCAL_DEVELOPMENT_AUTO'
+         AND s."id" IN (${Prisma.join(suggestionIds.map((id) => Prisma.sql`${id}::uuid`))})
+       ORDER BY s."ordinal"`);
+    if (rows.length !== suggestionIds.length)
+      throw new ConflictException({ code: "CLIP_GENERATION_ACCEPTANCE_STALE" });
+    const first = rows[0]!;
+    return {
+      projectId: first.projectId,
+      segments: rows.map((row) => ({
+        clientSegmentId: row.suggestionId,
+        startMs: row.startMs,
+        endMs: row.endMs,
+      })),
+    };
+  }
+
+  async recordAcceptance(input: {
+    intentId: string;
+    cutRequestId: string;
+    idempotencyKey: string;
+    suggestionIds: readonly string[];
+  }): Promise<void> {
+    const fingerprint = createHash("sha256")
+      .update(JSON.stringify([input.intentId, input.suggestionIds]))
+      .digest("hex");
+    const ids = JSON.stringify(input.suggestionIds);
+    const inserted = await this.prisma.$executeRaw(Prisma.sql`
+      INSERT INTO "ClipGenerationAcceptance" ("id","intentId","cutRequestId","idempotencyKey","requestFingerprint","suggestionIds")
+      VALUES (${randomUUID()}::uuid,${input.intentId}::uuid,${input.cutRequestId}::uuid,${input.idempotencyKey},${fingerprint},${ids}::jsonb)
+      ON CONFLICT ("idempotencyKey") DO NOTHING`);
+    if (inserted === 0) {
+      const rows = await this.prisma.$queryRaw<
+        Array<{ cutRequestId: string; requestFingerprint: string }>
+      >(Prisma.sql`
+        SELECT "cutRequestId","requestFingerprint" FROM "ClipGenerationAcceptance" WHERE "idempotencyKey"=${input.idempotencyKey}`);
+      if (
+        !rows[0] ||
+        rows[0].cutRequestId !== input.cutRequestId ||
+        rows[0].requestFingerprint !== fingerprint
+      )
+        throw new ConflictException({
+          code: "CLIP_GENERATION_ACCEPTANCE_IDEMPOTENCY_CONFLICT",
+        });
+    }
+  }
+
   private async idForKey(key: string, fingerprint: string): Promise<string> {
     const rows = await this.prisma.$queryRaw<
       Array<{ id: string; requestFingerprint: string }>
