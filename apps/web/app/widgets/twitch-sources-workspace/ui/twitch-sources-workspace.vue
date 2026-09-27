@@ -455,11 +455,22 @@ onUnmounted(() => pollTimer && clearInterval(pollTimer));
                 Открыть проект
               </NuxtLink>
               <Button
-                v-if="['WAITING_DELAY', 'READY_FOR_INGEST'].includes(vod.state)"
+                v-if="
+                  ['WAITING_DELAY', 'READY_FOR_INGEST'].includes(vod.state) &&
+                  (!vod.ingestIntent ||
+                    [
+                      'QUEUED',
+                      'RETRY_WAIT',
+                      'FAILED_FINAL',
+                      'CANCELED',
+                    ].includes(vod.ingestIntent.state))
+                "
                 severity="secondary"
                 :disabled="saving"
                 @click="ignoreVod(vod)"
-                >Пропустить</Button
+                >{{
+                  vod.ingestIntent ? "Отменить и пропустить" : "Пропустить"
+                }}</Button
               >
             </div>
           </article>

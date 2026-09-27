@@ -139,7 +139,8 @@ export class TwitchIngestionController {
       if (error instanceof TwitchVodConflictError)
         throw new ConflictException({
           code: "TWITCH_VOD_CONFLICT",
-          message: "Imported Twitch VOD cannot be ignored.",
+          message:
+            "A running or completed Twitch VOD import cannot be ignored.",
         });
       throw error;
     }

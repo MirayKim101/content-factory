@@ -145,9 +145,34 @@ export class TwitchIngestionService {
   }
 
   async ignoreVodCandidate(id: string) {
-    const updated = await this.prisma.twitchVodCandidate.updateMany({
-      where: { id, state: { in: ["WAITING_DELAY", "READY_FOR_INGEST"] } },
-      data: { state: "IGNORED" },
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const current = await tx.twitchVodCandidate.findUnique({
+        where: { id },
+        include: { ingestIntent: true },
+      });
+      if (!current) return { count: 0 };
+      const intent = current.ingestIntent;
+      if (intent && intent.state !== "CANCELED") {
+        const canceled = await tx.twitchVodIngestIntent.updateMany({
+          where: {
+            id: intent.id,
+            state: { in: ["QUEUED", "RETRY_WAIT", "FAILED_FINAL"] },
+            leaseOwner: null,
+            leaseExpiresAt: null,
+          },
+          data: {
+            state: "CANCELED",
+            nextAttemptAt: null,
+            failureCode: null,
+            failureMessage: null,
+          },
+        });
+        if (canceled.count !== 1) throw new TwitchVodConflictError();
+      }
+      return tx.twitchVodCandidate.updateMany({
+        where: { id, state: { in: ["WAITING_DELAY", "READY_FOR_INGEST"] } },
+        data: { state: "IGNORED" },
+      });
     });
     const candidate = await this.prisma.twitchVodCandidate.findUnique({
       where: { id },

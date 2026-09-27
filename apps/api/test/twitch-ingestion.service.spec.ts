@@ -44,11 +44,18 @@ function repository(existingHash?: string) {
     twitchVodCandidate: {
       findMany: vi.fn(async () => []),
       updateMany: vi.fn(async () => ({ count: 1 })),
-      findUnique: vi.fn(async () => ({
-        id: "vod-1",
-        state: "IGNORED",
-        importedProjectId: null as string | null,
-      })),
+      findUnique: vi.fn(
+        async (): Promise<{
+          id: string;
+          state: string;
+          importedProjectId: string | null;
+          ingestIntent?: { id: string; state: string } | null;
+        }> => ({
+          id: "vod-1",
+          state: "IGNORED",
+          importedProjectId: null,
+        }),
+      ),
     },
     twitchVodIngestIntent: {
       findUnique: vi.fn(async () => null),
@@ -59,6 +66,7 @@ function repository(existingHash?: string) {
         downloadedBytes: 0n,
         totalBytes: null,
       })),
+      updateMany: vi.fn(async () => ({ count: 1 })),
     },
     project: {
       findUnique: vi.fn(async () => ({
@@ -315,6 +323,26 @@ describe("TwitchIngestionService", () => {
       },
       data: { state: "IGNORED" },
     });
+  });
+
+  it("refuses to ignore a VOD while its media lease is active", async () => {
+    const prisma = repository();
+    prisma.twitchVodCandidate.findUnique.mockResolvedValueOnce({
+      id: "vod-1",
+      state: "READY_FOR_INGEST",
+      importedProjectId: null,
+      ingestIntent: {
+        id: "intent-1",
+        state: "DOWNLOADING",
+      },
+    });
+    prisma.twitchVodIngestIntent.updateMany.mockResolvedValueOnce({ count: 0 });
+    const service = new TwitchIngestionService(prisma as never);
+
+    await expect(service.ignoreVodCandidate("vod-1")).rejects.toBeInstanceOf(
+      TwitchVodConflictError,
+    );
+    expect(prisma.twitchVodCandidate.updateMany).not.toHaveBeenCalled();
   });
 
   it("links a ready VOD to an existing source-ready project", async () => {
