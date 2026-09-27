@@ -109,12 +109,24 @@ export class TikTokPublicationAdapter implements PublicationProvider {
         if (!advanced) throw new Error("TIKTOK_UPLOAD_SESSION_CONFLICT");
       }
     } else {
-      const initialized = await this.transport.initiate({
-        accessToken,
-        totalBytes: identity.sizeBytes,
-        ...metadata,
-        signal,
-      });
+      let initialized: Awaited<ReturnType<typeof this.transport.initiate>>;
+      try {
+        initialized = await this.transport.initiate({
+          accessToken,
+          totalBytes: identity.sizeBytes,
+          ...metadata,
+          signal,
+        });
+      } catch (error) {
+        signal?.throwIfAborted();
+        if (safeTikTokInitiationFailure(error)) throw error;
+        throw new PublicationOutcomeUnknownError(
+          "TIKTOK_INITIATION_OUTCOME_UNKNOWN",
+          "TikTok Direct Post initiation may have succeeded; verify the account before retrying.",
+          null,
+          "initiation_outcome_unknown",
+        );
+      }
       signal?.throwIfAborted();
       publishId = initialized.publishId;
       uploadUrl = initialized.uploadUrl;
@@ -131,20 +143,29 @@ export class TikTokPublicationAdapter implements PublicationProvider {
         },
       });
       const now = this.clock();
-      const saved = await this.sessions.save(
-        {
-          publicationIntentId: claim.id,
-          platform: claim.platform,
-          ...encrypted,
-          uploadOffset: 0n,
-          // Keep publish_id durable until terminal reconciliation. Dropping it
-          // with the expiring upload URL could cause a duplicate Direct Post
-          // after an ambiguous provider response and worker restart.
-          expiresAt: null,
-        },
-        now,
-      );
-      if (!saved) throw new Error("TIKTOK_UPLOAD_SESSION_NOT_SAVED");
+      try {
+        const saved = await this.sessions.save(
+          {
+            publicationIntentId: claim.id,
+            platform: claim.platform,
+            ...encrypted,
+            uploadOffset: 0n,
+            // Keep publish_id durable until terminal reconciliation. Dropping it
+            // with the expiring upload URL could cause a duplicate Direct Post
+            // after an ambiguous provider response and worker restart.
+            expiresAt: null,
+          },
+          now,
+        );
+        if (!saved) throw new Error("TIKTOK_UPLOAD_SESSION_NOT_SAVED");
+      } catch {
+        throw new PublicationOutcomeUnknownError(
+          "TIKTOK_SESSION_PERSISTENCE_OUTCOME_UNKNOWN",
+          "TikTok accepted Direct Post initiation, but its recovery session could not be persisted.",
+          publishId,
+          "PROCESSING_UPLOAD",
+        );
+      }
     }
 
     while (offset < identity.sizeBytes) {
@@ -342,4 +363,11 @@ function safeCode(value: string | undefined): string {
 }
 function minBigInt(left: bigint, right: bigint): bigint {
   return left < right ? left : right;
+}
+
+function safeTikTokInitiationFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  return /^(?:TIKTOK_(?:TITLE|PRIVACY_LEVEL|MEDIA_SIZE|MEDIA_CHUNK_COUNT)_INVALID|TIKTOK_API_FAILED_4\d\d)$/.test(
+    error.message,
+  );
 }

@@ -130,6 +130,64 @@ describe("TikTokPublicationAdapter", () => {
     expect(deps.transport.initiate).not.toHaveBeenCalled();
   });
 
+  it("quarantines an ambiguous Direct Post initiation without retrying it", async () => {
+    const deps = dependencies();
+    deps.transport.initiate.mockRejectedValue(new TypeError("fetch failed"));
+    const error = await new TikTokPublicationAdapter(
+      deps.tokens,
+      deps.media,
+      deps.sessions,
+      deps.cipher,
+      deps.transport,
+    )
+      .publish(claim)
+      .catch((caught: unknown) => caught);
+    expect(error).toMatchObject({
+      name: "PublicationOutcomeUnknownError",
+      code: "TIKTOK_INITIATION_OUTCOME_UNKNOWN",
+      remotePublicationId: null,
+      remoteStatus: "initiation_outcome_unknown",
+    });
+    expect(deps.sessions.save).not.toHaveBeenCalled();
+  });
+
+  it("keeps deterministic initiation rejection retryable", async () => {
+    const deps = dependencies();
+    deps.transport.initiate.mockRejectedValue(
+      new Error("TIKTOK_API_FAILED_429"),
+    );
+    await expect(
+      new TikTokPublicationAdapter(
+        deps.tokens,
+        deps.media,
+        deps.sessions,
+        deps.cipher,
+        deps.transport,
+      ).publish(claim),
+    ).rejects.toThrow("TIKTOK_API_FAILED_429");
+  });
+
+  it("retains the publish id when session persistence fails", async () => {
+    const deps = dependencies();
+    deps.sessions.save.mockRejectedValue(new Error("database unavailable"));
+    const error = await new TikTokPublicationAdapter(
+      deps.tokens,
+      deps.media,
+      deps.sessions,
+      deps.cipher,
+      deps.transport,
+    )
+      .publish(claim)
+      .catch((caught: unknown) => caught);
+    expect(error).toMatchObject({
+      name: "PublicationOutcomeUnknownError",
+      code: "TIKTOK_SESSION_PERSISTENCE_OUTCOME_UNKNOWN",
+      remotePublicationId: "publish_42",
+      remoteStatus: "PROCESSING_UPLOAD",
+    });
+    expect(deps.transport.uploadChunk).not.toHaveBeenCalled();
+  });
+
   it("maps final provider status without posting again", async () => {
     const deps = dependencies();
     deps.transport.status.mockResolvedValue({

@@ -428,6 +428,12 @@ kill switch даже когда `PUBLISHING_ENABLED=0`; подключение �
 intent при этом остаются скрыты/запрещены. Web typecheck, lint и production
 build прошли.
 
+TikTok Direct Post initiation защищён от дублирующего POST при потерянном
+ответе площадки. Network/5xx/invalid-success response после отправки init и
+ошибка durable-сохранения полученного `publish_id` теперь переходят в
+`UNKNOWN_REMOTE_STATE`; HTTP 4xx остаётся доказанно pre-commit retry. Worker
+`259/259`; операторский recovery для случая без remote ID уже доступен в UI.
+
 Добавлен bounded operator resolution для timeout без remote ID:
 `POST /api/v1/publications/:id/confirm-remote-absent` принимает только явное
 `remoteAbsenceConfirmed: true`. Serializable update разрешён исключительно из

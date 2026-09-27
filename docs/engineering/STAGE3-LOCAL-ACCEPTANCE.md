@@ -34,6 +34,10 @@
   подтвердить отсутствие публикации. Только exact boolean confirmation удаляет
   незавершённую encrypted session и переводит intent в `FAILED_FINAL`, после
   чего отдельный retry снова требует подтверждения.
+- TikTok Direct Post initiation теперь считается необратимой внешней границей:
+  потерянный/невалидный ответ и ошибка сохранения уже полученного `publish_id`
+  переводят intent в `UNKNOWN_REMOTE_STATE`, а не повторяют POST. Однозначный
+  HTTP 4xx до принятия запроса остаётся в bounded retry.
 - YouTube и TikTok работают через независимые abort-aware provider pools с
   concurrency 1; очередь одного provider не потребляет permit другого. После
   трёх последовательных transient/network/5xx ошибок circuit открывается на
@@ -58,7 +62,7 @@
 
 ```text
 API:     234/234 unit tests
-Worker:  256/256 unit tests
+Worker:  259/259 unit tests
 Web:     251/251 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
