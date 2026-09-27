@@ -189,6 +189,8 @@ export interface ApiEnvironment {
   twitchIngestionEnabled: boolean;
   twitchEventSubSecret: string | null;
   verticalRenderEnabled: boolean;
+  clipGenerationEnabled: boolean;
+  clipGenerationModel: string | null;
 }
 
 export function apiEnvironment(): ApiEnvironment {
@@ -281,6 +283,8 @@ export function apiEnvironment(): ApiEnvironment {
     twitchIngestionEnabled: twitchIngestionAdmissionEnabled(process.env),
     twitchEventSubSecret: twitchEventSubSecret(process.env),
     verticalRenderEnabled: verticalRenderAdmissionEnabled(process.env),
+    clipGenerationEnabled: process.env.CLIP_GENERATION_ENABLED?.trim() === "1",
+    clipGenerationModel: process.env.CLIP_GENERATION_MODEL?.trim() || null,
   };
 }
 

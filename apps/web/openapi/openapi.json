@@ -6533,6 +6533,27 @@
         "tags": ["editorial-content"]
       }
     },
+    "/api/v1/clip-generations/{intentId}": {
+      "get": {
+        "operationId": "ClipGenerationController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "intentId",
+            "required": true,
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Clip generation status and suggestions"
+          }
+        },
+        "tags": ["clip-generation"]
+      }
+    },
     "/api/v1/creator-profiles": {
       "get": {
         "operationId": "CreatorContextController_listProfiles",
@@ -9321,6 +9342,35 @@
           }
         },
         "tags": ["editorial-content"]
+      }
+    },
+    "/api/v1/projects/{projectId}/clip-generations": {
+      "post": {
+        "operationId": "ClipGenerationController_create",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Durable clip generation intent"
+          }
+        },
+        "tags": ["clip-generation"]
       }
     },
     "/api/v1/projects/{projectId}/cuts": {

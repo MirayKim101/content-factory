@@ -53,6 +53,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/clip-generations/{intentId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["ClipGenerationController_detail"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/creator-profiles": {
     parameters: {
       query?: never;
@@ -568,6 +584,22 @@ export interface paths {
     get: operations["AssemblyRenderController_project"];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/projects/{projectId}/clip-generations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["ClipGenerationController_create"];
     delete?: never;
     options?: never;
     head?: never;
@@ -3235,6 +3267,26 @@ export interface operations {
       };
     };
   };
+  ClipGenerationController_detail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        intentId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Clip generation status and suggestions */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   CreatorContextController_listProfiles: {
     parameters: {
       query?: {
@@ -5158,6 +5210,28 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["AssemblyRenderListResponseDto"];
         };
+      };
+    };
+  };
+  ClipGenerationController_create: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path: {
+        projectId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Durable clip generation intent */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

@@ -49,6 +49,8 @@ import { ImageSuggestionController } from "./presentation/image-suggestion.contr
 import { PrismaImageSuggestionRepository } from "./infrastructure/prisma-image-suggestion.repository.js";
 import { IMAGE_SUGGESTION_REPOSITORY } from "./application/image-suggestion-repository.port.js";
 import { IMAGE_SUGGESTION_DISPATCH } from "./application/image-suggestion-dispatch.port.js";
+import { ClipGenerationController } from "./clip-generation/clip-generation.controller.js";
+import { ClipGenerationService } from "./clip-generation/clip-generation.service.js";
 import {
   BullMqImageSuggestionDispatch,
   createImageSuggestionQueue,
@@ -63,6 +65,7 @@ import {
     TranscriptEvidenceController,
     ResearchController,
     ImageSuggestionController,
+    ClipGenerationController,
   ],
   providers: [
     CreatorContextService,
@@ -122,6 +125,7 @@ import {
     ProjectObjectCreatorContextStorage,
     StructuralReferenceImageInspector,
     AiContextAdmissionInterceptor,
+    ClipGenerationService,
     {
       provide: CREATOR_CONTEXT_REPOSITORY,
       useExisting: PrismaCreatorContextRepository,
