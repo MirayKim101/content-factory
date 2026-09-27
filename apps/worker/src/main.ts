@@ -55,6 +55,8 @@ import { TikTokOAuthAccessTokenResolver } from "./infrastructure/tiktok-oauth-ac
 import { TikTokDirectPostTransport } from "./infrastructure/tiktok-direct-post-transport.js";
 import { TikTokPublicationAdapter } from "./infrastructure/tiktok-publication-adapter.js";
 
+const TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS = 5 * 60_000;
+
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
   await mkdir(rollbackConfig.scratchDirectory, { recursive: true });
@@ -222,17 +224,20 @@ async function startTwitchWorker(): Promise<void> {
           new URL(eventSubCallback).toString(),
         )
       : undefined;
+  let nextEventSubReconciliationAt = 0;
   let running = false;
   const run = async (): Promise<void> => {
     if (running) return;
     running = true;
     try {
       let subscriptionChanges = { created: 0, deleted: 0 };
-      if (eventSubReconciler) {
+      if (eventSubReconciler && Date.now() >= nextEventSubReconciliationAt) {
         try {
           subscriptionChanges = await eventSubReconciler.execute(
             await repository.enabledBroadcasterIds(),
           );
+          nextEventSubReconciliationAt =
+            Date.now() + TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS;
         } catch (error) {
           console.error(
             JSON.stringify({
