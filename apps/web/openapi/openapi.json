@@ -6004,6 +6004,18 @@
         ],
         "type": "object"
       },
+      "TwitchIngestionCapabilitiesDto": {
+        "properties": {
+          "autoIngestEnabled": {
+            "type": "boolean"
+          },
+          "ingestionEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": ["ingestionEnabled", "autoIngestEnabled"],
+        "type": "object"
+      },
       "TwitchVodCandidateChannelDto": {
         "properties": {
           "broadcasterDisplayName": {
@@ -11283,6 +11295,25 @@
           }
         },
         "tags": ["research-text"]
+      }
+    },
+    "/api/v1/twitch/capabilities": {
+      "get": {
+        "operationId": "TwitchIngestionController_capabilities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwitchIngestionCapabilitiesDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
       }
     },
     "/api/v1/twitch/channels": {

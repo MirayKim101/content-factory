@@ -36,6 +36,7 @@ import {
   StartTwitchVodIngestDto,
   TwitchVodIngestIntentResponseDto,
   TwitchIngestChannelResponseDto,
+  TwitchIngestionCapabilitiesDto,
   TwitchVodCandidateResponseDto,
 } from "./twitch-ingestion.dto.js";
 
@@ -43,6 +44,12 @@ import {
 @Controller("api/v1/twitch")
 export class TwitchIngestionController {
   constructor(private readonly service: TwitchIngestionService) {}
+
+  @Get("capabilities")
+  @ApiOkResponse({ type: TwitchIngestionCapabilitiesDto })
+  capabilities() {
+    return this.service.capabilities();
+  }
 
   @Get("channels")
   @ApiOkResponse({ type: [TwitchIngestChannelResponseDto] })

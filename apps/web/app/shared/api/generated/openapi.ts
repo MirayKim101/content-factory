@@ -1089,6 +1089,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/twitch/capabilities": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["TwitchIngestionController_capabilities"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/twitch/channels": {
     parameters: {
       query?: never;
@@ -3076,6 +3092,10 @@ export interface components {
       state: "ENABLED" | "REVOKED";
       /** Format: date-time */
       updatedAt: string;
+    };
+    TwitchIngestionCapabilitiesDto: {
+      autoIngestEnabled: boolean;
+      ingestionEnabled: boolean;
     };
     TwitchVodCandidateChannelDto: {
       broadcasterDisplayName: string;
@@ -6607,6 +6627,25 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ResearchSuggestionResponseDto"];
+        };
+      };
+    };
+  };
+  TwitchIngestionController_capabilities: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TwitchIngestionCapabilitiesDto"];
         };
       };
     };

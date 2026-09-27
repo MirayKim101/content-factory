@@ -67,6 +67,10 @@ export type TwitchVodCandidate = z.infer<typeof vodCandidateSchema>;
 const errorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string().optional() }),
 });
+const capabilitiesSchema = z.object({
+  ingestionEnabled: z.boolean(),
+  autoIngestEnabled: z.boolean(),
+});
 
 export function createTwitchSourcesApi(
   apiBasePath: unknown,
@@ -74,6 +78,8 @@ export function createTwitchSourcesApi(
 ) {
   const base = parseApiBasePath(apiBasePath);
   return {
+    capabilities: () =>
+      request(fetcher, `${base}/twitch/capabilities`, {}, capabilitiesSchema),
     list: () =>
       request(fetcher, `${base}/twitch/channels`, {}, z.array(channelSchema)),
     listVodCandidates: () =>

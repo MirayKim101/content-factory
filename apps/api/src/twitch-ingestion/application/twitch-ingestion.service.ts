@@ -38,6 +38,15 @@ interface TwitchHeaders {
 export class TwitchIngestionService {
   constructor(private readonly prisma: PrismaService) {}
 
+  capabilities() {
+    const config = apiEnvironment();
+    return {
+      ingestionEnabled: config.twitchIngestionEnabled,
+      autoIngestEnabled:
+        config.twitchIngestionEnabled && config.twitchVodAutoIngestEnabled,
+    };
+  }
+
   listChannels() {
     return this.prisma.twitchIngestChannel.findMany({
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],

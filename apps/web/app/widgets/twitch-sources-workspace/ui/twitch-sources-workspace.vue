@@ -18,6 +18,7 @@ const projectsApi = createProjectsApi({
   apiBasePath: config.public.apiBasePath,
 });
 const channels = ref<TwitchSourceChannel[]>([]);
+const autoIngestEnabled = ref(false);
 const vodCandidates = ref<TwitchVodCandidate[]>([]);
 const sourceReadyProjects = ref<{ label: string; value: string }[]>([]);
 const selectedProjects = ref<Record<string, string>>({});
@@ -55,11 +56,14 @@ async function load() {
   loading.value = true;
   error.value = null;
   try {
-    const [nextChannels, nextVodCandidates, projectPage] = await Promise.all([
-      api.list(),
-      api.listVodCandidates(),
-      projectsApi.listProjects!({ status: "SOURCE_READY", limit: 100 }),
-    ]);
+    const [capabilities, nextChannels, nextVodCandidates, projectPage] =
+      await Promise.all([
+        api.capabilities(),
+        api.list(),
+        api.listVodCandidates(),
+        projectsApi.listProjects!({ status: "SOURCE_READY", limit: 100 }),
+      ]);
+    autoIngestEnabled.value = capabilities.autoIngestEnabled;
     channels.value = nextChannels;
     vodCandidates.value = nextVodCandidates;
     const linkedProjectIds = new Set(
@@ -393,7 +397,10 @@ onUnmounted(() => pollTimer && clearInterval(pollTimer));
                     gateway.
                   </small>
                 </div>
-                <div v-else class="automatic-import-action">
+                <div
+                  v-else-if="autoIngestEnabled"
+                  class="automatic-import-action"
+                >
                   <InputText
                     v-model="importNames[vod.id]"
                     :placeholder="vod.title"
@@ -403,6 +410,10 @@ onUnmounted(() => pollTimer && clearInterval(pollTimer));
                     Импортировать автоматически
                   </Button>
                 </div>
+                <small v-else class="automatic-import-disabled">
+                  Автоимпорт сейчас выключен. Ручная загрузка и привязка
+                  доступны без Twitch media gateway.
+                </small>
                 <div v-if="sourceReadyProjects.length" class="project-linker">
                   <Select
                     v-model="selectedProjects[vod.id]"
@@ -646,6 +657,11 @@ h3 {
 .automatic-import-status small {
   flex-basis: 100%;
   color: var(--cf-danger);
+}
+.automatic-import-disabled {
+  padding: 0.6rem 0.7rem;
+  border-left: 3px solid var(--cf-border-strong);
+  color: var(--cf-text-muted);
 }
 .vod-actions {
   display: grid;

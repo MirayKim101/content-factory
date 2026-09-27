@@ -48,6 +48,11 @@ export class TwitchIngestChannelResponseDto {
   @ApiProperty({ type: String, format: "date-time" }) updatedAt!: Date;
 }
 
+export class TwitchIngestionCapabilitiesDto {
+  @ApiProperty({ type: Boolean }) ingestionEnabled!: boolean;
+  @ApiProperty({ type: Boolean }) autoIngestEnabled!: boolean;
+}
+
 export class TwitchVodCandidateChannelDto {
   @ApiProperty({ type: String }) broadcasterLogin!: string;
   @ApiProperty({ type: String }) broadcasterDisplayName!: string;
