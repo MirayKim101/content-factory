@@ -100,7 +100,7 @@ export class PgTwitchIngestionWorkerRepository
          WHERE v."state" = 'READY_FOR_INGEST'
            AND ch."state" = 'ENABLED'
            AND (i."state" = 'QUEUED' OR (i."state" = 'RETRY_WAIT' AND i."nextAttemptAt" <= now())
-             OR (i."state" IN ('DOWNLOADING','UPLOADING') AND i."leaseExpiresAt" < now()))
+             OR (i."state" IN ('DOWNLOADING','UPLOADING') AND i."leaseExpiresAt" <= now()))
          ORDER BY ch."lastIngestClaimedAt" ASC NULLS FIRST, i."createdAt", i."id"
          FOR UPDATE OF i, ch SKIP LOCKED LIMIT 1
        ), claimed AS (
@@ -197,7 +197,8 @@ export class PgTwitchIngestionWorkerRepository
         projectName: string;
       }>(
         `SELECT "candidateId", "projectName" FROM "TwitchVodIngestIntent"
-         WHERE "id" = $1 AND "leaseOwner" = $2 AND "state" = 'UPLOADING' FOR UPDATE`,
+         WHERE "id" = $1 AND "leaseOwner" = $2 AND "state" = 'UPLOADING'
+           AND "leaseExpiresAt" > now() FOR UPDATE`,
         [input.intentId, input.workerId],
       );
       const intent = locked.rows[0];
@@ -250,7 +251,8 @@ export class PgTwitchIngestionWorkerRepository
       if (vod.rowCount !== 1) throw new Error("TWITCH_VOD_INGEST_CONFLICT");
       await client.query(
         `UPDATE "TwitchVodIngestIntent" SET "state"='READY', "projectId"=$3,
-         "leaseOwner"=NULL,"leaseExpiresAt"=NULL,"updatedAt"=now() WHERE "id"=$1 AND "leaseOwner"=$2`,
+         "leaseOwner"=NULL,"leaseExpiresAt"=NULL,"updatedAt"=now()
+         WHERE "id"=$1 AND "leaseOwner"=$2`,
         [input.intentId, input.workerId, input.projectId],
       );
       await client.query("COMMIT");
@@ -274,7 +276,7 @@ export class PgTwitchIngestionWorkerRepository
       `UPDATE "TwitchVodIngestIntent" SET "state"=$3::"TwitchVodIngestState",
        "nextAttemptAt"=CASE WHEN $4 THEN now()+interval '1 minute' ELSE NULL END,
        "failureCode"=$5,"failureMessage"=$6,"leaseOwner"=NULL,"leaseExpiresAt"=NULL,"updatedAt"=now()
-       WHERE "id"=$1 AND "leaseOwner"=$2`,
+       WHERE "id"=$1 AND "leaseOwner"=$2 AND "leaseExpiresAt">now()`,
       [id, workerId, state, retryable, code, message],
     );
     if (result.rowCount !== 1) throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
@@ -288,7 +290,8 @@ export class PgTwitchIngestionWorkerRepository
   ): Promise<void> {
     const result = await this.pool.query(
       `UPDATE "TwitchVodIngestIntent" SET ${assignments}, "updatedAt"=now()
-       WHERE "id"=$1 AND "leaseOwner"=$2 AND "state" IN ('DOWNLOADING','UPLOADING')`,
+       WHERE "id"=$1 AND "leaseOwner"=$2 AND "state" IN ('DOWNLOADING','UPLOADING')
+         AND "leaseExpiresAt">now()`,
       [id, workerId, ...values],
     );
     if (result.rowCount !== 1) throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");

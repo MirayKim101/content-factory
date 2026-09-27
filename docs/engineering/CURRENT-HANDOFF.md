@@ -45,6 +45,9 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Worker data plane имеет собственный `TWITCH_VOD_AUTO_INGEST_ENABLED` gate и
   compose передаёт его явно. Одного включённого gateway больше недостаточно:
   auto-ingest запускается только при обоих флагах и валидной конфигурации.
+- Все Twitch ingest mutations теперь требуют не только matching owner, но и
+  неистёкший lease. Expired worker не может воскресить попытку checkpoint-ом,
+  начать upload или записать failure; fence проверен на реальной PostgreSQL.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

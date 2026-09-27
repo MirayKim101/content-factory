@@ -81,6 +81,16 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
           [waitingChannelId],
         );
         expect(marker.rows[0]?.lastIngestClaimedAt).toBeInstanceOf(Date);
+        await pool.query(
+          `UPDATE "TwitchVodIngestIntent" SET "leaseExpiresAt"=now()-interval '1 second' WHERE "id"=$1`,
+          [waitingIntentId],
+        );
+        await expect(
+          repository.heartbeat(waitingIntentId, "fairness-worker", 60_000),
+        ).resolves.toBe(false);
+        await expect(
+          repository.checkpoint(waitingIntentId, "fairness-worker", 1n, 2n),
+        ).rejects.toThrow("TWITCH_VOD_INGEST_LEASE_LOST");
       } finally {
         await pool.query(
           `DELETE FROM "TwitchVodIngestIntent" WHERE "id" = ANY($1::uuid[])`,
