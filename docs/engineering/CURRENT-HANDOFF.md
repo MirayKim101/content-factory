@@ -23,7 +23,7 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Ручной pre-Twitch upload/link, горизонтальный pipeline и ZIP export не зависят
   от Stage 3 flags. Twitch-import создаёт `NOT_REVIEWED` authorization и не
   обходит ручное подтверждение прав.
-- Миграция 41 применена к restored PostgreSQL. Реальный local gateway → Range
+- Миграция 42 применена к restored PostgreSQL. Реальный local gateway → Range
   download → SHA-256 → MinIO multipart → atomic Project/Source/Artifact smoke
   прошёл; source остался `NOT_REVIEWED`. Production Docker FFmpeg сформировал и
   декодировал 1080×1920 H.264/AAC. Внешний Twitch/YouTube/TikTok credentialed
@@ -54,6 +54,10 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Publication worker теперь independently fail-closed по
   `PUBLISHING_ENABLED`; compose передаёт флаг явно. Отключение admission больше
   не оставляет фоновой процесс, способный выполнить ранее scheduled intent.
+- Fresh-schema proof: все 42 миграции применены в отдельной
+  `cf_stage3_fresh_acceptance_20260928` (PostgreSQL 18.6), получено 73 public
+  tables и 0 unvalidated constraints. База guarded-удалена и её отсутствие
+  подтверждено; restored DB не изменялась.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

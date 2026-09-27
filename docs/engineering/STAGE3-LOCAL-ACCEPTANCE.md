@@ -27,12 +27,20 @@ Worker:  239/239 unit tests
 Web:     244/244 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
+Fresh PostgreSQL migration: 42/42, 73 public tables, 0 unvalidated constraints
 ```
 
 Дополнительно прошли Prisma validate/migration deploy, OpenAPI regeneration and
 drift checks, API/worker/web typecheck и lint, API/worker/web production builds,
 Docker Compose config validation и runtime health на API 3001/UI 3100. Порт
 3000 не используется.
+
+## Fresh migration proof
+
+Все 42 миграции применены с нуля к отдельно созданной базе
+`cf_stage3_fresh_acceptance_20260928` на PostgreSQL 18.6. После deploy база
+содержала 73 public-таблицы и 0 непрвалидированных constraints. Disposable база
+удалена guarded exact-name командой; повторная проверка `pg_database` вернула 0. Restored runtime database в этом proof не изменялась.
 
 ## Не является локально доказанным
 
