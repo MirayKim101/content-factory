@@ -32,6 +32,9 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
   durable `lastIngestClaimedAt`; claim и обновление fairness-marker атомарны.
   Реальная PostgreSQL-проверка подтверждает отсутствие starvation между
   постоянно активными каналами.
+- Publication worker fail-closed при ошибке heartbeat: потеря связи с БД теперь
+  немедленно отменяет активный provider request, не оставляя окно для
+  параллельной повторной публикации после recovery.
 
 - Stage 1 и ручной Stage 2 реализованы; историческое Mac evidence сохранено.
 - Stage 2B-1 принят: backend и восстановленный UI прошли независимую проверку,

@@ -113,6 +113,31 @@ describe("ProcessPublicationIntent", () => {
     expect(repo.failFinal).not.toHaveBeenCalled();
   });
 
+  it("fails closed when publication lease ownership cannot be refreshed", async () => {
+    vi.useFakeTimers();
+    const repo = repository();
+    vi.mocked(repo.heartbeat).mockRejectedValue(new Error("database offline"));
+    const publish = vi.fn(
+      (_claim: PublicationClaim, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          signal?.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          });
+        }),
+    );
+    const processing = new ProcessPublicationIntent(repo, [
+      { platform: "LOCAL_DRY_RUN", publish },
+    ]).execute(claim.id);
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    await expect(processing).resolves.toBe(false);
+    expect(repo.finalizeDryRun).not.toHaveBeenCalled();
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
+    expect(repo.failFinal).not.toHaveBeenCalled();
+  });
+
   it("turns duplicate delivery into one durable dry-run result", async () => {
     const repo = repository();
     const process = new ProcessPublicationIntent(

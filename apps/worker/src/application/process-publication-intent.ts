@@ -115,7 +115,13 @@ export class ProcessPublicationIntent {
           if (!retained && !abortController.signal.aborted)
             abortController.abort(new PublicationLeaseLostError());
         })
-        .catch(() => undefined)
+        .catch(() => {
+          // A failed heartbeat cannot prove lease ownership. Continuing an
+          // external POST would allow a recovered worker to publish the same
+          // intent concurrently after the stale-processing window elapses.
+          if (!abortController.signal.aborted)
+            abortController.abort(new PublicationLeaseLostError());
+        })
         .finally(() => {
           running = false;
         });
