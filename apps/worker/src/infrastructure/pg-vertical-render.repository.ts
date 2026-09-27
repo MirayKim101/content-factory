@@ -77,7 +77,8 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
         `UPDATE "PipelineJob" SET "state"='PROCESSING', "attemptCount"=$2,
           "leaseOwner"='vertical-worker', "leaseToken"=$3,
           "leaseExpiresAt"=now()+($4::int * interval '1 millisecond'),
-          "heartbeatAt"=now(), "startedAt"=COALESCE("startedAt",now()), "updatedAt"=now()
+          "heartbeatAt"=now(), "nextAttemptAt"=NULL,
+          "startedAt"=COALESCE("startedAt",now()), "updatedAt"=now()
           WHERE "id"=$1`,
         [jobId, attemptNumber, leaseToken, leaseMs],
       );

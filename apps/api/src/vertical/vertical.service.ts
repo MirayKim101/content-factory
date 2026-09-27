@@ -118,23 +118,25 @@ export class VerticalService {
     );
     if (created.job)
       await Promise.allSettled([this.dispatch.dispatch(created.job.id)]);
-    return created;
+    return verticalResponse(created);
   }
 
-  get(id: string) {
-    return this.prisma.verticalRenderIntent.findUnique({
+  async get(id: string) {
+    const value = await this.prisma.verticalRenderIntent.findUnique({
       where: { id },
       include: { job: true, result: { include: { approval: true } } },
     });
+    return value ? verticalResponse(value) : null;
   }
 
-  list(projectId: string) {
-    return this.prisma.verticalRenderIntent.findMany({
+  async list(projectId: string) {
+    const values = await this.prisma.verticalRenderIntent.findMany({
       where: { projectId },
       include: { job: true, result: { include: { approval: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 100,
     });
+    return values.map(verticalResponse);
   }
 
   async approve(id: string) {
@@ -167,4 +169,70 @@ export class VerticalService {
       },
     });
   }
+}
+
+interface VerticalRecord {
+  id: string;
+  projectId: string;
+  cutPipelineJobId: string;
+  framingMode: "CENTER_CROP";
+  outputWidth: number;
+  outputHeight: number;
+  renderContractVersion: string;
+  createdAt: Date;
+  job: {
+    id: string;
+    state: "QUEUED" | "PROCESSING" | "RETRY_WAIT" | "READY" | "FAILED_FINAL";
+    attemptCount: number;
+    retryBudget: number;
+    failureCode: string | null;
+    failureMessage: string | null;
+  } | null;
+  result: {
+    id: string;
+    artifactId: string;
+    width: number;
+    height: number;
+    sizeBytes: bigint;
+    completedAt: Date;
+    approval: { id: string; createdAt: Date } | null;
+  } | null;
+}
+
+function verticalResponse(value: VerticalRecord) {
+  if (!value.job) throw new VerticalLineageInvalidError();
+  return {
+    id: value.id,
+    projectId: value.projectId,
+    cutPipelineJobId: value.cutPipelineJobId,
+    framingMode: value.framingMode,
+    outputWidth: value.outputWidth,
+    outputHeight: value.outputHeight,
+    renderContractVersion: value.renderContractVersion,
+    job: {
+      id: value.job.id,
+      state: value.job.state,
+      attemptCount: value.job.attemptCount,
+      retryBudget: value.job.retryBudget,
+      failureCode: value.job.failureCode,
+      failureMessage: value.job.failureMessage,
+    },
+    result: value.result
+      ? {
+          id: value.result.id,
+          artifactId: value.result.artifactId,
+          width: value.result.width,
+          height: value.result.height,
+          sizeBytes: value.result.sizeBytes.toString(),
+          completedAt: value.result.completedAt,
+          approval: value.result.approval
+            ? {
+                id: value.result.approval.id,
+                createdAt: value.result.approval.createdAt,
+              }
+            : null,
+        }
+      : null,
+    createdAt: value.createdAt,
+  };
 }

@@ -30,7 +30,7 @@ describe("MinIO API least-privilege policy", () => {
       "s3:ListMultipartUploadParts",
       "s3:PutObject",
     ];
-    expect(policy.Statement).toHaveLength(6);
+    expect(policy.Statement).toHaveLength(7);
     const bucketStatements = policy.Statement.filter(
       (statement) =>
         statement.Resource.length === 1 &&
@@ -45,7 +45,7 @@ describe("MinIO API least-privilege policy", () => {
     const objectResources = objectStatements
       .flatMap(({ Resource }) => Resource)
       .sort();
-    expect(objectStatements).toHaveLength(5);
+    expect(objectStatements).toHaveLength(6);
     for (const statement of objectStatements)
       expect([...statement.Action].sort()).toEqual(expectedObjectActions);
     expect(objectResources).toEqual([
@@ -54,6 +54,7 @@ describe("MinIO API least-privilege policy", () => {
       "arn:aws:s3:::test-bucket/ai-content/image-suggestions/*/candidate.png",
       "arn:aws:s3:::test-bucket/ai-content/transcripts/*/transcript.json",
       "arn:aws:s3:::test-bucket/editorial/*",
+      "arn:aws:s3:::test-bucket/projects/*/vertical/*",
       "arn:aws:s3:::test-bucket/sources/*",
     ]);
     expect(
@@ -61,6 +62,14 @@ describe("MinIO API least-privilege policy", () => {
         resourceAllows(
           resource,
           "arn:aws:s3:::test-bucket/ai-content/frame-evidence/intent-1/attempts/2/frames/0",
+        ),
+      ),
+    ).toBe(true);
+    expect(
+      objectResources.some((resource) =>
+        resourceAllows(
+          resource,
+          "arn:aws:s3:::test-bucket/projects/project-1/vertical/intent-1/output.mp4",
         ),
       ),
     ).toBe(true);

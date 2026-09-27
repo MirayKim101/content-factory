@@ -97,13 +97,31 @@ async function startVerticalWorker(): Promise<void> {
     if (reconciling) return;
     reconciling = true;
     try {
-      for (const jobId of await repository.due())
-        await processor.execute(jobId);
+      for (const jobId of await repository.due()) {
+        await processor.execute(jobId).catch((error) =>
+          console.error(
+            JSON.stringify({
+              event: "vertical_reconciliation_job_failed",
+              workerId,
+              jobId,
+              error: error instanceof Error ? error.message : "unknown",
+            }),
+          ),
+        );
+      }
     } finally {
       reconciling = false;
     }
   };
-  await reconcile();
+  await reconcile().catch((error) =>
+    console.error(
+      JSON.stringify({
+        event: "vertical_reconciliation_failed",
+        workerId,
+        error: error instanceof Error ? error.message : "unknown",
+      }),
+    ),
+  );
   const timer = setInterval(() => {
     void reconcile().catch((error) =>
       console.error(
