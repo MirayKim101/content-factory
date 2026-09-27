@@ -227,10 +227,10 @@ async function startTwitchWorker(): Promise<void> {
     if (running) return;
     running = true;
     try {
-      let subscriptionsCreated = 0;
+      let subscriptionChanges = { created: 0, deleted: 0 };
       if (eventSubReconciler) {
         try {
-          subscriptionsCreated = await eventSubReconciler.execute(
+          subscriptionChanges = await eventSubReconciler.execute(
             await repository.enabledBroadcasterIds(),
           );
         } catch (error) {
@@ -244,12 +244,18 @@ async function startTwitchWorker(): Promise<void> {
         }
       }
       const result = await reconciler.execute();
-      if (subscriptionsCreated || result.events || result.channels)
+      if (
+        subscriptionChanges.created ||
+        subscriptionChanges.deleted ||
+        result.events ||
+        result.channels
+      )
         console.log(
           JSON.stringify({
             event: "twitch_reconciliation_completed",
             workerId,
-            subscriptionsCreated,
+            subscriptionsCreated: subscriptionChanges.created,
+            subscriptionsDeleted: subscriptionChanges.deleted,
             ...result,
           }),
         );

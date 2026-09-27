@@ -20,9 +20,10 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
   }
 
   async listWebhookSubscriptions(): Promise<
-    Array<{ type: string; broadcasterId: string; callback: string }>
+    Array<{ id: string; type: string; broadcasterId: string; callback: string }>
   > {
     const result: Array<{
+      id: string;
       type: string;
       broadcasterId: string;
       callback: string;
@@ -70,6 +71,16 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       throw new Error(`TWITCH_EVENTSUB_CREATE_${response.status}`);
   }
 
+  async deleteWebhookSubscription(id: string): Promise<void> {
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(id))
+      throw new Error("TWITCH_EVENTSUB_ID_INVALID");
+    const url = new URL(EVENTSUB_ENDPOINT);
+    url.searchParams.set("id", id);
+    const response = await this.authorizedFetch(url, { method: "DELETE" });
+    if (response.status !== 204 && response.status !== 404)
+      throw new Error(`TWITCH_EVENTSUB_DELETE_${response.status}`);
+  }
+
   private async authorizedFetch(input: string | URL, init: RequestInit) {
     let response = await this.requestWithToken(
       input,
@@ -105,7 +116,12 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
 }
 
 function parseSubscriptionPage(value: unknown): {
-  items: Array<{ type: string; broadcasterId: string; callback: string }>;
+  items: Array<{
+    id: string;
+    type: string;
+    broadcasterId: string;
+    callback: string;
+  }>;
   nextCursor: string | null;
 } {
   if (!value || typeof value !== "object" || Array.isArray(value))
@@ -120,6 +136,8 @@ function parseSubscriptionPage(value: unknown): {
     const transport = row.transport as Record<string, unknown> | undefined;
     if (
       (row.type !== "stream.online" && row.type !== "stream.offline") ||
+      typeof row.id !== "string" ||
+      !/^[A-Za-z0-9_-]{1,128}$/.test(row.id) ||
       (row.status !== "enabled" &&
         row.status !== "webhook_callback_verification_pending") ||
       typeof condition?.broadcaster_user_id !== "string" ||
@@ -129,6 +147,7 @@ function parseSubscriptionPage(value: unknown): {
       return [];
     return [
       {
+        id: row.id,
         type: row.type,
         broadcasterId: condition.broadcaster_user_id,
         callback: transport.callback,

@@ -9,9 +9,21 @@ describe("Twitch EventSub reconciliation", () => {
   it("creates only missing online/offline subscriptions and deduplicates channels", async () => {
     const provider = {
       listWebhookSubscriptions: vi.fn(async () => [
-        { type: "stream.online", broadcasterId: "1337", callback },
+        {
+          id: "sub-online",
+          type: "stream.online",
+          broadcasterId: "1337",
+          callback,
+        },
+        {
+          id: "sub-revoked",
+          type: "stream.offline",
+          broadcasterId: "9999",
+          callback,
+        },
       ]),
       createWebhookSubscription: vi.fn(async () => undefined),
+      deleteWebhookSubscription: vi.fn(async () => undefined),
     };
 
     await expect(
@@ -20,12 +32,15 @@ describe("Twitch EventSub reconciliation", () => {
         "1337",
         "7331",
       ]),
-    ).resolves.toBe(3);
+    ).resolves.toEqual({ created: 3, deleted: 1 });
     expect(provider.createWebhookSubscription.mock.calls).toEqual([
       ["stream.offline", "1337"],
       ["stream.online", "7331"],
       ["stream.offline", "7331"],
     ]);
+    expect(provider.deleteWebhookSubscription).toHaveBeenCalledWith(
+      "sub-revoked",
+    );
   });
 
   it("uses bounded official webhook payloads and keeps the secret out of the URL", async () => {
@@ -38,7 +53,8 @@ describe("Twitch EventSub reconciliation", () => {
           status: 200,
         }),
       )
-      .mockResolvedValueOnce(new Response("{}", { status: 202 }));
+      .mockResolvedValueOnce(new Response("{}", { status: 202 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
     const client = new TwitchEventSubClient(
       "client-id",
       { resolve: async () => "app-token" },
@@ -63,6 +79,11 @@ describe("Twitch EventSub reconciliation", () => {
         secret: "eventsub-secret-value",
       },
     });
+    await expect(
+      client.deleteWebhookSubscription("subscription_123"),
+    ).resolves.toBeUndefined();
+    expect(String(request.mock.calls[2]![0])).toContain("id=subscription_123");
+    expect(request.mock.calls[2]![1]?.method).toBe("DELETE");
   });
 
   it("rejects callbacks that are not public HTTPS on the default port", () => {

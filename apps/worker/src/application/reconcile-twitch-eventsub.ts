@@ -1,11 +1,12 @@
 export interface TwitchEventSubProvider {
   listWebhookSubscriptions(): Promise<
-    Array<{ type: string; broadcasterId: string; callback: string }>
+    Array<{ id: string; type: string; broadcasterId: string; callback: string }>
   >;
   createWebhookSubscription(
     type: "stream.online" | "stream.offline",
     broadcasterId: string,
   ): Promise<void>;
+  deleteWebhookSubscription(id: string): Promise<void>;
 }
 
 export class ReconcileTwitchEventSub {
@@ -14,10 +15,22 @@ export class ReconcileTwitchEventSub {
     private readonly callback: string,
   ) {}
 
-  async execute(broadcasterIds: string[]): Promise<number> {
+  async execute(
+    broadcasterIds: string[],
+  ): Promise<{ created: number; deleted: number }> {
+    const allowed = new Set(broadcasterIds);
+    const managed = (await this.provider.listWebhookSubscriptions()).filter(
+      (item) => item.callback === this.callback,
+    );
+    let deleted = 0;
+    for (const item of managed) {
+      if (allowed.has(item.broadcasterId)) continue;
+      await this.provider.deleteWebhookSubscription(item.id);
+      deleted += 1;
+    }
     const existing = new Set(
-      (await this.provider.listWebhookSubscriptions())
-        .filter((item) => item.callback === this.callback)
+      managed
+        .filter((item) => allowed.has(item.broadcasterId))
         .map((item) => `${item.type}:${item.broadcasterId}`),
     );
     let created = 0;
@@ -30,6 +43,6 @@ export class ReconcileTwitchEventSub {
         created += 1;
       }
     }
-    return created;
+    return { created, deleted };
   }
 }
