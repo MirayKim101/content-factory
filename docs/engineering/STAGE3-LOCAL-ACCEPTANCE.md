@@ -73,6 +73,9 @@
 - Полный Twitch VOD ingest attempt ограничен 24 часами, включая streaming
   download, hashing и multipart upload. Timeout сохраняет resumable scratch и
   переводит intent в bounded retry вместо бесконечного lease.
+- Production dependency overrides закрепляют исправленные `multer 2.3.0`,
+  `deepmerge-ts 8.0.0` и `mysql2 3.23.1`; `pnpm audit --prod` не находит
+  известных уязвимостей.
 
 ## Воспроизведённые проверки
 
@@ -88,8 +91,8 @@ Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints
 
 Дополнительно прошли Prisma validate/migration deploy, OpenAPI regeneration and
 drift checks, API/worker/web typecheck и lint, API/worker/web production builds,
-Docker Compose config validation и runtime health на API 3001/UI 3100. Порт
-3000 не используется.
+production dependency audit, Docker Compose config validation и runtime health
+на API 3001/UI 3100. Порт 3000 не используется.
 
 Web development default и runbook закрепляют порт 3100. API не открывает
 отдельный CORS origin для занятого 3000: browser API идёт через same-origin

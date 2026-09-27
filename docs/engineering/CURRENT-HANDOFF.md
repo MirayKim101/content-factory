@@ -502,3 +502,9 @@ Publication workspace больше не опрашивает API каждые 15
 для `SCHEDULED`, `QUEUED` и `PROCESSING`, а локальные часы формы продолжают
 обновляться независимо. Web `266/266`, typecheck, lint и production build
 прошли.
+
+Закрыты известные production dependency advisories: root pnpm overrides
+фиксируют `multer 2.3.0` (multipart DoS fixes), `deepmerge-ts 8.0.0` и
+`mysql2 3.23.1`. Повторный `pnpm audit --prod --audit-level moderate` вернул
+`No known vulnerabilities found`; Prisma validate/generate, API `235/235`,
+worker `266/266`, web `266/266`, typecheck, lint и все production builds прошли.
