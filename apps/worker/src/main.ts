@@ -63,6 +63,7 @@ import { OpenAiClipGenerationAdapter } from "./infrastructure/openai-clip-genera
 import { PgClipGenerationWorker } from "./infrastructure/pg-clip-generation-worker.js";
 import { HttpTwitchVodMediaProvider } from "./infrastructure/http-twitch-vod-media-provider.js";
 import { ProcessTwitchVodIngest } from "./application/process-twitch-vod-ingest.js";
+import { SingleFlightTask } from "./application/single-flight-task.js";
 
 const TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS = 5 * 60_000;
 
@@ -120,28 +121,21 @@ async function startVerticalWorker(): Promise<void> {
       concurrency: 1,
     },
   );
-  let reconciling = false;
-  const reconcile = async (): Promise<void> => {
-    if (reconciling) return;
-    reconciling = true;
-    try {
-      for (const jobId of await repository.due()) {
-        await processor.execute(jobId).catch((error) =>
-          console.error(
-            JSON.stringify({
-              event: "vertical_reconciliation_job_failed",
-              workerId,
-              jobId,
-              error: error instanceof Error ? error.message : "unknown",
-            }),
-          ),
-        );
-      }
-    } finally {
-      reconciling = false;
+  const reconciliation = new SingleFlightTask(async () => {
+    for (const jobId of await repository.due()) {
+      await processor.execute(jobId).catch((error) =>
+        console.error(
+          JSON.stringify({
+            event: "vertical_reconciliation_job_failed",
+            workerId,
+            jobId,
+            error: error instanceof Error ? error.message : "unknown",
+          }),
+        ),
+      );
     }
-  };
-  await reconcile().catch((error) =>
+  });
+  await reconciliation.run().catch((error) =>
     console.error(
       JSON.stringify({
         event: "vertical_reconciliation_failed",
@@ -151,7 +145,7 @@ async function startVerticalWorker(): Promise<void> {
     ),
   );
   const timer = setInterval(() => {
-    void reconcile().catch((error) =>
+    void reconciliation.run().catch((error) =>
       console.error(
         JSON.stringify({
           event: "vertical_reconciliation_failed",
@@ -175,12 +169,12 @@ async function startVerticalWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(timer);
-    shutdownPromise = Promise.allSettled([
-      queue.close(),
-      repository.close(),
-    ]).then(() => {
+    shutdownPromise = (async () => {
+      await queue.close().catch(() => undefined);
+      await reconciliation.wait().catch(() => undefined);
+      await repository.close().catch(() => undefined);
       storage.close();
-    });
+    })();
     return shutdownPromise;
   };
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
@@ -249,59 +243,52 @@ async function startTwitchWorker(): Promise<void> {
         )
       : undefined;
   let nextEventSubReconciliationAt = 0;
-  let running = false;
-  const run = async (): Promise<void> => {
-    if (running) return;
-    running = true;
-    try {
-      let subscriptionChanges = { created: 0, deleted: 0 };
-      if (eventSubReconciler && Date.now() >= nextEventSubReconciliationAt) {
-        try {
-          subscriptionChanges = await eventSubReconciler.execute(
-            await repository.enabledBroadcasterIds(),
-          );
-          nextEventSubReconciliationAt =
-            Date.now() + TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS;
-        } catch (error) {
-          console.error(
-            JSON.stringify({
-              event: "twitch_eventsub_reconciliation_failed",
-              workerId,
-              error: error instanceof Error ? error.message : "unknown",
-            }),
-          );
-        }
-      }
-      const result = await reconciler.execute();
-      let imported = 0;
-      if (ingestProcessor) {
-        while (imported < 1 && (await ingestProcessor.execute(workerId)))
-          imported += 1;
-      }
-      if (
-        subscriptionChanges.created ||
-        subscriptionChanges.deleted ||
-        result.events ||
-        result.channels ||
-        imported
-      )
-        console.log(
+  const reconciliation = new SingleFlightTask(async () => {
+    let subscriptionChanges = { created: 0, deleted: 0 };
+    if (eventSubReconciler && Date.now() >= nextEventSubReconciliationAt) {
+      try {
+        subscriptionChanges = await eventSubReconciler.execute(
+          await repository.enabledBroadcasterIds(),
+        );
+        nextEventSubReconciliationAt =
+          Date.now() + TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS;
+      } catch (error) {
+        console.error(
           JSON.stringify({
-            event: "twitch_reconciliation_completed",
+            event: "twitch_eventsub_reconciliation_failed",
             workerId,
-            subscriptionsCreated: subscriptionChanges.created,
-            subscriptionsDeleted: subscriptionChanges.deleted,
-            ...result,
-            imported,
+            error: error instanceof Error ? error.message : "unknown",
           }),
         );
-    } finally {
-      running = false;
+      }
     }
-  };
-  await run();
+    const result = await reconciler.execute();
+    let imported = 0;
+    if (ingestProcessor) {
+      while (imported < 1 && (await ingestProcessor.execute(workerId)))
+        imported += 1;
+    }
+    if (
+      subscriptionChanges.created ||
+      subscriptionChanges.deleted ||
+      result.events ||
+      result.channels ||
+      imported
+    )
+      console.log(
+        JSON.stringify({
+          event: "twitch_reconciliation_completed",
+          workerId,
+          subscriptionsCreated: subscriptionChanges.created,
+          subscriptionsDeleted: subscriptionChanges.deleted,
+          ...result,
+          imported,
+        }),
+      );
+  });
+  await reconciliation.run();
   const timer = setInterval(() => {
-    void run().catch((error) =>
+    void reconciliation.run().catch((error) =>
       console.error(
         JSON.stringify({
           event: "twitch_reconciliation_failed",
@@ -316,7 +303,11 @@ async function startTwitchWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(timer);
-    shutdownPromise = repository.close().finally(() => ingestStorage?.close());
+    shutdownPromise = reconciliation
+      .wait()
+      .catch(() => undefined)
+      .then(() => repository.close())
+      .finally(() => ingestStorage?.close());
     return shutdownPromise;
   };
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
@@ -440,19 +431,12 @@ async function startPublicationWorker(): Promise<void> {
         }),
       ),
   );
-  let recoveringPublications = false;
-  const processDue = async (): Promise<void> => {
-    if (recoveringPublications) return;
-    recoveringPublications = true;
-    try {
-      for (const intentId of await repository.due())
-        await processor.execute(intentId);
-      await outcomeReconciler.execute();
-      await metricsCollector.execute();
-    } finally {
-      recoveringPublications = false;
-    }
-  };
+  const reconciliation = new SingleFlightTask(async () => {
+    for (const intentId of await repository.due())
+      await processor.execute(intentId);
+    await outcomeReconciler.execute();
+    await metricsCollector.execute();
+  });
   const worker = new Worker(
     PUBLICATION_QUEUE_NAME,
     async (delivery) => {
@@ -473,9 +457,9 @@ async function startPublicationWorker(): Promise<void> {
       }),
     ),
   );
-  await processDue();
+  await reconciliation.run();
   const recoveryTimer = setInterval(() => {
-    void processDue().catch((error) =>
+    void reconciliation.run().catch((error) =>
       console.error(
         JSON.stringify({
           event: "publication_reconciliation_failed",
@@ -490,11 +474,14 @@ async function startPublicationWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(recoveryTimer);
-    shutdownPromise = Promise.allSettled([
-      worker.close(),
-      repository.close(),
-      ...externalClosers.map((close) => close()),
-    ]).then(() => undefined);
+    shutdownPromise = (async () => {
+      await worker.close().catch(() => undefined);
+      await reconciliation.wait().catch(() => undefined);
+      await Promise.allSettled([
+        repository.close(),
+        ...externalClosers.map((close) => close()),
+      ]);
+    })();
     return shutdownPromise;
   };
   for (const signal of ["SIGINT", "SIGTERM"] as const) {

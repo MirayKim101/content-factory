@@ -83,13 +83,16 @@
   bounded PID/CPU, bounded noexec tmpfs и log rotation.
 - Publication, Twitch и vertical workers также имеют явные PID/CPU limits,
   45-секундный graceful stop и bounded local log rotation.
+- Reconciliation loops publication, Twitch и vertical работают single-flight;
+  SIGTERM прекращает новые ticks, ждёт текущий запуск и только затем закрывает
+  PostgreSQL/S3, не создавая искусственную job failure при штатном rollout.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     236/236 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  266/266 unit tests
+Worker:  268/268 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

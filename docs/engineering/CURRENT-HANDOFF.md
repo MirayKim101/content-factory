@@ -524,3 +524,10 @@ log rotation. Compose render со всеми Stage 3 profiles прошёл.
 Twitch и vertical workers получили PID limit 256, CPU limit 2, 45-секундный
 graceful stop и local log rotation 3 × 10 MiB. Compose render всех profiles
 подтвердил итоговые effective values.
+
+Устранён shutdown race в Stage 3 reconciliation loops. Publication, Twitch и
+vertical timers теперь используют общий `SingleFlightTask`; повторный tick не
+дублирует работу, а SIGTERM ждёт текущий reconciliation перед закрытием
+repository/storage. Это не даёт штатному rollout искусственно оборвать активную
+операцию закрытым PostgreSQL/S3 client. Worker `268/268`, typecheck, lint и
+production build прошли.
