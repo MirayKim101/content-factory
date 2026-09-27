@@ -62,27 +62,38 @@ describe("Twitch reconciliation", () => {
     });
   });
 
-  it("does not advance repository state when Helix fails", async () => {
-    const channel = {
+  it("isolates a failed channel without blocking the remaining channels", async () => {
+    const failed = {
       id: "channel-1",
       broadcasterId: "1337",
       cursor: null,
       ingestDelaySeconds: 300,
     };
+    const healthy = { ...failed, id: "channel-2", broadcasterId: "7331" };
     const repository: TwitchIngestionWorkerRepository = {
       processInbox: vi.fn(async () => 1),
-      dueChannels: vi.fn(async () => [channel]),
+      dueChannels: vi.fn(async () => [failed, healthy]),
       applyVodPage: vi.fn(),
       close: vi.fn(),
     };
     const provider = {
-      listArchives: vi.fn(async () => {
-        throw new Error("TWITCH_HELIX_503");
+      listArchives: vi.fn(async (broadcasterId: string) => {
+        if (broadcasterId === "1337") throw new Error("TWITCH_HELIX_503");
+        return { items: [], nextCursor: null };
       }),
     };
     await expect(
       new ReconcileTwitchIngestion(repository, provider).execute(),
-    ).rejects.toThrow("TWITCH_HELIX_503");
-    expect(repository.applyVodPage).not.toHaveBeenCalled();
+    ).resolves.toEqual({
+      events: 1,
+      channels: 2,
+      failedChannels: ["channel-1"],
+    });
+    expect(repository.applyVodPage).toHaveBeenCalledOnce();
+    expect(repository.applyVodPage).toHaveBeenCalledWith(
+      healthy,
+      { items: [], nextCursor: null },
+      expect.any(Date),
+    );
   });
 });
