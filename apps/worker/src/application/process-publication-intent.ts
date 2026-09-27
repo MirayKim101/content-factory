@@ -26,8 +26,10 @@ export class ProcessPublicationIntent {
       );
       return true;
     }
+    let externalWriteConfirmed = false;
     try {
       const result = await provider.publish(claim);
+      externalWriteConfirmed = claim.platform !== "LOCAL_DRY_RUN";
       if (claim.platform === "LOCAL_DRY_RUN")
         await this.repository.finalizeDryRun(claim, result, this.clock());
       else {
@@ -50,6 +52,7 @@ export class ProcessPublicationIntent {
       }
       return true;
     } catch (error) {
+      if (externalWriteConfirmed) throw error;
       if (error instanceof PublicationOutcomeUnknownError) {
         await this.repository.markUnknownRemoteState(
           claim,
@@ -81,9 +84,9 @@ export class ProcessPublicationIntent {
   }
 }
 
-function providerResultId(receipt: Record<string, unknown>): string {
+function providerResultId(receipt: Record<string, unknown>): string | null {
   const value = receipt.videoId ?? receipt.publishId ?? receipt.id;
-  if (typeof value !== "string" || !value || value.length > 255)
-    throw new Error("PUBLICATION_PROVIDER_RECEIPT_INVALID");
-  return value;
+  return typeof value === "string" && value && value.length <= 255
+    ? value
+    : null;
 }

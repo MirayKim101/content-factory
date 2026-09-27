@@ -187,4 +187,60 @@ describe("ProcessPublicationIntent", () => {
     );
     expect(repo.releaseForRetry).not.toHaveBeenCalled();
   });
+
+  it("never retries a provider-confirmed write when its receipt has no usable remote id", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    vi.mocked(repo.finalizePublishedDirect).mockRejectedValueOnce(
+      new Error("PUBLICATION_PROVIDER_RECEIPT_INVALID"),
+    );
+
+    await new ProcessPublicationIntent(repo, [
+      {
+        platform: "YOUTUBE",
+        publish: vi.fn().mockResolvedValue({
+          adapterVersion: "youtube-resumable-v1",
+          providerReceipt: { status: "accepted" },
+          publicUrl: null,
+        }),
+      },
+    ]).execute(remoteClaim.id);
+
+    expect(repo.markUnknownRemoteState).toHaveBeenCalledWith(
+      remoteClaim,
+      "PUBLICATION_FINALIZE_OUTCOME_UNKNOWN",
+      expect.any(String),
+      null,
+      "provider_confirmed",
+      expect.any(Date),
+    );
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
+  });
+
+  it("never releases a confirmed external write when quarantine persistence also fails", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    vi.mocked(repo.finalizePublishedDirect).mockRejectedValueOnce(
+      new Error("database unavailable"),
+    );
+    vi.mocked(repo.markUnknownRemoteState).mockRejectedValueOnce(
+      new Error("database still unavailable"),
+    );
+
+    await expect(
+      new ProcessPublicationIntent(repo, [
+        {
+          platform: "YOUTUBE",
+          publish: vi.fn().mockResolvedValue({
+            adapterVersion: "youtube-resumable-v1",
+            providerReceipt: { videoId: "video_42" },
+            publicUrl: null,
+          }),
+        },
+      ]).execute(remoteClaim.id),
+    ).rejects.toThrow("database still unavailable");
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
+  });
 });
