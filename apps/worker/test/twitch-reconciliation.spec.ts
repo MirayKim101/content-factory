@@ -1,0 +1,88 @@
+import { describe, expect, it, vi } from "vitest";
+
+import { ReconcileTwitchIngestion } from "../src/application/reconcile-twitch-ingestion.js";
+import type { TwitchIngestionWorkerRepository } from "../src/application/twitch-reconciliation.port.js";
+import {
+  parseTwitchDuration,
+  parseTwitchVodPage,
+  TwitchHelixClient,
+} from "../src/infrastructure/twitch-helix-client.js";
+
+describe("Twitch reconciliation", () => {
+  it("parses bounded archive metadata and Twitch duration", () => {
+    expect(parseTwitchDuration("12h34m56s")).toBe(45_296);
+    expect(parseTwitchDuration("45m2s")).toBe(2_702);
+    expect(parseTwitchDuration("99m")).toBe(0);
+    expect(
+      parseTwitchVodPage({
+        data: [
+          {
+            id: "vod-1",
+            stream_id: "stream-1",
+            title: "Archive",
+            type: "archive",
+            duration: "1h2m3s",
+            created_at: "2026-09-27T10:00:00Z",
+            published_at: "2026-09-27T11:00:00Z",
+          },
+        ],
+        pagination: { cursor: "next" },
+      }),
+    ).toEqual({
+      items: [
+        expect.objectContaining({
+          providerVideoId: "vod-1",
+          durationSeconds: 3723,
+          vodType: "archive",
+        }),
+      ],
+      nextCursor: "next",
+    });
+  });
+
+  it("uses the official archives filter without leaking credentials into the URL", async () => {
+    const fetchMock = vi.fn(
+      async (_url: string, _init?: RequestInit) =>
+        new Response(JSON.stringify({ data: [], pagination: {} }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+    await new TwitchHelixClient(
+      "client-id",
+      "secret-token",
+      fetchMock as typeof fetch,
+    ).listArchives("1337", "cursor-1");
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toContain("user_id=1337&type=archive&first=100&after=cursor-1");
+    expect(url).not.toContain("secret-token");
+    expect(init?.headers).toEqual({
+      "Client-Id": "client-id",
+      Authorization: "Bearer secret-token",
+    });
+  });
+
+  it("does not advance repository state when Helix fails", async () => {
+    const channel = {
+      id: "channel-1",
+      broadcasterId: "1337",
+      cursor: null,
+      ingestDelaySeconds: 300,
+    };
+    const repository: TwitchIngestionWorkerRepository = {
+      processInbox: vi.fn(async () => 1),
+      dueChannels: vi.fn(async () => [channel]),
+      applyVodPage: vi.fn(),
+      close: vi.fn(),
+    };
+    const provider = {
+      listArchives: vi.fn(async () => {
+        throw new Error("TWITCH_HELIX_503");
+      }),
+    };
+    await expect(
+      new ReconcileTwitchIngestion(repository, provider).execute(),
+    ).rejects.toThrow("TWITCH_HELIX_503");
+    expect(repository.applyVodPage).not.toHaveBeenCalled();
+  });
+});

@@ -1,0 +1,39 @@
+export interface TwitchChannelReconciliationTarget {
+  id: string;
+  broadcasterId: string;
+  cursor: string | null;
+  ingestDelaySeconds: number;
+}
+
+export interface TwitchVodMetadata {
+  providerVideoId: string;
+  streamId: string | null;
+  title: string;
+  vodType: "archive" | "highlight" | "upload";
+  durationSeconds: number;
+  startedAt: Date;
+  publishedAt: Date;
+}
+
+export interface TwitchVodPage {
+  items: TwitchVodMetadata[];
+  nextCursor: string | null;
+}
+
+export interface TwitchVideoProvider {
+  listArchives(
+    broadcasterId: string,
+    cursor: string | null,
+  ): Promise<TwitchVodPage>;
+}
+
+export interface TwitchIngestionWorkerRepository {
+  processInbox(limit?: number): Promise<number>;
+  dueChannels(limit?: number): Promise<TwitchChannelReconciliationTarget[]>;
+  applyVodPage(
+    channel: TwitchChannelReconciliationTarget,
+    page: TwitchVodPage,
+    now: Date,
+  ): Promise<void>;
+  close(): Promise<void>;
+}

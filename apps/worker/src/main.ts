@@ -29,6 +29,9 @@ import { PgImageSuggestionWorker } from "./infrastructure/pg-image-suggestion-wo
 import { ProcessPublicationIntent } from "./application/process-publication-intent.js";
 import { LocalDryRunPublicationAdapter } from "./infrastructure/local-dry-run-publication-adapter.js";
 import { PgPublicationWorkerRepository } from "./infrastructure/pg-publication-worker.repository.js";
+import { ReconcileTwitchIngestion } from "./application/reconcile-twitch-ingestion.js";
+import { PgTwitchIngestionWorkerRepository } from "./infrastructure/pg-twitch-ingestion-worker.repository.js";
+import { TwitchHelixClient } from "./infrastructure/twitch-helix-client.js";
 
 if (process.argv.includes("--verify-admission-off-rollback")) {
   const rollbackConfig = workerConfig();
@@ -44,7 +47,71 @@ if (process.argv.includes("--verify-admission-off-rollback")) {
     ? startAiWorker()
     : process.env.WORKER_ROLE === "publication"
       ? startPublicationWorker()
-      : startWorker());
+      : process.env.WORKER_ROLE === "twitch"
+        ? startTwitchWorker()
+        : startWorker());
+}
+
+async function startTwitchWorker(): Promise<void> {
+  const config = workerConfig();
+  if (process.env.TWITCH_INGESTION_ENABLED !== "1")
+    throw new Error("CONFIG_TWITCH_INGESTION_DISABLED");
+  const clientId = requireWorkerSecret("TWITCH_CLIENT_ID");
+  const accessToken = requireWorkerSecret("TWITCH_APP_ACCESS_TOKEN");
+  const workerId = `twitch-worker-${randomUUID()}`;
+  const repository = new PgTwitchIngestionWorkerRepository(config.databaseUrl);
+  const reconciler = new ReconcileTwitchIngestion(
+    repository,
+    new TwitchHelixClient(clientId, accessToken),
+  );
+  let running = false;
+  const run = async (): Promise<void> => {
+    if (running) return;
+    running = true;
+    try {
+      const result = await reconciler.execute();
+      if (result.events || result.channels)
+        console.log(
+          JSON.stringify({
+            event: "twitch_reconciliation_completed",
+            workerId,
+            ...result,
+          }),
+        );
+    } finally {
+      running = false;
+    }
+  };
+  await run();
+  const timer = setInterval(() => {
+    void run().catch((error) =>
+      console.error(
+        JSON.stringify({
+          event: "twitch_reconciliation_failed",
+          workerId,
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
+    );
+  }, 30_000);
+  timer.unref();
+  let shutdownPromise: Promise<void> | undefined;
+  const shutdown = (): Promise<void> => {
+    if (shutdownPromise) return shutdownPromise;
+    clearInterval(timer);
+    shutdownPromise = repository.close();
+    return shutdownPromise;
+  };
+  for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.once(signal, () => void shutdown());
+  }
+  console.log(JSON.stringify({ event: "twitch_worker_started", workerId }));
+}
+
+function requireWorkerSecret(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) throw new Error(`CONFIG_${name}_REQUIRED`);
+  return value;
 }
 
 async function startPublicationWorker(): Promise<void> {
@@ -95,9 +162,10 @@ async function startPublicationWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(recoveryTimer);
-    shutdownPromise = Promise.allSettled([worker.close(), repository.close()]).then(
-      () => undefined,
-    );
+    shutdownPromise = Promise.allSettled([
+      worker.close(),
+      repository.close(),
+    ]).then(() => undefined);
     return shutdownPromise;
   };
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
@@ -192,7 +260,11 @@ async function startAiWorker(): Promise<void> {
   );
   imageQueue.on("error", (error) =>
     console.error(
-      JSON.stringify({ event: "ai_image_worker_error", workerId, error: error.message }),
+      JSON.stringify({
+        event: "ai_image_worker_error",
+        workerId,
+        error: error.message,
+      }),
     ),
   );
   await Promise.all([
@@ -221,9 +293,13 @@ async function startAiWorker(): Promise<void> {
   }, 5_000);
   researchRecoveryTimer.unref();
   const imageRecoveryTimer = setInterval(() => {
-    void imageWorker.recover().catch(() =>
-      console.error(JSON.stringify({ event: "ai_image_reconciliation_failed" })),
-    );
+    void imageWorker
+      .recover()
+      .catch(() =>
+        console.error(
+          JSON.stringify({ event: "ai_image_reconciliation_failed" }),
+        ),
+      );
   }, 5_000);
   imageRecoveryTimer.unref();
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
