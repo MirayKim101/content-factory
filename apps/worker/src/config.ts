@@ -179,8 +179,45 @@ export function openAiClipGenerationConfig(
     5_000,
     600_000,
   );
-  const baseUrl = environment.OPENAI_BASE_URL?.trim();
+  const rawBaseUrl = environment.OPENAI_BASE_URL?.trim();
+  const baseUrl = rawBaseUrl
+    ? secureProviderBaseUrl(
+        rawBaseUrl,
+        environment,
+        "CONFIG_OPENAI_BASE_URL_INVALID",
+        "CONFIG_OPENAI_BASE_URL_UNSAFE",
+      )
+    : undefined;
   return { apiKey, model, timeoutMs, ...(baseUrl ? { baseUrl } : {}) };
+}
+
+function secureProviderBaseUrl(
+  raw: string,
+  environment: NodeJS.ProcessEnv,
+  invalidCode: string,
+  unsafeCode: string,
+): string {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error(invalidCode);
+  }
+  const loopback = ["127.0.0.1", "localhost", "::1"].includes(url.hostname);
+  if (
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    (url.protocol !== "https:" &&
+      !(
+        environment.DEPLOYMENT_PROFILE?.trim() === "local" &&
+        url.protocol === "http:" &&
+        loopback
+      ))
+  )
+    throw new Error(unsafeCode);
+  return url.toString().replace(/\/$/, "");
 }
 
 function integerFromEnvironment(

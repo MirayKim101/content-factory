@@ -53,4 +53,33 @@ describe("openAiClipGenerationConfig", () => {
       }),
     ).toThrow("CONFIG_CLIP_GENERATION_TIMEOUT_MS_INVALID");
   });
+
+  it.each([
+    "not-a-url",
+    "http://gateway.example.test",
+    "https://user:password@gateway.example.test",
+    "https://gateway.example.test?token=secret",
+    "https://gateway.example.test#fragment",
+  ])("rejects an invalid or unsafe OpenAI base URL: %s", (baseUrl) => {
+    expect(() =>
+      openAiClipGenerationConfig({
+        CLIP_GENERATION_ENABLED: "1",
+        OPENAI_API_KEY: "secret",
+        CLIP_GENERATION_MODEL: "gpt-test",
+        OPENAI_BASE_URL: baseUrl,
+      }),
+    ).toThrow(/CONFIG_OPENAI_BASE_URL_(?:INVALID|UNSAFE)/);
+  });
+
+  it("allows local HTTP only in the explicit local deployment profile", () => {
+    expect(
+      openAiClipGenerationConfig({
+        CLIP_GENERATION_ENABLED: "1",
+        OPENAI_API_KEY: "secret",
+        CLIP_GENERATION_MODEL: "gpt-test",
+        OPENAI_BASE_URL: "http://127.0.0.1:8080/",
+        DEPLOYMENT_PROFILE: "local",
+      }),
+    ).toMatchObject({ baseUrl: "http://127.0.0.1:8080" });
+  });
 });

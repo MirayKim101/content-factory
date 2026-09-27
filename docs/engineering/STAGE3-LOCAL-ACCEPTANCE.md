@@ -145,6 +145,9 @@
 - Тот же запрет применяется к Google/YouTube, TikTok и OpenAI: OAuth secrets,
   bearer tokens и media chunks не следуют за HTTP redirect. Разрешённые
   resumable upload URL по-прежнему принимаются только после host allowlist.
+- Custom `OPENAI_BASE_URL`, получающий API key и transcript, валидируется до
+  старта worker: внешний endpoint обязан быть HTTPS без credentials/query/hash;
+  HTTP допускается только для loopback в explicit local deployment profile.
 - Все PostgreSQL-пулы worker-ролей используют единый fail-fast contract:
   подключение ограничено 5 секундами, SQL statement/query и простаивающая
   транзакция — 30 секундами. Потеря БД больше не может бессрочно удерживать
@@ -155,7 +158,7 @@
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  290/290 unit tests
+Worker:  296/296 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
