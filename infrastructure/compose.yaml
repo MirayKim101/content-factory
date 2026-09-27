@@ -242,6 +242,9 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    pids_limit: 256
+    cpus: 2.0
+    stop_grace_period: 45s
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=64m
     environment:
@@ -280,6 +283,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
 
   twitch-worker:
     image: content-factory-media-worker:0.0.0-stage1
@@ -294,6 +302,9 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    pids_limit: 256
+    cpus: 2.0
+    stop_grace_period: 45s
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,mode=0700,uid=1000,gid=1000,size=64m
     environment:
@@ -334,6 +345,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
 
   vertical-worker:
     image: content-factory-media-worker:0.0.0-stage1
@@ -348,6 +364,9 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+    pids_limit: 256
+    cpus: 2.0
+    stop_grace_period: 45s
     environment:
       WORKER_ROLE: vertical
       VERTICAL_RENDER_ENABLED: ${VERTICAL_RENDER_ENABLED:-0}
@@ -384,6 +403,11 @@ services:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
 
 networks:
   content-factory:

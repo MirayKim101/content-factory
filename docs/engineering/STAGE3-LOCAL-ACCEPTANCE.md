@@ -81,6 +81,8 @@
 - `ai-worker` использует тот же container security baseline, что остальные
   workers: read-only root filesystem, dropped capabilities, no-new-privileges,
   bounded PID/CPU, bounded noexec tmpfs и log rotation.
+- Publication, Twitch и vertical workers также имеют явные PID/CPU limits,
+  45-секундный graceful stop и bounded local log rotation.
 
 ## Воспроизведённые проверки
 

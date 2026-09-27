@@ -519,3 +519,8 @@ typecheck, lint, production build и повторный dependency audit про�
 запускается с read-only root filesystem, dropped Linux capabilities,
 `no-new-privileges`, PID/CPU limits, 1 GiB noexec tmpfs, graceful stop и local
 log rotation. Compose render со всеми Stage 3 profiles прошёл.
+
+Ресурсный container baseline распространён на все Stage 3 роли: publication,
+Twitch и vertical workers получили PID limit 256, CPU limit 2, 45-секундный
+graceful stop и local log rotation 3 × 10 MiB. Compose render всех profiles
+подтвердил итоговые effective values.
