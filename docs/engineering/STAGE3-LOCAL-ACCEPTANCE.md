@@ -136,13 +136,17 @@
 - Twitch control-plane shutdown signal проходит через EventSub list/create/
   delete, Helix pagination и channel reconciliation. Многостраничный проход
   прекращается немедленно и не записывает shutdown как ошибку канала.
+- Все PostgreSQL-пулы worker-ролей используют единый fail-fast contract:
+  подключение ограничено 5 секундами, SQL statement/query и простаивающая
+  транзакция — 30 секундами. Потеря БД больше не может бессрочно удерживать
+  startup, lease loop или graceful shutdown.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  288/288 unit tests
+Worker:  289/289 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

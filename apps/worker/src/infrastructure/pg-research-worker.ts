@@ -9,6 +9,7 @@ import {
   type ResearchSnapshot,
 } from "@content-factory/contracts";
 import { Pool, type PoolClient } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 type IntentRow = {
   id: string;
@@ -43,7 +44,7 @@ export class PgResearchWorker {
     databaseUrl: string,
     private readonly sourceAuthorizationPolicy: "manual" | "local-auto",
   ) {
-    this.pool = new Pool({ connectionString: databaseUrl, max: 2 });
+    this.pool = new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
   async process(intentId: string): Promise<void> {

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { Pool } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 import type {
   VerticalRenderedFile,
@@ -11,7 +12,7 @@ import type {
 export class PgVerticalRenderRepository implements VerticalRenderRepository {
   private readonly pool: Pool;
   constructor(databaseUrl: string) {
-    this.pool = new Pool({ connectionString: databaseUrl, max: 2 });
+    this.pool = new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
   async claim(

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { Pool, type PoolClient } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 import { generateLocalNoLikenessThumbnail } from "./local-no-likeness-thumbnail-adapter.js";
 
@@ -19,7 +20,7 @@ export class PgImageSuggestionWorker {
     private readonly sourceAuthorizationPolicy: "manual" | "local-auto",
     private readonly storage: Storage,
   ) {
-    this.pool = new Pool({ connectionString: databaseUrl, max: 2 });
+    this.pool = new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
   async process(intentId: string): Promise<void> {

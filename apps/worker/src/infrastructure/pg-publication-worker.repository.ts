@@ -1,4 +1,5 @@
 import { Pool, type PoolClient } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 import type {
   PublicationClaim,
@@ -33,7 +34,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
   private readonly pool: Pool;
 
   constructor(databaseUrl: string) {
-    this.pool = new Pool({ connectionString: databaseUrl, max: 2 });
+    this.pool = new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
   async claim(intentId: string, now: Date): Promise<PublicationClaim | null> {

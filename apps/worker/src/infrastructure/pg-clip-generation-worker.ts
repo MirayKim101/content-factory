@@ -5,6 +5,7 @@ import {
   type ClipGenerationRequest,
 } from "@content-factory/contracts";
 import { Pool, type PoolClient } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 import type { ClipGenerationProvider } from "../application/clip-generation-provider.port.js";
 
@@ -22,7 +23,7 @@ export class PgClipGenerationWorker {
     private readonly provider: ClipGenerationProvider,
     private readonly leaseMs = 150_000,
   ) {
-    this.pool = new Pool({ connectionString: databaseUrl, max: 2 });
+    this.pool = new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
   async process(intentId: string): Promise<void> {

@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { Pool, types as pgTypes } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 import {
   DeleteObjectCommand,
   PutObjectCommand,
@@ -30,8 +31,7 @@ export class PgTranscriptWorker {
 
   constructor(private readonly config: Config) {
     this.pool = new Pool({
-      connectionString: config.databaseUrl,
-      max: 2,
+      ...workerPgPoolConfig(config.databaseUrl, 2),
       options: "-c timezone=UTC",
       types: {
         // Prisma timestamp(3) values represent UTC. The default node-postgres

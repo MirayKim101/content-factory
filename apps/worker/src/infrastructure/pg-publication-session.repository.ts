@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 import type {
   PublicationSessionRepository,
@@ -20,7 +21,7 @@ export class PgPublicationSessionRepository implements PublicationSessionReposit
   private readonly pool: Pool;
 
   constructor(databaseUrl: string) {
-    this.pool = new Pool({ connectionString: databaseUrl, max: 2 });
+    this.pool = new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
   async save(input: StoredPublicationSession, now: Date): Promise<boolean> {

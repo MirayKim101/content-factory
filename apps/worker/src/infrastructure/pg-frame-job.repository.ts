@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Pool, types as pgTypes, type PoolClient } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 import {
   FRAME_LIMITS,
   FRAME_RESOURCE_CLASS,
@@ -29,7 +30,7 @@ export class PgFrameJobRepository implements FrameJobRepository {
     private readonly sourcePolicy: "manual" | "local-auto",
   ) {
     this.pool = new Pool({
-      connectionString: databaseUrl,
+      ...workerPgPoolConfig(databaseUrl, 2),
       options: "-c timezone=UTC",
       types: {
         // Prisma's timestamp(3) columns contain UTC. node-postgres otherwise

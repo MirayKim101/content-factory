@@ -14,6 +14,7 @@ import {
 } from "@content-factory/contracts";
 
 import { Pool, type PoolClient } from "pg";
+import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 import type { MediaJobRepository } from "../application/ports.js";
 import {
@@ -363,7 +364,7 @@ export class PgMediaJobRepository implements MediaJobRepository {
     private readonly sourceAuthorizationPolicy:
       "manual" | "local-auto" = "manual",
   ) {
-    this.pool = new Pool({ connectionString, max: 4 });
+    this.pool = new Pool(workerPgPoolConfig(connectionString, 4));
   }
 
   async getAssemblyResourcePlan(
