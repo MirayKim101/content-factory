@@ -147,6 +147,7 @@ describe("Twitch reconciliation", () => {
     };
     const healthy = { ...failed, id: "channel-2", broadcasterId: "7331" };
     const repository: TwitchIngestionWorkerRepository = {
+      enabledBroadcasterIds: vi.fn(async () => []),
       processInbox: vi.fn(async () => 1),
       promoteReady: vi.fn(async () => 0),
       dueChannels: vi.fn(async () => [failed, healthy]),
@@ -182,6 +183,7 @@ describe("Twitch reconciliation", () => {
       ingestDelaySeconds: 300,
     };
     const repository: TwitchIngestionWorkerRepository = {
+      enabledBroadcasterIds: vi.fn(async () => []),
       processInbox: vi.fn(async () => 0),
       promoteReady: vi.fn(async () => 0),
       dueChannels: vi.fn(async () => [channel]),
@@ -210,6 +212,7 @@ describe("Twitch reconciliation", () => {
 
   it("stops cursor cycles and reports only that channel as failed", async () => {
     const repository: TwitchIngestionWorkerRepository = {
+      enabledBroadcasterIds: vi.fn(async () => []),
       processInbox: vi.fn(async () => 0),
       promoteReady: vi.fn(async () => 0),
       dueChannels: vi.fn(async () => [
@@ -243,6 +246,7 @@ describe("Twitch reconciliation", () => {
 
   it("stops pagination when a concurrent reconciliation changed the durable cursor", async () => {
     const repository: TwitchIngestionWorkerRepository = {
+      enabledBroadcasterIds: vi.fn(async () => []),
       processInbox: vi.fn(async () => 0),
       promoteReady: vi.fn(async () => 0),
       dueChannels: vi.fn(async () => [

@@ -15,6 +15,15 @@ export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerR
     this.pool = new Pool({ connectionString: databaseUrl, max: 2 });
   }
 
+  async enabledBroadcasterIds(limit = 100): Promise<string[]> {
+    const result = await this.pool.query<{ broadcasterId: string }>(
+      `SELECT "broadcasterId" FROM "TwitchIngestChannel"
+        WHERE "state" = 'ENABLED' ORDER BY "id" ASC LIMIT $1`,
+      [Math.max(1, Math.min(1000, Math.trunc(limit)))],
+    );
+    return result.rows.map((row) => row.broadcasterId);
+  }
+
   async processInbox(limit = 100): Promise<number> {
     const client = await this.pool.connect();
     try {

@@ -28,6 +28,7 @@ export interface TwitchVideoProvider {
 }
 
 export interface TwitchIngestionWorkerRepository {
+  enabledBroadcasterIds(limit?: number): Promise<string[]>;
   processInbox(limit?: number): Promise<number>;
   promoteReady(now: Date): Promise<number>;
   dueChannels(limit?: number): Promise<TwitchChannelReconciliationTarget[]>;

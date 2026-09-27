@@ -37,9 +37,11 @@ import { ReconcilePublicationOutcomes } from "./application/reconcile-publicatio
 import { LocalDryRunPublicationAdapter } from "./infrastructure/local-dry-run-publication-adapter.js";
 import { PgPublicationWorkerRepository } from "./infrastructure/pg-publication-worker.repository.js";
 import { ReconcileTwitchIngestion } from "./application/reconcile-twitch-ingestion.js";
+import { ReconcileTwitchEventSub } from "./application/reconcile-twitch-eventsub.js";
 import { PgTwitchIngestionWorkerRepository } from "./infrastructure/pg-twitch-ingestion-worker.repository.js";
 import { TwitchHelixClient } from "./infrastructure/twitch-helix-client.js";
 import { TwitchAppAccessTokenResolver } from "./infrastructure/twitch-app-access-token-resolver.js";
+import { TwitchEventSubClient } from "./infrastructure/twitch-eventsub-client.js";
 import { ProcessVerticalRender } from "./application/process-vertical-render.js";
 import { FfmpegVerticalRenderer } from "./infrastructure/ffmpeg-vertical-renderer.js";
 import { PgVerticalRenderRepository } from "./infrastructure/pg-vertical-render.repository.js";
@@ -190,6 +192,8 @@ async function startTwitchWorker(): Promise<void> {
   const clientId = requireWorkerSecret("TWITCH_CLIENT_ID");
   const clientSecret = process.env.TWITCH_CLIENT_SECRET?.trim();
   const staticAccessToken = process.env.TWITCH_APP_ACCESS_TOKEN?.trim();
+  const eventSubCallback = process.env.TWITCH_EVENTSUB_CALLBACK_URL?.trim();
+  const eventSubSecret = process.env.TWITCH_EVENTSUB_SECRET?.trim();
   if (!clientSecret && !staticAccessToken)
     throw new Error("CONFIG_TWITCH_CLIENT_SECRET_OR_APP_ACCESS_TOKEN_REQUIRED");
   const tokenResolver = clientSecret
@@ -197,26 +201,55 @@ async function startTwitchWorker(): Promise<void> {
     : undefined;
   const workerId = `twitch-worker-${randomUUID()}`;
   const repository = new PgTwitchIngestionWorkerRepository(config.databaseUrl);
+  const tokenProvider = tokenResolver ?? {
+    resolve: () => Promise.resolve(staticAccessToken as string),
+  };
   const reconciler = new ReconcileTwitchIngestion(
     repository,
-    new TwitchHelixClient(
-      clientId,
-      tokenResolver ?? {
-        resolve: () => Promise.resolve(staticAccessToken as string),
-      },
-    ),
+    new TwitchHelixClient(clientId, tokenProvider),
   );
+  if (Boolean(eventSubCallback) !== Boolean(eventSubSecret))
+    throw new Error("CONFIG_TWITCH_EVENTSUB_CALLBACK_AND_SECRET_REQUIRED");
+  const eventSubReconciler =
+    eventSubCallback && eventSubSecret
+      ? new ReconcileTwitchEventSub(
+          new TwitchEventSubClient(
+            clientId,
+            tokenProvider,
+            eventSubCallback,
+            eventSubSecret,
+          ),
+          new URL(eventSubCallback).toString(),
+        )
+      : undefined;
   let running = false;
   const run = async (): Promise<void> => {
     if (running) return;
     running = true;
     try {
+      let subscriptionsCreated = 0;
+      if (eventSubReconciler) {
+        try {
+          subscriptionsCreated = await eventSubReconciler.execute(
+            await repository.enabledBroadcasterIds(),
+          );
+        } catch (error) {
+          console.error(
+            JSON.stringify({
+              event: "twitch_eventsub_reconciliation_failed",
+              workerId,
+              error: error instanceof Error ? error.message : "unknown",
+            }),
+          );
+        }
+      }
       const result = await reconciler.execute();
-      if (result.events || result.channels)
+      if (subscriptionsCreated || result.events || result.channels)
         console.log(
           JSON.stringify({
             event: "twitch_reconciliation_completed",
             workerId,
+            subscriptionsCreated,
             ...result,
           }),
         );
