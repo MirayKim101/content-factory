@@ -21,12 +21,12 @@ export class ProjectObjectEditorialStorage implements EditorialStorage {
     return this.storage.putFile(input);
   }
 
-  deleteObject(objectKey: string) {
-    return this.storage.deleteObject(objectKey);
+  deleteObject(objectKey: string, signal?: AbortSignal) {
+    return this.storage.deleteObject(objectKey, signal);
   }
 
-  headObject(objectKey: string) {
-    return this.storage.headObject(objectKey);
+  headObject(objectKey: string, signal?: AbortSignal) {
+    return this.storage.headObject(objectKey, signal);
   }
 
   async readObject(objectKey: string) {

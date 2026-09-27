@@ -21,23 +21,29 @@ export class ReconcileEditorialAssets {
     @Inject(EDITORIAL_STORAGE) private readonly storage: EditorialStorage,
   ) {}
 
-  async execute(): Promise<void> {
+  async execute(signal?: AbortSignal): Promise<void> {
     const config = apiEnvironment();
+    this.throwIfAborted(signal);
     const candidates = await this.repository.listRecoverableAssets({
       staleBefore: new Date(Date.now() - config.reconcileStaleAfterMs),
       limit: config.reconcileLimit,
     });
     for (const candidate of candidates) {
+      this.throwIfAborted(signal);
       if (
         candidate.status === "FAILED_FINAL" &&
         candidate.cleanupStatus === "PENDING"
       ) {
-        await this.cleanup(candidate.id, candidate.objectKey);
+        await this.cleanup(candidate.id, candidate.objectKey, signal);
         continue;
       }
       if (candidate.status !== "PENDING") continue;
       try {
-        const stored = await this.storage.headObject(candidate.objectKey);
+        const stored = await this.storage.headObject(
+          candidate.objectKey,
+          signal,
+        );
+        this.throwIfAborted(signal);
         if (
           stored &&
           stored.sizeBytes === Number(candidate.sizeBytes) &&
@@ -51,8 +57,9 @@ export class ReconcileEditorialAssets {
           "THUMBNAIL_RECOVERY_FAILED",
           "Thumbnail upload could not be recovered.",
         );
-        await this.cleanup(candidate.id, candidate.objectKey);
+        await this.cleanup(candidate.id, candidate.objectKey, signal);
       } catch (error) {
+        if (signal?.aborted) throw signal.reason;
         this.logger.error({
           event: "thumbnail_recovery_failed",
           code: "THUMBNAIL_RECOVERY_FAILED",
@@ -63,11 +70,17 @@ export class ReconcileEditorialAssets {
     }
   }
 
-  private async cleanup(assetId: string, objectKey: string): Promise<void> {
+  private async cleanup(
+    assetId: string,
+    objectKey: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
     try {
-      await this.storage.deleteObject(objectKey);
+      await this.storage.deleteObject(objectKey, signal);
+      this.throwIfAborted(signal);
       await this.repository.completeAssetCleanup(assetId);
     } catch (error) {
+      if (signal?.aborted) throw signal.reason;
       try {
         await this.repository.recordAssetCleanupFailure(
           assetId,
@@ -88,5 +101,12 @@ export class ReconcileEditorialAssets {
         cause: safeCause(error),
       });
     }
+  }
+
+  private throwIfAborted(signal?: AbortSignal): void {
+    if (!signal?.aborted) return;
+    throw signal.reason instanceof Error
+      ? signal.reason
+      : new Error("EDITORIAL_RECONCILIATION_ABORTED");
   }
 }

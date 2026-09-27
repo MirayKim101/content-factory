@@ -92,11 +92,13 @@
   дренируют активный tick в `onModuleDestroy` до закрытия зависимостей.
 - Startup reconciliation ручных source uploads abort-aware на shutdown и
   дренируется без ложной timeout/error записи.
+- Editorial thumbnail startup reconciliation протягивает timeout/shutdown
+  AbortSignal до S3 HEAD/DELETE и не сохраняет ложный terminal failure.
 
 ## Воспроизведённые проверки
 
 ```text
-API:     241/241 unit tests
+API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  268/268 unit tests
 Web:     266/266 tests

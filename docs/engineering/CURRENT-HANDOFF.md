@@ -414,6 +414,12 @@ typecheck, lint, production build и runtime health 3001/3100 прошли.
 ожидаемый shutdown как timeout/error. API `241/241`, typecheck, lint и build
 прошли.
 
+Editorial thumbnail startup reconciliation больше не оставляет S3 I/O жить
+после startup timeout или SIGTERM. AbortSignal проходит через editorial storage
+port до object storage HEAD/DELETE; cancellation повторно проверяется до
+durable finalize/failure и не создаёт ложных cleanup записей. Startup shutdown
+также дренирует promise. API `243/243`, typecheck, lint и build прошли.
+
 Добавлен operator revoke publication channel через project-scoped API и UI.
 Serializable-транзакция переводит канал в `REVOKED` и отменяет только ещё не
 начатые `SCHEDULED`/`QUEUED` intents; `PROCESSING` остаётся в штатном remote

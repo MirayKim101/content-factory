@@ -14,6 +14,35 @@ describe("editorial asset restart reconciliation", () => {
     expect(reconcile.execute).toHaveBeenCalledOnce();
   });
 
+  it("aborts and drains startup reconciliation during module shutdown", async () => {
+    let signal: AbortSignal | undefined;
+    const reconcile = {
+      execute: vi.fn((nextSignal?: AbortSignal) => {
+        signal = nextSignal;
+        return new Promise<void>((_resolve, reject) => {
+          nextSignal?.addEventListener(
+            "abort",
+            () => reject(nextSignal.reason),
+            { once: true },
+          );
+        });
+      }),
+    };
+    const startup = new EditorialAssetReconciliationStartup(
+      reconcile as unknown as ReconcileEditorialAssets,
+    );
+
+    const bootstrap = startup.onApplicationBootstrap();
+    await Promise.resolve();
+    await startup.onModuleDestroy();
+    await bootstrap;
+
+    expect(signal?.aborted).toBe(true);
+    expect(signal?.reason).toEqual(
+      new Error("EDITORIAL_RECONCILIATION_SHUTDOWN"),
+    );
+  });
+
   it("finalizes an exact stored object and retries durable cleanup", async () => {
     const repository = {
       listRecoverableAssets: vi.fn().mockResolvedValue([
@@ -54,7 +83,10 @@ describe("editorial asset restart reconciliation", () => {
       sha256: "a".repeat(64),
       etag: "etag",
     });
-    expect(storage.deleteObject).toHaveBeenCalledWith("private/failed");
+    expect(storage.deleteObject).toHaveBeenCalledWith(
+      "private/failed",
+      undefined,
+    );
     expect(repository.completeAssetCleanup).toHaveBeenCalledWith("failed");
   });
 
@@ -87,5 +119,42 @@ describe("editorial asset restart reconciliation", () => {
     await new ReconcileEditorialAssets(repository, storage).execute();
 
     expect(order).toEqual(["intent", "delete", "complete"]);
+  });
+
+  it("propagates cancellation through storage without persisting a false failure", async () => {
+    const repository = {
+      listRecoverableAssets: vi.fn().mockResolvedValue([
+        {
+          id: "pending",
+          status: "PENDING",
+          cleanupStatus: "NOT_REQUIRED",
+          objectKey: "private/pending",
+          sizeBytes: 123n,
+          sha256: "a".repeat(64),
+        },
+      ]),
+      failAsset: vi.fn(),
+    } as unknown as EditorialRepository;
+    const storage = {
+      headObject: vi.fn(
+        (_key: string, signal?: AbortSignal) =>
+          new Promise<never>((_resolve, reject) => {
+            signal?.addEventListener("abort", () => reject(signal.reason), {
+              once: true,
+            });
+          }),
+      ),
+    } as unknown as EditorialStorage;
+    const controller = new AbortController();
+    const execution = new ReconcileEditorialAssets(repository, storage).execute(
+      controller.signal,
+    );
+
+    controller.abort(new Error("EDITORIAL_RECONCILIATION_SHUTDOWN"));
+
+    await expect(execution).rejects.toThrow(
+      "EDITORIAL_RECONCILIATION_SHUTDOWN",
+    );
+    expect(repository.failAsset).not.toHaveBeenCalled();
   });
 });

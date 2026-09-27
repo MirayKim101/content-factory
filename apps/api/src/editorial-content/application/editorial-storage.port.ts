@@ -9,8 +9,11 @@ export interface EditorialStorage {
     contentType: string;
     sha256: string;
   }): Promise<{ etag?: string; version?: string }>;
-  deleteObject(objectKey: string): Promise<void>;
-  headObject(objectKey: string): Promise<{
+  deleteObject(objectKey: string, signal?: AbortSignal): Promise<void>;
+  headObject(
+    objectKey: string,
+    signal?: AbortSignal,
+  ): Promise<{
     etag?: string;
     version?: string;
     sizeBytes?: number;
