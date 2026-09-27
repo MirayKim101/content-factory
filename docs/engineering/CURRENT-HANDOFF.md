@@ -402,6 +402,12 @@ stream или multipart upload больше не может бесконечно
 timeout сохраняет partial file и идёт в bounded retry. Worker `256/256`,
 typecheck, lint и production build прошли.
 
+Media и montage API startup reconcilers переведены с boolean guard на
+тестируемый single-flight lifecycle. Повторные timer ticks дедуплицируются,
+`onModuleDestroy` очищает timer и ждёт текущую операцию до закрытия Prisma/S3.
+Wiring drain доказан отдельным delayed reconciliation test; API `240/240`,
+typecheck, lint, production build и runtime health 3001/3100 прошли.
+
 Добавлен operator revoke publication channel через project-scoped API и UI.
 Serializable-транзакция переводит канал в `REVOKED` и отменяет только ещё не
 начатые `SCHEDULED`/`QUEUED` intents; `PROCESSING` остаётся в штатном remote

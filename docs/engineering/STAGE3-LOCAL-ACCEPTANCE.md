@@ -88,11 +88,13 @@
   PostgreSQL/S3, не создавая искусственную job failure при штатном rollout.
 - Production API bootstrap включает Nest shutdown hooks для SIGINT/SIGTERM,
   поэтому Prisma, BullMQ, S3 и application timers получают lifecycle callbacks.
+- Периодические media/montage API reconcilers работают single-flight и
+  дренируют активный tick в `onModuleDestroy` до закрытия зависимостей.
 
 ## Воспроизведённые проверки
 
 ```text
-API:     237/237 unit tests
+API:     240/240 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  268/268 unit tests
 Web:     266/266 tests

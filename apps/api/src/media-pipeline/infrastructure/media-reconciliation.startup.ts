@@ -1,40 +1,42 @@
 import {
   Injectable,
   type OnApplicationBootstrap,
-  type OnApplicationShutdown,
+  type OnModuleDestroy,
 } from "@nestjs/common";
 
+import { SingleFlightTask } from "../../common/single-flight-task.js";
 import { apiEnvironment } from "../../config/environment.js";
 import { ReconcileMediaJobs } from "../application/reconcile-media-jobs.js";
 
 @Injectable()
 export class MediaReconciliationStartup
-  implements OnApplicationBootstrap, OnApplicationShutdown
+  implements OnApplicationBootstrap, OnModuleDestroy
 {
   private timer?: NodeJS.Timeout;
-  private running = false;
+  private readonly task: SingleFlightTask;
 
-  constructor(private readonly reconcile: ReconcileMediaJobs) {}
+  constructor(private readonly reconcile: ReconcileMediaJobs) {
+    this.task = new SingleFlightTask(() => this.run());
+  }
 
   async onApplicationBootstrap(): Promise<void> {
     const config = apiEnvironment();
-    await this.run(config.mediaReconcileLimit);
+    await this.task.run();
     this.timer = setInterval(
-      () => void this.run(config.mediaReconcileLimit),
+      () => void this.task.run(),
       config.mediaReconcileIntervalMs,
     );
     this.timer.unref();
   }
 
-  onApplicationShutdown(): void {
+  async onModuleDestroy(): Promise<void> {
     if (this.timer) clearInterval(this.timer);
+    await this.task.wait();
   }
 
-  private async run(limit: number): Promise<void> {
-    if (this.running) return;
-    this.running = true;
+  private async run(): Promise<void> {
     try {
-      await this.reconcile.execute(limit);
+      await this.reconcile.execute(apiEnvironment().mediaReconcileLimit);
     } catch (error) {
       console.error(
         JSON.stringify({
@@ -42,8 +44,6 @@ export class MediaReconciliationStartup
           error: error instanceof Error ? error.message : "UNKNOWN",
         }),
       );
-    } finally {
-      this.running = false;
     }
   }
 }
