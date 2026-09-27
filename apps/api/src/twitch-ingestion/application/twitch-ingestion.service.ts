@@ -183,6 +183,8 @@ export class TwitchIngestionService {
       await this.requireChannel(challenge.broadcasterId);
       return { challenge: challenge.value };
     }
+    if (headers.messageType === "revocation")
+      return this.receiveRevocation(headers, rawBody, body, now);
     if (headers.messageType !== "notification")
       throw new TwitchEventInvalidError();
     let envelope: TwitchEventEnvelopeV1;
@@ -227,6 +229,76 @@ export class TwitchIngestionService {
       return { duplicate: true, messageId: envelope.messageId };
     }
     return { duplicate: false, messageId: envelope.messageId };
+  }
+
+  private async receiveRevocation(
+    headers: TwitchHeaders,
+    rawBody: Buffer,
+    body: unknown,
+    now: Date,
+  ): Promise<{ duplicate: boolean; messageId: string }> {
+    const payload = body as {
+      subscription?: {
+        status?: unknown;
+        type?: unknown;
+        version?: unknown;
+        condition?: { broadcaster_user_id?: unknown };
+      };
+    };
+    const subscription = payload.subscription;
+    const broadcasterId = subscription?.condition?.broadcaster_user_id;
+    const type = headers.subscriptionType ?? subscription?.type;
+    const version = headers.subscriptionVersion ?? subscription?.version;
+    if (
+      !headers.messageId ||
+      typeof broadcasterId !== "string" ||
+      !/^\d{1,64}$/.test(broadcasterId) ||
+      (type !== "stream.online" && type !== "stream.offline") ||
+      version !== "1" ||
+      typeof subscription?.status !== "string" ||
+      !/^[a-z_]{1,64}$/.test(subscription.status)
+    )
+      throw new TwitchEventInvalidError();
+    const channel = await this.requireChannel(broadcasterId);
+    const payloadSha256 = createHash("sha256").update(rawBody).digest("hex");
+    const existing = await this.prisma.twitchEventInbox.findUnique({
+      where: { messageId: headers.messageId },
+      select: { payloadSha256: true },
+    });
+    if (existing) {
+      if (existing.payloadSha256 !== payloadSha256)
+        throw new TwitchEventConflictError();
+      return { duplicate: true, messageId: headers.messageId };
+    }
+    try {
+      await this.prisma.twitchEventInbox.create({
+        data: {
+          id: randomUUID(),
+          messageId: headers.messageId,
+          channelId: channel.id,
+          subscriptionType: type,
+          subscriptionVersion: version,
+          streamId: null,
+          messageTimestamp: new Date(headers.messageTimestamp as string),
+          payloadSha256,
+          payload: body as never,
+          state: "REJECTED",
+          failureCode: "TWITCH_SUBSCRIPTION_REVOKED",
+          failureMessage: "Twitch revoked the EventSub subscription.",
+          processedAt: now,
+        },
+      });
+    } catch (error) {
+      if (!this.isUniqueConflict(error)) throw error;
+      const raced = await this.prisma.twitchEventInbox.findUnique({
+        where: { messageId: headers.messageId },
+        select: { payloadSha256: true },
+      });
+      if (raced?.payloadSha256 !== payloadSha256)
+        throw new TwitchEventConflictError();
+      return { duplicate: true, messageId: headers.messageId };
+    }
+    return { duplicate: false, messageId: headers.messageId };
   }
 
   private async requireChannel(broadcasterId: string) {

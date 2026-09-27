@@ -12,6 +12,7 @@ import {
   ParseUUIDPipe,
   NotFoundException,
   Req,
+  Res,
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from "@nestjs/common";
@@ -123,6 +124,7 @@ export class TwitchIngestionController {
   @Header("Content-Type", "text/plain")
   async event(
     @Req() request: { rawBody?: Buffer },
+    @Res({ passthrough: true }) response: { status(code: number): unknown },
     @Body() body: unknown,
     @Headers("twitch-eventsub-message-id") messageId: string | undefined,
     @Headers("twitch-eventsub-message-timestamp")
@@ -147,6 +149,7 @@ export class TwitchIngestionController {
         request.rawBody,
         body,
       );
+      if (result.challenge !== undefined) response.status(200);
       return result.challenge ?? "accepted";
     } catch (error) {
       if (error instanceof TwitchIngestionDisabledError)

@@ -3,6 +3,7 @@ import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TwitchIngestionService } from "../src/twitch-ingestion/application/twitch-ingestion.service.js";
+import { TwitchIngestionController } from "../src/twitch-ingestion/presentation/twitch-ingestion.controller.js";
 import {
   TwitchEventConflictError,
   TwitchIngestionDisabledError,
@@ -150,6 +151,45 @@ describe("TwitchIngestionService", () => {
     ).rejects.toBeInstanceOf(TwitchEventConflictError);
   });
 
+  it("accepts a signed revocation as a durable audit record", async () => {
+    const revocationBody = {
+      subscription: {
+        id: "subscription-1",
+        status: "notification_failures_exceeded",
+        type: "stream.offline",
+        version: "1",
+        condition: { broadcaster_user_id: "1337" },
+      },
+    };
+    const bytes = Buffer.from(JSON.stringify(revocationBody));
+    const prisma = repository();
+
+    await expect(
+      new TwitchIngestionService(prisma as never).receive(
+        {
+          ...headers(sign(bytes)),
+          messageType: "revocation",
+          subscriptionType: "stream.offline",
+        },
+        bytes,
+        revocationBody,
+        now,
+      ),
+    ).resolves.toEqual({
+      duplicate: false,
+      messageId: "opaque-message-1",
+    });
+    expect(prisma.twitchEventInbox.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        state: "REJECTED",
+        failureCode: "TWITCH_SUBSCRIPTION_REVOKED",
+        subscriptionType: "stream.offline",
+        streamId: null,
+        processedAt: now,
+      }),
+    });
+  });
+
   it("revokes admission without deleting channel history", async () => {
     const prisma = repository();
     prisma.twitchIngestChannel.findUnique.mockResolvedValue({
@@ -247,5 +287,29 @@ describe("TwitchIngestionService", () => {
     await expect(
       service.linkVodCandidateToProject("vod-1", "project-1"),
     ).rejects.toBeInstanceOf(TwitchVodConflictError);
+  });
+});
+
+describe("TwitchIngestionController", () => {
+  it("overrides the default accepted status with 200 for a verification challenge", async () => {
+    const service = {
+      receive: vi.fn(async () => ({ challenge: "raw-challenge" })),
+    };
+    const response = { status: vi.fn() };
+
+    await expect(
+      new TwitchIngestionController(service as never).event(
+        { rawBody: Buffer.from("{}") },
+        response,
+        {},
+        "message-id",
+        now.toISOString(),
+        "webhook_callback_verification",
+        "signature",
+        "stream.online",
+        "1",
+      ),
+    ).resolves.toBe("raw-challenge");
+    expect(response.status).toHaveBeenCalledWith(200);
   });
 });
