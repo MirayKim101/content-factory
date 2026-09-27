@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import { computed, onMounted, ref } from "vue";
@@ -20,6 +21,7 @@ const channels = ref<TwitchSourceChannel[]>([]);
 const vodCandidates = ref<TwitchVodCandidate[]>([]);
 const sourceReadyProjects = ref<{ label: string; value: string }[]>([]);
 const selectedProjects = ref<Record<string, string>>({});
+const sourceMatchConfirmations = ref<Record<string, boolean>>({});
 const loading = ref(true);
 const saving = ref(false);
 const error = ref<string | null>(null);
@@ -81,12 +83,13 @@ async function load() {
 }
 async function linkProject(item: TwitchVodCandidate) {
   const projectId = selectedProjects.value[item.id];
-  if (!projectId || saving.value) return;
+  if (!projectId || !sourceMatchConfirmations.value[item.id] || saving.value)
+    return;
   saving.value = true;
   error.value = null;
   notice.value = null;
   try {
-    await api.linkVodProject(item.id, projectId);
+    await api.linkVodProject(item.id, projectId, true);
     notice.value = "Запись Twitch привязана к проекту.";
     await load();
   } catch (cause) {
@@ -326,8 +329,22 @@ onMounted(load);
                     placeholder="Выберите проект"
                     aria-label="Проект с исходником записи"
                   />
+                  <label class="source-match-confirmation">
+                    <Checkbox
+                      v-model="sourceMatchConfirmations[vod.id]"
+                      binary
+                    />
+                    <span
+                      >Подтверждаю: исходник в проекте — именно эта запись
+                      Twitch.</span
+                    >
+                  </label>
                   <Button
-                    :disabled="saving || !selectedProjects[vod.id]"
+                    :disabled="
+                      saving ||
+                      !selectedProjects[vod.id] ||
+                      !sourceMatchConfirmations[vod.id]
+                    "
                     @click="linkProject(vod)"
                     >Привязать</Button
                   >
@@ -536,6 +553,16 @@ h3 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
+}
+.source-match-confirmation {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: var(--cf-text);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  cursor: pointer;
 }
 .vod-status[data-state="WAITING_DELAY"] {
   background: var(--cf-warning-soft);

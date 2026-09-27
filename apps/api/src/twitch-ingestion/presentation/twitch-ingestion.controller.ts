@@ -84,6 +84,7 @@ export class TwitchIngestionController {
       const candidate = await this.service.linkVodCandidateToProject(
         id,
         body.projectId,
+        body.sourceMatchConfirmed,
       );
       if (!candidate)
         throw new NotFoundException({

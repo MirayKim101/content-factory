@@ -292,7 +292,7 @@ describe("TwitchIngestionService", () => {
       });
     const service = new TwitchIngestionService(prisma as never);
     await expect(
-      service.linkVodCandidateToProject("vod-1", "project-1"),
+      service.linkVodCandidateToProject("vod-1", "project-1", true),
     ).resolves.toEqual({
       id: "vod-1",
       state: "IMPORTED",
@@ -319,8 +319,21 @@ describe("TwitchIngestionService", () => {
     const service = new TwitchIngestionService(prisma as never);
 
     await expect(
-      service.linkVodCandidateToProject("vod-1", "project-1"),
+      service.linkVodCandidateToProject("vod-1", "project-1", true),
     ).rejects.toBeInstanceOf(TwitchVodConflictError);
+  });
+
+  it("rejects a VOD link without exact-source confirmation", async () => {
+    const prisma = repository();
+
+    await expect(
+      new TwitchIngestionService(prisma as never).linkVodCandidateToProject(
+        "vod-1",
+        "project-1",
+        false,
+      ),
+    ).rejects.toBeInstanceOf(TwitchVodConflictError);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });
 

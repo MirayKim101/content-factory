@@ -78,7 +78,12 @@ export class TwitchIngestionService {
     return candidate;
   }
 
-  async linkVodCandidateToProject(id: string, projectId: string) {
+  async linkVodCandidateToProject(
+    id: string,
+    projectId: string,
+    sourceMatchConfirmed: boolean,
+  ) {
+    if (!sourceMatchConfirmed) throw new TwitchVodConflictError();
     try {
       return await this.prisma.$transaction(async (tx) => {
         const [candidate, project] = await Promise.all([

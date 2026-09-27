@@ -34,6 +34,7 @@ describe("Twitch sources API adapter", () => {
     const linked = await api.linkVodProject(
       vodCandidate.id,
       vodCandidate.importedProjectId,
+      true,
     );
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -41,7 +42,10 @@ describe("Twitch sources API adapter", () => {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: vodCandidate.importedProjectId }),
+        body: JSON.stringify({
+          projectId: vodCandidate.importedProjectId,
+          sourceMatchConfirmed: true,
+        }),
       },
     );
     expect(linked.state).toBe("IMPORTED");

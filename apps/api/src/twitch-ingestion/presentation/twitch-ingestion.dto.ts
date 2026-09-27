@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  IsBoolean,
   IsInt,
   IsString,
   IsUUID,
@@ -80,4 +81,11 @@ export class LinkTwitchVodProjectDto {
   @ApiProperty({ type: String, format: "uuid" })
   @IsUUID("4")
   projectId!: string;
+  @ApiProperty({
+    type: Boolean,
+    description:
+      "Operator confirms that the uploaded project source is this exact Twitch VOD.",
+  })
+  @IsBoolean()
+  sourceMatchConfirmed!: boolean;
 }
