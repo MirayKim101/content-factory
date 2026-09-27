@@ -464,3 +464,10 @@ Vertical workspace больше не предлагает заведомо от�
 истории и approval готовых результатов. OpenAPI JSON/types синхронизированы;
 API `235/235`, web `253/253`, typecheck, lint, builds и двусторонние contract
 checks прошли.
+
+Локальный web default окончательно переведён с занятого порта 3000 на 3100;
+runbook-и синхронизированы. Nest API больше не публикует отдельный hardcoded
+CORS origin для `localhost:3000`: UI использует относительный `/api/v1` через
+same-origin Nuxt/edge proxy. Runtime proof после rebuild: прямой CORS preflight
+с origin 3000 не получает `Access-Control-Allow-Origin`, а
+`http://127.0.0.1:3100/api/v1/health` через proxy возвращает 200.

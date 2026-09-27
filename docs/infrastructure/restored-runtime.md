@@ -70,7 +70,7 @@ Overlay применяет Compose `!override` для `ports`; базовые `5
    ```
 
 5. В двух отдельных terminals запусти API и локальную UI с same-origin dev
-   proxy. API слушает только `127.0.0.1:3001`, UI — только `127.0.0.1:3000`.
+   proxy. API слушает только `127.0.0.1:3001`, UI — только `127.0.0.1:3100`.
    Перед первым API запуском собери его:
 
    ```sh
@@ -87,10 +87,10 @@ Overlay применяет Compose `!override` для `ports`; базовые `5
    ```sh
    PATH="$PWD/tmp/runtime/bin:$PWD/tmp/runtime/node-v24.15.0-linux-x64/bin:$PATH" \
    COREPACK_HOME="$PWD/tmp/runtime/corepack" \
-   pnpm --dir apps/web exec nuxt dev --port 3000 --host 127.0.0.1
+   pnpm --dir apps/web exec nuxt dev --port 3100 --host 127.0.0.1
    ```
 
-Открой <http://127.0.0.1:3000>. `GET /api/v1/health` через этот origin должен
+Открой <http://127.0.0.1:3100>. `GET /api/v1/health` через этот origin должен
 вернуть `{"status":"ok"}`. Nuxt production output сам по себе не заменяет
 edge proxy: для local UI используется именно dev proxy из ADR-001.
 
@@ -103,7 +103,7 @@ edge proxy: для local UI используется именно dev proxy из
 ```sh
 PATH="$PWD/tmp/runtime/bin:$PWD/tmp/runtime/node-v24.15.0-linux-x64/bin:$PATH" \
 COREPACK_HOME="$PWD/tmp/runtime/corepack" AI_CONTEXT_ENABLED=1 \
-pnpm --dir apps/web exec nuxt dev --port 3000 --host 127.0.0.1
+pnpm --dir apps/web exec nuxt dev --port 3100 --host 127.0.0.1
 ```
 
 Это включает только профили, private reference, контекст и prompt. Внешних

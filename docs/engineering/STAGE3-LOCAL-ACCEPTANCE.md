@@ -81,6 +81,11 @@ drift checks, API/worker/web typecheck и lint, API/worker/web production builds
 Docker Compose config validation и runtime health на API 3001/UI 3100. Порт
 3000 не используется.
 
+Web development default и runbook закрепляют порт 3100. API не открывает
+отдельный CORS origin для занятого 3000: browser API идёт через same-origin
+proxy. Прямой preflight с origin 3000 не получает allow-origin, а health через
+3100 proxy возвращает HTTP 200.
+
 Publication workspace дополнительно проверен реальным Chromium render на
 desktop и узком layout: проект загружается без ложной ошибки валидации,
 сводные карточки и форма переходят в одну колонку, длинное имя проекта не

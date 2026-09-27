@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --port 3000",
+    "dev": "nuxt dev --port 3100",
     "generate:openapi": "node openapi/contract.mjs generate",
     "check:openapi": "node openapi/contract.mjs check",
     "lint": "oxlint app nuxt.config.ts openapi",
