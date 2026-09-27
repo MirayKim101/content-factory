@@ -121,7 +121,8 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
   ): Promise<boolean> {
     const result = await this.pool.query(
       `UPDATE "PipelineJob" SET "leaseExpiresAt"=now()+($3::int * interval '1 millisecond'),
-        "heartbeatAt"=now(), "updatedAt"=now() WHERE "id"=$1 AND "state"='PROCESSING' AND "leaseToken"=$2`,
+        "heartbeatAt"=now(), "updatedAt"=now() WHERE "id"=$1 AND "state"='PROCESSING'
+        AND "leaseToken"=$2 AND "leaseExpiresAt">now()`,
       [claim.jobId, claim.leaseToken, leaseMs],
     );
     return result.rowCount === 1;
@@ -141,7 +142,8 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
       const locked = await client.query(
-        `SELECT "id" FROM "PipelineJob" WHERE "id"=$1 AND "state"='PROCESSING' AND "leaseToken"=$2 FOR UPDATE`,
+        `SELECT "id" FROM "PipelineJob" WHERE "id"=$1 AND "state"='PROCESSING'
+          AND "leaseToken"=$2 AND "leaseExpiresAt">now() FOR UPDATE`,
         [claim.jobId, claim.leaseToken],
       );
       if (!locked.rowCount) {
@@ -222,7 +224,8 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
           "failureMessage"=$5, "failureRetryable"=$6, "finishedAt"=CASE WHEN $6 THEN NULL ELSE now() END,
           "nextAttemptAt"=CASE WHEN $6 THEN now() + (LEAST(300, 5 * power(2, $7 - 1)) * interval '1 second') ELSE NULL END,
           "leaseOwner"=NULL, "leaseToken"=NULL, "leaseExpiresAt"=NULL, "updatedAt"=now()
-         WHERE "id"=$1 AND "state"='PROCESSING' AND "leaseToken"=$2`,
+         WHERE "id"=$1 AND "state"='PROCESSING' AND "leaseToken"=$2
+           AND "leaseExpiresAt">now()`,
         [
           claim.jobId,
           claim.leaseToken,
