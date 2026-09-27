@@ -265,18 +265,45 @@ function requestApply(): void {
       </label>
       <fieldset v-for="(citation, index) in citations" :key="index">
         <legend>Источник {{ index + 1 }}</legend>
-        <InputText v-model="citation.url" placeholder="https://…" />
-        <InputText v-model="citation.title" placeholder="Название материала" />
-        <InputText v-model="citation.publisher" placeholder="Издатель" />
-        <InputText
-          v-model="citation.publishedAt"
-          placeholder="Дата ISO, необязательно"
-        />
-        <Textarea
-          v-model="citation.excerpt"
-          rows="2"
-          placeholder="Краткий факт или выдержка"
-        />
+        <label :for="`research-source-${index}-url`">
+          Ссылка
+          <InputText
+            :id="`research-source-${index}-url`"
+            v-model="citation.url"
+            inputmode="url"
+            placeholder="https://…"
+          />
+        </label>
+        <label :for="`research-source-${index}-title`">
+          Название материала
+          <InputText
+            :id="`research-source-${index}-title`"
+            v-model="citation.title"
+          />
+        </label>
+        <label :for="`research-source-${index}-publisher`">
+          Издатель
+          <InputText
+            :id="`research-source-${index}-publisher`"
+            v-model="citation.publisher"
+          />
+        </label>
+        <label :for="`research-source-${index}-published-at`">
+          Дата публикации источника
+          <InputText
+            :id="`research-source-${index}-published-at`"
+            v-model="citation.publishedAt"
+            placeholder="2026-09-27T12:00:00Z · необязательно"
+          />
+        </label>
+        <label :for="`research-source-${index}-excerpt`">
+          Подтверждаемый факт или выдержка
+          <Textarea
+            :id="`research-source-${index}-excerpt`"
+            v-model="citation.excerpt"
+            rows="2"
+          />
+        </label>
         <Button
           v-if="citations.length > 1"
           type="button"

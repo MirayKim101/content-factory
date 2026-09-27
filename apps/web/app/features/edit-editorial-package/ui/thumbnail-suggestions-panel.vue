@@ -25,6 +25,24 @@ const detail = useQuery({ queryKey: computed(() => ["thumbnail-suggestion", sele
   refetchInterval: (state) => { const value = state.state.data as ThumbnailSuggestion | undefined; return value?.state === "QUEUED" || value?.state === "PROCESSING" ? 1000 : false; } });
 const active = computed(() => detail.data.value ?? suggestions.data.value?.find((item) => item.id === selectedId.value));
 const disabled = computed(() => suggestions.error.value instanceof ThumbnailSuggestionApiError && suggestions.error.value.status === 503);
+const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+function formatCreatedAt(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "дата неизвестна" : dateTimeFormatter.format(date);
+}
+function stateLabel(value: ThumbnailSuggestion["state"]): string {
+  return {
+    QUEUED: "В очереди",
+    PROCESSING: "Создаётся",
+    READY: "Готов",
+    FAILED_FINAL: "Ошибка",
+  }[value];
+}
 
 const create = useMutation({ mutationFn: (request: { key: string; sourceContextRevisionId: string; cutPromptRevisionId: string }) => api.create(props.projectId, props.jobId, request.key, request),
   onSuccess: async (value) => { selectedId.value = value.id; errorMessage.value = ""; message.value = "Задача обложки сохранена. Ожидаем AI-worker."; await queryClient.invalidateQueries({ queryKey: ["thumbnail-suggestions", props.projectId, props.jobId] }); },
@@ -70,7 +88,18 @@ function requestApply() {
     <p v-else-if="prompt.isError.value" class="hint">Сначала сохраните current контекст и prompt. Ручная загрузка доступна ниже.</p>
     <template v-else>
       <Button type="button" :label="create.isPending.value ? 'Ставим в очередь…' : 'Создать безопасный вариант'" :disabled="create.isPending.value || prompt.data.value?.revision.status !== 'CURRENT'" @click="requestCreate" />
-      <label v-if="suggestions.data.value?.length">Сохранённые варианты<select v-model="selectedId"><option v-for="item in suggestions.data.value" :key="item.id" :value="item.id">{{ item.state }} · {{ item.createdAt }}</option></select></label>
+      <label v-if="suggestions.data.value?.length">
+        Сохранённые варианты
+        <select v-model="selectedId">
+          <option
+            v-for="item in suggestions.data.value"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ stateLabel(item.state) }} · {{ formatCreatedAt(item.createdAt) }}
+          </option>
+        </select>
+      </label>
       <p
         v-else-if="!suggestions.isPending.value && !suggestions.isError.value"
         class="empty-state"
@@ -166,5 +195,11 @@ p {
 }
 select {
   width: 100%;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--cf-border-strong);
+  border-radius: var(--cf-radius-sm);
+  background: var(--cf-surface);
+  color: var(--cf-text);
 }
 </style>

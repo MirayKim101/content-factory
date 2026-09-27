@@ -104,6 +104,8 @@ function mountDialog(queryClient?: QueryClient) {
         ],
       ],
       stubs: {
+        ResearchTextPanel: true,
+        ThumbnailSuggestionsPanel: true,
         Dialog: { template: "<section><slot /></section>" },
         InputText: {
           props: ["modelValue"],
