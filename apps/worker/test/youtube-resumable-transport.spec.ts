@@ -27,6 +27,7 @@ describe("YoutubeResumableTransport", () => {
       expect.not.stringContaining("secret-token"),
       expect.objectContaining({
         method: "POST",
+        redirect: "error",
         headers: expect.objectContaining({
           authorization: "Bearer secret-token",
           "x-upload-content-length": "1024",

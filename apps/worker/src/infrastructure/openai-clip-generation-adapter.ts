@@ -99,6 +99,7 @@ export class OpenAiClipGenerationAdapter implements ClipGenerationProvider {
             },
           },
         }),
+        redirect: "error",
         signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
       },
     );

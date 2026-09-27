@@ -42,6 +42,7 @@ describe("TikTokOAuthAccessTokenResolver", () => {
     expect(body.get("client_secret")).toBe("client-secret");
     expect(String(request.mock.calls[0]![0])).not.toContain("client-secret");
     expect(request.mock.calls[0]![1]!.signal).toBe(signal);
+    expect(request.mock.calls[0]![1]!.redirect).toBe("error");
   });
 
   it("rejects a token issued for another creator", async () => {

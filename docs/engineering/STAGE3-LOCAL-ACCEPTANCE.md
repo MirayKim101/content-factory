@@ -142,6 +142,9 @@
 - Twitch OAuth, Helix и EventSub запрещают HTTP redirects на credentialed
   запросах; app secret и bearer token не могут быть перенесены fetch-клиентом
   на ответивший redirect endpoint.
+- Тот же запрет применяется к Google/YouTube, TikTok и OpenAI: OAuth secrets,
+  bearer tokens и media chunks не следуют за HTTP redirect. Разрешённые
+  resumable upload URL по-прежнему принимаются только после host allowlist.
 - Все PostgreSQL-пулы worker-ролей используют единый fail-fast contract:
   подключение ограничено 5 секундами, SQL statement/query и простаивающая
   транзакция — 30 секундами. Потеря БД больше не может бессрочно удерживать

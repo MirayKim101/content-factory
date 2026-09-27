@@ -40,10 +40,12 @@ describe("GoogleOAuthAccessTokenResolver", () => {
 
     expect(request).toHaveBeenCalledTimes(2);
     const tokenRequest = request.mock.calls[0]![1]!;
+    expect(tokenRequest.redirect).toBe("error");
     expect(String(tokenRequest.body)).toContain("refresh_token=refresh-token");
     expect(String(tokenRequest.body)).toContain("client_secret=client-secret");
     expect(tokenRequest.signal).toBe(input.signal);
     expect(request.mock.calls[1]![1]!.signal).toBe(input.signal);
+    expect(request.mock.calls[1]![1]!.redirect).toBe("error");
   });
 
   it("rejects a valid token for a different YouTube channel", async () => {

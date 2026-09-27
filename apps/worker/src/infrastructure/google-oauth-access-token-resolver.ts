@@ -82,6 +82,7 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
         refresh_token: refreshToken,
         grant_type: "refresh_token",
       }),
+      redirect: "error",
       signal,
     });
     if (!response.ok)
@@ -113,6 +114,7 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
   ): Promise<void> {
     const response = await this.request(YOUTUBE_MINE_ENDPOINT, {
       headers: { authorization: `Bearer ${accessToken}` },
+      redirect: "error",
       signal,
     });
     if (!response.ok)

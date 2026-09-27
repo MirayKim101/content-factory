@@ -170,6 +170,7 @@ export class TikTokDirectPostTransport {
         "content-range": `bytes ${input.offset}-${end}/${input.totalBytes}`,
       },
       body: Uint8Array.from(input.chunk).buffer,
+      redirect: "error",
       signal: input.signal,
     });
     const expected = input.final ? 201 : 206;
@@ -278,6 +279,7 @@ export class TikTokDirectPostTransport {
         "content-type": "application/json; charset=UTF-8",
       },
       body: JSON.stringify(body),
+      redirect: "error",
       signal,
     });
     if (!response.ok) throw new Error(`TIKTOK_API_FAILED_${response.status}`);

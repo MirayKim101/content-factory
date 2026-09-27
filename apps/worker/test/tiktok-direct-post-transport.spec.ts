@@ -35,6 +35,7 @@ describe("TikTokDirectPostTransport", () => {
     expect(request).toHaveBeenCalledWith(
       expect.stringContaining("creator_info/query"),
       expect.objectContaining({
+        redirect: "error",
         headers: expect.objectContaining({ authorization: "Bearer token" }),
       }),
     );
@@ -90,6 +91,7 @@ describe("TikTokDirectPostTransport", () => {
     expect(request).toHaveBeenCalledWith(
       expect.stringContaining("open-upload.tiktokapis.com"),
       expect.objectContaining({
+        redirect: "error",
         headers: expect.objectContaining({
           "content-range": `bytes 0-${chunkSize - 1}/${chunkSize * 2}`,
         }),

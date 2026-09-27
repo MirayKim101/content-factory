@@ -40,6 +40,7 @@ export class YoutubeResumableTransport {
         "x-upload-content-type": input.contentType,
       },
       body: JSON.stringify(input.metadata),
+      redirect: "error",
       signal: input.signal,
     });
     if (!response.ok)
@@ -65,6 +66,7 @@ export class YoutubeResumableTransport {
           "content-length": "0",
           "content-range": `bytes */${input.totalBytes}`,
         },
+        redirect: "error",
         signal: input.signal,
       },
     );
@@ -96,6 +98,7 @@ export class YoutubeResumableTransport {
           "content-type": input.contentType,
         },
         body: Uint8Array.from(input.chunk).buffer,
+        redirect: "error",
         signal: input.signal,
       },
     );
@@ -115,6 +118,7 @@ export class YoutubeResumableTransport {
     url.searchParams.set("id", input.videoId);
     const response = await this.request(url, {
       headers: { authorization: `Bearer ${input.accessToken}` },
+      redirect: "error",
       signal: input.signal,
     });
     if (!response.ok)
@@ -150,6 +154,7 @@ export class YoutubeResumableTransport {
     url.searchParams.set("id", input.videoId);
     const response = await this.request(url, {
       headers: { authorization: `Bearer ${input.accessToken}` },
+      redirect: "error",
       signal: input.signal,
     });
     if (!response.ok)

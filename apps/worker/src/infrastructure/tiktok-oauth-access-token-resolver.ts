@@ -62,6 +62,7 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
         grant_type: "refresh_token",
         refresh_token: credential.refreshToken,
       }),
+      redirect: "error",
       signal: input.signal,
     });
     if (!response.ok)

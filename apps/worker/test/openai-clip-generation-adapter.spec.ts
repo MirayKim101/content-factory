@@ -58,6 +58,7 @@ describe("OpenAiClipGenerationAdapter", () => {
     expect(body.text.format.strict).toBe(true);
     expect(body.text.format.schema.additionalProperties).toBe(false);
     expect(captured?.headers).toMatchObject({ authorization: "Bearer secret" });
+    expect(captured?.redirect).toBe("error");
   });
 
   it("rejects intervals outside the duration policy", async () => {
