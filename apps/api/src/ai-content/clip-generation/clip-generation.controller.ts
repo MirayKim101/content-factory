@@ -151,6 +151,7 @@ export class ClipGenerationController implements OnModuleDestroy {
     )
       throw new ServiceUnavailableException({
         code: "CLIP_GENERATION_DISABLED",
+        message: "AI clip generation is disabled.",
       });
   }
 

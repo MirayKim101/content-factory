@@ -35,7 +35,7 @@ const latest = computed(() => query.data.value?.items[0]);
 const unavailable = computed(
   () =>
     query.error.value instanceof ClipGenerationApiError &&
-    query.error.value.code === "VALIDATION_FAILED" &&
+    query.error.value.code === "CLIP_GENERATION_DISABLED" &&
     query.error.value.status === 503,
 );
 const readyIds = computed(
