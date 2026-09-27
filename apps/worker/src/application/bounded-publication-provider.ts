@@ -72,11 +72,27 @@ export class BoundedPublicationProvider implements PublicationProvider {
     signal?: AbortSignal,
   ) => Promise<PublicationMetricsSnapshot>;
   private readonly pool: AbortAwarePermitPool;
+  private consecutiveTransientFailures = 0;
+  private circuitOpenedAt: number | null = null;
 
   constructor(
     private readonly provider: PublicationProvider,
     concurrency: number,
+    private readonly circuit: {
+      failureThreshold: number;
+      cooldownMs: number;
+      clock?: () => number;
+    } = { failureThreshold: 3, cooldownMs: 60_000 },
   ) {
+    if (
+      !Number.isSafeInteger(circuit.failureThreshold) ||
+      circuit.failureThreshold < 1 ||
+      circuit.failureThreshold > 100 ||
+      !Number.isSafeInteger(circuit.cooldownMs) ||
+      circuit.cooldownMs < 1 ||
+      circuit.cooldownMs > 3_600_000
+    )
+      throw new Error("PUBLICATION_PROVIDER_CIRCUIT_INVALID");
     this.platform = provider.platform;
     this.pool = new AbortAwarePermitPool(concurrency);
     if (provider.reconcile)
@@ -98,12 +114,44 @@ export class BoundedPublicationProvider implements PublicationProvider {
     signal: AbortSignal | undefined,
     operation: () => Promise<T>,
   ): Promise<T> {
+    this.assertCircuitAvailable();
     const release = await this.pool.acquire(signal);
     try {
+      this.assertCircuitAvailable();
       signal?.throwIfAborted();
-      return await operation();
+      const result = await operation();
+      this.consecutiveTransientFailures = 0;
+      this.circuitOpenedAt = null;
+      return result;
+    } catch (error) {
+      if (transientProviderFailure(error)) {
+        this.consecutiveTransientFailures += 1;
+        if (this.consecutiveTransientFailures >= this.circuit.failureThreshold)
+          this.circuitOpenedAt = this.now();
+      }
+      throw error;
     } finally {
       release();
     }
   }
+
+  private assertCircuitAvailable(): void {
+    if (
+      this.circuitOpenedAt !== null &&
+      this.now() - this.circuitOpenedAt < this.circuit.cooldownMs
+    )
+      throw new Error("PUBLICATION_PROVIDER_CIRCUIT_OPEN");
+  }
+
+  private now(): number {
+    return this.circuit.clock?.() ?? Date.now();
+  }
+}
+
+function transientProviderFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (error.name === "TypeError") return true;
+  return /(?:_5\d\d|TIMEOUT|ECONN|ENET|EAI_AGAIN|NETWORK|fetch failed)$/i.test(
+    error.message,
+  );
 }

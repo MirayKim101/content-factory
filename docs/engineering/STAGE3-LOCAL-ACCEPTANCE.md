@@ -25,13 +25,15 @@
   reconciliation — 60-секундный deadline; lease-loss по-прежнему имеет
   приоритет и не позволяет старому worker менять durable state.
 - YouTube и TikTok работают через независимые abort-aware provider pools с
-  concurrency 1; очередь одного provider не потребляет permit другого.
+  concurrency 1; очередь одного provider не потребляет permit другого. После
+  трёх последовательных transient/network/5xx ошибок circuit открывается на
+  60 секунд; validation errors и durable unknown-remote handoff его не открывают.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     232/232 unit tests
-Worker:  245/245 unit tests
+Worker:  249/249 unit tests
 Web:     248/248 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

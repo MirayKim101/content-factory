@@ -360,3 +360,10 @@ lease-loss/deadline не оставляет скрытый вызов, кото�
 POST. Optional reconciliation/metrics capabilities сохраняются только если их
 реально предоставляет adapter. После изменения прошли worker `245/245`,
 typecheck, lint и production build.
+
+Provider boundary также содержит in-memory circuit breaker: три
+последовательные transient/network/5xx/timeout ошибки открывают circuit на 60
+секунд, после чего разрешается пробный вызов. Успех закрывает circuit.
+Детерминированные validation failures и штатный TikTok
+`UNKNOWN_REMOTE_STATE` не считаются downtime и не блокируют следующие каналы.
+После изменения прошли worker `249/249`, typecheck, lint и production build.
