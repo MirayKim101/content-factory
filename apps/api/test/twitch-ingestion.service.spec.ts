@@ -50,6 +50,14 @@ function repository(existingHash?: string) {
         importedProjectId: null as string | null,
       })),
     },
+    twitchVodIngestIntent: {
+      findUnique: vi.fn(async () => null),
+      findFirst: vi.fn(async () => null),
+      create: vi.fn(async (input: { data: Record<string, unknown> }) => ({
+        ...input.data,
+        state: "QUEUED",
+      })),
+    },
     project: {
       findUnique: vi.fn(async () => ({
         id: "project-1",
@@ -91,6 +99,34 @@ describe("TwitchIngestionService", () => {
   beforeEach(() => {
     process.env.TWITCH_INGESTION_ENABLED = "1";
     process.env.TWITCH_EVENTSUB_SECRET = secret;
+  });
+
+  it("admits one idempotent automatic VOD import only when explicitly enabled", async () => {
+    const originalAuto = process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+    const prisma = repository();
+    prisma.twitchVodCandidate.findUnique.mockResolvedValue({
+      id: "00000000-0000-4000-8000-000000000001",
+      state: "READY_FOR_INGEST",
+      importedProjectId: null,
+    });
+    const service = new TwitchIngestionService(prisma as never);
+    try {
+      process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = "1";
+      const result = await service.startVodIngest(
+        "00000000-0000-4000-8000-000000000001",
+        "  Creator stream  ",
+        "twitch-import:test-1",
+      );
+      expect(result).toMatchObject({
+        projectName: "Creator stream",
+        state: "QUEUED",
+      });
+      expect(prisma.twitchVodIngestIntent.create).toHaveBeenCalledOnce();
+    } finally {
+      if (originalAuto === undefined)
+        delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+      else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
+    }
   });
   afterEach(() => {
     if (originalEnabled === undefined)

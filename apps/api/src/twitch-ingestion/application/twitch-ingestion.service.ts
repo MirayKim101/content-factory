@@ -21,6 +21,8 @@ import {
   TwitchIngestionDisabledError,
   TwitchSignatureInvalidError,
   TwitchVodConflictError,
+  TwitchVodAutoIngestDisabledError,
+  TwitchVodIdempotencyConflictError,
 } from "../domain/twitch-ingestion.js";
 
 interface TwitchHeaders {
@@ -55,6 +57,53 @@ export class TwitchIngestionService {
       orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
       take: 200,
     });
+  }
+
+  async startVodIngest(
+    id: string,
+    projectName: string,
+    idempotencyKey: string,
+  ) {
+    const config = apiEnvironment();
+    if (!config.twitchIngestionEnabled || !config.twitchVodAutoIngestEnabled)
+      throw new TwitchVodAutoIngestDisabledError();
+    const normalizedName = projectName.trim();
+    const requestFingerprint = createHash("sha256")
+      .update(JSON.stringify({ candidateId: id, projectName: normalizedName }))
+      .digest("hex");
+    const existing = await this.prisma.twitchVodIngestIntent.findUnique({
+      where: { idempotencyKey },
+    });
+    if (existing) {
+      if (existing.requestFingerprint !== requestFingerprint)
+        throw new TwitchVodIdempotencyConflictError();
+      return existing;
+    }
+    const candidate = await this.prisma.twitchVodCandidate.findUnique({
+      where: { id },
+      select: { id: true, state: true, importedProjectId: true },
+    });
+    if (!candidate) return null;
+    if (candidate.state !== "READY_FOR_INGEST" || candidate.importedProjectId)
+      throw new TwitchVodConflictError();
+    try {
+      return await this.prisma.twitchVodIngestIntent.create({
+        data: {
+          id: randomUUID(),
+          idempotencyKey,
+          requestFingerprint,
+          candidateId: id,
+          projectName: normalizedName,
+        },
+      });
+    } catch (error) {
+      if (!this.isUniqueConflict(error)) throw error;
+      const raced = await this.prisma.twitchVodIngestIntent.findFirst({
+        where: { OR: [{ idempotencyKey }, { candidateId: id }] },
+      });
+      if (raced?.requestFingerprint === requestFingerprint) return raced;
+      throw new TwitchVodIdempotencyConflictError();
+    }
   }
 
   async ignoreVodCandidate(id: string) {

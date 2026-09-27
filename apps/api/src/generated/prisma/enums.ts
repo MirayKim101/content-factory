@@ -294,6 +294,16 @@ export const ImageSuggestionAttemptState = {
 export type ImageSuggestionAttemptState = (typeof ImageSuggestionAttemptState)[keyof typeof ImageSuggestionAttemptState]
 
 
+export const ClipGenerationIntentState = {
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL'
+} as const
+
+export type ClipGenerationIntentState = (typeof ClipGenerationIntentState)[keyof typeof ClipGenerationIntentState]
+
+
 export const EditorialComponentType = {
   METADATA: 'METADATA',
   THUMBNAIL: 'THUMBNAIL'
@@ -367,6 +377,19 @@ export const TwitchVodCandidateState = {
 } as const
 
 export type TwitchVodCandidateState = (typeof TwitchVodCandidateState)[keyof typeof TwitchVodCandidateState]
+
+
+export const TwitchVodIngestState = {
+  QUEUED: 'QUEUED',
+  DOWNLOADING: 'DOWNLOADING',
+  UPLOADING: 'UPLOADING',
+  RETRY_WAIT: 'RETRY_WAIT',
+  READY: 'READY',
+  FAILED_FINAL: 'FAILED_FINAL',
+  CANCELED: 'CANCELED'
+} as const
+
+export type TwitchVodIngestState = (typeof TwitchVodIngestState)[keyof typeof TwitchVodIngestState]
 
 
 export const PublicationContentKind = {

@@ -17,6 +17,7 @@ import {
   UnprocessableEntityException,
 } from "@nestjs/common";
 import { ApiOkResponse, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiHeader } from "@nestjs/swagger";
 
 import { TwitchIngestionService } from "../application/twitch-ingestion.service.js";
 import {
@@ -26,10 +27,14 @@ import {
   TwitchIngestionDisabledError,
   TwitchSignatureInvalidError,
   TwitchVodConflictError,
+  TwitchVodAutoIngestDisabledError,
+  TwitchVodIdempotencyConflictError,
 } from "../domain/twitch-ingestion.js";
 import {
   CreateTwitchIngestChannelDto,
   LinkTwitchVodProjectDto,
+  StartTwitchVodIngestDto,
+  TwitchVodIngestIntentResponseDto,
   TwitchIngestChannelResponseDto,
   TwitchVodCandidateResponseDto,
 } from "./twitch-ingestion.dto.js";
@@ -49,6 +54,51 @@ export class TwitchIngestionController {
   @ApiOkResponse({ type: [TwitchVodCandidateResponseDto] })
   vodCandidates() {
     return this.service.listVodCandidates();
+  }
+
+  @Post("vod-candidates/:id/import")
+  @ApiHeader({ name: "Idempotency-Key", required: true })
+  @ApiResponse({ status: 201, type: TwitchVodIngestIntentResponseDto })
+  async importVodCandidate(
+    @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
+    @Headers("idempotency-key") key: string | undefined,
+    @Body() body: StartTwitchVodIngestDto,
+  ) {
+    if (!key || !/^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/.test(key))
+      throw new UnprocessableEntityException({
+        code: "IDEMPOTENCY_KEY_INVALID",
+        message: "A valid Idempotency-Key header is required.",
+      });
+    try {
+      const intent = await this.service.startVodIngest(
+        id,
+        body.projectName,
+        key,
+      );
+      if (!intent)
+        throw new NotFoundException({
+          code: "TWITCH_VOD_NOT_FOUND",
+          message: "Twitch VOD candidate was not found.",
+        });
+      return intent;
+    } catch (error) {
+      if (error instanceof TwitchVodAutoIngestDisabledError)
+        throw new ServiceUnavailableException({
+          code: "TWITCH_VOD_AUTO_INGEST_DISABLED",
+          message: "Automatic Twitch VOD ingest is disabled.",
+        });
+      if (error instanceof TwitchVodIdempotencyConflictError)
+        throw new ConflictException({
+          code: "IDEMPOTENCY_KEY_CONFLICT",
+          message: "Idempotency-Key was already used for another request.",
+        });
+      if (error instanceof TwitchVodConflictError)
+        throw new ConflictException({
+          code: "TWITCH_VOD_INGEST_CONFLICT",
+          message: "Only one automatic import can be started for a ready VOD.",
+        });
+      throw error;
+    }
   }
 
   @Post("vod-candidates/:id/ignore")

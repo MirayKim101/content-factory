@@ -184,6 +184,7 @@ export type CutRequestWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"CutRequest"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   jobs?: Prisma.PipelineJobListRelationFilter
+  clipAcceptance?: Prisma.XOR<Prisma.ClipGenerationAcceptanceNullableScalarRelationFilter, Prisma.ClipGenerationAcceptanceWhereInput> | null
 }
 
 export type CutRequestOrderByWithRelationInput = {
@@ -194,6 +195,7 @@ export type CutRequestOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
   jobs?: Prisma.PipelineJobOrderByRelationAggregateInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceOrderByWithRelationInput
 }
 
 export type CutRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -207,6 +209,7 @@ export type CutRequestWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"CutRequest"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   jobs?: Prisma.PipelineJobListRelationFilter
+  clipAcceptance?: Prisma.XOR<Prisma.ClipGenerationAcceptanceNullableScalarRelationFilter, Prisma.ClipGenerationAcceptanceWhereInput> | null
 }, "id" | "idempotencyKey">
 
 export type CutRequestOrderByWithAggregationInput = {
@@ -238,6 +241,7 @@ export type CutRequestCreateInput = {
   createdAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutCutRequestsInput
   jobs?: Prisma.PipelineJobCreateNestedManyWithoutCutRequestInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceCreateNestedOneWithoutCutRequestInput
 }
 
 export type CutRequestUncheckedCreateInput = {
@@ -247,6 +251,7 @@ export type CutRequestUncheckedCreateInput = {
   requestFingerprint: string
   createdAt?: Date | string
   jobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutCutRequestInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUncheckedCreateNestedOneWithoutCutRequestInput
 }
 
 export type CutRequestUpdateInput = {
@@ -256,6 +261,7 @@ export type CutRequestUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutCutRequestsNestedInput
   jobs?: Prisma.PipelineJobUpdateManyWithoutCutRequestNestedInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUpdateOneWithoutCutRequestNestedInput
 }
 
 export type CutRequestUncheckedUpdateInput = {
@@ -265,6 +271,7 @@ export type CutRequestUncheckedUpdateInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutCutRequestNestedInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUncheckedUpdateOneWithoutCutRequestNestedInput
 }
 
 export type CutRequestCreateManyInput = {
@@ -329,6 +336,11 @@ export type CutRequestNullableScalarRelationFilter = {
   isNot?: Prisma.CutRequestWhereInput | null
 }
 
+export type CutRequestScalarRelationFilter = {
+  is?: Prisma.CutRequestWhereInput
+  isNot?: Prisma.CutRequestWhereInput
+}
+
 export type CutRequestCreateNestedManyWithoutProjectInput = {
   create?: Prisma.XOR<Prisma.CutRequestCreateWithoutProjectInput, Prisma.CutRequestUncheckedCreateWithoutProjectInput> | Prisma.CutRequestCreateWithoutProjectInput[] | Prisma.CutRequestUncheckedCreateWithoutProjectInput[]
   connectOrCreate?: Prisma.CutRequestCreateOrConnectWithoutProjectInput | Prisma.CutRequestCreateOrConnectWithoutProjectInput[]
@@ -387,12 +399,27 @@ export type CutRequestUpdateOneWithoutJobsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CutRequestUpdateToOneWithWhereWithoutJobsInput, Prisma.CutRequestUpdateWithoutJobsInput>, Prisma.CutRequestUncheckedUpdateWithoutJobsInput>
 }
 
+export type CutRequestCreateNestedOneWithoutClipAcceptanceInput = {
+  create?: Prisma.XOR<Prisma.CutRequestCreateWithoutClipAcceptanceInput, Prisma.CutRequestUncheckedCreateWithoutClipAcceptanceInput>
+  connectOrCreate?: Prisma.CutRequestCreateOrConnectWithoutClipAcceptanceInput
+  connect?: Prisma.CutRequestWhereUniqueInput
+}
+
+export type CutRequestUpdateOneRequiredWithoutClipAcceptanceNestedInput = {
+  create?: Prisma.XOR<Prisma.CutRequestCreateWithoutClipAcceptanceInput, Prisma.CutRequestUncheckedCreateWithoutClipAcceptanceInput>
+  connectOrCreate?: Prisma.CutRequestCreateOrConnectWithoutClipAcceptanceInput
+  upsert?: Prisma.CutRequestUpsertWithoutClipAcceptanceInput
+  connect?: Prisma.CutRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CutRequestUpdateToOneWithWhereWithoutClipAcceptanceInput, Prisma.CutRequestUpdateWithoutClipAcceptanceInput>, Prisma.CutRequestUncheckedUpdateWithoutClipAcceptanceInput>
+}
+
 export type CutRequestCreateWithoutProjectInput = {
   id: string
   idempotencyKey: string
   requestFingerprint: string
   createdAt?: Date | string
   jobs?: Prisma.PipelineJobCreateNestedManyWithoutCutRequestInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceCreateNestedOneWithoutCutRequestInput
 }
 
 export type CutRequestUncheckedCreateWithoutProjectInput = {
@@ -401,6 +428,7 @@ export type CutRequestUncheckedCreateWithoutProjectInput = {
   requestFingerprint: string
   createdAt?: Date | string
   jobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutCutRequestInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUncheckedCreateNestedOneWithoutCutRequestInput
 }
 
 export type CutRequestCreateOrConnectWithoutProjectInput = {
@@ -446,6 +474,7 @@ export type CutRequestCreateWithoutJobsInput = {
   requestFingerprint: string
   createdAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutCutRequestsInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceCreateNestedOneWithoutCutRequestInput
 }
 
 export type CutRequestUncheckedCreateWithoutJobsInput = {
@@ -454,6 +483,7 @@ export type CutRequestUncheckedCreateWithoutJobsInput = {
   idempotencyKey: string
   requestFingerprint: string
   createdAt?: Date | string
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUncheckedCreateNestedOneWithoutCutRequestInput
 }
 
 export type CutRequestCreateOrConnectWithoutJobsInput = {
@@ -478,6 +508,7 @@ export type CutRequestUpdateWithoutJobsInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutCutRequestsNestedInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUpdateOneWithoutCutRequestNestedInput
 }
 
 export type CutRequestUncheckedUpdateWithoutJobsInput = {
@@ -486,6 +517,59 @@ export type CutRequestUncheckedUpdateWithoutJobsInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUncheckedUpdateOneWithoutCutRequestNestedInput
+}
+
+export type CutRequestCreateWithoutClipAcceptanceInput = {
+  id: string
+  idempotencyKey: string
+  requestFingerprint: string
+  createdAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutCutRequestsInput
+  jobs?: Prisma.PipelineJobCreateNestedManyWithoutCutRequestInput
+}
+
+export type CutRequestUncheckedCreateWithoutClipAcceptanceInput = {
+  id: string
+  projectId: string
+  idempotencyKey: string
+  requestFingerprint: string
+  createdAt?: Date | string
+  jobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutCutRequestInput
+}
+
+export type CutRequestCreateOrConnectWithoutClipAcceptanceInput = {
+  where: Prisma.CutRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.CutRequestCreateWithoutClipAcceptanceInput, Prisma.CutRequestUncheckedCreateWithoutClipAcceptanceInput>
+}
+
+export type CutRequestUpsertWithoutClipAcceptanceInput = {
+  update: Prisma.XOR<Prisma.CutRequestUpdateWithoutClipAcceptanceInput, Prisma.CutRequestUncheckedUpdateWithoutClipAcceptanceInput>
+  create: Prisma.XOR<Prisma.CutRequestCreateWithoutClipAcceptanceInput, Prisma.CutRequestUncheckedCreateWithoutClipAcceptanceInput>
+  where?: Prisma.CutRequestWhereInput
+}
+
+export type CutRequestUpdateToOneWithWhereWithoutClipAcceptanceInput = {
+  where?: Prisma.CutRequestWhereInput
+  data: Prisma.XOR<Prisma.CutRequestUpdateWithoutClipAcceptanceInput, Prisma.CutRequestUncheckedUpdateWithoutClipAcceptanceInput>
+}
+
+export type CutRequestUpdateWithoutClipAcceptanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutCutRequestsNestedInput
+  jobs?: Prisma.PipelineJobUpdateManyWithoutCutRequestNestedInput
+}
+
+export type CutRequestUncheckedUpdateWithoutClipAcceptanceInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  jobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutCutRequestNestedInput
 }
 
 export type CutRequestCreateManyProjectInput = {
@@ -501,6 +585,7 @@ export type CutRequestUpdateWithoutProjectInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.PipelineJobUpdateManyWithoutCutRequestNestedInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUpdateOneWithoutCutRequestNestedInput
 }
 
 export type CutRequestUncheckedUpdateWithoutProjectInput = {
@@ -509,6 +594,7 @@ export type CutRequestUncheckedUpdateWithoutProjectInput = {
   requestFingerprint?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutCutRequestNestedInput
+  clipAcceptance?: Prisma.ClipGenerationAcceptanceUncheckedUpdateOneWithoutCutRequestNestedInput
 }
 
 export type CutRequestUncheckedUpdateManyWithoutProjectInput = {
@@ -557,6 +643,7 @@ export type CutRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   jobs?: boolean | Prisma.CutRequest$jobsArgs<ExtArgs>
+  clipAcceptance?: boolean | Prisma.CutRequest$clipAcceptanceArgs<ExtArgs>
   _count?: boolean | Prisma.CutRequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["cutRequest"]>
 
@@ -590,6 +677,7 @@ export type CutRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type CutRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   jobs?: boolean | Prisma.CutRequest$jobsArgs<ExtArgs>
+  clipAcceptance?: boolean | Prisma.CutRequest$clipAcceptanceArgs<ExtArgs>
   _count?: boolean | Prisma.CutRequestCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CutRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -604,6 +692,7 @@ export type $CutRequestPayload<ExtArgs extends runtime.Types.Extensions.Internal
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
     jobs: Prisma.$PipelineJobPayload<ExtArgs>[]
+    clipAcceptance: Prisma.$ClipGenerationAcceptancePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1007,6 +1096,7 @@ export interface Prisma__CutRequestClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   jobs<T extends Prisma.CutRequest$jobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CutRequest$jobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PipelineJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  clipAcceptance<T extends Prisma.CutRequest$clipAcceptanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CutRequest$clipAcceptanceArgs<ExtArgs>>): Prisma.Prisma__ClipGenerationAcceptanceClient<runtime.Types.Result.GetResult<Prisma.$ClipGenerationAcceptancePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1463,6 +1553,25 @@ export type CutRequest$jobsArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.PipelineJobScalarFieldEnum | Prisma.PipelineJobScalarFieldEnum[]
+}
+
+/**
+ * CutRequest.clipAcceptance
+ */
+export type CutRequest$clipAcceptanceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClipGenerationAcceptance
+   */
+  select?: Prisma.ClipGenerationAcceptanceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClipGenerationAcceptance
+   */
+  omit?: Prisma.ClipGenerationAcceptanceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClipGenerationAcceptanceInclude<ExtArgs> | null
+  where?: Prisma.ClipGenerationAcceptanceWhereInput
 }
 
 /**

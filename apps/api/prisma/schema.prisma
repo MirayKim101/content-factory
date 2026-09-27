@@ -263,6 +263,16 @@ enum TwitchVodCandidateState {
   IGNORED
 }
 
+enum TwitchVodIngestState {
+  QUEUED
+  DOWNLOADING
+  UPLOADING
+  RETRY_WAIT
+  READY
+  FAILED_FINAL
+  CANCELED
+}
+
 model Project {
   id                         String                      @id @db.Uuid
   idempotencyKey             String                      @unique
@@ -291,6 +301,7 @@ model Project {
   publicationChannels        PublicationChannel[]
   publicationIntents         PublicationIntent[]
   twitchVodImport            TwitchVodCandidate?
+  twitchVodIngest            TwitchVodIngestIntent?
   verticalRenderIntents      VerticalRenderIntent[]
   clipGenerationIntents      ClipGenerationIntent[]
 }
@@ -1955,8 +1966,37 @@ model TwitchVodCandidate {
   importedProject      Project?                @relation(fields: [importedProjectId], references: [id], onDelete: Restrict)
   createdAt            DateTime                @default(now())
   updatedAt            DateTime                @updatedAt
+  ingestIntent         TwitchVodIngestIntent?
 
   @@index([channelId, state, availableForIngestAt, id])
+}
+
+/// Durable automatic VOD import. Media transfer is performed by a bounded worker.
+model TwitchVodIngestIntent {
+  id                 String               @id @db.Uuid
+  idempotencyKey     String               @unique
+  requestFingerprint String
+  candidateId        String               @unique @db.Uuid
+  candidate          TwitchVodCandidate   @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  state              TwitchVodIngestState @default(QUEUED)
+  projectName        String
+  projectId          String?              @unique @db.Uuid
+  project            Project?             @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  downloadedBytes    BigInt               @default(0)
+  totalBytes         BigInt?
+  objectKey          String?
+  sha256             String?
+  attemptCount       Int                  @default(0)
+  nextAttemptAt      DateTime?
+  leaseOwner         String?
+  leaseExpiresAt     DateTime?
+  failureCode        String?
+  failureMessage     String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@index([state, nextAttemptAt, createdAt, id])
+  @@index([leaseExpiresAt])
 }
 
 model VerticalRenderIntent {

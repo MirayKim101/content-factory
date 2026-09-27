@@ -1169,6 +1169,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/twitch/vod-candidates/{id}/import": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["TwitchIngestionController_importVodCandidate"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/twitch/vod-candidates/{id}/link-project": {
     parameters: {
       query?: never;
@@ -3075,6 +3091,33 @@ export interface components {
       updatedAt: string;
       /** @enum {string} */
       vodType: "archive" | "highlight" | "upload";
+    };
+    TwitchVodIngestIntentResponseDto: {
+      attemptCount: number;
+      /** Format: uuid */
+      candidateId: string;
+      /** Format: date-time */
+      createdAt: string;
+      downloadedBytes: string;
+      failureCode: string | null;
+      failureMessage: string | null;
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      projectId: string | null;
+      projectName: string;
+      /** @enum {string} */
+      state:
+        | "QUEUED"
+        | "DOWNLOADING"
+        | "UPLOADING"
+        | "RETRY_WAIT"
+        | "READY"
+        | "FAILED_FINAL"
+        | "CANCELED";
+      totalBytes: string | null;
+      /** Format: date-time */
+      updatedAt: string;
     };
     UpdateCreatorProfileDto: {
       canonicalDisplayName: string;
@@ -6658,6 +6701,27 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["TwitchVodCandidateResponseDto"];
+        };
+      };
+    };
+  };
+  TwitchIngestionController_importVodCandidate: {
+    parameters: {
+      query?: never;
+      header: {
+        "Idempotency-Key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TwitchVodIngestIntentResponseDto"];
         };
       };
     };

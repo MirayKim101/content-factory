@@ -6101,6 +6101,79 @@
         ],
         "type": "object"
       },
+      "TwitchVodIngestIntentResponseDto": {
+        "properties": {
+          "attemptCount": {
+            "type": "number"
+          },
+          "candidateId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "downloadedBytes": {
+            "type": "string"
+          },
+          "failureCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "failureMessage": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "projectId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "QUEUED",
+              "DOWNLOADING",
+              "UPLOADING",
+              "RETRY_WAIT",
+              "READY",
+              "FAILED_FINAL",
+              "CANCELED"
+            ],
+            "type": "string"
+          },
+          "totalBytes": {
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "candidateId",
+          "projectName",
+          "state",
+          "projectId",
+          "downloadedBytes",
+          "totalBytes",
+          "attemptCount",
+          "failureCode",
+          "failureMessage",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "UpdateCreatorProfileDto": {
         "properties": {
           "canonicalDisplayName": {
@@ -11304,6 +11377,34 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TwitchVodCandidateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["twitch-ingestion"]
+      }
+    },
+    "/api/v1/twitch/vod-candidates/{id}/import": {
+      "post": {
+        "operationId": "TwitchIngestionController_importVodCandidate",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwitchVodIngestIntentResponseDto"
                 }
               }
             },

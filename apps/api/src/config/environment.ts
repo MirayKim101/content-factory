@@ -66,6 +66,7 @@ const API_ENVIRONMENT_KEYS = [
   "TIKTOK_CLIENT_SECRET",
   "TIKTOK_CHANNEL_CREDENTIALS_JSON",
   "TWITCH_INGESTION_ENABLED",
+  "TWITCH_VOD_AUTO_INGEST_ENABLED",
   "TWITCH_EVENTSUB_SECRET",
   "VERTICAL_RENDER_ENABLED",
   "DEPLOYMENT_PROFILE",
@@ -187,6 +188,7 @@ export interface ApiEnvironment {
   publishingEnabled: boolean;
   youtubePublishingEnabled: boolean;
   twitchIngestionEnabled: boolean;
+  twitchVodAutoIngestEnabled: boolean;
   twitchEventSubSecret: string | null;
   verticalRenderEnabled: boolean;
   clipGenerationEnabled: boolean;
@@ -281,6 +283,8 @@ export function apiEnvironment(): ApiEnvironment {
     youtubePublishingEnabled:
       process.env.YOUTUBE_PUBLISHING_ENABLED?.trim() === "1",
     twitchIngestionEnabled: twitchIngestionAdmissionEnabled(process.env),
+    twitchVodAutoIngestEnabled:
+      process.env.TWITCH_VOD_AUTO_INGEST_ENABLED?.trim() === "1",
     twitchEventSubSecret: twitchEventSubSecret(process.env),
     verticalRenderEnabled: verticalRenderAdmissionEnabled(process.env),
     clipGenerationEnabled: process.env.CLIP_GENERATION_ENABLED?.trim() === "1",

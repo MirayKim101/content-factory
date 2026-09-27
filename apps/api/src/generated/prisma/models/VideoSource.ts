@@ -298,6 +298,7 @@ export type VideoSourceWhereInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentListRelationFilter
   sourceEditorialContexts?: Prisma.SourceEditorialContextListRelationFilter
   verticalRenderIntents?: Prisma.VerticalRenderIntentListRelationFilter
+  clipGenerationIntents?: Prisma.ClipGenerationIntentListRelationFilter
 }
 
 export type VideoSourceOrderByWithRelationInput = {
@@ -324,6 +325,7 @@ export type VideoSourceOrderByWithRelationInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentOrderByRelationAggregateInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextOrderByRelationAggregateInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentOrderByRelationAggregateInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentOrderByRelationAggregateInput
 }
 
 export type VideoSourceWhereUniqueInput = Prisma.AtLeast<{
@@ -354,6 +356,7 @@ export type VideoSourceWhereUniqueInput = Prisma.AtLeast<{
   editorialExportIntents?: Prisma.EditorialExportIntentListRelationFilter
   sourceEditorialContexts?: Prisma.SourceEditorialContextListRelationFilter
   verticalRenderIntents?: Prisma.VerticalRenderIntentListRelationFilter
+  clipGenerationIntents?: Prisma.ClipGenerationIntentListRelationFilter
 }, "id" | "projectId" | "id_projectId_sourceVersion">
 
 export type VideoSourceOrderByWithAggregationInput = {
@@ -419,6 +422,7 @@ export type VideoSourceCreateInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateInput = {
@@ -444,6 +448,7 @@ export type VideoSourceUncheckedCreateInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUpdateInput = {
@@ -469,6 +474,7 @@ export type VideoSourceUpdateInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateInput = {
@@ -494,6 +500,7 @@ export type VideoSourceUncheckedUpdateInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateManyInput = {
@@ -805,6 +812,20 @@ export type VideoSourceUpdateOneRequiredWithoutVerticalRenderIntentsNestedInput 
   update?: Prisma.XOR<Prisma.XOR<Prisma.VideoSourceUpdateToOneWithWhereWithoutVerticalRenderIntentsInput, Prisma.VideoSourceUpdateWithoutVerticalRenderIntentsInput>, Prisma.VideoSourceUncheckedUpdateWithoutVerticalRenderIntentsInput>
 }
 
+export type VideoSourceCreateNestedOneWithoutClipGenerationIntentsInput = {
+  create?: Prisma.XOR<Prisma.VideoSourceCreateWithoutClipGenerationIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutClipGenerationIntentsInput>
+  connectOrCreate?: Prisma.VideoSourceCreateOrConnectWithoutClipGenerationIntentsInput
+  connect?: Prisma.VideoSourceWhereUniqueInput
+}
+
+export type VideoSourceUpdateOneRequiredWithoutClipGenerationIntentsNestedInput = {
+  create?: Prisma.XOR<Prisma.VideoSourceCreateWithoutClipGenerationIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutClipGenerationIntentsInput>
+  connectOrCreate?: Prisma.VideoSourceCreateOrConnectWithoutClipGenerationIntentsInput
+  upsert?: Prisma.VideoSourceUpsertWithoutClipGenerationIntentsInput
+  connect?: Prisma.VideoSourceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VideoSourceUpdateToOneWithWhereWithoutClipGenerationIntentsInput, Prisma.VideoSourceUpdateWithoutClipGenerationIntentsInput>, Prisma.VideoSourceUncheckedUpdateWithoutClipGenerationIntentsInput>
+}
+
 export type VideoSourceCreateWithoutProjectInput = {
   id: string
   status?: $Enums.VideoSourceStatus
@@ -827,6 +848,7 @@ export type VideoSourceCreateWithoutProjectInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutProjectInput = {
@@ -851,6 +873,7 @@ export type VideoSourceUncheckedCreateWithoutProjectInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutProjectInput = {
@@ -891,6 +914,7 @@ export type VideoSourceUpdateWithoutProjectInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutProjectInput = {
@@ -915,6 +939,7 @@ export type VideoSourceUncheckedUpdateWithoutProjectInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutAuthorizationsInput = {
@@ -939,6 +964,7 @@ export type VideoSourceCreateWithoutAuthorizationsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutAuthorizationsInput = {
@@ -963,6 +989,7 @@ export type VideoSourceUncheckedCreateWithoutAuthorizationsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutAuthorizationsInput = {
@@ -1003,6 +1030,7 @@ export type VideoSourceUpdateWithoutAuthorizationsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutAuthorizationsInput = {
@@ -1027,6 +1055,7 @@ export type VideoSourceUncheckedUpdateWithoutAuthorizationsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutArtifactsInput = {
@@ -1051,6 +1080,7 @@ export type VideoSourceCreateWithoutArtifactsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutArtifactsInput = {
@@ -1075,6 +1105,7 @@ export type VideoSourceUncheckedCreateWithoutArtifactsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutArtifactsInput = {
@@ -1115,6 +1146,7 @@ export type VideoSourceUpdateWithoutArtifactsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutArtifactsInput = {
@@ -1139,6 +1171,7 @@ export type VideoSourceUncheckedUpdateWithoutArtifactsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutPipelineJobsInput = {
@@ -1163,6 +1196,7 @@ export type VideoSourceCreateWithoutPipelineJobsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutPipelineJobsInput = {
@@ -1187,6 +1221,7 @@ export type VideoSourceUncheckedCreateWithoutPipelineJobsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutPipelineJobsInput = {
@@ -1227,6 +1262,7 @@ export type VideoSourceUpdateWithoutPipelineJobsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutPipelineJobsInput = {
@@ -1251,6 +1287,7 @@ export type VideoSourceUncheckedUpdateWithoutPipelineJobsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutMontageAssetsInput = {
@@ -1275,6 +1312,7 @@ export type VideoSourceCreateWithoutMontageAssetsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutMontageAssetsInput = {
@@ -1299,6 +1337,7 @@ export type VideoSourceUncheckedCreateWithoutMontageAssetsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutMontageAssetsInput = {
@@ -1339,6 +1378,7 @@ export type VideoSourceUpdateWithoutMontageAssetsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutMontageAssetsInput = {
@@ -1363,6 +1403,7 @@ export type VideoSourceUncheckedUpdateWithoutMontageAssetsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutAssemblyRenderIntentsInput = {
@@ -1387,6 +1428,7 @@ export type VideoSourceCreateWithoutAssemblyRenderIntentsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutAssemblyRenderIntentsInput = {
@@ -1411,6 +1453,7 @@ export type VideoSourceUncheckedCreateWithoutAssemblyRenderIntentsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutAssemblyRenderIntentsInput = {
@@ -1451,6 +1494,7 @@ export type VideoSourceUpdateWithoutAssemblyRenderIntentsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutAssemblyRenderIntentsInput = {
@@ -1475,6 +1519,7 @@ export type VideoSourceUncheckedUpdateWithoutAssemblyRenderIntentsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutEditorialApprovalsInput = {
@@ -1499,6 +1544,7 @@ export type VideoSourceCreateWithoutEditorialApprovalsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutEditorialApprovalsInput = {
@@ -1523,6 +1569,7 @@ export type VideoSourceUncheckedCreateWithoutEditorialApprovalsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutEditorialApprovalsInput = {
@@ -1563,6 +1610,7 @@ export type VideoSourceUpdateWithoutEditorialApprovalsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutEditorialApprovalsInput = {
@@ -1587,6 +1635,7 @@ export type VideoSourceUncheckedUpdateWithoutEditorialApprovalsInput = {
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutEditorialExportIntentsInput = {
@@ -1611,6 +1660,7 @@ export type VideoSourceCreateWithoutEditorialExportIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutEditorialExportIntentsInput = {
@@ -1635,6 +1685,7 @@ export type VideoSourceUncheckedCreateWithoutEditorialExportIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutEditorialExportIntentsInput = {
@@ -1675,6 +1726,7 @@ export type VideoSourceUpdateWithoutEditorialExportIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutEditorialExportIntentsInput = {
@@ -1699,6 +1751,7 @@ export type VideoSourceUncheckedUpdateWithoutEditorialExportIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutSourceEditorialContextsInput = {
@@ -1723,6 +1776,7 @@ export type VideoSourceCreateWithoutSourceEditorialContextsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutSourceInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutSourceEditorialContextsInput = {
@@ -1747,6 +1801,7 @@ export type VideoSourceUncheckedCreateWithoutSourceEditorialContextsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutSourceInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutSourceEditorialContextsInput = {
@@ -1787,6 +1842,7 @@ export type VideoSourceUpdateWithoutSourceEditorialContextsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutSourceNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutSourceEditorialContextsInput = {
@@ -1811,6 +1867,7 @@ export type VideoSourceUncheckedUpdateWithoutSourceEditorialContextsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutSourceNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceCreateWithoutVerticalRenderIntentsInput = {
@@ -1835,6 +1892,7 @@ export type VideoSourceCreateWithoutVerticalRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutSourceInput
   editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceUncheckedCreateWithoutVerticalRenderIntentsInput = {
@@ -1859,6 +1917,7 @@ export type VideoSourceUncheckedCreateWithoutVerticalRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutSourceInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedCreateNestedManyWithoutSourceInput
 }
 
 export type VideoSourceCreateOrConnectWithoutVerticalRenderIntentsInput = {
@@ -1899,6 +1958,7 @@ export type VideoSourceUpdateWithoutVerticalRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutSourceNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUpdateManyWithoutSourceNestedInput
 }
 
 export type VideoSourceUncheckedUpdateWithoutVerticalRenderIntentsInput = {
@@ -1923,6 +1983,123 @@ export type VideoSourceUncheckedUpdateWithoutVerticalRenderIntentsInput = {
   editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutSourceNestedInput
   editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
   sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
+  clipGenerationIntents?: Prisma.ClipGenerationIntentUncheckedUpdateManyWithoutSourceNestedInput
+}
+
+export type VideoSourceCreateWithoutClipGenerationIntentsInput = {
+  id: string
+  status?: $Enums.VideoSourceStatus
+  sourceVersion?: number
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  durationMs?: number | null
+  probedAt?: Date | string | null
+  probeVersion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutSourceInput
+  artifacts?: Prisma.MediaArtifactCreateNestedManyWithoutSourceInput
+  pipelineJobs?: Prisma.PipelineJobCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationCreateNestedManyWithoutSourceInput
+  montageAssets?: Prisma.MontageAssetCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentCreateNestedManyWithoutSourceInput
+  editorialApprovals?: Prisma.EditorialApprovalCreateNestedManyWithoutSourceInput
+  editorialExportIntents?: Prisma.EditorialExportIntentCreateNestedManyWithoutSourceInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextCreateNestedManyWithoutSourceInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentCreateNestedManyWithoutSourceInput
+}
+
+export type VideoSourceUncheckedCreateWithoutClipGenerationIntentsInput = {
+  id: string
+  projectId: string
+  status?: $Enums.VideoSourceStatus
+  sourceVersion?: number
+  originalFilename: string
+  contentType: string
+  sizeBytes: bigint | number
+  sha256: string
+  durationMs?: number | null
+  probedAt?: Date | string | null
+  probeVersion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  artifacts?: Prisma.MediaArtifactUncheckedCreateNestedManyWithoutSourceInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedCreateNestedManyWithoutSourceInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedCreateNestedManyWithoutSourceInput
+  montageAssets?: Prisma.MontageAssetUncheckedCreateNestedManyWithoutSourceInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedCreateNestedManyWithoutSourceInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUncheckedCreateNestedManyWithoutSourceInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedCreateNestedManyWithoutSourceInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedCreateNestedManyWithoutSourceInput
+}
+
+export type VideoSourceCreateOrConnectWithoutClipGenerationIntentsInput = {
+  where: Prisma.VideoSourceWhereUniqueInput
+  create: Prisma.XOR<Prisma.VideoSourceCreateWithoutClipGenerationIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutClipGenerationIntentsInput>
+}
+
+export type VideoSourceUpsertWithoutClipGenerationIntentsInput = {
+  update: Prisma.XOR<Prisma.VideoSourceUpdateWithoutClipGenerationIntentsInput, Prisma.VideoSourceUncheckedUpdateWithoutClipGenerationIntentsInput>
+  create: Prisma.XOR<Prisma.VideoSourceCreateWithoutClipGenerationIntentsInput, Prisma.VideoSourceUncheckedCreateWithoutClipGenerationIntentsInput>
+  where?: Prisma.VideoSourceWhereInput
+}
+
+export type VideoSourceUpdateToOneWithWhereWithoutClipGenerationIntentsInput = {
+  where?: Prisma.VideoSourceWhereInput
+  data: Prisma.XOR<Prisma.VideoSourceUpdateWithoutClipGenerationIntentsInput, Prisma.VideoSourceUncheckedUpdateWithoutClipGenerationIntentsInput>
+}
+
+export type VideoSourceUpdateWithoutClipGenerationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumVideoSourceStatusFieldUpdateOperationsInput | $Enums.VideoSourceStatus
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  probedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probeVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutSourceNestedInput
+  artifacts?: Prisma.MediaArtifactUpdateManyWithoutSourceNestedInput
+  pipelineJobs?: Prisma.PipelineJobUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUpdateManyWithoutSourceNestedInput
+  montageAssets?: Prisma.MontageAssetUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUpdateManyWithoutSourceNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUpdateManyWithoutSourceNestedInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUpdateManyWithoutSourceNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUpdateManyWithoutSourceNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUpdateManyWithoutSourceNestedInput
+}
+
+export type VideoSourceUncheckedUpdateWithoutClipGenerationIntentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumVideoSourceStatusFieldUpdateOperationsInput | $Enums.VideoSourceStatus
+  sourceVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  originalFilename?: Prisma.StringFieldUpdateOperationsInput | string
+  contentType?: Prisma.StringFieldUpdateOperationsInput | string
+  sizeBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  sha256?: Prisma.StringFieldUpdateOperationsInput | string
+  durationMs?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  probedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  probeVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  artifacts?: Prisma.MediaArtifactUncheckedUpdateManyWithoutSourceNestedInput
+  pipelineJobs?: Prisma.PipelineJobUncheckedUpdateManyWithoutSourceNestedInput
+  authorizations?: Prisma.SourceAuthorizationUncheckedUpdateManyWithoutSourceNestedInput
+  montageAssets?: Prisma.MontageAssetUncheckedUpdateManyWithoutSourceNestedInput
+  assemblyRenderIntents?: Prisma.AssemblyRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
+  editorialApprovals?: Prisma.EditorialApprovalUncheckedUpdateManyWithoutSourceNestedInput
+  editorialExportIntents?: Prisma.EditorialExportIntentUncheckedUpdateManyWithoutSourceNestedInput
+  sourceEditorialContexts?: Prisma.SourceEditorialContextUncheckedUpdateManyWithoutSourceNestedInput
+  verticalRenderIntents?: Prisma.VerticalRenderIntentUncheckedUpdateManyWithoutSourceNestedInput
 }
 
 
@@ -1940,6 +2117,7 @@ export type VideoSourceCountOutputType = {
   editorialExportIntents: number
   sourceEditorialContexts: number
   verticalRenderIntents: number
+  clipGenerationIntents: number
 }
 
 export type VideoSourceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1952,6 +2130,7 @@ export type VideoSourceCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   editorialExportIntents?: boolean | VideoSourceCountOutputTypeCountEditorialExportIntentsArgs
   sourceEditorialContexts?: boolean | VideoSourceCountOutputTypeCountSourceEditorialContextsArgs
   verticalRenderIntents?: boolean | VideoSourceCountOutputTypeCountVerticalRenderIntentsArgs
+  clipGenerationIntents?: boolean | VideoSourceCountOutputTypeCountClipGenerationIntentsArgs
 }
 
 /**
@@ -2027,6 +2206,13 @@ export type VideoSourceCountOutputTypeCountVerticalRenderIntentsArgs<ExtArgs ext
   where?: Prisma.VerticalRenderIntentWhereInput
 }
 
+/**
+ * VideoSourceCountOutputType without action
+ */
+export type VideoSourceCountOutputTypeCountClipGenerationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClipGenerationIntentWhereInput
+}
+
 
 export type VideoSourceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2052,6 +2238,7 @@ export type VideoSourceSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   editorialExportIntents?: boolean | Prisma.VideoSource$editorialExportIntentsArgs<ExtArgs>
   sourceEditorialContexts?: boolean | Prisma.VideoSource$sourceEditorialContextsArgs<ExtArgs>
   verticalRenderIntents?: boolean | Prisma.VideoSource$verticalRenderIntentsArgs<ExtArgs>
+  clipGenerationIntents?: boolean | Prisma.VideoSource$clipGenerationIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.VideoSourceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["videoSource"]>
 
@@ -2117,6 +2304,7 @@ export type VideoSourceInclude<ExtArgs extends runtime.Types.Extensions.Internal
   editorialExportIntents?: boolean | Prisma.VideoSource$editorialExportIntentsArgs<ExtArgs>
   sourceEditorialContexts?: boolean | Prisma.VideoSource$sourceEditorialContextsArgs<ExtArgs>
   verticalRenderIntents?: boolean | Prisma.VideoSource$verticalRenderIntentsArgs<ExtArgs>
+  clipGenerationIntents?: boolean | Prisma.VideoSource$clipGenerationIntentsArgs<ExtArgs>
   _count?: boolean | Prisma.VideoSourceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VideoSourceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2139,6 +2327,7 @@ export type $VideoSourcePayload<ExtArgs extends runtime.Types.Extensions.Interna
     editorialExportIntents: Prisma.$EditorialExportIntentPayload<ExtArgs>[]
     sourceEditorialContexts: Prisma.$SourceEditorialContextPayload<ExtArgs>[]
     verticalRenderIntents: Prisma.$VerticalRenderIntentPayload<ExtArgs>[]
+    clipGenerationIntents: Prisma.$ClipGenerationIntentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2558,6 +2747,7 @@ export interface Prisma__VideoSourceClient<T, Null = never, ExtArgs extends runt
   editorialExportIntents<T extends Prisma.VideoSource$editorialExportIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$editorialExportIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EditorialExportIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sourceEditorialContexts<T extends Prisma.VideoSource$sourceEditorialContextsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$sourceEditorialContextsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SourceEditorialContextPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   verticalRenderIntents<T extends Prisma.VideoSource$verticalRenderIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$verticalRenderIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VerticalRenderIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  clipGenerationIntents<T extends Prisma.VideoSource$clipGenerationIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VideoSource$clipGenerationIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClipGenerationIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3214,6 +3404,30 @@ export type VideoSource$verticalRenderIntentsArgs<ExtArgs extends runtime.Types.
   take?: number
   skip?: number
   distinct?: Prisma.VerticalRenderIntentScalarFieldEnum | Prisma.VerticalRenderIntentScalarFieldEnum[]
+}
+
+/**
+ * VideoSource.clipGenerationIntents
+ */
+export type VideoSource$clipGenerationIntentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClipGenerationIntent
+   */
+  select?: Prisma.ClipGenerationIntentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClipGenerationIntent
+   */
+  omit?: Prisma.ClipGenerationIntentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClipGenerationIntentInclude<ExtArgs> | null
+  where?: Prisma.ClipGenerationIntentWhereInput
+  orderBy?: Prisma.ClipGenerationIntentOrderByWithRelationInput | Prisma.ClipGenerationIntentOrderByWithRelationInput[]
+  cursor?: Prisma.ClipGenerationIntentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClipGenerationIntentScalarFieldEnum | Prisma.ClipGenerationIntentScalarFieldEnum[]
 }
 
 /**

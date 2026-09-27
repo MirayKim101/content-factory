@@ -89,3 +89,37 @@ export class LinkTwitchVodProjectDto {
   @IsBoolean()
   sourceMatchConfirmed!: boolean;
 }
+
+export class StartTwitchVodIngestDto {
+  @ApiProperty({ type: String, minLength: 1, maxLength: 160 })
+  @IsString()
+  @Length(1, 160)
+  projectName!: string;
+}
+
+export class TwitchVodIngestIntentResponseDto {
+  @ApiProperty({ type: String, format: "uuid" }) id!: string;
+  @ApiProperty({ type: String, format: "uuid" }) candidateId!: string;
+  @ApiProperty({ type: String }) projectName!: string;
+  @ApiProperty({
+    enum: [
+      "QUEUED",
+      "DOWNLOADING",
+      "UPLOADING",
+      "RETRY_WAIT",
+      "READY",
+      "FAILED_FINAL",
+      "CANCELED",
+    ],
+  })
+  state!: string;
+  @ApiProperty({ type: String, format: "uuid", nullable: true })
+  projectId!: string | null;
+  @ApiProperty({ type: String }) downloadedBytes!: bigint;
+  @ApiProperty({ type: String, nullable: true }) totalBytes!: bigint | null;
+  @ApiProperty({ type: Number }) attemptCount!: number;
+  @ApiProperty({ type: String, nullable: true }) failureCode!: string | null;
+  @ApiProperty({ type: String, nullable: true }) failureMessage!: string | null;
+  @ApiProperty({ type: String, format: "date-time" }) createdAt!: Date;
+  @ApiProperty({ type: String, format: "date-time" }) updatedAt!: Date;
+}
