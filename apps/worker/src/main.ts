@@ -63,6 +63,7 @@ import { PgClipGenerationWorker } from "./infrastructure/pg-clip-generation-work
 import { HttpTwitchVodMediaProvider } from "./infrastructure/http-twitch-vod-media-provider.js";
 import { ProcessTwitchVodIngest } from "./application/process-twitch-vod-ingest.js";
 import { SingleFlightTask } from "./application/single-flight-task.js";
+import { ReconcileScheduledPublications } from "./application/reconcile-scheduled-publications.js";
 import {
   clearWorkerReadiness,
   markWorkerReady,
@@ -442,9 +443,21 @@ async function startPublicationWorker(): Promise<void> {
         }),
       ),
   );
+  const scheduledReconciler = new ReconcileScheduledPublications(
+    repository,
+    processor,
+    (intentId, error) =>
+      console.error(
+        JSON.stringify({
+          event: "scheduled_publication_reconciliation_failed",
+          workerId,
+          intentId,
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
+  );
   const reconciliation = new SingleFlightTask(async () => {
-    for (const intentId of await repository.due())
-      await processor.execute(intentId);
+    await scheduledReconciler.execute();
     await outcomeReconciler.execute();
     await metricsCollector.execute();
   });
