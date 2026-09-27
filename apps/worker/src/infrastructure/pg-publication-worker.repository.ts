@@ -15,6 +15,10 @@ type ClaimRow = {
   platform: "LOCAL_DRY_RUN" | "YOUTUBE" | "TIKTOK";
   contentKind: "EDITORIAL_EXPORT" | "VERTICAL_RESULT";
   contentId: string;
+  contentObjectKey: string;
+  contentSizeBytes: string;
+  contentSha256: string;
+  contentType: string;
   metadataSnapshot: Record<string, unknown>;
   attemptCount: number;
   retryBudget: number;
@@ -38,6 +42,10 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         `SELECT i."id", i."channelId", c."externalChannelRef",
                 i."platform", i."contentKind",
                 COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
+                COALESCE(ar."objectKey", vr."objectKey") AS "contentObjectKey",
+                COALESCE(ar."sizeBytes", vr."sizeBytes")::text AS "contentSizeBytes",
+                COALESCE(ar."sha256", vr."sha256") AS "contentSha256",
+                COALESCE(ar."contentType", vr."contentType") AS "contentType",
                 i."metadataSnapshot",
                 i."attemptCount", i."retryBudget", i."state", i."startedAt",
                 CASE WHEN i."contentKind" = 'EDITORIAL_EXPORT' THEN (
@@ -136,6 +144,10 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         platform: row.platform,
         contentKind: row.contentKind,
         contentId: row.contentId,
+        contentObjectKey: row.contentObjectKey,
+        contentSizeBytes: BigInt(row.contentSizeBytes),
+        contentSha256: row.contentSha256,
+        contentType: row.contentType,
         metadataSnapshot: row.metadataSnapshot,
         attemptNumber,
       };
@@ -259,6 +271,10 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       platform: PublicationClaim["platform"];
       contentKind: PublicationClaim["contentKind"];
       contentId: string;
+      contentObjectKey: string;
+      contentSizeBytes: string;
+      contentSha256: string;
+      contentType: string;
       metadataSnapshot: Record<string, unknown>;
       attemptCount: number;
       remotePublicationId: string;
@@ -266,9 +282,17 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       `SELECT i."id", i."channelId", c."externalChannelRef",
               i."platform", i."contentKind",
               COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
+              COALESCE(ar."objectKey", vr."objectKey") AS "contentObjectKey",
+              COALESCE(ar."sizeBytes", vr."sizeBytes")::text AS "contentSizeBytes",
+              COALESCE(ar."sha256", vr."sha256") AS "contentSha256",
+              COALESCE(ar."contentType", vr."contentType") AS "contentType",
               i."metadataSnapshot", i."attemptCount", i."remotePublicationId"
          FROM "PublicationIntent" i
          JOIN "PublicationChannel" c ON c."id" = i."channelId"
+         LEFT JOIN "EditorialExportResult" er ON er."id" = i."exportResultId"
+         LEFT JOIN "MediaArtifact" ar ON ar."id" = er."artifactId"
+         LEFT JOIN "VerticalRenderResult" var ON var."id" = i."verticalResultId"
+         LEFT JOIN "MediaArtifact" vr ON vr."id" = var."artifactId"
         WHERE i."state" = 'UNKNOWN_REMOTE_STATE'
           AND i."remotePublicationId" IS NOT NULL
           AND i."updatedAt" <= $1 - interval '30 seconds'
@@ -282,6 +306,10 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
       platform: row.platform,
       contentKind: row.contentKind,
       contentId: row.contentId,
+      contentObjectKey: row.contentObjectKey,
+      contentSizeBytes: BigInt(row.contentSizeBytes),
+      contentSha256: row.contentSha256,
+      contentType: row.contentType,
       metadataSnapshot: row.metadataSnapshot,
       attemptNumber: row.attemptCount,
       remotePublicationId: row.remotePublicationId,

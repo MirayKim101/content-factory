@@ -18,6 +18,10 @@ const claim: PublicationClaim = {
   platform: "LOCAL_DRY_RUN",
   contentKind: "EDITORIAL_EXPORT",
   contentId: "00000000-0000-4000-8000-000000000002",
+  contentObjectKey: "exports/release.zip",
+  contentSizeBytes: 1024n,
+  contentSha256: "a".repeat(64),
+  contentType: "application/zip",
   metadataSnapshot: { title: "Release" },
   attemptNumber: 1,
 };

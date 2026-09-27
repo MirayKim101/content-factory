@@ -10,6 +10,10 @@ export interface PublicationClaim {
   platform: PublicationPlatform;
   contentKind: PublicationContentKind;
   contentId: string;
+  contentObjectKey: string;
+  contentSizeBytes: bigint;
+  contentSha256: string;
+  contentType: string;
   metadataSnapshot: Record<string, unknown>;
   attemptNumber: number;
 }
