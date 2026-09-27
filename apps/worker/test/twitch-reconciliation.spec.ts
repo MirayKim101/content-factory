@@ -138,6 +138,29 @@ describe("Twitch reconciliation", () => {
     });
   });
 
+  it("propagates shutdown abort into an active Helix request", async () => {
+    const request = vi.fn(
+      (_url: string | URL | Request, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(init.signal?.reason),
+            { once: true },
+          );
+        }),
+    );
+    const controller = new AbortController();
+    const pending = new TwitchHelixClient(
+      "client-id",
+      { resolve: async () => "app-token" },
+      request as typeof fetch,
+    ).listArchives("1337", null, controller.signal);
+    await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+    controller.abort(new Error("TWITCH_WORKER_SHUTDOWN"));
+
+    await expect(pending).rejects.toThrow("TWITCH_WORKER_SHUTDOWN");
+  });
+
   it("isolates a failed channel without blocking the remaining channels", async () => {
     const failed = {
       id: "channel-1",
@@ -173,6 +196,49 @@ describe("Twitch reconciliation", () => {
       { items: [], nextCursor: null },
       expect.any(Date),
     );
+  });
+
+  it("propagates shutdown abort instead of marking the channel failed", async () => {
+    const channel = {
+      id: "channel-1",
+      broadcasterId: "1337",
+      cursor: null,
+      ingestDelaySeconds: 300,
+    };
+    const repository: TwitchIngestionWorkerRepository = {
+      enabledBroadcasterIds: vi.fn(async () => []),
+      processInbox: vi.fn(async () => 0),
+      promoteReady: vi.fn(async () => 0),
+      dueChannels: vi.fn(async () => [channel]),
+      applyVodPage: vi.fn(async () => true),
+      close: vi.fn(),
+    };
+    const provider = {
+      listArchives: vi.fn(
+        (
+          _broadcasterId: string,
+          _cursor: string | null,
+          signal?: AbortSignal,
+        ) =>
+          new Promise<never>((_resolve, reject) => {
+            signal?.addEventListener("abort", () => reject(signal.reason), {
+              once: true,
+            });
+          }),
+      ),
+    };
+    const controller = new AbortController();
+
+    const pending = new ReconcileTwitchIngestion(repository, provider).execute(
+      controller.signal,
+    );
+    await vi.waitFor(() =>
+      expect(provider.listArchives).toHaveBeenCalledOnce(),
+    );
+    controller.abort(new Error("TWITCH_WORKER_SHUTDOWN"));
+
+    await expect(pending).rejects.toThrow("TWITCH_WORKER_SHUTDOWN");
+    expect(repository.applyVodPage).not.toHaveBeenCalled();
   });
 
   it("drains bounded Helix pages in one channel pass and advances each durable cursor", async () => {

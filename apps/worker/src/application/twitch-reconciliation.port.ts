@@ -24,6 +24,7 @@ export interface TwitchVideoProvider {
   listArchives(
     broadcasterId: string,
     cursor: string | null,
+    signal?: AbortSignal,
   ): Promise<TwitchVodPage>;
 }
 

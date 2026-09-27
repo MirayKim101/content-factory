@@ -253,16 +253,20 @@ async function startTwitchWorker(): Promise<void> {
         )
       : undefined;
   let nextEventSubReconciliationAt = 0;
+  const controlAbort = new AbortController();
   const controlReconciliation = new SingleFlightTask(async () => {
     let subscriptionChanges = { created: 0, deleted: 0 };
     if (eventSubReconciler && Date.now() >= nextEventSubReconciliationAt) {
       try {
         subscriptionChanges = await eventSubReconciler.execute(
           await repository.enabledBroadcasterIds(),
+          controlAbort.signal,
         );
         nextEventSubReconciliationAt =
           Date.now() + TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS;
       } catch (error) {
+        if (controlAbort.signal.aborted)
+          throw controlAbort.signal.reason ?? error;
         console.error(
           JSON.stringify({
             event: "twitch_eventsub_reconciliation_failed",
@@ -272,7 +276,7 @@ async function startTwitchWorker(): Promise<void> {
         );
       }
     }
-    const result = await reconciler.execute();
+    const result = await reconciler.execute(controlAbort.signal);
     if (
       subscriptionChanges.created ||
       subscriptionChanges.deleted ||
@@ -298,15 +302,16 @@ async function startTwitchWorker(): Promise<void> {
   let stopping = false;
   const runControlReconciliation = () => {
     if (stopping) return;
-    void controlReconciliation.run().catch((error) =>
+    void controlReconciliation.run().catch((error) => {
+      if (stopping) return;
       console.error(
         JSON.stringify({
           event: "twitch_reconciliation_failed",
           workerId,
           error: error instanceof Error ? error.message : "unknown",
         }),
-      ),
-    );
+      );
+    });
   };
   const runIngestReconciliation = () => {
     if (stopping) return;
@@ -331,6 +336,7 @@ async function startTwitchWorker(): Promise<void> {
     stopping = true;
     clearInterval(controlTimer);
     clearInterval(ingestTimer);
+    controlAbort.abort(new Error("TWITCH_WORKER_SHUTDOWN"));
     ingestProcessor?.abortAll();
     shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);

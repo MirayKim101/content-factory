@@ -133,13 +133,16 @@
 - Status reconciliation и metrics collection также имеют внешний shutdown
   abort: read-only provider calls завершаются, все удерживаемые claims
   освобождаются, а worker не ждёт последовательные 30/60-секундные deadlines.
+- Twitch control-plane shutdown signal проходит через EventSub list/create/
+  delete, Helix pagination и channel reconciliation. Многостраничный проход
+  прекращается немедленно и не записывает shutdown как ошибку канала.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  285/285 unit tests
+Worker:  288/288 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

@@ -19,6 +19,7 @@ export class TwitchHelixClient implements TwitchVideoProvider {
   async listArchives(
     broadcasterId: string,
     cursor: string | null,
+    signal?: AbortSignal,
   ): Promise<TwitchVodPage> {
     const params = new URLSearchParams({
       user_id: broadcasterId,
@@ -29,12 +30,14 @@ export class TwitchHelixClient implements TwitchVideoProvider {
     let response = await this.requestArchives(
       params,
       await this.accessToken.resolve(),
+      signal,
     );
     if (response.status === 401 && this.accessToken.invalidate) {
       this.accessToken.invalidate();
       response = await this.requestArchives(
         params,
         await this.accessToken.resolve(),
+        signal,
       );
     }
     if (!response.ok) throw new Error(`TWITCH_HELIX_${response.status}`);
@@ -42,7 +45,11 @@ export class TwitchHelixClient implements TwitchVideoProvider {
     return parseTwitchVodPage(payload);
   }
 
-  private requestArchives(params: URLSearchParams, accessToken: string) {
+  private requestArchives(
+    params: URLSearchParams,
+    accessToken: string,
+    signal?: AbortSignal,
+  ) {
     return this.fetchImplementation(
       `https://api.twitch.tv/helix/videos?${params}`,
       {
@@ -50,7 +57,9 @@ export class TwitchHelixClient implements TwitchVideoProvider {
           "Client-Id": this.clientId,
           Authorization: `Bearer ${accessToken}`,
         },
-        signal: AbortSignal.timeout(10_000),
+        signal: signal
+          ? AbortSignal.any([signal, AbortSignal.timeout(10_000)])
+          : AbortSignal.timeout(10_000),
       },
     );
   }

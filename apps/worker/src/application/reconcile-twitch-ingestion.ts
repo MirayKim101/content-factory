@@ -12,16 +12,20 @@ export class ReconcileTwitchIngestion {
     private readonly clock: () => Date = () => new Date(),
   ) {}
 
-  async execute(): Promise<{
+  async execute(signal?: AbortSignal): Promise<{
     events: number;
     channels: number;
     failedChannels: string[];
   }> {
+    signal?.throwIfAborted();
     const events = await this.repository.processInbox();
+    signal?.throwIfAborted();
     await this.repository.promoteReady(this.clock());
+    signal?.throwIfAborted();
     const channels = await this.repository.dueChannels();
     const failedChannels: string[] = [];
     for (const channel of channels) {
+      signal?.throwIfAborted();
       try {
         const seenCursors = new Set<string>();
         for (
@@ -36,7 +40,9 @@ export class ReconcileTwitchIngestion {
           const page = await this.provider.listArchives(
             channel.broadcasterId,
             requestedCursor,
+            signal,
           );
+          signal?.throwIfAborted();
           const applied = await this.repository.applyVodPage(
             channel,
             page,
@@ -46,7 +52,8 @@ export class ReconcileTwitchIngestion {
           channel.cursor = page.nextCursor;
           if (!page.nextCursor) break;
         }
-      } catch {
+      } catch (error) {
+        if (signal?.aborted) throw signal.reason ?? error;
         failedChannels.push(channel.id);
       }
     }

@@ -34,13 +34,41 @@ describe("Twitch EventSub reconciliation", () => {
       ]),
     ).resolves.toEqual({ created: 3, deleted: 1 });
     expect(provider.createWebhookSubscription.mock.calls).toEqual([
-      ["stream.offline", "1337"],
-      ["stream.online", "7331"],
-      ["stream.offline", "7331"],
+      ["stream.offline", "1337", undefined],
+      ["stream.online", "7331", undefined],
+      ["stream.offline", "7331", undefined],
     ]);
     expect(provider.deleteWebhookSubscription).toHaveBeenCalledWith(
       "sub-revoked",
+      undefined,
     );
+  });
+
+  it("propagates shutdown abort into an active EventSub request", async () => {
+    const request = vi.fn(
+      (_input: string | URL | Request, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(init.signal?.reason),
+            { once: true },
+          );
+        }),
+    );
+    const client = new TwitchEventSubClient(
+      "client-id",
+      { resolve: async () => "app-token" },
+      callback,
+      "eventsub-secret-value",
+      request as typeof fetch,
+    );
+    const controller = new AbortController();
+
+    const pending = client.listWebhookSubscriptions(controller.signal);
+    await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+    controller.abort(new Error("TWITCH_WORKER_SHUTDOWN"));
+
+    await expect(pending).rejects.toThrow("TWITCH_WORKER_SHUTDOWN");
   });
 
   it("uses bounded official webhook payloads and keeps the secret out of the URL", async () => {

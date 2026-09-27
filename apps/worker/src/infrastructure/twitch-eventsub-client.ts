@@ -21,7 +21,9 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       throw new Error("CONFIG_TWITCH_EVENTSUB_SECRET_INVALID");
   }
 
-  async listWebhookSubscriptions(): Promise<
+  async listWebhookSubscriptions(
+    signal?: AbortSignal,
+  ): Promise<
     Array<{ id: string; type: string; broadcasterId: string; callback: string }>
   > {
     const result: Array<{
@@ -38,7 +40,11 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       if (cursor) seen.add(cursor);
       const url = new URL(EVENTSUB_ENDPOINT);
       if (cursor) url.searchParams.set("after", cursor);
-      const response = await this.authorizedFetch(url, { method: "GET" });
+      const response = await this.authorizedFetch(
+        url,
+        { method: "GET" },
+        signal,
+      );
       if (!response.ok)
         throw new Error(`TWITCH_EVENTSUB_LIST_${response.status}`);
       const parsed = parseSubscriptionPage(await response.json());
@@ -52,42 +58,59 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
   async createWebhookSubscription(
     type: "stream.online" | "stream.offline",
     broadcasterId: string,
+    signal?: AbortSignal,
   ): Promise<void> {
     if (!/^\d{1,64}$/.test(broadcasterId))
       throw new Error("TWITCH_BROADCASTER_ID_INVALID");
-    const response = await this.authorizedFetch(EVENTSUB_ENDPOINT, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        type,
-        version: "1",
-        condition: { broadcaster_user_id: broadcasterId },
-        transport: {
-          method: "webhook",
-          callback: this.callback,
-          secret: this.secret,
-        },
-      }),
-    });
+    const response = await this.authorizedFetch(
+      EVENTSUB_ENDPOINT,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          type,
+          version: "1",
+          condition: { broadcaster_user_id: broadcasterId },
+          transport: {
+            method: "webhook",
+            callback: this.callback,
+            secret: this.secret,
+          },
+        }),
+      },
+      signal,
+    );
     if (response.status !== 202 && response.status !== 409)
       throw new Error(`TWITCH_EVENTSUB_CREATE_${response.status}`);
   }
 
-  async deleteWebhookSubscription(id: string): Promise<void> {
+  async deleteWebhookSubscription(
+    id: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
     if (!/^[A-Za-z0-9_-]{1,128}$/.test(id))
       throw new Error("TWITCH_EVENTSUB_ID_INVALID");
     const url = new URL(EVENTSUB_ENDPOINT);
     url.searchParams.set("id", id);
-    const response = await this.authorizedFetch(url, { method: "DELETE" });
+    const response = await this.authorizedFetch(
+      url,
+      { method: "DELETE" },
+      signal,
+    );
     if (response.status !== 204 && response.status !== 404)
       throw new Error(`TWITCH_EVENTSUB_DELETE_${response.status}`);
   }
 
-  private async authorizedFetch(input: string | URL, init: RequestInit) {
+  private async authorizedFetch(
+    input: string | URL,
+    init: RequestInit,
+    signal?: AbortSignal,
+  ) {
     let response = await this.requestWithToken(
       input,
       init,
       await this.accessToken.resolve(),
+      signal,
     );
     if (response.status === 401 && this.accessToken.invalidate) {
       this.accessToken.invalidate();
@@ -95,6 +118,7 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
         input,
         init,
         await this.accessToken.resolve(),
+        signal,
       );
     }
     return response;
@@ -104,6 +128,7 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
     input: string | URL,
     init: RequestInit,
     token: string,
+    signal?: AbortSignal,
   ) {
     return this.request(input, {
       ...init,
@@ -112,7 +137,9 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
         "Client-Id": this.clientId,
         Authorization: `Bearer ${token}`,
       },
-      signal: AbortSignal.timeout(10_000),
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(10_000)])
+        : AbortSignal.timeout(10_000),
     });
   }
 }
