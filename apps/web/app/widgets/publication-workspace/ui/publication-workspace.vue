@@ -4,7 +4,7 @@ import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import {
   createEditorialExportsApi,
@@ -43,6 +43,7 @@ const saving = ref(false);
 const error = ref<string | null>(null);
 const notice = ref<string | null>(null);
 const initialized = ref(false);
+const refreshingPublications = ref(false);
 const exportId = ref("");
 const contentKind = ref<"EDITORIAL_EXPORT" | "VERTICAL_RESULT">(
   "EDITORIAL_EXPORT",
@@ -67,6 +68,7 @@ const title = ref("");
 const description = ref("");
 const scheduledLocal = ref(defaultSchedule());
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+let publicationRefreshTimer: ReturnType<typeof setInterval> | undefined;
 
 const readyExports = computed(() =>
   exports.value.filter(
@@ -160,6 +162,26 @@ async function loadWorkspace(): Promise<void> {
       cause instanceof Error ? cause.message : "Не удалось загрузить очередь.";
   } finally {
     loading.value = false;
+  }
+}
+async function refreshPublicationStatuses(): Promise<void> {
+  const selectedProjectId = projectId.value;
+  if (
+    !selectedProjectId ||
+    loading.value ||
+    saving.value ||
+    refreshingPublications.value ||
+    document.hidden
+  )
+    return;
+  refreshingPublications.value = true;
+  try {
+    const page = await publicationsApi.list(selectedProjectId);
+    if (projectId.value === selectedProjectId) publications.value = page.items;
+  } catch {
+    // Background refresh stays silent; foreground actions surface errors.
+  } finally {
+    refreshingPublications.value = false;
   }
 }
 async function createTikTokChannel(): Promise<void> {
@@ -418,6 +440,13 @@ onMounted(async () => {
       cause instanceof Error ? cause.message : "Не удалось загрузить проекты.";
     loading.value = false;
   }
+  publicationRefreshTimer = setInterval(
+    () => void refreshPublicationStatuses(),
+    15_000,
+  );
+});
+onUnmounted(() => {
+  if (publicationRefreshTimer) clearInterval(publicationRefreshTimer);
 });
 </script>
 
