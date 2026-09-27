@@ -116,13 +116,17 @@
   token, но и неистёкший lease. Просроченный worker не может воскресить claim
   или записать status/snapshot до следующего reclaim; SQL проверен на runtime DB
   no-op probes с заведомо отсутствующим intent ID.
+- Twitch control plane и длинный VOD data-plane import работают независимыми
+  single-flight циклами. Импорт больше не блокирует Helix/EventSub ticks или
+  startup readiness; graceful shutdown abort-ит активный transfer без ложного
+  failure и затем дренирует оба цикла перед закрытием PostgreSQL/S3.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  276/276 unit tests
+Worker:  277/277 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

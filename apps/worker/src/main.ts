@@ -252,7 +252,7 @@ async function startTwitchWorker(): Promise<void> {
         )
       : undefined;
   let nextEventSubReconciliationAt = 0;
-  const reconciliation = new SingleFlightTask(async () => {
+  const controlReconciliation = new SingleFlightTask(async () => {
     let subscriptionChanges = { created: 0, deleted: 0 };
     if (eventSubReconciler && Date.now() >= nextEventSubReconciliationAt) {
       try {
@@ -272,17 +272,11 @@ async function startTwitchWorker(): Promise<void> {
       }
     }
     const result = await reconciler.execute();
-    let imported = 0;
-    if (ingestProcessor) {
-      while (imported < 1 && (await ingestProcessor.execute(workerId)))
-        imported += 1;
-    }
     if (
       subscriptionChanges.created ||
       subscriptionChanges.deleted ||
       result.events ||
-      result.channels ||
-      imported
+      result.channels
     )
       console.log(
         JSON.stringify({
@@ -291,13 +285,19 @@ async function startTwitchWorker(): Promise<void> {
           subscriptionsCreated: subscriptionChanges.created,
           subscriptionsDeleted: subscriptionChanges.deleted,
           ...result,
-          imported,
         }),
       );
   });
-  await reconciliation.run();
-  const timer = setInterval(() => {
-    void reconciliation.run().catch((error) =>
+  const ingestReconciliation = new SingleFlightTask(async () => {
+    if (ingestProcessor && (await ingestProcessor.execute(workerId)))
+      console.log(
+        JSON.stringify({ event: "twitch_vod_ingest_completed", workerId }),
+      );
+  });
+  let stopping = false;
+  const runControlReconciliation = () => {
+    if (stopping) return;
+    void controlReconciliation.run().catch((error) =>
       console.error(
         JSON.stringify({
           event: "twitch_reconciliation_failed",
@@ -306,15 +306,37 @@ async function startTwitchWorker(): Promise<void> {
         }),
       ),
     );
-  }, 30_000);
-  timer.unref();
+  };
+  const runIngestReconciliation = () => {
+    if (stopping) return;
+    void ingestReconciliation.run().catch((error) =>
+      console.error(
+        JSON.stringify({
+          event: "twitch_vod_ingest_reconciliation_failed",
+          workerId,
+          error: error instanceof Error ? error.message : "unknown",
+        }),
+      ),
+    );
+  };
+  await controlReconciliation.run();
+  const controlTimer = setInterval(runControlReconciliation, 30_000);
+  controlTimer.unref();
+  const ingestTimer = setInterval(runIngestReconciliation, 30_000);
+  ingestTimer.unref();
   let shutdownPromise: Promise<void> | undefined;
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
-    clearInterval(timer);
+    stopping = true;
+    clearInterval(controlTimer);
+    clearInterval(ingestTimer);
+    ingestProcessor?.abortAll();
     shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);
-      await reconciliation.wait().catch(() => undefined);
+      await Promise.allSettled([
+        controlReconciliation.wait(),
+        ingestReconciliation.wait(),
+      ]);
       await repository.close().catch(() => undefined);
       ingestStorage?.close();
     })();
@@ -325,6 +347,7 @@ async function startTwitchWorker(): Promise<void> {
   }
   await markWorkerReady(readinessFile);
   console.log(JSON.stringify({ event: "twitch_worker_started", workerId }));
+  runIngestReconciliation();
 }
 
 function twitchVodMaximumBytes(environment: NodeJS.ProcessEnv): bigint {

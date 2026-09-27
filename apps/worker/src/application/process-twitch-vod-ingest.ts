@@ -11,8 +11,11 @@ import type { TwitchVodIngestRepository } from "./twitch-vod-ingest.port.js";
 import type { WorkerObjectStorage } from "./ports.js";
 
 class TwitchVodIngestLeaseLostError extends Error {}
+class TwitchVodIngestShutdownError extends Error {}
 
 export class ProcessTwitchVodIngest {
+  private readonly activeControllers = new Set<AbortController>();
+
   constructor(
     private readonly repository: TwitchVodIngestRepository,
     private readonly media: TwitchVodMediaProvider,
@@ -23,6 +26,11 @@ export class ProcessTwitchVodIngest {
     private readonly attemptTimeoutMs = 24 * 60 * 60 * 1_000,
   ) {}
 
+  abortAll(): void {
+    for (const controller of this.activeControllers)
+      controller.abort(new TwitchVodIngestShutdownError());
+  }
+
   async execute(workerId: string): Promise<boolean> {
     const lease = await this.repository.claimNext(workerId, this.leaseMs);
     if (!lease) return false;
@@ -32,6 +40,7 @@ export class ProcessTwitchVodIngest {
       `${lease.id}.part`,
     );
     const controller = new AbortController();
+    this.activeControllers.add(controller);
     const deadline = createAbortDeadline(
       controller.signal,
       this.attemptTimeoutMs,
@@ -144,7 +153,8 @@ export class ProcessTwitchVodIngest {
       return true;
     } catch (error) {
       if (
-        controller.signal.reason instanceof TwitchVodIngestLeaseLostError
+        controller.signal.reason instanceof TwitchVodIngestLeaseLostError ||
+        controller.signal.reason instanceof TwitchVodIngestShutdownError
       )
         return false;
       const deadlineReason = deadline.signal.reason;
@@ -170,6 +180,7 @@ export class ProcessTwitchVodIngest {
     } finally {
       deadline.dispose();
       clearInterval(heartbeat);
+      this.activeControllers.delete(controller);
     }
   }
 
