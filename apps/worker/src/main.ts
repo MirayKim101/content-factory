@@ -629,15 +629,29 @@ async function startAiWorker(): Promise<void> {
       }),
     ),
   );
+  const transcriptRecovery = new SingleFlightTask(async () => {
+    await transcriptWorker.recover();
+  });
+  const researchRecovery = new SingleFlightTask(async () => {
+    await researchWorker.recover();
+  });
+  const imageRecovery = new SingleFlightTask(async () => {
+    await imageWorker.recover();
+  });
+  const clipRecovery = clipWorker
+    ? new SingleFlightTask(async () => {
+        await clipWorker.recover();
+      })
+    : null;
   await Promise.all([
-    transcriptWorker.recover(),
-    researchWorker.recover(),
-    imageWorker.recover(),
-    clipWorker?.recover() ?? Promise.resolve(0),
+    transcriptRecovery.run(),
+    researchRecovery.run(),
+    imageRecovery.run(),
+    clipRecovery?.run() ?? Promise.resolve(),
   ]);
   const transcriptRecoveryTimer = setInterval(() => {
-    void transcriptWorker
-      .recover()
+    void transcriptRecovery
+      .run()
       .catch(() =>
         console.error(
           JSON.stringify({ event: "ai_transcript_reconciliation_failed" }),
@@ -646,8 +660,8 @@ async function startAiWorker(): Promise<void> {
   }, 5_000);
   transcriptRecoveryTimer.unref();
   const researchRecoveryTimer = setInterval(() => {
-    void researchWorker
-      .recover()
+    void researchRecovery
+      .run()
       .catch(() =>
         console.error(
           JSON.stringify({ event: "ai_research_reconciliation_failed" }),
@@ -656,8 +670,8 @@ async function startAiWorker(): Promise<void> {
   }, 5_000);
   researchRecoveryTimer.unref();
   const imageRecoveryTimer = setInterval(() => {
-    void imageWorker
-      .recover()
+    void imageRecovery
+      .run()
       .catch(() =>
         console.error(
           JSON.stringify({ event: "ai_image_reconciliation_failed" }),
@@ -665,9 +679,9 @@ async function startAiWorker(): Promise<void> {
       );
   }, 5_000);
   imageRecoveryTimer.unref();
-  const clipRecoveryTimer = clipWorker
+  const clipRecoveryTimer = clipRecovery
     ? setInterval(() => {
-        void clipWorker.recover().catch(() =>
+        void clipRecovery.run().catch(() =>
           console.error(
             JSON.stringify({
               event: "ai_clip_generation_reconciliation_failed",
@@ -677,23 +691,39 @@ async function startAiWorker(): Promise<void> {
       }, 5_000)
     : null;
   clipRecoveryTimer?.unref();
-  for (const signal of ["SIGINT", "SIGTERM"] as const) {
-    process.once(signal, async () => {
-      clearInterval(researchRecoveryTimer);
-      clearInterval(imageRecoveryTimer);
-      clearInterval(transcriptRecoveryTimer);
-      if (clipRecoveryTimer) clearInterval(clipRecoveryTimer);
+  let shutdownPromise: Promise<void> | undefined;
+  const shutdown = (): Promise<void> => {
+    if (shutdownPromise) return shutdownPromise;
+    clearInterval(researchRecoveryTimer);
+    clearInterval(imageRecoveryTimer);
+    clearInterval(transcriptRecoveryTimer);
+    if (clipRecoveryTimer) clearInterval(clipRecoveryTimer);
+    shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);
-      await transcriptQueue.close().catch(() => undefined);
-      await researchQueue.close().catch(() => undefined);
-      await imageQueue.close().catch(() => undefined);
-      await clipQueue?.close().catch(() => undefined);
-      await transcriptWorker.close().catch(() => undefined);
-      await researchWorker.close().catch(() => undefined);
-      await imageWorker.close().catch(() => undefined);
-      await clipWorker?.close().catch(() => undefined);
+      await Promise.allSettled([
+        transcriptQueue.close(),
+        researchQueue.close(),
+        imageQueue.close(),
+        clipQueue?.close() ?? Promise.resolve(),
+      ]);
+      await Promise.allSettled([
+        transcriptRecovery.wait(),
+        researchRecovery.wait(),
+        imageRecovery.wait(),
+        clipRecovery?.wait() ?? Promise.resolve(),
+      ]);
+      await Promise.allSettled([
+        transcriptWorker.close(),
+        researchWorker.close(),
+        imageWorker.close(),
+        clipWorker?.close() ?? Promise.resolve(),
+      ]);
       imageStorage.close();
-    });
+    })();
+    return shutdownPromise;
+  };
+  for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.once(signal, () => void shutdown());
   }
   await Promise.all([
     transcriptQueue.waitUntilReady(),
