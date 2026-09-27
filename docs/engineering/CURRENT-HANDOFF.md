@@ -291,10 +291,9 @@ Worker healthy: container
 Worker rebuilt from current frame code; API запускается native Node24. Новых
 frame extraction jobs после принятого acceptance не создавали.
 
-Последующие push после `b0b00f1` несколько раз завершались сетевым timeout;
-remote сейчас подтверждён только до `b0b00f1`. Локальные commits сохранены;
-первым Git-действием следующей сессии выполнить bounded
-`git push -u origin feat/stage2b2-frame-evidence` и сверить remote SHA.
+Исторические push после `b0b00f1` несколько раз завершались сетевым timeout.
+Это ограничение снято: ветка `feat/stage2b2-frame-evidence` синхронизирована с
+origin, актуальный подтверждённый SHA указан в последнем checkpoint ниже.
 
 Финальная проверка DevOps: manual export
 `f504af29-bc47-4a1d-ae74-821be80f939e` повторно скачан (246691 bytes), SHA
@@ -338,3 +337,11 @@ capability endpoint.
 После изменения прошли API `232/232`, web `248/248`, typecheck, lint, production
 build и двусторонняя проверка OpenAPI drift. Локально API работает на 3001, UI
 на 3100; порт 3000 не использовался.
+
+После capability change выбранный канал также проверяется против effective
+provider flags: сохранённый, но выключенный внешний канал больше не блокирует
+автоматический выбор доступного dry-run/другого канала. Общая admission policy
+централизована и используется create channel, create intent, retry, TikTok
+creator-info и capability response, поэтому read/write трактуют rollout flags
+одинаково. Коммиты `789be77`, `75a3936`, `ca56bde` запушены; локальный HEAD и
+origin подтверждены как `ca56bde6b0bd09308a70a814465410c1f6402e6a`.
