@@ -273,7 +273,7 @@ onMounted(async () => {
           </article>
         </div>
         <div v-else class="empty-state">
-          <span aria-hidden="true">▯</span>
+          <span class="empty-ratio" aria-hidden="true">9:16</span>
           <h3>Вертикальных версий пока нет</h3>
           <p>Выберите готовую нарезку справа, чтобы создать первую версию.</p>
         </div>
@@ -512,8 +512,18 @@ label > span {
   text-align: center;
   color: var(--cf-text-muted);
 }
-.empty-state > span {
-  font-size: 2.5rem;
+.empty-ratio {
+  display: grid;
+  width: 2.5rem;
+  height: 3.75rem;
+  margin: 0 auto 0.75rem;
+  place-items: center;
+  border: 2px solid var(--cf-border-strong);
+  border-radius: 0.6rem;
+  background: var(--cf-surface-subtle);
+  color: var(--cf-brand-strong);
+  font-size: 0.68rem;
+  font-weight: 800;
 }
 @media (max-width: 900px) {
   .vertical-page {
