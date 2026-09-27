@@ -64,6 +64,46 @@ export interface WorkerConfig {
   sourceAuthorizationPolicy: "manual" | "local-auto";
 }
 
+export interface PublicationSessionKeyConfig {
+  currentKeyVersion: string;
+  keys: ReadonlyMap<string, Buffer>;
+}
+
+export function publicationSessionKeyConfig(
+  environment: NodeJS.ProcessEnv,
+): PublicationSessionKeyConfig {
+  const currentKeyVersion =
+    environment.PUBLICATION_SESSION_CURRENT_KEY_VERSION?.trim();
+  const serializedKeys = environment.PUBLICATION_SESSION_KEYS?.trim();
+  if (!currentKeyVersion)
+    throw new Error("CONFIG_PUBLICATION_SESSION_CURRENT_KEY_VERSION_REQUIRED");
+  if (!/^[A-Za-z0-9._-]{1,64}$/.test(currentKeyVersion))
+    throw new Error("CONFIG_PUBLICATION_SESSION_CURRENT_KEY_VERSION_INVALID");
+  if (!serializedKeys)
+    throw new Error("CONFIG_PUBLICATION_SESSION_KEYS_REQUIRED");
+
+  const keys = new Map<string, Buffer>();
+  for (const entry of serializedKeys.split(",")) {
+    const separator = entry.indexOf(":");
+    const version = entry.slice(0, separator).trim();
+    const encoded = entry.slice(separator + 1).trim();
+    if (
+      separator < 1 ||
+      !/^[A-Za-z0-9._-]{1,64}$/.test(version) ||
+      !/^[A-Za-z0-9+/]{43}=$/.test(encoded) ||
+      keys.has(version)
+    )
+      throw new Error("CONFIG_PUBLICATION_SESSION_KEYS_INVALID");
+    const key = Buffer.from(encoded, "base64");
+    if (key.length !== 32 || key.toString("base64") !== encoded)
+      throw new Error("CONFIG_PUBLICATION_SESSION_KEYS_INVALID");
+    keys.set(version, key);
+  }
+  if (!keys.has(currentKeyVersion))
+    throw new Error("CONFIG_PUBLICATION_SESSION_CURRENT_KEY_MISSING");
+  return { currentKeyVersion, keys };
+}
+
 export function resolveWorkerSourceAuthorizationPolicy(
   environment: NodeJS.ProcessEnv,
 ): "manual" | "local-auto" {
