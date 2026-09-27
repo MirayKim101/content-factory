@@ -569,7 +569,7 @@ defineExpose({ canDiscard });
 <style scoped>
 section {
   padding: 1rem 0;
-  border-top: 1px solid #d5ddd7;
+  border-top: 1px solid var(--cf-border);
 }
 label {
   display: grid;
@@ -599,10 +599,10 @@ label {
   flex-direction: column;
   max-height: calc(100dvh - 2rem);
   overflow: hidden;
-  border: 1px solid #d9e0d8;
+  border: 1px solid var(--cf-border);
   border-radius: 0.875rem;
   background: #fff;
-  color: #152018;
+  color: var(--cf-text);
   box-shadow: 0 24px 80px rgb(15 23 42 / 0.3);
 }
 .creator-context-dialog-header {
@@ -612,7 +612,7 @@ label {
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #d9e0d8;
+  border-bottom: 1px solid var(--cf-border);
   background: #fff;
 }
 .creator-context-dialog-title {
@@ -636,8 +636,8 @@ label {
 }
 .creator-context-dialog-close:focus-visible,
 .creator-context-dialog-close:hover {
-  background: #edf2ee;
-  color: #183c2b;
+  background: var(--cf-surface-muted);
+  color: var(--cf-text);
 }
 .creator-context-dialog-body {
   flex: 1 1 auto;
@@ -653,10 +653,10 @@ label {
   width: 100%;
   min-height: 2.5rem;
   padding: 0.55rem 0.7rem;
-  border: 1px solid #9aa89f;
+  border: 1px solid var(--cf-border-strong);
   border-radius: 0.45rem;
   background: #fff;
-  color: #152018;
+  color: var(--cf-text);
 }
 textarea.creator-context-field {
   min-height: 5rem;
@@ -664,9 +664,9 @@ textarea.creator-context-field {
 }
 .creator-context-field:focus,
 .creator-context-select:focus-within {
-  outline: 3px solid rgb(35 77 53 / 0.24);
+  outline: 3px solid rgb(79 95 215 / 0.18);
   outline-offset: 1px;
-  border-color: #234d35;
+  border-color: var(--cf-brand);
 }
 .creator-context-select {
   display: flex;
@@ -685,14 +685,14 @@ textarea.creator-context-field {
   width: 2.5rem;
   min-height: 2.5rem;
   place-items: center;
-  border-left: 1px solid #c4cec7;
+  border-left: 1px solid var(--cf-border);
 }
 .creator-context-select-overlay {
   z-index: 1300;
-  border: 1px solid #9aa89f;
+  border: 1px solid var(--cf-border-strong);
   border-radius: 0.45rem;
   background: #fff;
-  color: #152018;
+  color: var(--cf-text);
   box-shadow: 0 12px 32px rgb(15 23 42 / 0.2);
 }
 .creator-context-select-list-container {
@@ -706,6 +706,6 @@ textarea.creator-context-field {
 .creator-context-select-option:hover,
 .creator-context-select-option[aria-selected="true"],
 .creator-context-select-option[data-p-focused="true"] {
-  background: #edf2ee;
+  background: var(--cf-surface-muted);
 }
 </style>

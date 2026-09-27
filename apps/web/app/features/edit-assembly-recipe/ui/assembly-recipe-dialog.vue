@@ -719,7 +719,7 @@ function reloadSaved(): void {
 .section-heading p,
 .empty {
   margin: 0;
-  color: #65736b;
+  color: var(--cf-text-muted);
 }
 .assembly-fields,
 .overlays {
@@ -742,7 +742,7 @@ function reloadSaved(): void {
   grid-template-columns: 9rem minmax(0, 1fr) auto auto;
 }
 .overlays {
-  border-top: 1px solid #d5ddd7;
+  border-top: 1px solid var(--cf-border);
   padding-top: 1rem;
 }
 .section-heading,
@@ -763,9 +763,9 @@ function reloadSaved(): void {
   gap: 0.55rem;
   align-items: end;
   padding: 0.75rem;
-  border: 1px solid #d5ddd7;
+  border: 1px solid var(--cf-border);
   border-radius: 0.6rem;
-  background: #f8faf8;
+  background: var(--cf-surface-subtle);
 }
 .banner-row > label,
 .cta-fields > label {
@@ -786,7 +786,7 @@ function reloadSaved(): void {
   color: #1d6a40;
 }
 .actions {
-  border-top: 1px solid #d5ddd7;
+  border-top: 1px solid var(--cf-border);
   padding-top: 1rem;
 }
 </style>
@@ -798,14 +798,14 @@ function reloadSaved(): void {
   z-index: 1101;
   max-height: calc(100vh - 2rem);
   overflow: hidden;
-  border: 1px solid #d9e0d8;
+  border: 1px solid var(--cf-border);
   border-radius: 0.875rem;
   background: #fff;
   box-shadow: 0 24px 80px rgb(15 23 42 / 0.28);
 }
 .assembly-dialog-header {
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #d9e0d8;
+  border-bottom: 1px solid var(--cf-border);
 }
 .assembly-dialog-title {
   overflow: hidden;

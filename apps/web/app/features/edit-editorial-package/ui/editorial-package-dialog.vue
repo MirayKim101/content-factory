@@ -662,7 +662,7 @@ label {
 }
 .editorial-text-field:focus,
 .editorial-select:focus-within {
-  outline: 3px solid rgb(23 107 81 / 0.16);
+  outline: 3px solid rgb(79 95 215 / 0.16);
   outline-offset: 1px;
   border-color: var(--cf-brand);
 }

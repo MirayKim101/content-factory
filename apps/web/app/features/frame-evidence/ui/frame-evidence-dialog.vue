@@ -520,10 +520,10 @@ function nextPage(): void {
   flex-direction: column;
   max-height: calc(100dvh - 2rem);
   overflow: hidden;
-  border: 1px solid #d9e0d8;
+  border: 1px solid var(--cf-border);
   border-radius: 0.875rem;
   background: #fff;
-  color: #152018;
+  color: var(--cf-text);
   box-shadow: 0 24px 80px rgb(15 23 42 / 0.3);
 }
 .frame-dialog-header {
@@ -533,7 +533,7 @@ function nextPage(): void {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #d9e0d8;
+  border-bottom: 1px solid var(--cf-border);
 }
 .frame-dialog-title {
   min-width: 0;
@@ -556,8 +556,8 @@ function nextPage(): void {
 }
 .frame-dialog-close:focus-visible,
 .frame-dialog-close:hover {
-  background: #edf2ee;
-  outline: 2px solid #234d35;
+  background: var(--cf-brand-soft);
+  outline: 2px solid var(--cf-brand);
 }
 .frame-dialog-body {
   flex: 1 1 auto;
@@ -594,7 +594,7 @@ select {
   width: 100%;
   min-height: 2.75rem;
   padding: 0.5rem;
-  border: 1px solid #9aa89f;
+  border: 1px solid var(--cf-border-strong);
   border-radius: 0.5rem;
   background: #fff;
   color: inherit;
