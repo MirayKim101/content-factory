@@ -23,6 +23,10 @@ import {
   type PublicationRepository,
 } from "./publication-repository.port.js";
 import {
+  publicationPlatformEnabled,
+  resolvePublishingCapabilities,
+} from "./publishing-admission.js";
+import {
   PUBLICATION_DISPATCH,
   type PublicationDispatch,
 } from "./publication-dispatch.port.js";
@@ -60,11 +64,15 @@ export class CreatePublicationIntent {
   ) {}
 
   async execute(input: CreatePublicationIntentInput) {
-    if (!this.admissionEnabled) throw new PublishingUnavailableError();
     if (
-      input.platform !== "LOCAL_DRY_RUN" &&
-      !(input.platform === "YOUTUBE" && this.youtubeAdmissionEnabled) &&
-      !(input.platform === "TIKTOK" && this.tiktokAdmissionEnabled)
+      !publicationPlatformEnabled(
+        resolvePublishingCapabilities(
+          this.admissionEnabled,
+          this.youtubeAdmissionEnabled,
+          this.tiktokAdmissionEnabled,
+        ),
+        input.platform,
+      )
     )
       throw new PublishingUnavailableError();
     if (

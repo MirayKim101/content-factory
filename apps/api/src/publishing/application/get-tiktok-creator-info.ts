@@ -6,6 +6,10 @@ import {
   PublishingUnavailableError,
   TikTokCreatorInfoUnavailableError,
 } from "../domain/publication.js";
+import {
+  publicationPlatformEnabled,
+  resolvePublishingCapabilities,
+} from "./publishing-admission.js";
 
 const TOKEN_ENDPOINT = "https://open.tiktokapis.com/v2/oauth/token/";
 const CREATOR_INFO_ENDPOINT =
@@ -39,8 +43,14 @@ export class GetTikTokCreatorInfo {
     channelId: string,
   ): Promise<TikTokCreatorInfoView> {
     if (
-      process.env.PUBLISHING_ENABLED?.trim() !== "1" ||
-      process.env.TIKTOK_PUBLISHING_ENABLED?.trim() !== "1"
+      !publicationPlatformEnabled(
+        resolvePublishingCapabilities(
+          process.env.PUBLISHING_ENABLED?.trim() === "1",
+          process.env.YOUTUBE_PUBLISHING_ENABLED?.trim() === "1",
+          process.env.TIKTOK_PUBLISHING_ENABLED?.trim() === "1",
+        ),
+        "TIKTOK",
+      )
     )
       throw new PublishingUnavailableError();
     const channel = await this.prisma.publicationChannel.findFirst({

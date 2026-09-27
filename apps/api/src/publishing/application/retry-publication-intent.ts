@@ -12,6 +12,10 @@ import {
   type PublicationRepository,
 } from "./publication-repository.port.js";
 import {
+  publicationPlatformEnabled,
+  resolvePublishingCapabilities,
+} from "./publishing-admission.js";
+import {
   PUBLICATION_DISPATCH,
   type PublicationDispatch,
 } from "./publication-dispatch.port.js";
@@ -33,13 +37,17 @@ export class RetryPublicationIntent {
   ) {}
 
   async execute(id: string) {
-    if (!this.admissionEnabled) throw new PublishingUnavailableError();
     const current = await this.repository.get(id);
     if (!current) throw new PublicationNotFoundError();
     if (
-      current.platform !== "LOCAL_DRY_RUN" &&
-      !(current.platform === "YOUTUBE" && this.youtubeAdmissionEnabled) &&
-      !(current.platform === "TIKTOK" && this.tiktokAdmissionEnabled)
+      !publicationPlatformEnabled(
+        resolvePublishingCapabilities(
+          this.admissionEnabled,
+          this.youtubeAdmissionEnabled,
+          this.tiktokAdmissionEnabled,
+        ),
+        current.platform,
+      )
     )
       throw new PublishingUnavailableError();
     const retried = await this.repository.retry(id, this.clock());

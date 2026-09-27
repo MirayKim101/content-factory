@@ -16,6 +16,10 @@ import {
   YOUTUBE_PUBLISHING_ADMISSION_ENABLED,
   type PublicationRepository,
 } from "./publication-repository.port.js";
+import {
+  publicationPlatformEnabled,
+  resolvePublishingCapabilities,
+} from "./publishing-admission.js";
 
 @Injectable()
 export class CreatePublicationChannel {
@@ -38,10 +42,14 @@ export class CreatePublicationChannel {
     timezone: string;
   }) {
     if (
-      !this.admissionEnabled ||
-      (input.platform !== "LOCAL_DRY_RUN" &&
-        !(input.platform === "YOUTUBE" && this.youtubeAdmissionEnabled) &&
-        !(input.platform === "TIKTOK" && this.tiktokAdmissionEnabled))
+      !publicationPlatformEnabled(
+        resolvePublishingCapabilities(
+          this.admissionEnabled,
+          this.youtubeAdmissionEnabled,
+          this.tiktokAdmissionEnabled,
+        ),
+        input.platform,
+      )
     )
       throw new PublishingUnavailableError();
     return this.repository.createChannel({
@@ -81,11 +89,10 @@ export class GetPublishingCapabilities {
   ) {}
 
   execute() {
-    return {
-      publishingEnabled: this.admissionEnabled,
-      localDryRunEnabled: this.admissionEnabled,
-      youtubeEnabled: this.admissionEnabled && this.youtubeAdmissionEnabled,
-      tiktokEnabled: this.admissionEnabled && this.tiktokAdmissionEnabled,
-    };
+    return resolvePublishingCapabilities(
+      this.admissionEnabled,
+      this.youtubeAdmissionEnabled,
+      this.tiktokAdmissionEnabled,
+    );
   }
 }
