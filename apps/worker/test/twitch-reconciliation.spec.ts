@@ -119,7 +119,7 @@ describe("Twitch reconciliation", () => {
       processInbox: vi.fn(async () => 1),
       promoteReady: vi.fn(async () => 0),
       dueChannels: vi.fn(async () => [failed, healthy]),
-      applyVodPage: vi.fn(),
+      applyVodPage: vi.fn(async () => true),
       close: vi.fn(),
     };
     const provider = {
@@ -141,5 +141,101 @@ describe("Twitch reconciliation", () => {
       { items: [], nextCursor: null },
       expect.any(Date),
     );
+  });
+
+  it("drains bounded Helix pages in one channel pass and advances each durable cursor", async () => {
+    const channel = {
+      id: "channel-1",
+      broadcasterId: "1337",
+      cursor: null,
+      ingestDelaySeconds: 300,
+    };
+    const repository: TwitchIngestionWorkerRepository = {
+      processInbox: vi.fn(async () => 0),
+      promoteReady: vi.fn(async () => 0),
+      dueChannels: vi.fn(async () => [channel]),
+      applyVodPage: vi.fn(async () => true),
+      close: vi.fn(),
+    };
+    const provider = {
+      listArchives: vi
+        .fn()
+        .mockResolvedValueOnce({ items: [], nextCursor: "page-2" })
+        .mockResolvedValueOnce({ items: [], nextCursor: "page-3" })
+        .mockResolvedValueOnce({ items: [], nextCursor: null }),
+    };
+
+    await expect(
+      new ReconcileTwitchIngestion(repository, provider).execute(),
+    ).resolves.toEqual({ events: 0, channels: 1, failedChannels: [] });
+    expect(provider.listArchives.mock.calls.map((call) => call[1])).toEqual([
+      null,
+      "page-2",
+      "page-3",
+    ]);
+    expect(repository.applyVodPage).toHaveBeenCalledTimes(3);
+    expect(channel.cursor).toBeNull();
+  });
+
+  it("stops cursor cycles and reports only that channel as failed", async () => {
+    const repository: TwitchIngestionWorkerRepository = {
+      processInbox: vi.fn(async () => 0),
+      promoteReady: vi.fn(async () => 0),
+      dueChannels: vi.fn(async () => [
+        {
+          id: "channel-cycle",
+          broadcasterId: "1337",
+          cursor: "same-cursor",
+          ingestDelaySeconds: 300,
+        },
+      ]),
+      applyVodPage: vi.fn(async () => true),
+      close: vi.fn(),
+    };
+    const provider = {
+      listArchives: vi.fn(async () => ({
+        items: [],
+        nextCursor: "same-cursor",
+      })),
+    };
+
+    await expect(
+      new ReconcileTwitchIngestion(repository, provider).execute(),
+    ).resolves.toEqual({
+      events: 0,
+      channels: 1,
+      failedChannels: ["channel-cycle"],
+    });
+    expect(provider.listArchives).toHaveBeenCalledOnce();
+    expect(repository.applyVodPage).toHaveBeenCalledOnce();
+  });
+
+  it("stops pagination when a concurrent reconciliation changed the durable cursor", async () => {
+    const repository: TwitchIngestionWorkerRepository = {
+      processInbox: vi.fn(async () => 0),
+      promoteReady: vi.fn(async () => 0),
+      dueChannels: vi.fn(async () => [
+        {
+          id: "channel-raced",
+          broadcasterId: "1337",
+          cursor: null,
+          ingestDelaySeconds: 300,
+        },
+      ]),
+      applyVodPage: vi.fn(async () => false),
+      close: vi.fn(),
+    };
+    const provider = {
+      listArchives: vi.fn(async () => ({
+        items: [],
+        nextCursor: "must-not-be-requested",
+      })),
+    };
+
+    await expect(
+      new ReconcileTwitchIngestion(repository, provider).execute(),
+    ).resolves.toEqual({ events: 0, channels: 1, failedChannels: [] });
+    expect(provider.listArchives).toHaveBeenCalledOnce();
+    expect(repository.applyVodPage).toHaveBeenCalledOnce();
   });
 });

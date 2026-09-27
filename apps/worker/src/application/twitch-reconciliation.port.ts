@@ -35,6 +35,6 @@ export interface TwitchIngestionWorkerRepository {
     channel: TwitchChannelReconciliationTarget,
     page: TwitchVodPage,
     now: Date,
-  ): Promise<void>;
+  ): Promise<boolean>;
   close(): Promise<void>;
 }

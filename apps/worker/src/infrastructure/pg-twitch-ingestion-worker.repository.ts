@@ -98,7 +98,7 @@ export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerR
     channel: TwitchChannelReconciliationTarget,
     page: TwitchVodPage,
     now: Date,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
@@ -116,7 +116,7 @@ export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerR
         row.reconciliationCursor !== channel.cursor
       ) {
         await client.query("ROLLBACK");
-        return;
+        return false;
       }
       for (const vod of page.items) {
         const availableAt = new Date(
@@ -159,6 +159,7 @@ export class PgTwitchIngestionWorkerRepository implements TwitchIngestionWorkerR
         [channel.id, page.nextCursor, now],
       );
       await client.query("COMMIT");
+      return true;
     } catch (error) {
       await client.query("ROLLBACK").catch(() => undefined);
       throw error;
