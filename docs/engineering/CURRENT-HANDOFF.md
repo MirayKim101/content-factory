@@ -501,6 +501,13 @@ key и audit row; активный/готовый render всё ещё блок�
 вынесено в тестируемую availability policy; web `255/255`, typecheck, lint и
 production build прошли.
 
+Все worker-роли теперь публикуют проверяемую readiness, а не только основной
+media worker. AI, publication, Twitch и vertical создают `worker-ready` лишь
+после успешной начальной инициализации и удаляют его до shutdown drain; stale
+marker очищается до старта. Compose подключает общий healthcheck ко всем пяти
+services. Worker `270/270`, typecheck, lint, build и effective compose validation
+прошли.
+
 Production API bootstrap теперь явно включает Nest shutdown hooks только для
 `SIGINT`/`SIGTERM`. Существующие `onModuleDestroy`/`onApplicationShutdown`
 callbacks Prisma, BullMQ dispatchers, S3 и reconciliation timers теперь реально

@@ -223,6 +223,17 @@ services:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "/usr/local/bin/content-factory-media-worker-healthcheck.mjs",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
     logging:
       driver: local
       options:
@@ -283,6 +294,17 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "/usr/local/bin/content-factory-media-worker-healthcheck.mjs",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
     logging:
       driver: local
       options:
@@ -345,6 +367,17 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "/usr/local/bin/content-factory-media-worker-healthcheck.mjs",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
     logging:
       driver: local
       options:
@@ -403,6 +436,17 @@ services:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "/usr/local/bin/content-factory-media-worker-healthcheck.mjs",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
     logging:
       driver: local
       options:

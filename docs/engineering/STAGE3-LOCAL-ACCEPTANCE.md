@@ -94,13 +94,16 @@
   дренируется без ложной timeout/error записи.
 - Editorial thumbnail startup reconciliation протягивает timeout/shutdown
   AbortSignal до S3 HEAD/DELETE и не сохраняет ложный terminal failure.
+- Media, AI, publication, Twitch и vertical containers имеют единый readiness
+  marker/healthcheck: stale marker удаляется до старта, готовность публикуется
+  после инициализации, а shutdown снимает её до drain.
 
 ## Воспроизведённые проверки
 
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  268/268 unit tests
+Worker:  270/270 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

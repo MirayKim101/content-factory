@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { chmod, mkdir, unlink, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { chmod, mkdir } from "node:fs/promises";
 
 import {
   parseMediaJobReference,
@@ -64,6 +63,11 @@ import { PgClipGenerationWorker } from "./infrastructure/pg-clip-generation-work
 import { HttpTwitchVodMediaProvider } from "./infrastructure/http-twitch-vod-media-provider.js";
 import { ProcessTwitchVodIngest } from "./application/process-twitch-vod-ingest.js";
 import { SingleFlightTask } from "./application/single-flight-task.js";
+import {
+  clearWorkerReadiness,
+  markWorkerReady,
+  prepareWorkerReadiness,
+} from "./application/worker-readiness.js";
 
 const TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS = 5 * 60_000;
 
@@ -90,6 +94,7 @@ if (process.argv.includes("--verify-admission-off-rollback")) {
 
 async function startVerticalWorker(): Promise<void> {
   const config = workerConfig();
+  const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
   if (process.env.VERTICAL_RENDER_ENABLED !== "1")
     throw new Error("CONFIG_VERTICAL_RENDER_DISABLED");
   const workerId = `vertical-worker-${randomUUID()}`;
@@ -170,6 +175,7 @@ async function startVerticalWorker(): Promise<void> {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(timer);
     shutdownPromise = (async () => {
+      await clearWorkerReadiness(readinessFile);
       await queue.close().catch(() => undefined);
       await reconciliation.wait().catch(() => undefined);
       await repository.close().catch(() => undefined);
@@ -181,6 +187,7 @@ async function startVerticalWorker(): Promise<void> {
     process.once(signal, () => void shutdown());
   }
   await queue.waitUntilReady();
+  await markWorkerReady(readinessFile);
   console.log(
     JSON.stringify({
       event: "vertical_worker_started",
@@ -192,6 +199,7 @@ async function startVerticalWorker(): Promise<void> {
 
 async function startTwitchWorker(): Promise<void> {
   const config = workerConfig();
+  const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
   if (process.env.TWITCH_INGESTION_ENABLED !== "1")
     throw new Error("CONFIG_TWITCH_INGESTION_DISABLED");
   const clientId = requireWorkerSecret("TWITCH_CLIENT_ID");
@@ -303,16 +311,18 @@ async function startTwitchWorker(): Promise<void> {
   const shutdown = (): Promise<void> => {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(timer);
-    shutdownPromise = reconciliation
-      .wait()
-      .catch(() => undefined)
-      .then(() => repository.close())
-      .finally(() => ingestStorage?.close());
+    shutdownPromise = (async () => {
+      await clearWorkerReadiness(readinessFile);
+      await reconciliation.wait().catch(() => undefined);
+      await repository.close().catch(() => undefined);
+      ingestStorage?.close();
+    })();
     return shutdownPromise;
   };
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.once(signal, () => void shutdown());
   }
+  await markWorkerReady(readinessFile);
   console.log(JSON.stringify({ event: "twitch_worker_started", workerId }));
 }
 
@@ -336,6 +346,7 @@ async function startPublicationWorker(): Promise<void> {
   if (!publicationWorkerAdmissionEnabled(process.env))
     throw new Error("CONFIG_PUBLISHING_DISABLED");
   const config = workerConfig();
+  const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
   const workerId = `publication-worker-${randomUUID()}`;
   const repository = new PgPublicationWorkerRepository(config.databaseUrl);
   const providers: PublicationProvider[] = [
@@ -475,6 +486,7 @@ async function startPublicationWorker(): Promise<void> {
     if (shutdownPromise) return shutdownPromise;
     clearInterval(recoveryTimer);
     shutdownPromise = (async () => {
+      await clearWorkerReadiness(readinessFile);
       await worker.close().catch(() => undefined);
       await reconciliation.wait().catch(() => undefined);
       await Promise.allSettled([
@@ -488,6 +500,7 @@ async function startPublicationWorker(): Promise<void> {
     process.once(signal, () => void shutdown());
   }
   await worker.waitUntilReady();
+  await markWorkerReady(readinessFile);
   console.log(
     JSON.stringify({
       event: "publication_worker_started",
@@ -500,6 +513,7 @@ async function startPublicationWorker(): Promise<void> {
 
 async function startAiWorker(): Promise<void> {
   const config = workerConfig();
+  const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
   const clipConfig = openAiClipGenerationConfig(process.env);
   const transcriptWorker = new PgTranscriptWorker({
     databaseUrl: config.databaseUrl,
@@ -669,6 +683,7 @@ async function startAiWorker(): Promise<void> {
       clearInterval(imageRecoveryTimer);
       clearInterval(transcriptRecoveryTimer);
       if (clipRecoveryTimer) clearInterval(clipRecoveryTimer);
+      await clearWorkerReadiness(readinessFile);
       await transcriptQueue.close().catch(() => undefined);
       await researchQueue.close().catch(() => undefined);
       await imageQueue.close().catch(() => undefined);
@@ -686,6 +701,7 @@ async function startAiWorker(): Promise<void> {
     imageQueue.waitUntilReady(),
     clipQueue?.waitUntilReady() ?? Promise.resolve(),
   ]);
+  await markWorkerReady(readinessFile);
   console.log(
     JSON.stringify({
       event: "ai_worker_started",
@@ -706,8 +722,7 @@ async function startWorker(): Promise<void> {
   await mkdir(config.sourceCacheDirectory, { recursive: true });
   await chmod(config.scratchDirectory, 0o700);
   await chmod(config.sourceCacheDirectory, 0o700);
-  const readinessFile = join(config.scratchDirectory, "worker-ready");
-  await unlink(readinessFile).catch(() => undefined);
+  const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
   const workerId = `media-worker-${randomUUID()}`;
   const repository = new PgMediaJobRepository(
     config.databaseUrl,
@@ -890,7 +905,7 @@ async function startWorker(): Promise<void> {
     if (shutdownPromise) return shutdownPromise;
     closing = true;
     shutdownPromise = (async () => {
-      await unlink(readinessFile).catch(() => undefined);
+      await clearWorkerReadiness(readinessFile);
       clearInterval(exportScratchTimer);
       clearInterval(mediaScratchTimer);
       clearInterval(frameReconcileTimer);
@@ -930,16 +945,13 @@ async function startWorker(): Promise<void> {
     },
   );
   try {
-    await writeFile(readinessFile, `${process.pid}\n`, {
-      encoding: "utf8",
-      mode: 0o600,
-    });
+    await markWorkerReady(readinessFile);
   } catch (error) {
     await shutdown("READINESS_WRITE_FAILED", 1);
     throw error;
   }
   if (closing) {
-    await unlink(readinessFile).catch(() => undefined);
+    await clearWorkerReadiness(readinessFile);
     return;
   }
 
