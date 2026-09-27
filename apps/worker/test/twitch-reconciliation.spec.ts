@@ -95,7 +95,7 @@ describe("Twitch reconciliation", () => {
     );
     await new TwitchHelixClient(
       "client-id",
-      "secret-token",
+      { resolve: async () => "secret-token" },
       fetchMock as typeof fetch,
     ).listArchives("1337", "cursor-1");
     const [url, init] = fetchMock.mock.calls[0]!;
@@ -104,6 +104,37 @@ describe("Twitch reconciliation", () => {
     expect(init?.headers).toEqual({
       "Client-Id": "client-id",
       Authorization: "Bearer secret-token",
+    });
+  });
+
+  it("invalidates an app token and retries Helix once after an unauthorized response", async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("{}", { status: 401 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ data: [], pagination: {} }), {
+          status: 200,
+        }),
+      );
+    const tokens = {
+      resolve: vi
+        .fn()
+        .mockResolvedValueOnce("expired-token")
+        .mockResolvedValueOnce("fresh-token"),
+      invalidate: vi.fn(),
+    };
+
+    await expect(
+      new TwitchHelixClient(
+        "client-id",
+        tokens,
+        request as typeof fetch,
+      ).listArchives("1337", null),
+    ).resolves.toEqual({ items: [], nextCursor: null });
+    expect(tokens.invalidate).toHaveBeenCalledOnce();
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(request.mock.calls[1]![1]?.headers).toMatchObject({
+      Authorization: "Bearer fresh-token",
     });
   });
 

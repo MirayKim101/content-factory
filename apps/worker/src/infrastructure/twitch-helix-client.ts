@@ -4,10 +4,15 @@ import type {
   TwitchVodPage,
 } from "../application/twitch-reconciliation.port.js";
 
+export interface TwitchAccessTokenProvider {
+  resolve(): Promise<string>;
+  invalidate?(): void;
+}
+
 export class TwitchHelixClient implements TwitchVideoProvider {
   constructor(
     private readonly clientId: string,
-    private readonly accessToken: string,
+    private readonly accessToken: TwitchAccessTokenProvider,
     private readonly fetchImplementation: typeof fetch = fetch,
   ) {}
 
@@ -21,19 +26,33 @@ export class TwitchHelixClient implements TwitchVideoProvider {
       first: "100",
     });
     if (cursor) params.set("after", cursor);
-    const response = await this.fetchImplementation(
+    let response = await this.requestArchives(
+      params,
+      await this.accessToken.resolve(),
+    );
+    if (response.status === 401 && this.accessToken.invalidate) {
+      this.accessToken.invalidate();
+      response = await this.requestArchives(
+        params,
+        await this.accessToken.resolve(),
+      );
+    }
+    if (!response.ok) throw new Error(`TWITCH_HELIX_${response.status}`);
+    const payload: unknown = await response.json();
+    return parseTwitchVodPage(payload);
+  }
+
+  private requestArchives(params: URLSearchParams, accessToken: string) {
+    return this.fetchImplementation(
       `https://api.twitch.tv/helix/videos?${params}`,
       {
         headers: {
           "Client-Id": this.clientId,
-          Authorization: `Bearer ${this.accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         signal: AbortSignal.timeout(10_000),
       },
     );
-    if (!response.ok) throw new Error(`TWITCH_HELIX_${response.status}`);
-    const payload: unknown = await response.json();
-    return parseTwitchVodPage(payload);
   }
 }
 

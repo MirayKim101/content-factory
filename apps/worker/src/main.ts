@@ -39,6 +39,7 @@ import { PgPublicationWorkerRepository } from "./infrastructure/pg-publication-w
 import { ReconcileTwitchIngestion } from "./application/reconcile-twitch-ingestion.js";
 import { PgTwitchIngestionWorkerRepository } from "./infrastructure/pg-twitch-ingestion-worker.repository.js";
 import { TwitchHelixClient } from "./infrastructure/twitch-helix-client.js";
+import { TwitchAppAccessTokenResolver } from "./infrastructure/twitch-app-access-token-resolver.js";
 import { ProcessVerticalRender } from "./application/process-vertical-render.js";
 import { FfmpegVerticalRenderer } from "./infrastructure/ffmpeg-vertical-renderer.js";
 import { PgVerticalRenderRepository } from "./infrastructure/pg-vertical-render.repository.js";
@@ -187,12 +188,23 @@ async function startTwitchWorker(): Promise<void> {
   if (process.env.TWITCH_INGESTION_ENABLED !== "1")
     throw new Error("CONFIG_TWITCH_INGESTION_DISABLED");
   const clientId = requireWorkerSecret("TWITCH_CLIENT_ID");
-  const accessToken = requireWorkerSecret("TWITCH_APP_ACCESS_TOKEN");
+  const clientSecret = process.env.TWITCH_CLIENT_SECRET?.trim();
+  const staticAccessToken = process.env.TWITCH_APP_ACCESS_TOKEN?.trim();
+  if (!clientSecret && !staticAccessToken)
+    throw new Error("CONFIG_TWITCH_CLIENT_SECRET_OR_APP_ACCESS_TOKEN_REQUIRED");
+  const tokenResolver = clientSecret
+    ? new TwitchAppAccessTokenResolver(clientId, clientSecret)
+    : undefined;
   const workerId = `twitch-worker-${randomUUID()}`;
   const repository = new PgTwitchIngestionWorkerRepository(config.databaseUrl);
   const reconciler = new ReconcileTwitchIngestion(
     repository,
-    new TwitchHelixClient(clientId, accessToken),
+    new TwitchHelixClient(
+      clientId,
+      tokenResolver ?? {
+        resolve: () => Promise.resolve(staticAccessToken as string),
+      },
+    ),
   );
   let running = false;
   const run = async (): Promise<void> => {
