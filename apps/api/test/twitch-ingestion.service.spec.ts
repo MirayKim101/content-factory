@@ -7,6 +7,7 @@ import {
   TwitchEventConflictError,
   TwitchIngestionDisabledError,
   TwitchSignatureInvalidError,
+  TwitchVodConflictError,
 } from "../src/twitch-ingestion/domain/twitch-ingestion.js";
 
 const now = new Date("2026-09-27T12:00:00.000Z");
@@ -231,5 +232,20 @@ describe("TwitchIngestionService", () => {
       },
       data: { state: "IMPORTED", importedProjectId: "project-1" },
     });
+  });
+
+  it("returns a domain conflict when a project is already linked elsewhere", async () => {
+    const prisma = repository();
+    prisma.twitchVodCandidate.findUnique.mockResolvedValueOnce({
+      id: "vod-1",
+      state: "READY_FOR_INGEST",
+      importedProjectId: null,
+    });
+    prisma.$transaction.mockRejectedValueOnce({ code: "P2002" });
+    const service = new TwitchIngestionService(prisma as never);
+
+    await expect(
+      service.linkVodCandidateToProject("vod-1", "project-1"),
+    ).rejects.toBeInstanceOf(TwitchVodConflictError);
   });
 });

@@ -283,7 +283,7 @@ model Project {
   sourceEditorialContexts    SourceEditorialContext[]
   publicationChannels        PublicationChannel[]
   publicationIntents         PublicationIntent[]
-  twitchVodImports           TwitchVodCandidate[]
+  twitchVodImport            TwitchVodCandidate?
   verticalRenderIntents      VerticalRenderIntent[]
 }
 
@@ -1895,7 +1895,7 @@ model TwitchVodCandidate {
   publishedAt          DateTime
   availableForIngestAt DateTime
   state                TwitchVodCandidateState @default(WAITING_DELAY)
-  importedProjectId    String?                 @db.Uuid
+  importedProjectId    String?                 @unique @db.Uuid
   importedProject      Project?                @relation(fields: [importedProjectId], references: [id], onDelete: Restrict)
   createdAt            DateTime                @default(now())
   updatedAt            DateTime                @updatedAt

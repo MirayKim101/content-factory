@@ -59,10 +59,17 @@ async function load() {
     ]);
     channels.value = nextChannels;
     vodCandidates.value = nextVodCandidates;
-    sourceReadyProjects.value = projectPage.items.map((project) => ({
-      label: project.name,
-      value: project.id,
-    }));
+    const linkedProjectIds = new Set(
+      nextVodCandidates.flatMap((candidate) =>
+        candidate.importedProjectId ? [candidate.importedProjectId] : [],
+      ),
+    );
+    sourceReadyProjects.value = projectPage.items
+      .filter((project) => !linkedProjectIds.has(project.id))
+      .map((project) => ({
+        label: project.name,
+        value: project.id,
+      }));
   } catch (cause) {
     error.value =
       cause instanceof Error
@@ -291,44 +298,49 @@ onMounted(load);
                 {{ formatDuration(vod.durationSeconds) }}</small
               >
             </div>
-            <div v-if="vod.state === 'READY_FOR_INGEST'" class="ingest-action">
-              <p class="ingest-note">
-                Выберите уже загруженный исходник этой записи. Автозагрузка
-                появится после подключения media provider.
-              </p>
-              <div v-if="sourceReadyProjects.length" class="project-linker">
-                <Select
-                  v-model="selectedProjects[vod.id]"
-                  :options="sourceReadyProjects"
-                  option-label="label"
-                  option-value="value"
-                  placeholder="Выберите проект"
-                  aria-label="Проект с исходником записи"
-                />
-                <Button
-                  :disabled="saving || !selectedProjects[vod.id]"
-                  @click="linkProject(vod)"
-                  >Привязать</Button
-                >
+            <div class="vod-actions">
+              <div
+                v-if="vod.state === 'READY_FOR_INGEST'"
+                class="ingest-action"
+              >
+                <p class="ingest-note">
+                  Выберите уже загруженный исходник этой записи. Автозагрузка
+                  появится после подключения media provider.
+                </p>
+                <div v-if="sourceReadyProjects.length" class="project-linker">
+                  <Select
+                    v-model="selectedProjects[vod.id]"
+                    :options="sourceReadyProjects"
+                    option-label="label"
+                    option-value="value"
+                    placeholder="Выберите проект"
+                    aria-label="Проект с исходником записи"
+                  />
+                  <Button
+                    :disabled="saving || !selectedProjects[vod.id]"
+                    @click="linkProject(vod)"
+                    >Привязать</Button
+                  >
+                </div>
+                <small v-else>
+                  Нет свободных проектов с готовым исходником. Загрузите видео в
+                  медиатеку, затем вернитесь сюда.
+                </small>
               </div>
-              <small v-else>
-                Нет свободных проектов с готовым исходником. Загрузите видео в
-                медиатеку, затем вернитесь сюда.
-              </small>
+              <NuxtLink
+                v-else-if="vod.importedProjectId"
+                :to="`/horizontal?projectIds=${vod.importedProjectId}`"
+              >
+                Открыть проект
+              </NuxtLink>
+              <Button
+                v-if="['WAITING_DELAY', 'READY_FOR_INGEST'].includes(vod.state)"
+                severity="secondary"
+                :disabled="saving"
+                @click="ignoreVod(vod)"
+                >Пропустить</Button
+              >
             </div>
-            <NuxtLink
-              v-else-if="vod.importedProjectId"
-              :to="`/horizontal?projectIds=${vod.importedProjectId}`"
-            >
-              Открыть проект
-            </NuxtLink>
-            <Button
-              v-if="['WAITING_DELAY', 'READY_FOR_INGEST'].includes(vod.state)"
-              severity="secondary"
-              :disabled="saving"
-              @click="ignoreVod(vod)"
-              >Пропустить</Button
-            >
           </article>
         </div>
         <p v-else class="empty">
@@ -494,6 +506,12 @@ h3 {
   display: grid;
   gap: 0.65rem;
   align-self: center;
+}
+.vod-actions {
+  display: grid;
+  gap: 0.65rem;
+  align-content: center;
+  justify-items: stretch;
 }
 .project-linker {
   display: grid;
