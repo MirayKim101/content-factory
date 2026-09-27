@@ -8,7 +8,10 @@ import MontageAssetCard from "~/entities/montage-asset/ui/montage-asset-card.vue
 import { useMontageAssets } from "~/entities/montage-asset/model/use-montage-assets";
 import MontageAssetUpload from "~/features/upload-montage-asset/ui/montage-asset-upload.vue";
 import { createMontageAssetsApi } from "~/shared/api/montage-assets";
-import { createProjectsApi } from "~/shared/api/projects";
+import {
+  createProjectsApi,
+  listAllProjects,
+} from "~/shared/api/projects";
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -33,8 +36,8 @@ async function loadProjects(): Promise<void> {
   projectsLoading.value = true;
   projectsError.value = undefined;
   try {
-    const page = await projectsApi.listProjects!({ limit: 50 });
-    projects.value = page.items.map((project) => ({
+    const allProjects = await listAllProjects(projectsApi);
+    projects.value = allProjects.map((project) => ({
       id: project.id,
       label: `${project.name} · ${project.source.originalFilename}`,
     }));
