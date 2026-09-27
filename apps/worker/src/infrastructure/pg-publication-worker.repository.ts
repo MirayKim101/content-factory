@@ -295,7 +295,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
          LEFT JOIN "MediaArtifact" vr ON vr."id" = var."artifactId"
         WHERE i."state" = 'UNKNOWN_REMOTE_STATE'
           AND i."remotePublicationId" IS NOT NULL
-          AND i."updatedAt" <= $1 - interval '30 seconds'
+          AND i."updatedAt" <= $1::timestamp - interval '30 seconds'
         ORDER BY i."updatedAt" ASC, i."id" ASC LIMIT $2`,
       [now, Math.max(1, Math.min(500, Math.trunc(limit)))],
     );
