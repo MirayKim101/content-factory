@@ -28,13 +28,14 @@ type ClaimRow = {
   state: string;
   startedAt: Date | null;
   lineageCurrent: boolean;
+  providerSessionExists: boolean;
 };
 
 export class PgPublicationWorkerRepository implements PublicationWorkerRepository {
   private readonly pool: Pool;
 
-  constructor(databaseUrl: string) {
-    this.pool = new Pool(workerPgPoolConfig(databaseUrl, 2));
+  constructor(databaseUrl: string, pool?: Pool) {
+    this.pool = pool ?? new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
   async claim(intentId: string, now: Date): Promise<PublicationClaim | null> {
@@ -51,6 +52,9 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                 COALESCE(ar."contentType", vr."contentType") AS "contentType",
                 i."metadataSnapshot",
                 i."attemptCount", i."retryBudget", i."state", i."startedAt",
+                EXISTS (SELECT 1 FROM "PublicationProviderSession" ps
+                         WHERE ps."publicationIntentId" = i."id"
+                           AND ps."platform" = i."platform") AS "providerSessionExists",
                 CASE WHEN i."contentKind" = 'EDITORIAL_EXPORT' THEN (
                   c."state" = 'ENABLED'
                   AND c."platform" = i."platform"
@@ -115,6 +119,25 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         row.state === "PROCESSING" &&
         row.startedAt !== null &&
         row.startedAt.getTime() <= now.getTime() - 300_000;
+      if (
+        staleProcessing &&
+        row.platform !== "LOCAL_DRY_RUN" &&
+        !row.providerSessionExists
+      ) {
+        await client.query(
+          `UPDATE "PublicationIntent"
+              SET "state" = 'UNKNOWN_REMOTE_STATE',
+                  "failureCode" = 'PUBLICATION_STALE_PROCESSING_OUTCOME_UNKNOWN',
+                  "failureMessage" = 'The external attempt lost its durable worker before a resumable provider session was recorded.',
+                  "remoteStatus" = 'stale_processing_without_session',
+                  "updatedAt" = $2
+            WHERE "id" = $1 AND "state" = 'PROCESSING'
+              AND "attemptCount" = $3`,
+          [row.id, now, row.attemptCount],
+        );
+        await client.query("COMMIT");
+        return null;
+      }
       if (!["SCHEDULED", "QUEUED"].includes(row.state) && !staleProcessing) {
         await client.query("ROLLBACK");
         return null;
