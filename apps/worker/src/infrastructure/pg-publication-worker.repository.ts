@@ -76,15 +76,32 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                 ) WHEN i."contentKind" = 'VERTICAL_RESULT' THEN (
                   c."state" = 'ENABLED'
                   AND c."platform" = i."platform"
+                  AND vs."sourceVersion" = vi."sourceVersion"
+                  AND vs."status" = 'READY'
+                  AND vsa."status" = 'CLEARED'
+                  AND vcut."type" = 'CUT_SEGMENT'
+                  AND vcut."state" = 'READY'
+                  AND vin."status" = 'READY'
+                  AND vin."role" = 'CUT_RESULT'
+                  AND vin."pipelineJobId" = vi."cutPipelineJobId"
+                  AND vin."projectId" = vi."projectId"
+                  AND vin."lineageSourceId" = vi."sourceId"
+                  AND vin."lineageSourceVersion" = vi."sourceVersion"
                   AND va."id" = i."verticalApprovalId"
                   AND va."resultId" = i."verticalResultId"
+                  AND va."approvalVersion" = 'human-vertical-approval-v1'
                   AND vi."projectId" = i."projectId"
                   AND vj."state" = 'READY'
                   AND vj."verticalRenderIntentId" = vi."id"
+                  AND vi."renderContractVersion" = 'vertical-render-v1'
+                  AND var."renderContractVersion" = 'vertical-render-v1'
+                  AND var."width" = 1080 AND var."height" = 1920
                   AND vr."pipelineJobId" = var."pipelineJobId"
                   AND vr."status" = 'READY'
                   AND vr."role" = 'VERTICAL_RENDER_RESULT'
                   AND vr."projectId" = i."projectId"
+                  AND vr."lineageSourceId" = vi."sourceId"
+                  AND vr."lineageSourceVersion" = vi."sourceVersion"
                   AND var."sha256" = vr."sha256"
                   AND var."sizeBytes" = vr."sizeBytes"
                 ) ELSE false END AS "lineageCurrent"
@@ -101,6 +118,11 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
            LEFT JOIN "VerticalRenderResult" var ON var."id" = i."verticalResultId"
            LEFT JOIN "VerticalApproval" va ON va."id" = i."verticalApprovalId"
            LEFT JOIN "VerticalRenderIntent" vi ON vi."id" = var."intentId"
+           LEFT JOIN "VideoSource" vs ON vs."id" = vi."sourceId"
+           LEFT JOIN "SourceAuthorization" vsa ON vsa."sourceId" = vi."sourceId"
+             AND vsa."sourceVersion" = vi."sourceVersion"
+           LEFT JOIN "PipelineJob" vcut ON vcut."id" = vi."cutPipelineJobId"
+           LEFT JOIN "MediaArtifact" vin ON vin."id" = vi."cutResultArtifactId"
            LEFT JOIN "PipelineJob" vj ON vj."id" = var."pipelineJobId"
            LEFT JOIN "MediaArtifact" vr ON vr."id" = var."artifactId"
           WHERE i."id" = $1 AND i."scheduledAt" <= $2

@@ -144,34 +144,78 @@ export class VerticalService {
   }
 
   async approve(id: string) {
-    const intent = await this.prisma.verticalRenderIntent.findUnique({
-      where: { id },
-      include: {
-        job: true,
-        result: { include: { artifact: true, approval: true } },
-      },
-    });
-    if (!intent) throw new VerticalNotFoundError();
-    if (
-      !intent.job ||
-      intent.job.state !== "READY" ||
-      !intent.result ||
-      intent.result.artifact.status !== "READY" ||
-      intent.result.artifact.role !== "VERTICAL_RENDER_RESULT" ||
-      intent.result.width !== VERTICAL_OUTPUT.width ||
-      intent.result.height !== VERTICAL_OUTPUT.height ||
-      intent.result.sha256 !== intent.result.artifact.sha256 ||
-      intent.result.sizeBytes !== intent.result.artifact.sizeBytes
-    )
+    try {
+      return await this.prisma.$transaction(
+        async (tx) => {
+          const intent = await tx.verticalRenderIntent.findUnique({
+            where: { id },
+            include: {
+              source: { include: { authorizations: true } },
+              cutPipelineJob: true,
+              cutResultArtifact: true,
+              job: true,
+              result: { include: { artifact: true, approval: true } },
+            },
+          });
+          if (!intent) throw new VerticalNotFoundError();
+          const authorization = intent.source.authorizations.find(
+            (item) => item.sourceVersion === intent.sourceVersion,
+          );
+          if (
+            intent.source.sourceVersion !== intent.sourceVersion ||
+            intent.source.status !== "READY" ||
+            authorization?.status !== "CLEARED" ||
+            intent.cutPipelineJob.type !== "CUT_SEGMENT" ||
+            intent.cutPipelineJob.state !== "READY" ||
+            intent.cutResultArtifact.status !== "READY" ||
+            intent.cutResultArtifact.role !== "CUT_RESULT" ||
+            intent.cutResultArtifact.pipelineJobId !== intent.cutPipelineJobId ||
+            intent.cutResultArtifact.projectId !== intent.projectId ||
+            intent.cutResultArtifact.lineageSourceId !== intent.sourceId ||
+            intent.cutResultArtifact.lineageSourceVersion !==
+              intent.sourceVersion ||
+            intent.renderContractVersion !== VERTICAL_RENDER_CONTRACT_VERSION ||
+            !intent.job ||
+            intent.job.state !== "READY" ||
+            intent.job.verticalRenderIntentId !== intent.id ||
+            !intent.result ||
+            intent.result.pipelineJobId !== intent.job.id ||
+            intent.result.renderContractVersion !==
+              VERTICAL_RENDER_CONTRACT_VERSION ||
+            intent.result.artifact.status !== "READY" ||
+            intent.result.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+            intent.result.artifact.pipelineJobId !== intent.job.id ||
+            intent.result.artifact.projectId !== intent.projectId ||
+            intent.result.artifact.lineageSourceId !== intent.sourceId ||
+            intent.result.artifact.lineageSourceVersion !==
+              intent.sourceVersion ||
+            intent.result.width !== VERTICAL_OUTPUT.width ||
+            intent.result.height !== VERTICAL_OUTPUT.height ||
+            intent.result.sha256 !== intent.result.artifact.sha256 ||
+            intent.result.sizeBytes !== intent.result.artifact.sizeBytes
+          )
+            throw new VerticalLineageInvalidError();
+          if (intent.result.approval) return intent.result.approval;
+          return tx.verticalApproval.create({
+            data: {
+              id: randomUUID(),
+              resultId: intent.result.id,
+              approvalVersion: VERTICAL_APPROVAL_VERSION,
+            },
+          });
+        },
+        { isolationLevel: "Serializable" },
+      );
+    } catch (error) {
+      if (prismaErrorCode(error) === "P2034")
+        throw new VerticalLineageInvalidError();
+      if (prismaErrorCode(error) !== "P2002") throw error;
+      const approval = await this.prisma.verticalApproval.findFirst({
+        where: { result: { intentId: id } },
+      });
+      if (approval) return approval;
       throw new VerticalLineageInvalidError();
-    if (intent.result.approval) return intent.result.approval;
-    return this.prisma.verticalApproval.create({
-      data: {
-        id: randomUUID(),
-        resultId: intent.result.id,
-        approvalVersion: VERTICAL_APPROVAL_VERSION,
-      },
-    });
+    }
   }
 
   async content(id: string) {
@@ -202,6 +246,12 @@ export class VerticalService {
       sizeBytes: result.sizeBytes,
     };
   }
+}
+
+function prismaErrorCode(error: unknown): string | null {
+  return error && typeof error === "object" && "code" in error
+    ? String((error as { code?: unknown }).code)
+    : null;
 }
 
 interface VerticalRecord {

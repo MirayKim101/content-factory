@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  VerticalLineageInvalidError,
   VerticalService,
   VerticalUnavailableError,
 } from "../src/vertical/vertical.service.js";
@@ -43,11 +44,18 @@ function fixture() {
       })),
       create: vi.fn(async () => undefined),
     },
+    verticalApproval: {
+      create: vi.fn(async (input: { data: Record<string, unknown> }) => ({
+        ...input.data,
+        createdAt: new Date("2026-09-28T00:00:00.000Z"),
+      })),
+    },
   };
   const prisma = {
     $transaction: vi.fn(async (work: (client: typeof tx) => unknown) =>
       work(tx),
     ),
+    verticalApproval: { findFirst: vi.fn(async () => null) },
   };
   const dispatch = { dispatch: vi.fn(async () => undefined) };
   return { tx, prisma, dispatch };
@@ -103,4 +111,92 @@ describe("VerticalService", () => {
       "00000000-0000-4000-8000-000000000020",
     );
   });
+
+  it("rejects approval after the source lineage becomes stale", async () => {
+    process.env.VERTICAL_RENDER_ENABLED = "1";
+    const { tx, prisma, dispatch } = fixture();
+    tx.verticalRenderIntent.findUnique.mockResolvedValueOnce(
+      approvalRecord({ currentSourceVersion: 2 }) as never,
+    );
+
+    await expect(
+      new VerticalService(prisma as never, dispatch).approve("intent-1"),
+    ).rejects.toBeInstanceOf(VerticalLineageInvalidError);
+    expect(tx.verticalApproval.create).not.toHaveBeenCalled();
+  });
+
+  it("creates one approval for an exact current vertical result", async () => {
+    process.env.VERTICAL_RENDER_ENABLED = "1";
+    const { tx, prisma, dispatch } = fixture();
+    tx.verticalRenderIntent.findUnique.mockResolvedValueOnce(
+      approvalRecord() as never,
+    );
+
+    await expect(
+      new VerticalService(prisma as never, dispatch).approve("intent-1"),
+    ).resolves.toMatchObject({
+      resultId: "result-1",
+      approvalVersion: "human-vertical-approval-v1",
+    });
+    expect(prisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      isolationLevel: "Serializable",
+    });
+    expect(tx.verticalApproval.create).toHaveBeenCalledOnce();
+  });
 });
+
+function approvalRecord(
+  options: { currentSourceVersion?: number } = {},
+) {
+  const projectId = "00000000-0000-4000-8000-000000000001";
+  const sourceId = "00000000-0000-4000-8000-000000000002";
+  const cutJobId = "00000000-0000-4000-8000-000000000010";
+  const renderJobId = "00000000-0000-4000-8000-000000000020";
+  return {
+    id: "intent-1",
+    projectId,
+    sourceId,
+    sourceVersion: 1,
+    cutPipelineJobId: cutJobId,
+    renderContractVersion: "vertical-render-v1",
+    source: {
+      sourceVersion: options.currentSourceVersion ?? 1,
+      status: "READY",
+      authorizations: [{ sourceVersion: 1, status: "CLEARED" }],
+    },
+    cutPipelineJob: { type: "CUT_SEGMENT", state: "READY" },
+    cutResultArtifact: {
+      status: "READY",
+      role: "CUT_RESULT",
+      pipelineJobId: cutJobId,
+      projectId,
+      lineageSourceId: sourceId,
+      lineageSourceVersion: 1,
+    },
+    job: {
+      id: renderJobId,
+      state: "READY",
+      verticalRenderIntentId: "intent-1",
+    },
+    result: {
+      id: "result-1",
+      pipelineJobId: renderJobId,
+      renderContractVersion: "vertical-render-v1",
+      width: 1080,
+      height: 1920,
+      sha256: "a".repeat(64),
+      sizeBytes: 1024n,
+      approval: null,
+      artifact: {
+        status: "READY",
+        role: "VERTICAL_RENDER_RESULT",
+        pipelineJobId: renderJobId,
+        projectId,
+        lineageSourceId: sourceId,
+        lineageSourceVersion: 1,
+        sha256: "a".repeat(64),
+        sizeBytes: 1024n,
+      },
+    },
+  };
+}

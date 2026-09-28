@@ -41,6 +41,12 @@ describe("PgPublicationWorkerRepository stale external recovery", () => {
     expect(String(query.mock.calls[1]![0])).toContain(
       `i."platform" = 'LOCAL_DRY_RUN'`,
     );
+    expect(String(query.mock.calls[1]![0])).toContain(
+      `vs."sourceVersion" = vi."sourceVersion"`,
+    );
+    expect(String(query.mock.calls[1]![0])).toContain(
+      `vsa."status" = 'CLEARED'`,
+    );
     expect(String(query.mock.calls[2]![0])).toContain(
       "PUBLICATION_STALE_PROCESSING_OUTCOME_UNKNOWN",
     );
