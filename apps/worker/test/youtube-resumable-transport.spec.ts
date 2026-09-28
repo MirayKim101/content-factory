@@ -93,6 +93,25 @@ describe("YoutubeResumableTransport", () => {
     ).rejects.toThrow("YOUTUBE_UPLOAD_SESSION_INVALID");
   });
 
+  it("cancels a rejected upload-init response", async () => {
+    const cancel = vi.fn();
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(new ReadableStream({ cancel }), { status: 503 }),
+      );
+
+    await expect(
+      new YoutubeResumableTransport(request).initiate({
+        accessToken: "token",
+        totalBytes: 1n,
+        contentType: "video/mp4",
+        metadata: {},
+      }),
+    ).rejects.toThrow("YOUTUBE_UPLOAD_INIT_FAILED_503");
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
   it("probes an ambiguous session before any retry", async () => {
     const request = vi
       .fn()
@@ -110,16 +129,14 @@ describe("YoutubeResumableTransport", () => {
   });
 
   it("reads the provider processing status for reconciliation", async () => {
-    const request = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            items: [{ status: { uploadStatus: "processed" } }],
-          }),
-          { status: 200, headers: { "content-type": "application/json" } },
-        ),
-      );
+    const request = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          items: [{ status: { uploadStatus: "processed" } }],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
 
     await expect(
       new YoutubeResumableTransport(request).status({

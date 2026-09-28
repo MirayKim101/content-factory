@@ -43,9 +43,12 @@ export class YoutubeResumableTransport {
       redirect: "error",
       signal: input.signal,
     });
-    if (!response.ok)
+    if (!response.ok) {
+      await discard(response);
       throw new Error(`YOUTUBE_UPLOAD_INIT_FAILED_${response.status}`);
+    }
     const location = response.headers.get("location");
+    await discard(response);
     if (!location) throw new Error("YOUTUBE_UPLOAD_SESSION_MISSING");
     return this.requireSessionUrl(location);
   }
@@ -121,8 +124,10 @@ export class YoutubeResumableTransport {
       redirect: "error",
       signal: input.signal,
     });
-    if (!response.ok)
+    if (!response.ok) {
+      await discard(response);
       throw new Error(`YOUTUBE_STATUS_FAILED_${response.status}`);
+    }
     const payload = await response.json();
     if (!payload || typeof payload !== "object" || Array.isArray(payload))
       throw new Error("YOUTUBE_STATUS_RESPONSE_INVALID");
@@ -157,8 +162,10 @@ export class YoutubeResumableTransport {
       redirect: "error",
       signal: input.signal,
     });
-    if (!response.ok)
+    if (!response.ok) {
+      await discard(response);
       throw new Error(`YOUTUBE_METRICS_FAILED_${response.status}`);
+    }
     const payload: unknown = await response.json();
     const item = objectArrayItem(payload, "items");
     const statistics = objectValue(item, "statistics");
@@ -174,13 +181,16 @@ export class YoutubeResumableTransport {
   ): Promise<YoutubeUploadProgress> {
     if (response.status === 308) {
       const range = response.headers.get("range");
+      await discard(response);
       if (!range) return { state: "INCOMPLETE", nextOffset: 0n };
       const match = /^bytes=0-(\d+)$/.exec(range.trim());
       if (!match?.[1]) throw new Error("YOUTUBE_UPLOAD_RANGE_INVALID");
       return { state: "INCOMPLETE", nextOffset: BigInt(match[1]) + 1n };
     }
-    if (!response.ok)
+    if (!response.ok) {
+      await discard(response);
       throw new Error(`YOUTUBE_UPLOAD_FAILED_${response.status}`);
+    }
     const payload: unknown = await response.json();
     const videoId =
       payload && typeof payload === "object" && !Array.isArray(payload)
@@ -213,6 +223,10 @@ export class YoutubeResumableTransport {
       throw new Error("YOUTUBE_UPLOAD_SESSION_INVALID");
     return parsed.toString();
   }
+}
+
+async function discard(response: Response): Promise<void> {
+  await response.body?.cancel().catch(() => undefined);
 }
 
 function objectArrayItem(value: unknown, key: string): Record<string, unknown> {

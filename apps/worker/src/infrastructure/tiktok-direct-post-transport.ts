@@ -174,8 +174,9 @@ export class TikTokDirectPostTransport {
       signal: input.signal,
     });
     const expected = input.final ? 201 : 206;
-    if (response.status !== expected)
-      throw new Error(`TIKTOK_UPLOAD_FAILED_${response.status}`);
+    const accepted = response.status === expected;
+    await response.body?.cancel().catch(() => undefined);
+    if (!accepted) throw new Error(`TIKTOK_UPLOAD_FAILED_${response.status}`);
     return { complete: input.final, nextOffset: end + 1n };
   }
 
@@ -282,7 +283,10 @@ export class TikTokDirectPostTransport {
       redirect: "error",
       signal,
     });
-    if (!response.ok) throw new Error(`TIKTOK_API_FAILED_${response.status}`);
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
+      throw new Error(`TIKTOK_API_FAILED_${response.status}`);
+    }
     const payload: unknown = await response.json();
     if (!payload || typeof payload !== "object" || Array.isArray(payload))
       throw new Error("TIKTOK_API_RESPONSE_INVALID");

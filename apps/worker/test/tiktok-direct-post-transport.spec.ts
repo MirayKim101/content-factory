@@ -114,6 +114,28 @@ describe("TikTokDirectPostTransport", () => {
     expect(request).not.toHaveBeenCalled();
   });
 
+  it("cancels a rejected upload response", async () => {
+    const cancel = vi.fn();
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(new ReadableStream({ cancel }), { status: 503 }),
+      );
+    const chunkSize = 5 * 1024 * 1024;
+
+    await expect(
+      new TikTokDirectPostTransport(request).uploadChunk({
+        uploadUrl: "https://open-upload.tiktokapis.com/video/?upload_id=42",
+        chunk: new Uint8Array(chunkSize),
+        offset: 0n,
+        totalBytes: BigInt(chunkSize * 2),
+        contentType: "video/mp4",
+        final: false,
+      }),
+    ).rejects.toThrow("TIKTOK_UPLOAD_FAILED_503");
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
   it("rejects upload capabilities outside TikTok hosts", async () => {
     const request = vi.fn().mockResolvedValue(
       ok({
@@ -184,7 +206,9 @@ describe("TikTokDirectPostTransport", () => {
     });
     expect(request).toHaveBeenCalledWith(
       expect.stringContaining("/v2/video/query/"),
-      expect.objectContaining({ body: JSON.stringify({ filters: { video_ids: ["12345"] } }) }),
+      expect.objectContaining({
+        body: JSON.stringify({ filters: { video_ids: ["12345"] } }),
+      }),
     );
   });
 });
