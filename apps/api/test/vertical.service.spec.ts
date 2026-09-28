@@ -30,12 +30,14 @@ function fixture() {
           id: "00000000-0000-4000-8000-000000000002",
           projectId: "00000000-0000-4000-8000-000000000001",
           sourceVersion: 1,
+          status: "READY",
           authorizations: [{ sourceVersion: 1, status: "CLEARED" }],
         },
         resultArtifact: {
           id: "00000000-0000-4000-8000-000000000003",
           status: "READY",
           role: "CUT_RESULT",
+          contentType: "video/mp4",
           projectId: "00000000-0000-4000-8000-000000000001",
           lineageSourceId: "00000000-0000-4000-8000-000000000002",
           lineageSourceVersion: 1,
@@ -112,6 +114,26 @@ describe("VerticalService", () => {
     );
   });
 
+  it("rejects a render when the source is no longer ready", async () => {
+    process.env.VERTICAL_RENDER_ENABLED = "1";
+    const { tx, prisma, dispatch } = fixture();
+    const cut = await tx.pipelineJob.findUnique();
+    tx.pipelineJob.findUnique.mockResolvedValueOnce({
+      ...cut,
+      source: { ...cut!.source, status: "FAILED_FINAL" },
+    });
+
+    await expect(
+      new VerticalService(prisma as never, dispatch).create({
+        projectId: "00000000-0000-4000-8000-000000000001",
+        cutPipelineJobId: "00000000-0000-4000-8000-000000000010",
+        idempotencyKey: "vertical-stale-source",
+      }),
+    ).rejects.toBeInstanceOf(VerticalLineageInvalidError);
+    expect(tx.verticalRenderIntent.create).not.toHaveBeenCalled();
+    expect(dispatch.dispatch).not.toHaveBeenCalled();
+  });
+
   it("rejects approval after the source lineage becomes stale", async () => {
     process.env.VERTICAL_RENDER_ENABLED = "1";
     const { tx, prisma, dispatch } = fixture();
@@ -168,6 +190,7 @@ function approvalRecord(
     cutResultArtifact: {
       status: "READY",
       role: "CUT_RESULT",
+      contentType: "video/mp4",
       pipelineJobId: cutJobId,
       projectId,
       lineageSourceId: sourceId,
@@ -190,6 +213,7 @@ function approvalRecord(
       artifact: {
         status: "READY",
         role: "VERTICAL_RENDER_RESULT",
+        contentType: "video/mp4",
         pipelineJobId: renderJobId,
         projectId,
         lineageSourceId: sourceId,

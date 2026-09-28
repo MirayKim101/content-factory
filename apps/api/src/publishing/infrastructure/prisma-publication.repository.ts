@@ -354,6 +354,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
               vertical.intent.cutPipelineJob.state !== "READY" ||
               vertical.intent.cutResultArtifact.status !== "READY" ||
               vertical.intent.cutResultArtifact.role !== "CUT_RESULT" ||
+              vertical.intent.cutResultArtifact.contentType !== "video/mp4" ||
               vertical.intent.cutResultArtifact.pipelineJobId !==
                 vertical.intent.cutPipelineJobId ||
               vertical.intent.cutResultArtifact.projectId !== row.projectId ||
@@ -646,6 +647,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
               vertical.intent.cutPipelineJob.state !== "READY" ||
               vertical.intent.cutResultArtifact.status !== "READY" ||
               vertical.intent.cutResultArtifact.role !== "CUT_RESULT" ||
+              vertical.intent.cutResultArtifact.contentType !== "video/mp4" ||
               vertical.intent.cutResultArtifact.pipelineJobId !==
                 vertical.intent.cutPipelineJobId ||
               vertical.intent.cutResultArtifact.projectId !== input.projectId ||

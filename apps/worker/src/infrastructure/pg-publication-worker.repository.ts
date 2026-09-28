@@ -97,6 +97,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                   AND vcut."state" = 'READY'
                   AND vin."status" = 'READY'
                   AND vin."role" = 'CUT_RESULT'
+                  AND vin."contentType" = 'video/mp4'
                   AND vin."pipelineJobId" = vi."cutPipelineJobId"
                   AND vin."projectId" = vi."projectId"
                   AND vin."lineageSourceId" = vi."sourceId"

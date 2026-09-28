@@ -71,10 +71,12 @@ export class VerticalService {
           cut.type !== "CUT_SEGMENT" ||
           cut.state !== "READY" ||
           cut.source.sourceVersion !== cut.sourceVersion ||
+          cut.source.status !== "READY" ||
           authorization?.status !== "CLEARED" ||
           !artifact ||
           artifact.status !== "READY" ||
           artifact.role !== "CUT_RESULT" ||
+          artifact.contentType !== "video/mp4" ||
           artifact.projectId !== cut.projectId ||
           artifact.lineageSourceId !== cut.sourceId ||
           artifact.lineageSourceVersion !== cut.sourceVersion ||
@@ -169,6 +171,7 @@ export class VerticalService {
             intent.cutPipelineJob.state !== "READY" ||
             intent.cutResultArtifact.status !== "READY" ||
             intent.cutResultArtifact.role !== "CUT_RESULT" ||
+            intent.cutResultArtifact.contentType !== "video/mp4" ||
             intent.cutResultArtifact.pipelineJobId !== intent.cutPipelineJobId ||
             intent.cutResultArtifact.projectId !== intent.projectId ||
             intent.cutResultArtifact.lineageSourceId !== intent.sourceId ||
@@ -184,6 +187,7 @@ export class VerticalService {
               VERTICAL_RENDER_CONTRACT_VERSION ||
             intent.result.artifact.status !== "READY" ||
             intent.result.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+            intent.result.artifact.contentType !== "video/mp4" ||
             intent.result.artifact.pipelineJobId !== intent.job.id ||
             intent.result.artifact.projectId !== intent.projectId ||
             intent.result.artifact.lineageSourceId !== intent.sourceId ||
@@ -233,6 +237,7 @@ export class VerticalService {
       !result ||
       result.artifact.status !== "READY" ||
       result.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+      result.artifact.contentType !== "video/mp4" ||
       result.artifact.pipelineJobId !== intent.job.id ||
       result.artifact.projectId !== intent.projectId ||
       result.artifact.lineageSourceId !== intent.sourceId ||

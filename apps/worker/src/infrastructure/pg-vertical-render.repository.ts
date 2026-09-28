@@ -42,12 +42,16 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
                 (j."type" = 'RENDER_VERTICAL' AND j."payloadVersion" = 1
                  AND j."recipeVersion" = 'vertical-render-v1'
                  AND j."verticalRenderIntentId" = i."id"
+                 AND i."renderContractVersion" = 'vertical-render-v1'
+                 AND i."framingMode" = 'CENTER_CROP'
                  AND s."sourceVersion" = j."sourceVersion" AND s."status" = 'READY'
                  AND sa."status" = 'CLEARED'
                  AND i."projectId" = j."projectId" AND i."sourceId" = j."sourceId"
                  AND i."sourceVersion" = j."sourceVersion"
                  AND i."cutResultArtifactId" = a."id"
+                 AND cut."type" = 'CUT_SEGMENT' AND cut."state" = 'READY'
                  AND a."status" = 'READY' AND a."role" = 'CUT_RESULT'
+                 AND a."contentType" = 'video/mp4'
                  AND a."projectId" = j."projectId" AND a."lineageSourceId" = j."sourceId"
                  AND a."lineageSourceVersion" = j."sourceVersion"
                  AND a."pipelineJobId" = i."cutPipelineJobId"
