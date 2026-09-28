@@ -107,16 +107,29 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
           repository.checkpoint(waitingIntentId, "fairness-worker", 1n, 2n),
         ).rejects.toThrow("TWITCH_VOD_INGEST_LEASE_LOST");
         await pool.query(
-          `UPDATE "TwitchVodIngestIntent"
-              SET "state"='UPLOADING', "attemptCount"=1,
-                  "leaseOwner"='finalize-worker',
-                  "leaseExpiresAt"=now()+interval '1 minute'
+          `UPDATE "TwitchIngestChannel" SET "state"='ENABLED', "updatedAt"=now()
             WHERE "id"=$1`,
+          [waitingChannelId],
+        );
+        await pool.query(
+          `UPDATE "TwitchVodIngestIntent" SET "state"='UPLOADING',
+              "attemptCount"=1, "leaseOwner"='finalize-worker',
+              "leaseExpiresAt"=now()+interval '1 minute' WHERE "id"=$1`,
           [waitingIntentId],
         );
         const rejectedProjectId = randomUUID();
-        await expect(
-          repository.complete({
+        const revokeClient = await pool.connect();
+        let revokeCommitted = false;
+        let finalize: Promise<void> | undefined;
+        try {
+          await revokeClient.query("BEGIN");
+          await revokeClient.query(
+            `UPDATE "TwitchIngestChannel" SET "state"='REVOKED', "updatedAt"=now()
+              WHERE "id"=$1`,
+            [waitingChannelId],
+          );
+          let finalizeSettled = false;
+          finalize = repository.complete({
             intentId: waitingIntentId,
             workerId: "finalize-worker",
             projectId: rejectedProjectId,
@@ -125,8 +138,23 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
             objectKey: "rejected/object.mp4",
             sizeBytes: 1n,
             sha256: "0".repeat(64),
-          }),
-        ).rejects.toThrow("TWITCH_VOD_INGEST_LEASE_LOST");
+          });
+          void finalize.then(
+            () => (finalizeSettled = true),
+            () => (finalizeSettled = true),
+          );
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          expect(finalizeSettled).toBe(false);
+          await revokeClient.query("COMMIT");
+          revokeCommitted = true;
+        } finally {
+          if (!revokeCommitted)
+            await revokeClient.query("ROLLBACK").catch(() => undefined);
+          revokeClient.release();
+        }
+        await expect(finalize).rejects.toThrow(
+          "TWITCH_VOD_INGEST_LEASE_LOST",
+        );
         const finalizeRejected = await pool.query<{
           state: string;
           attemptCount: number;
