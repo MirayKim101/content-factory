@@ -59,6 +59,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                            AND ps."platform" = i."platform") AS "providerSessionExists",
                 CASE WHEN i."contentKind" = 'EDITORIAL_EXPORT' THEN (
                   c."state" = 'ENABLED'
+                  AND i."platform" = 'LOCAL_DRY_RUN'
                   AND c."platform" = i."platform"
                   AND e."projectId" = i."projectId"
                   AND e."approvalId" = i."approvalId"

@@ -77,6 +77,22 @@ function dependencies() {
 }
 
 describe("TikTokPublicationAdapter", () => {
+  it("rejects non-vertical content before reading credentials or media", async () => {
+    const deps = dependencies();
+
+    await expect(
+      new TikTokPublicationAdapter(
+        deps.tokens,
+        deps.media,
+        deps.sessions,
+        deps.cipher,
+        deps.transport,
+      ).publish({ ...claim, contentKind: "EDITORIAL_EXPORT" }),
+    ).rejects.toThrow("TIKTOK_CONTENT_KIND_INVALID");
+    expect(deps.tokens.resolve).not.toHaveBeenCalled();
+    expect(deps.media.verifyIdentity).not.toHaveBeenCalled();
+  });
+
   it("persists the upload capability before transferring media and quarantines processing", async () => {
     const deps = dependencies();
     const adapter = new TikTokPublicationAdapter(

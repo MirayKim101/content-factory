@@ -45,6 +45,10 @@ export class YoutubePublicationAdapter implements PublicationProvider {
     signal?.throwIfAborted();
     if (claim.platform !== this.platform)
       throw new Error("YOUTUBE_PUBLICATION_PLATFORM_MISMATCH");
+    if (claim.contentKind !== "VERTICAL_RESULT")
+      throw new Error("YOUTUBE_CONTENT_KIND_INVALID");
+    if (claim.contentType !== "video/mp4")
+      throw new Error("YOUTUBE_CONTENT_TYPE_INVALID");
     const identity = {
       objectKey: claim.contentObjectKey,
       storageVersion: claim.contentStorageVersion,

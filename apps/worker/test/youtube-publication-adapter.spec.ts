@@ -56,6 +56,30 @@ function dependencies() {
 }
 
 describe("YoutubePublicationAdapter", () => {
+  it("rejects non-vertical or non-MP4 content before reading credentials or media", async () => {
+    const deps = dependencies();
+    const adapter = new YoutubePublicationAdapter(
+      deps.tokens,
+      deps.media,
+      deps.sessions,
+      deps.cipher,
+      deps.transport,
+    );
+
+    await expect(
+      adapter.publish({
+        ...claim,
+        contentKind: "EDITORIAL_EXPORT",
+        contentType: "application/zip",
+      }),
+    ).rejects.toThrow("YOUTUBE_CONTENT_KIND_INVALID");
+    await expect(
+      adapter.publish({ ...claim, contentType: "video/webm" }),
+    ).rejects.toThrow("YOUTUBE_CONTENT_TYPE_INVALID");
+    expect(deps.tokens.resolve).not.toHaveBeenCalled();
+    expect(deps.media.verifyIdentity).not.toHaveBeenCalled();
+  });
+
   it("persists the capability before uploading verified chunks", async () => {
     const deps = dependencies();
     const adapter = new YoutubePublicationAdapter(

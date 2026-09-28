@@ -40,6 +40,8 @@ export class TikTokPublicationAdapter implements PublicationProvider {
     signal?.throwIfAborted();
     if (claim.platform !== this.platform)
       throw new Error("TIKTOK_PUBLICATION_PLATFORM_MISMATCH");
+    if (claim.contentKind !== "VERTICAL_RESULT")
+      throw new Error("TIKTOK_CONTENT_KIND_INVALID");
     const identity = {
       objectKey: claim.contentObjectKey,
       storageVersion: claim.contentStorageVersion,
