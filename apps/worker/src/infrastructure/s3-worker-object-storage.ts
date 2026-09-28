@@ -102,14 +102,23 @@ export class S3WorkerObjectStorage
     signal?: AbortSignal,
   ): Promise<void> {
     const result = await this.client.send(
-      new HeadObjectCommand({ Bucket: this.bucket, Key: identity.objectKey }),
+      new HeadObjectCommand({
+        Bucket: this.bucket,
+        Key: identity.objectKey,
+        ...(identity.storageVersion
+          ? { VersionId: identity.storageVersion }
+          : {}),
+      }),
       { abortSignal: signal },
     );
     if (
       result.ContentLength === undefined ||
       BigInt(result.ContentLength) !== identity.sizeBytes ||
       result.Metadata?.sha256 !== identity.sha256 ||
-      result.ContentType !== identity.contentType
+      result.ContentType !== identity.contentType ||
+      (identity.storageVersion !== undefined &&
+        identity.storageVersion !== null &&
+        result.VersionId !== identity.storageVersion)
     )
       throw new Error("PUBLICATION_MEDIA_IDENTITY_MISMATCH");
   }
@@ -134,11 +143,20 @@ export class S3WorkerObjectStorage
         Bucket: this.bucket,
         Key: input.identity.objectKey,
         Range: `bytes=${input.offset}-${end}`,
+        ...(input.identity.storageVersion
+          ? { VersionId: input.identity.storageVersion }
+          : {}),
       }),
       { abortSignal: input.signal },
     );
     if (
       !result.Body ||
+      result.ContentLength !== input.length ||
+      result.ContentType !== input.identity.contentType ||
+      result.Metadata?.sha256 !== input.identity.sha256 ||
+      (input.identity.storageVersion !== undefined &&
+        input.identity.storageVersion !== null &&
+        result.VersionId !== input.identity.storageVersion) ||
       result.ContentRange !==
         `bytes ${input.offset}-${end}/${input.identity.sizeBytes}`
     )

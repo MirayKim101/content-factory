@@ -11,6 +11,7 @@ export interface PublicationClaim {
   contentKind: PublicationContentKind;
   contentId: string;
   contentObjectKey: string;
+  contentStorageVersion?: string | null;
   contentSizeBytes: bigint;
   contentSha256: string;
   contentType: string;

@@ -41,6 +41,7 @@ describe("S3 worker object storage export upload", () => {
     });
     const identity = {
       objectKey: "vertical/release.mp4",
+      storageVersion: "immutable-version-1",
       sizeBytes: 10n,
       sha256: "a".repeat(64),
       contentType: "video/mp4",
@@ -51,9 +52,14 @@ describe("S3 worker object storage export upload", () => {
         ContentLength: 10,
         ContentType: "video/mp4",
         Metadata: { sha256: identity.sha256 },
+        VersionId: identity.storageVersion,
       })
       .mockResolvedValueOnce({
         ContentRange: "bytes 2-5/10",
+        ContentLength: 4,
+        ContentType: "video/mp4",
+        Metadata: { sha256: identity.sha256 },
+        VersionId: identity.storageVersion,
         Body: { transformToByteArray: () => Promise.resolve([2, 3, 4, 5]) },
       });
     (storage as unknown as { client: { send: typeof send } }).client.send =
@@ -68,6 +74,9 @@ describe("S3 worker object storage export upload", () => {
     expect(send.mock.calls[1]![0]).toBeInstanceOf(GetObjectCommand);
     expect((send.mock.calls[1]![0] as GetObjectCommand).input.Range).toBe(
       "bytes=2-5",
+    );
+    expect((send.mock.calls[1]![0] as GetObjectCommand).input.VersionId).toBe(
+      identity.storageVersion,
     );
     storage.close();
   });

@@ -1,5 +1,6 @@
 export interface PublicationMediaIdentity {
   objectKey: string;
+  storageVersion?: string | null;
   sizeBytes: bigint;
   sha256: string;
   contentType: string;

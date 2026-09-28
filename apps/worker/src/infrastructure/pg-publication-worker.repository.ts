@@ -19,6 +19,7 @@ type ClaimRow = {
   contentKind: "EDITORIAL_EXPORT" | "VERTICAL_RESULT";
   contentId: string;
   contentObjectKey: string;
+  contentStorageVersion: string | null;
   contentSizeBytes: string;
   contentSha256: string;
   contentType: string;
@@ -47,6 +48,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                 i."platform", i."contentKind",
                 COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
                 COALESCE(ar."objectKey", vr."objectKey") AS "contentObjectKey",
+                COALESCE(ar."storageVersion", vr."storageVersion") AS "contentStorageVersion",
                 COALESCE(ar."sizeBytes", vr."sizeBytes")::text AS "contentSizeBytes",
                 COALESCE(ar."sha256", vr."sha256") AS "contentSha256",
                 COALESCE(ar."contentType", vr."contentType") AS "contentType",
@@ -173,6 +175,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         contentKind: row.contentKind,
         contentId: row.contentId,
         contentObjectKey: row.contentObjectKey,
+        contentStorageVersion: row.contentStorageVersion,
         contentSizeBytes: BigInt(row.contentSizeBytes),
         contentSha256: row.contentSha256,
         contentType: row.contentType,
@@ -450,6 +453,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         contentKind: PublicationClaim["contentKind"];
         contentId: string;
         contentObjectKey: string;
+        contentStorageVersion: string | null;
         contentSizeBytes: string;
         contentSha256: string;
         contentType: string;
@@ -462,6 +466,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
               i."platform", i."contentKind",
               COALESCE(i."exportResultId", i."verticalResultId") AS "contentId",
               COALESCE(ar."objectKey", vr."objectKey") AS "contentObjectKey",
+              COALESCE(ar."storageVersion", vr."storageVersion") AS "contentStorageVersion",
               COALESCE(ar."sizeBytes", vr."sizeBytes")::text AS "contentSizeBytes",
               COALESCE(ar."sha256", vr."sha256") AS "contentSha256",
               COALESCE(ar."contentType", vr."contentType") AS "contentType",
@@ -486,6 +491,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
         contentKind: row.contentKind,
         contentId: row.contentId,
         contentObjectKey: row.contentObjectKey,
+        contentStorageVersion: row.contentStorageVersion,
         contentSizeBytes: BigInt(row.contentSizeBytes),
         contentSha256: row.contentSha256,
         contentType: row.contentType,

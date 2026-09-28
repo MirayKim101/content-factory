@@ -47,6 +47,7 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       throw new Error("YOUTUBE_PUBLICATION_PLATFORM_MISMATCH");
     const identity = {
       objectKey: claim.contentObjectKey,
+      storageVersion: claim.contentStorageVersion,
       sizeBytes: claim.contentSizeBytes,
       sha256: claim.contentSha256,
       contentType: claim.contentType,
