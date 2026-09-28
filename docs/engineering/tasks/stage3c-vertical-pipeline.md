@@ -13,6 +13,8 @@
   READY immutable artifact с совпадающими hash/size lineage;
 - job содержит только идентификатор, PostgreSQL остаётся source of truth;
 - MVP framing — детерминированный `CENTER_CROP`, 1080×1920, H.264/AAC;
+- render явно выбирает первые video/audio streams и удаляет source metadata,
+  chapters, subtitles и data streams из публикационного файла;
 - intent, job, input artifact и result связаны composite foreign keys;
 - duplicate delivery не создаёт второй result/artifact;
 - vertical result получает отдельный `human-vertical-approval-v1`; horizontal

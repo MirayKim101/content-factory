@@ -41,6 +41,10 @@ describe.skipIf(process.env.RUN_VERTICAL_RENDER_INTEGRATION !== "1")(
           "yuv420p",
           "-c:a",
           "aac",
+          "-metadata",
+          "title=private source title",
+          "-metadata",
+          "comment=must not reach publication",
           "-shortest",
           input,
         ]);
@@ -61,6 +65,16 @@ describe.skipIf(process.env.RUN_VERTICAL_RENDER_INTEGRATION !== "1")(
         });
         expect(result.durationMs).toBeGreaterThanOrEqual(900);
         expect(result.durationMs).toBeLessThanOrEqual(1_100);
+        const probe = await execute(config.ffprobePath, [
+          "-v",
+          "error",
+          "-show_entries",
+          "format_tags=title,comment",
+          "-of",
+          "json",
+          output,
+        ]);
+        expect(JSON.parse(probe.stdout)).toEqual({ format: {} });
         await expect(
           execute(config.ffmpegPath, [
             "-v",

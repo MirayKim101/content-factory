@@ -26,34 +26,7 @@ export class FfmpegVerticalRenderer implements VerticalRenderer {
     output: string,
     signal: AbortSignal,
   ): Promise<VerticalRenderedFile> {
-    await run(
-      this.ffmpegPath,
-      [
-        "-hide_banner",
-        "-nostdin",
-        "-y",
-        "-i",
-        input,
-        "-vf",
-        "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920",
-        "-c:v",
-        "libx264",
-        "-preset",
-        "medium",
-        "-crf",
-        "20",
-        "-pix_fmt",
-        "yuv420p",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "192k",
-        "-movflags",
-        "+faststart",
-        output,
-      ],
-      signal,
-    );
+    await run(this.ffmpegPath, verticalRenderArguments(input, output), signal);
     const { stdout } = await execFileAsync(
       this.ffprobePath,
       [
@@ -102,6 +75,46 @@ export class FfmpegVerticalRenderer implements VerticalRenderer {
       ffmpegVersion: version.stdout.split("\n")[0]?.slice(0, 255) ?? "ffmpeg",
     };
   }
+}
+
+export function verticalRenderArguments(
+  input: string,
+  output: string,
+): string[] {
+  return [
+    "-hide_banner",
+    "-nostdin",
+    "-y",
+    "-i",
+    input,
+    "-map",
+    "0:v:0",
+    "-map",
+    "0:a:0",
+    "-map_metadata",
+    "-1",
+    "-map_chapters",
+    "-1",
+    "-sn",
+    "-dn",
+    "-vf",
+    "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "medium",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-movflags",
+    "+faststart",
+    output,
+  ];
 }
 
 function run(
