@@ -365,7 +365,11 @@ export class TwitchIngestionService {
       !this.validSignature(headers, rawBody, config.twitchEventSubSecret)
     )
       throw new TwitchSignatureInvalidError();
-    if (headers.messageId) {
+    if (
+      headers.messageId &&
+      (headers.messageType === "notification" ||
+        headers.messageType === "revocation")
+    ) {
       const payloadSha256 = createHash("sha256").update(rawBody).digest("hex");
       const existing = await this.prisma.twitchEventInbox.findUnique({
         where: { messageId: headers.messageId },

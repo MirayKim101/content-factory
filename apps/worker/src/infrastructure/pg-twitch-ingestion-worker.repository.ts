@@ -80,9 +80,11 @@ export class PgTwitchIngestionWorkerRepository
 
   async promoteReady(now: Date): Promise<number> {
     const result = await this.pool.query(
-      `UPDATE "TwitchVodCandidate"
+      `UPDATE "TwitchVodCandidate" v
           SET "state" = 'READY_FOR_INGEST', "updatedAt" = $1
-        WHERE "state" = 'WAITING_DELAY' AND "availableForIngestAt" <= $1`,
+         FROM "TwitchIngestChannel" ch
+        WHERE v."channelId" = ch."id" AND ch."state" = 'ENABLED'
+          AND v."state" = 'WAITING_DELAY' AND v."availableForIngestAt" <= $1`,
       [now],
     );
     return result.rowCount ?? 0;

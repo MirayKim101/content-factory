@@ -50,6 +50,9 @@ describe("Twitch reconciliation", () => {
     expect(String(query.mock.calls[1]![0])).toContain(
       '"availableForIngestAt" <= $1',
     );
+    expect(String(query.mock.calls[1]![0])).toContain(
+      `ch."state" = 'ENABLED'`,
+    );
     expect(query.mock.calls[1]![1]).toEqual([now]);
     await originalPool.end();
   });
