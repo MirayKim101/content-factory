@@ -65,12 +65,26 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                   AND e."approvalId" = i."approvalId"
                   AND a."projectId" = i."projectId"
                   AND s."sourceVersion" = a."sourceVersion"
+                  AND s."status" = 'READY'
+                  AND esa."status" = 'CLEARED'
+                  AND a."approvalContractVersion" IN
+                    ('manual-horizontal-approval-v1', 'human-horizontal-approval-v2')
                   AND p."currentRevision" = a."editorialRevision"
                   AND r."currentRevision" = a."recipeRevision"
+                  AND e."exportContractVersion" = 'editorial-export-zip-v1'
+                  AND er."exportContractVersion" = 'editorial-export-zip-v1'
+                  AND j."type" = 'EXPORT_EDITORIAL_PACKAGE'
                   AND j."state" = 'READY'
                   AND j."editorialExportIntentId" = e."id"
+                  AND j."projectId" = i."projectId"
+                  AND j."sourceId" = a."sourceId"
+                  AND j."sourceVersion" = a."sourceVersion"
                   AND ar."status" = 'READY'
                   AND ar."role" = 'EDITORIAL_EXPORT_PACKAGE'
+                  AND ar."projectId" = i."projectId"
+                  AND ar."lineageSourceId" = a."sourceId"
+                  AND ar."lineageSourceVersion" = a."sourceVersion"
+                  AND ar."contentType" = 'application/zip'
                   AND er."archiveSha256" = ar."sha256"
                   AND er."archiveSizeBytes" = ar."sizeBytes"
                 ) WHEN i."contentKind" = 'VERTICAL_RESULT' THEN (
@@ -111,6 +125,8 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
            LEFT JOIN "EditorialExportIntent" e ON e."id" = er."exportIntentId"
            LEFT JOIN "EditorialApproval" a ON a."id" = i."approvalId"
            LEFT JOIN "VideoSource" s ON s."id" = a."sourceId"
+           LEFT JOIN "SourceAuthorization" esa ON esa."sourceId" = a."sourceId"
+             AND esa."sourceVersion" = a."sourceVersion"
            LEFT JOIN "EditorialPackage" p ON p."id" = a."editorialPackageId"
            LEFT JOIN "AssemblyRecipe" r ON r."id" = a."assemblyRecipeId"
            LEFT JOIN "PipelineJob" j ON j."id" = er."pipelineJobId"

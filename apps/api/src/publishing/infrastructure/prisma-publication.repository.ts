@@ -249,7 +249,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
                     include: {
                       approval: {
                         include: {
-                          source: true,
+                          source: { include: { authorizations: true } },
                           editorialPackage: true,
                           assemblyRecipe: true,
                         },
@@ -288,6 +288,9 @@ export class PrismaPublicationRepository implements PublicationRepository {
             const exportResult = row.exportResult;
             const exportIntent = exportResult?.exportIntent;
             const approval = exportIntent?.approval;
+            const editorialAuthorization = approval?.source.authorizations.find(
+              (item) => item.sourceVersion === approval.sourceVersion,
+            );
             if (
               !exportResult ||
               !exportIntent ||
@@ -296,18 +299,37 @@ export class PrismaPublicationRepository implements PublicationRepository {
               exportIntent.approvalId !== row.approvalId ||
               approval.projectId !== row.projectId ||
               approval.source.sourceVersion !== approval.sourceVersion ||
+              approval.source.status !== "READY" ||
+              editorialAuthorization?.status !== "CLEARED" ||
+              ![
+                "manual-horizontal-approval-v1",
+                "human-horizontal-approval-v2",
+              ].includes(approval.approvalContractVersion) ||
               approval.editorialPackage.currentRevision !==
                 approval.editorialRevision ||
               approval.assemblyRecipe.currentRevision !==
                 approval.recipeRevision ||
+              exportIntent.exportContractVersion !==
+                "editorial-export-zip-v1" ||
+              exportResult.exportContractVersion !==
+                "editorial-export-zip-v1" ||
+              exportResult.pipelineJob.type !== "EXPORT_EDITORIAL_PACKAGE" ||
               exportResult.pipelineJob.state !== "READY" ||
               exportResult.pipelineJob.editorialExportIntentId !==
                 exportIntent.id ||
+              exportResult.pipelineJob.projectId !== row.projectId ||
+              exportResult.pipelineJob.sourceId !== approval.sourceId ||
+              exportResult.pipelineJob.sourceVersion !==
+                approval.sourceVersion ||
               exportResult.pipelineJobId !==
                 exportResult.artifact.pipelineJobId ||
               exportResult.artifact.status !== "READY" ||
               exportResult.artifact.role !== "EDITORIAL_EXPORT_PACKAGE" ||
               exportResult.artifact.projectId !== row.projectId ||
+              exportResult.artifact.lineageSourceId !== approval.sourceId ||
+              exportResult.artifact.lineageSourceVersion !==
+                approval.sourceVersion ||
+              exportResult.artifact.contentType !== "application/zip" ||
               exportResult.archiveSha256 !== exportResult.artifact.sha256 ||
               exportResult.archiveSizeBytes !== exportResult.artifact.sizeBytes
             )
@@ -525,7 +547,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
                   include: {
                     approval: {
                       include: {
-                        source: true,
+                        source: { include: { authorizations: true } },
                         editorialPackage: true,
                         assemblyRecipe: true,
                       },
@@ -537,23 +559,45 @@ export class PrismaPublicationRepository implements PublicationRepository {
             if (!exportResult) throw new PublicationLineageInvalidError();
             const exportIntent = exportResult.exportIntent;
             const approval = exportIntent.approval;
+            const editorialAuthorization = approval.source.authorizations.find(
+              (item) => item.sourceVersion === approval.sourceVersion,
+            );
             if (
               exportIntent.projectId !== input.projectId ||
               exportIntent.approvalId !== input.approvalId ||
               approval.projectId !== input.projectId ||
               approval.source.sourceVersion !== approval.sourceVersion ||
+              approval.source.status !== "READY" ||
+              editorialAuthorization?.status !== "CLEARED" ||
+              ![
+                "manual-horizontal-approval-v1",
+                "human-horizontal-approval-v2",
+              ].includes(approval.approvalContractVersion) ||
               approval.editorialPackage.currentRevision !==
                 approval.editorialRevision ||
               approval.assemblyRecipe.currentRevision !==
                 approval.recipeRevision ||
+              exportIntent.exportContractVersion !==
+                "editorial-export-zip-v1" ||
+              exportResult.exportContractVersion !==
+                "editorial-export-zip-v1" ||
+              exportResult.pipelineJob.type !== "EXPORT_EDITORIAL_PACKAGE" ||
               exportResult.pipelineJob.state !== "READY" ||
               exportResult.pipelineJob.editorialExportIntentId !==
                 exportIntent.id ||
+              exportResult.pipelineJob.projectId !== input.projectId ||
+              exportResult.pipelineJob.sourceId !== approval.sourceId ||
+              exportResult.pipelineJob.sourceVersion !==
+                approval.sourceVersion ||
               exportResult.pipelineJobId !==
                 exportResult.artifact.pipelineJobId ||
               exportResult.artifact.status !== "READY" ||
               exportResult.artifact.role !== "EDITORIAL_EXPORT_PACKAGE" ||
               exportResult.artifact.projectId !== input.projectId ||
+              exportResult.artifact.lineageSourceId !== approval.sourceId ||
+              exportResult.artifact.lineageSourceVersion !==
+                approval.sourceVersion ||
+              exportResult.artifact.contentType !== "application/zip" ||
               exportResult.archiveSha256 !== exportResult.artifact.sha256 ||
               exportResult.archiveSizeBytes !== exportResult.artifact.sizeBytes
             )

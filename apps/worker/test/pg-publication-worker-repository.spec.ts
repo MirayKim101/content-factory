@@ -42,6 +42,15 @@ describe("PgPublicationWorkerRepository stale external recovery", () => {
       `i."platform" = 'LOCAL_DRY_RUN'`,
     );
     expect(String(query.mock.calls[1]![0])).toContain(
+      `esa."status" = 'CLEARED'`,
+    );
+    expect(String(query.mock.calls[1]![0])).toContain(
+      `a."approvalContractVersion" IN`,
+    );
+    expect(String(query.mock.calls[1]![0])).toContain(
+      `ar."lineageSourceVersion" = a."sourceVersion"`,
+    );
+    expect(String(query.mock.calls[1]![0])).toContain(
       `vs."sourceVersion" = vi."sourceVersion"`,
     );
     expect(String(query.mock.calls[1]![0])).toContain(
