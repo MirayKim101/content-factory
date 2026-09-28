@@ -165,6 +165,26 @@ describe("TwitchIngestionService", () => {
       else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
     }
   });
+  it("reports a concurrent candidate state transition as a controlled conflict", async () => {
+    const originalAuto = process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+    const prisma = repository();
+    prisma.$transaction.mockRejectedValueOnce({ code: "P2034" });
+    try {
+      process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = "1";
+      await expect(
+        new TwitchIngestionService(prisma as never).startVodIngest(
+          "00000000-0000-4000-8000-000000000001",
+          "Creator stream",
+          "twitch-import:race",
+        ),
+      ).rejects.toBeInstanceOf(TwitchVodConflictError);
+      expect(prisma.twitchVodIngestIntent.create).not.toHaveBeenCalled();
+    } finally {
+      if (originalAuto === undefined)
+        delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+      else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
+    }
+  });
   it("requeues a terminal VOD import for an explicit operator retry", async () => {
     const originalAuto = process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
     const prisma = repository();

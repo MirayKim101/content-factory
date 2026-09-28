@@ -125,6 +125,8 @@ export class TwitchIngestionService {
       );
       return created ? this.serializeIngestIntent(created) : null;
     } catch (error) {
+      if (this.isSerializationConflict(error))
+        throw new TwitchVodConflictError();
       if (!this.isUniqueConflict(error)) throw error;
       const raced = await this.prisma.twitchVodIngestIntent.findFirst({
         where: { OR: [{ idempotencyKey }, { candidateId: id }] },
@@ -518,6 +520,15 @@ export class TwitchIngestionService {
       typeof error === "object" &&
       "code" in error &&
       (error as { code?: unknown }).code === "P2002",
+    );
+  }
+
+  private isSerializationConflict(error: unknown): boolean {
+    return Boolean(
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: unknown }).code === "P2034",
     );
   }
 
