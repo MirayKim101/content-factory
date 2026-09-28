@@ -22,6 +22,10 @@
 - Publication: UTC schedule, channel ownership, exact approved vertical
   lineage, idempotent state machine, LOCAL_DRY_RUN, YouTube resumable upload,
   TikTok Direct Post, unknown-remote reconciliation и metrics snapshots.
+- Создание и ручной retry публикации повторно проверяют current source,
+  authorization, cut/export/render artifact и approval lineage в SERIALIZABLE
+  транзакции. Устаревший результат не попадает в очередь даже если раньше был
+  допустим; worker повторяет ту же fail-closed проверку перед provider call.
 - Publication schedule contract принимает только RFC3339 timestamp с явным
   `Z` или numeric UTC offset. Date-only и timezone-less значения отклоняются,
   поэтому timezone production host не может незаметно сдвинуть запуск.
@@ -136,6 +140,9 @@
   single-flight циклами. Импорт больше не блокирует Helix/EventSub ticks или
   startup readiness; graceful shutdown abort-ит активный transfer без ложного
   failure и затем дренирует оба цикла перед закрытием PostgreSQL/S3.
+- Отзыв Twitch channel закрывает API admission для нового VOD import и
+  операторского retry; worker независимо требует `ENABLED` при claim. Уже
+  сохранённая история остаётся доступной.
 - Shutdown во время pending Twitch claim также fenced: новый transfer не
   стартует после SIGTERM, а уже выданный lease атомарно возвращается в `QUEUED`
   без потери attempt budget и без двухчасовой задержки recovery.
@@ -175,10 +182,10 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     244/244 unit tests
+API:     250/250 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  302/302 unit tests
+Worker:  319/319 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
