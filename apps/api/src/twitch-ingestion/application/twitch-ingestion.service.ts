@@ -381,7 +381,6 @@ export class TwitchIngestionService {
     } catch {
       throw new TwitchEventInvalidError();
     }
-    const channel = await this.requireChannel(envelope.event.broadcasterUserId);
     const payloadSha256 = createHash("sha256").update(rawBody).digest("hex");
     const existing = await this.prisma.twitchEventInbox.findUnique({
       where: { messageId: envelope.messageId },
@@ -392,6 +391,7 @@ export class TwitchIngestionService {
         throw new TwitchEventConflictError();
       return { duplicate: true, messageId: envelope.messageId };
     }
+    const channel = await this.requireChannel(envelope.event.broadcasterUserId);
     try {
       await this.prisma.twitchEventInbox.create({
         data: {

@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -347,6 +347,28 @@ describe("TwitchIngestionService", () => {
         now,
       ),
     ).rejects.toBeInstanceOf(TwitchEventConflictError);
+  });
+
+  it("acknowledges an exact notification replay after channel revocation", async () => {
+    const prisma = repository();
+    prisma.twitchEventInbox.findUnique.mockResolvedValue({
+      payloadSha256: createHash("sha256").update(rawBody).digest("hex"),
+    });
+    prisma.twitchIngestChannel.findUnique.mockResolvedValue({
+      id: "channel-1",
+      state: "REVOKED",
+    });
+
+    await expect(
+      new TwitchIngestionService(prisma as never).receive(
+        headers(),
+        rawBody,
+        body,
+        now,
+      ),
+    ).resolves.toEqual({ duplicate: true, messageId: "opaque-message-1" });
+    expect(prisma.twitchIngestChannel.findUnique).not.toHaveBeenCalled();
+    expect(prisma.twitchEventInbox.create).not.toHaveBeenCalled();
   });
 
   it("rejects unsigned subscription headers that disagree with the signed body", async () => {
