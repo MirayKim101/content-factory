@@ -134,6 +134,10 @@ describe("TwitchIngestionService", () => {
         state: "QUEUED",
         downloadedBytes: "0",
       });
+      expect(prisma.$transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+        { isolationLevel: "Serializable" },
+      );
       expect(prisma.twitchVodIngestIntent.create).toHaveBeenCalledOnce();
     } finally {
       if (originalAuto === undefined)

@@ -98,24 +98,32 @@ export class TwitchIngestionService {
         throw new TwitchVodIdempotencyConflictError();
       return this.serializeIngestIntent(existing);
     }
-    const candidate = await this.prisma.twitchVodCandidate.findUnique({
-      where: { id },
-      select: { id: true, state: true, importedProjectId: true },
-    });
-    if (!candidate) return null;
-    if (candidate.state !== "READY_FOR_INGEST" || candidate.importedProjectId)
-      throw new TwitchVodConflictError();
     try {
-      const created = await this.prisma.twitchVodIngestIntent.create({
-        data: {
-          id: randomUUID(),
-          idempotencyKey,
-          requestFingerprint,
-          candidateId: id,
-          projectName: normalizedName,
+      const created = await this.prisma.$transaction(
+        async (tx) => {
+          const candidate = await tx.twitchVodCandidate.findUnique({
+            where: { id },
+            select: { id: true, state: true, importedProjectId: true },
+          });
+          if (!candidate) return null;
+          if (
+            candidate.state !== "READY_FOR_INGEST" ||
+            candidate.importedProjectId
+          )
+            throw new TwitchVodConflictError();
+          return tx.twitchVodIngestIntent.create({
+            data: {
+              id: randomUUID(),
+              idempotencyKey,
+              requestFingerprint,
+              candidateId: id,
+              projectName: normalizedName,
+            },
+          });
         },
-      });
-      return this.serializeIngestIntent(created);
+        { isolationLevel: "Serializable" },
+      );
+      return created ? this.serializeIngestIntent(created) : null;
     } catch (error) {
       if (!this.isUniqueConflict(error)) throw error;
       const raced = await this.prisma.twitchVodIngestIntent.findFirst({
