@@ -10,6 +10,7 @@ import {
   TwitchIngestionDisabledError,
   TwitchSignatureInvalidError,
   TwitchVodConflictError,
+  TwitchVodProjectNameInvalidError,
 } from "../src/twitch-ingestion/domain/twitch-ingestion.js";
 
 const now = new Date("2026-09-27T12:00:00.000Z");
@@ -134,6 +135,26 @@ describe("TwitchIngestionService", () => {
         downloadedBytes: "0",
       });
       expect(prisma.twitchVodIngestIntent.create).toHaveBeenCalledOnce();
+    } finally {
+      if (originalAuto === undefined)
+        delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+      else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
+    }
+  });
+  it("rejects a blank project name before reading or writing ingest state", async () => {
+    const originalAuto = process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+    const prisma = repository();
+    try {
+      process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = "1";
+      await expect(
+        new TwitchIngestionService(prisma as never).startVodIngest(
+          "00000000-0000-4000-8000-000000000001",
+          "   ",
+          "twitch-import:blank",
+        ),
+      ).rejects.toBeInstanceOf(TwitchVodProjectNameInvalidError);
+      expect(prisma.twitchVodIngestIntent.findUnique).not.toHaveBeenCalled();
+      expect(prisma.twitchVodIngestIntent.create).not.toHaveBeenCalled();
     } finally {
       if (originalAuto === undefined)
         delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;

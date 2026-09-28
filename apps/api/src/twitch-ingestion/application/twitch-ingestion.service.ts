@@ -23,6 +23,7 @@ import {
   TwitchVodConflictError,
   TwitchVodAutoIngestDisabledError,
   TwitchVodIdempotencyConflictError,
+  TwitchVodProjectNameInvalidError,
 } from "../domain/twitch-ingestion.js";
 
 interface TwitchHeaders {
@@ -84,6 +85,8 @@ export class TwitchIngestionService {
     if (!config.twitchIngestionEnabled || !config.twitchVodAutoIngestEnabled)
       throw new TwitchVodAutoIngestDisabledError();
     const normalizedName = projectName.trim();
+    if (!normalizedName || normalizedName.length > 160)
+      throw new TwitchVodProjectNameInvalidError();
     const requestFingerprint = createHash("sha256")
       .update(JSON.stringify({ candidateId: id, projectName: normalizedName }))
       .digest("hex");

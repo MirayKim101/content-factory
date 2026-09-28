@@ -6,3 +6,4 @@ export class TwitchEventConflictError extends Error {}
 export class TwitchVodConflictError extends Error {}
 export class TwitchVodAutoIngestDisabledError extends Error {}
 export class TwitchVodIdempotencyConflictError extends Error {}
+export class TwitchVodProjectNameInvalidError extends Error {}

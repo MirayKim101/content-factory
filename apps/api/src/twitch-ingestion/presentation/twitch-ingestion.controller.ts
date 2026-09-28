@@ -29,6 +29,7 @@ import {
   TwitchVodConflictError,
   TwitchVodAutoIngestDisabledError,
   TwitchVodIdempotencyConflictError,
+  TwitchVodProjectNameInvalidError,
 } from "../domain/twitch-ingestion.js";
 import {
   CreateTwitchIngestChannelDto,
@@ -112,6 +113,11 @@ export class TwitchIngestionController {
         throw new ConflictException({
           code: "IDEMPOTENCY_KEY_CONFLICT",
           message: "Idempotency-Key was already used for another request.",
+        });
+      if (error instanceof TwitchVodProjectNameInvalidError)
+        throw new UnprocessableEntityException({
+          code: "TWITCH_VOD_PROJECT_NAME_INVALID",
+          message: "Project name must contain 1 to 160 non-whitespace characters.",
         });
       if (error instanceof TwitchVodConflictError)
         throw new ConflictException({

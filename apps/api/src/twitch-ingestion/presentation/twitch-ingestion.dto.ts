@@ -103,6 +103,7 @@ export class StartTwitchVodIngestDto {
   @ApiProperty({ type: String, minLength: 1, maxLength: 160 })
   @IsString()
   @Length(1, 160)
+  @Matches(/\S/)
   projectName!: string;
 }
 
