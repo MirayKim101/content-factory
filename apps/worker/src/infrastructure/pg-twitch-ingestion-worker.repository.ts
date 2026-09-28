@@ -326,15 +326,12 @@ export class PgTwitchIngestionWorkerRepository
          JOIN "TwitchVodCandidate" v ON v."id" = i."candidateId"
          JOIN "Project" p ON p."id" = i."projectId"
          JOIN "VideoSource" s ON s."projectId" = p."id"
-         JOIN "SourceAuthorization" z ON z."sourceId" = s."id"
-           AND z."sourceVersion" = s."sourceVersion"
          JOIN "MediaArtifact" a ON a."projectId" = p."id"
            AND a."sourceId" = s."id" AND a."role" = 'SOURCE'
+         JOIN "SourceAuthorization" z ON z."sourceId" = a."lineageSourceId"
+           AND z."sourceVersion" = a."lineageSourceVersion"
         WHERE i."id" = $1 AND i."state" = 'READY' AND i."projectId" = $2
-          AND p."status" = 'SOURCE_READY' AND s."status" = 'READY'
           AND v."state" = 'IMPORTED' AND v."importedProjectId" = p."id"
-          AND s."sourceVersion" = 1 AND s."contentType" = 'video/mp4'
-          AND s."sizeBytes" = $3 AND s."sha256" = $4
           AND a."status" = 'READY' AND a."objectKey" = $5
           AND a."contentType" = 'video/mp4' AND a."sizeBytes" = $3
           AND a."sha256" = $4 AND a."lineageSourceId" = s."id"
