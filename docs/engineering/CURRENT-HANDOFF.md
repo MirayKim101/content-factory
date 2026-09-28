@@ -1,6 +1,6 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-28. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-09-29. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
 ## Главный результат
 
@@ -15,6 +15,21 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 
 ## Текущий этап
 
+Актуальный воспроизводимый baseline находится в
+`STAGE3-LOCAL-ACCEPTANCE.md`: API `253/253`, contracts `23/23`, worker
+`322/322`, web `266/266`, publication disposable PostgreSQL `1/1`, Twitch
+PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
+`43/43` с 73 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
+`3001`; порт `3000` не используется. Реальные credentialed Twitch media,
+YouTube и TikTok canary остаются rollout gate и не подменяются локальным
+утверждением о production-публикации.
+
+Последний hardening закрывает late/exact EventSub replay, revoke во время
+активного VOD transfer и конкурентный revoke/finalize, повторную проверку
+vertical lineage после долгого render/upload, orphan cleanup после неуспешной
+Twitch DB-finalization, abort-aware S3 publication chunks и сохранение TikTok
+recovery session после необратимой Direct Post initiation.
+
 - Stage 3 control/data plane реализован default-off: Twitch allowlist,
   EventSub inbox и Helix reconciliation; durable resumable VOD import через
   фиксированный media gateway; provider-neutral clip suggestions; отдельный
@@ -23,7 +38,7 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 - Ручной pre-Twitch upload/link, горизонтальный pipeline и ZIP export не зависят
   от Stage 3 flags. Twitch-import создаёт `NOT_REVIEWED` authorization и не
   обходит ручное подтверждение прав.
-- Миграция 42 применена к restored PostgreSQL. Реальный local gateway → Range
+- Миграция 43 применена к restored PostgreSQL. Реальный local gateway → Range
   download → SHA-256 → MinIO multipart → atomic Project/Source/Artifact smoke
   прошёл; source остался `NOT_REVIEWED`. Production Docker FFmpeg сформировал и
   декодировал 1080×1920 H.264/AAC. Внешний Twitch/YouTube/TikTok credentialed
