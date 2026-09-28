@@ -193,6 +193,53 @@ describe("ProcessTwitchVodIngest", () => {
     );
   });
 
+  it("stops quietly when a fenced checkpoint reports lease loss", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const cancel = vi.fn();
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "c",
+        providerVideoId: "1",
+        projectName: "x",
+        attemptCount: 1,
+        leaseOwner: "w",
+        downloadedBytes: 0n,
+        totalBytes: null,
+      })),
+      checkpoint: vi.fn(async () => {
+        throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
+      }),
+      heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = {
+      open: vi.fn(async () => ({
+        body: new ReadableStream<Uint8Array>({ cancel }),
+        contentType: "video/mp4" as const,
+        totalSizeBytes: 20n,
+        offset: 0n,
+      })),
+    };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      { upload: vi.fn() } as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    await expect(processor.execute("w")).resolves.toBe(false);
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(repository.fail).not.toHaveBeenCalled();
+    expect(repository.release).not.toHaveBeenCalled();
+  });
+
   it("resumes after a crash that left a complete verified-size scratch file", async () => {
     const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
     directories.push(scratch);

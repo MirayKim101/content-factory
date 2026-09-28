@@ -164,6 +164,7 @@ export class ProcessTwitchVodIngest {
       await unlink(path).catch(() => undefined);
       return true;
     } catch (error) {
+      if (isTwitchVodIngestLeaseLost(error)) return false;
       if (controller.signal.reason instanceof TwitchVodIngestLeaseLostError)
         return false;
       if (controller.signal.reason instanceof TwitchVodIngestShutdownError) {
@@ -181,13 +182,18 @@ export class ProcessTwitchVodIngest {
         lease.attemptCount < 3 &&
         code !== "TWITCH_VOD_MP4_INVALID" &&
         code !== "TWITCH_VOD_TOO_LARGE";
-      await this.repository.fail(
-        lease.id,
-        workerId,
-        code.slice(0, 100),
-        "Twitch VOD import failed.",
-        retryable,
-      );
+      try {
+        await this.repository.fail(
+          lease.id,
+          workerId,
+          code.slice(0, 100),
+          "Twitch VOD import failed.",
+          retryable,
+        );
+      } catch (failure) {
+        if (isTwitchVodIngestLeaseLost(failure)) return false;
+        throw failure;
+      }
       if (!retryable) await unlink(path).catch(() => undefined);
       return true;
     } finally {
@@ -254,4 +260,10 @@ export class ProcessTwitchVodIngest {
     const hex = bytes.toString("hex");
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
   }
+}
+
+function isTwitchVodIngestLeaseLost(error: unknown): boolean {
+  return (
+    error instanceof Error && error.message === "TWITCH_VOD_INGEST_LEASE_LOST"
+  );
 }
