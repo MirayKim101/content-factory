@@ -99,8 +99,9 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       if (remote.status === "PUBLISH_COMPLETE")
         return this.result(publishId, identity.sha256, remote.postIds);
       if (remote.status === "FAILED")
-        throw new Error(
-          `TIKTOK_PUBLICATION_FAILED_${safeCode(remote.failReason)}`,
+        throw new PublicationPermanentError(
+          "TIKTOK_PUBLICATION_FAILED",
+          `TikTok rejected the post (${safeCode(remote.failReason)}).`,
         );
       offset = remote.uploadedBytes ?? stored.uploadOffset;
       if (offset < stored.uploadOffset || offset > identity.sizeBytes)

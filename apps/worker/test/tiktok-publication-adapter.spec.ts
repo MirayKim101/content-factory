@@ -203,6 +203,48 @@ describe("TikTokPublicationAdapter", () => {
     expect(deps.transport.uploadChunk).toHaveBeenCalledOnce();
   });
 
+  it("treats a definitive failed durable session as a permanent outcome", async () => {
+    const deps = dependencies();
+    const encrypted = deps.cipher.encrypt({
+      publicationIntentId: claim.id,
+      platform: claim.platform,
+      session: {
+        kind: "tiktok-direct-post-v1",
+        publishId: "publish_failed",
+        uploadUrl: "https://open-upload.tiktokapis.com/video/?id=failed",
+        chunkSize: 6,
+      },
+    });
+    deps.sessions.load.mockResolvedValue({
+      publicationIntentId: claim.id,
+      platform: claim.platform,
+      ...encrypted,
+      uploadOffset: 0n,
+      expiresAt: null,
+    });
+    deps.transport.status.mockResolvedValue({
+      status: "FAILED",
+      postIds: [],
+      uploadedBytes: 0n,
+      failReason: "video rejected",
+    });
+
+    await expect(
+      new TikTokPublicationAdapter(
+        deps.tokens,
+        deps.media,
+        deps.sessions,
+        deps.cipher,
+        deps.transport,
+      ).publish(claim),
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "TIKTOK_PUBLICATION_FAILED",
+    });
+    expect(deps.transport.initiate).not.toHaveBeenCalled();
+    expect(deps.transport.uploadChunk).not.toHaveBeenCalled();
+  });
+
   it("quarantines an ambiguous Direct Post initiation without retrying it", async () => {
     const deps = dependencies();
     deps.transport.initiate.mockRejectedValue(new TypeError("fetch failed"));
