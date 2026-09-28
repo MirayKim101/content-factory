@@ -441,18 +441,53 @@ export class PrismaPublicationRepository implements PublicationRepository {
                 approval: true,
                 artifact: true,
                 pipelineJob: true,
-                intent: true,
+                intent: {
+                  include: {
+                    source: { include: { authorizations: true } },
+                    cutPipelineJob: true,
+                    cutResultArtifact: true,
+                  },
+                },
               },
             });
+            const verticalAuthorization =
+              vertical?.intent.source.authorizations.find(
+                (item) =>
+                  item.sourceVersion === vertical.intent.sourceVersion,
+              );
             if (
               !vertical ||
               vertical.approval?.id !== input.verticalApprovalId ||
+              vertical.approval.approvalVersion !==
+                "human-vertical-approval-v1" ||
               vertical.intent.projectId !== input.projectId ||
+              vertical.intent.source.sourceVersion !==
+                vertical.intent.sourceVersion ||
+              vertical.intent.source.status !== "READY" ||
+              verticalAuthorization?.status !== "CLEARED" ||
+              vertical.intent.cutPipelineJob.type !== "CUT_SEGMENT" ||
+              vertical.intent.cutPipelineJob.state !== "READY" ||
+              vertical.intent.cutResultArtifact.status !== "READY" ||
+              vertical.intent.cutResultArtifact.role !== "CUT_RESULT" ||
+              vertical.intent.cutResultArtifact.pipelineJobId !==
+                vertical.intent.cutPipelineJobId ||
+              vertical.intent.cutResultArtifact.projectId !== input.projectId ||
+              vertical.intent.cutResultArtifact.lineageSourceId !==
+                vertical.intent.sourceId ||
+              vertical.intent.cutResultArtifact.lineageSourceVersion !==
+                vertical.intent.sourceVersion ||
+              vertical.intent.renderContractVersion !== "vertical-render-v1" ||
+              vertical.renderContractVersion !== "vertical-render-v1" ||
+              vertical.width !== 1080 ||
+              vertical.height !== 1920 ||
               vertical.pipelineJob.state !== "READY" ||
               vertical.pipelineJob.verticalRenderIntentId !==
                 vertical.intentId ||
               vertical.artifact.projectId !== input.projectId ||
               vertical.artifact.pipelineJobId !== vertical.pipelineJobId ||
+              vertical.artifact.lineageSourceId !== vertical.intent.sourceId ||
+              vertical.artifact.lineageSourceVersion !==
+                vertical.intent.sourceVersion ||
               vertical.artifact.status !== "READY" ||
               vertical.artifact.role !== "VERTICAL_RENDER_RESULT" ||
               vertical.sha256 !== vertical.artifact.sha256 ||
