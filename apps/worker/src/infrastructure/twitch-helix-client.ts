@@ -33,6 +33,7 @@ export class TwitchHelixClient implements TwitchVideoProvider {
       signal,
     );
     if (response.status === 401 && this.accessToken.invalidate) {
+      await discardResponseBody(response);
       this.accessToken.invalidate();
       response = await this.requestArchives(
         params,
@@ -40,7 +41,10 @@ export class TwitchHelixClient implements TwitchVideoProvider {
         signal,
       );
     }
-    if (!response.ok) throw new Error(`TWITCH_HELIX_${response.status}`);
+    if (!response.ok) {
+      await discardResponseBody(response);
+      throw new Error(`TWITCH_HELIX_${response.status}`);
+    }
     const payload: unknown = await response.json();
     return parseTwitchVodPage(payload);
   }
@@ -64,6 +68,10 @@ export class TwitchHelixClient implements TwitchVideoProvider {
       },
     );
   }
+}
+
+async function discardResponseBody(response: Response): Promise<void> {
+  await response.body?.cancel().catch(() => undefined);
 }
 
 export function parseTwitchVodPage(value: unknown): TwitchVodPage {

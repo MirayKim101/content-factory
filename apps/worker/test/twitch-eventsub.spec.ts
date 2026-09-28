@@ -72,6 +72,7 @@ describe("Twitch EventSub reconciliation", () => {
   });
 
   it("uses bounded official webhook payloads and keeps the secret out of the URL", async () => {
+    const createCancel = vi.fn();
     const request = vi
       .fn((_input: string | URL | Request, _init?: RequestInit) =>
         Promise.resolve(new Response()),
@@ -81,7 +82,11 @@ describe("Twitch EventSub reconciliation", () => {
           status: 200,
         }),
       )
-      .mockResolvedValueOnce(new Response("{}", { status: 202 }))
+      .mockResolvedValueOnce(
+        new Response(new ReadableStream({ cancel: createCancel }), {
+          status: 202,
+        }),
+      )
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
     const client = new TwitchEventSubClient(
       "client-id",
@@ -95,6 +100,7 @@ describe("Twitch EventSub reconciliation", () => {
     await expect(
       client.createWebhookSubscription("stream.online", "1337"),
     ).resolves.toBeUndefined();
+    expect(createCancel).toHaveBeenCalledOnce();
     const [url, init] = request.mock.calls[1]!;
     expect(String(url)).not.toContain("eventsub-secret-value");
     expect(init?.redirect).toBe("error");

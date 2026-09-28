@@ -109,9 +109,12 @@ describe("Twitch reconciliation", () => {
   });
 
   it("invalidates an app token and retries Helix once after an unauthorized response", async () => {
+    const cancel = vi.fn();
     const request = vi
       .fn()
-      .mockResolvedValueOnce(new Response("{}", { status: 401 }))
+      .mockResolvedValueOnce(
+        new Response(new ReadableStream({ cancel }), { status: 401 }),
+      )
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ data: [], pagination: {} }), {
           status: 200,
@@ -133,6 +136,7 @@ describe("Twitch reconciliation", () => {
       ).listArchives("1337", null),
     ).resolves.toEqual({ items: [], nextCursor: null });
     expect(tokens.invalidate).toHaveBeenCalledOnce();
+    expect(cancel).toHaveBeenCalledOnce();
     expect(request).toHaveBeenCalledTimes(2);
     expect(request.mock.calls[1]![1]?.headers).toMatchObject({
       Authorization: "Bearer fresh-token",

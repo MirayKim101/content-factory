@@ -45,8 +45,10 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
         { method: "GET" },
         signal,
       );
-      if (!response.ok)
+      if (!response.ok) {
+        await discardResponseBody(response);
         throw new Error(`TWITCH_EVENTSUB_LIST_${response.status}`);
+      }
       const parsed = parseSubscriptionPage(await response.json());
       result.push(...parsed.items);
       cursor = parsed.nextCursor;
@@ -80,8 +82,9 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       },
       signal,
     );
-    if (response.status !== 202 && response.status !== 409)
-      throw new Error(`TWITCH_EVENTSUB_CREATE_${response.status}`);
+    const accepted = response.status === 202 || response.status === 409;
+    await discardResponseBody(response);
+    if (!accepted) throw new Error(`TWITCH_EVENTSUB_CREATE_${response.status}`);
   }
 
   async deleteWebhookSubscription(
@@ -97,8 +100,9 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       { method: "DELETE" },
       signal,
     );
-    if (response.status !== 204 && response.status !== 404)
-      throw new Error(`TWITCH_EVENTSUB_DELETE_${response.status}`);
+    const accepted = response.status === 204 || response.status === 404;
+    await discardResponseBody(response);
+    if (!accepted) throw new Error(`TWITCH_EVENTSUB_DELETE_${response.status}`);
   }
 
   private async authorizedFetch(
@@ -113,6 +117,7 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       signal,
     );
     if (response.status === 401 && this.accessToken.invalidate) {
+      await discardResponseBody(response);
       this.accessToken.invalidate();
       response = await this.requestWithToken(
         input,
@@ -143,6 +148,10 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
         : AbortSignal.timeout(10_000),
     });
   }
+}
+
+async function discardResponseBody(response: Response): Promise<void> {
+  await response.body?.cancel().catch(() => undefined);
 }
 
 function parseSubscriptionPage(value: unknown): {
