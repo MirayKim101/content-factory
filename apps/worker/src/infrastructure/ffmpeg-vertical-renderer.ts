@@ -112,7 +112,9 @@ function run(
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
-    child.stderr.on("data", (chunk) => (stderr += String(chunk).slice(-4_000)));
+    child.stderr.on("data", (chunk) => {
+      stderr = boundedDiagnosticTail(stderr, String(chunk));
+    });
     const abort = () => child.kill("SIGKILL");
     signal.addEventListener("abort", abort, { once: true });
     child.once("error", reject);
@@ -123,4 +125,12 @@ function run(
       else reject(new Error(`VERTICAL_FFMPEG_FAILED:${stderr.slice(-500)}`));
     });
   });
+}
+
+export function boundedDiagnosticTail(
+  current: string,
+  chunk: string,
+  maximumCharacters = 4_000,
+): string {
+  return `${current}${chunk}`.slice(-maximumCharacters);
 }

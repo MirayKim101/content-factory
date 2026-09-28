@@ -83,6 +83,9 @@
 - Полный vertical attempt (download, FFmpeg и upload) ограничен двумя часами;
   timeout прерывает I/O тем же abort signal и освобождает durable lease через
   штатный bounded failure path.
+- Диагностический stderr длительного vertical FFmpeg render хранится как
+  кольцевой хвост максимум 4000 символов; многочасовой progress output не может
+  неограниченно увеличивать heap worker’а.
 - Полный Twitch VOD ingest attempt ограничен 24 часами, включая streaming
   download, hashing и multipart upload. Timeout сохраняет resumable scratch и
   переводит intent в bounded retry вместо бесконечного lease.
@@ -175,7 +178,7 @@
 API:     244/244 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  301/301 unit tests
+Worker:  302/302 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
