@@ -335,7 +335,6 @@ export class PgTwitchIngestionWorkerRepository
           AND v."state" = 'IMPORTED' AND v."importedProjectId" = p."id"
           AND s."sourceVersion" = 1 AND s."contentType" = 'video/mp4'
           AND s."sizeBytes" = $3 AND s."sha256" = $4
-          AND z."status" = 'NOT_REVIEWED' AND z."revision" = 1
           AND a."status" = 'READY' AND a."objectKey" = $5
           AND a."contentType" = 'video/mp4' AND a."sizeBytes" = $3
           AND a."sha256" = $4 AND a."lineageSourceId" = s."id"
