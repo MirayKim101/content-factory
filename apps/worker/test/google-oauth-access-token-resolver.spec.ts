@@ -93,4 +93,48 @@ describe("GoogleOAuthAccessTokenResolver", () => {
     ).rejects.toThrow("YOUTUBE_CHANNEL_CREDENTIAL_UNAVAILABLE");
     expect(request).not.toHaveBeenCalled();
   });
+
+  it("does not reuse a cached token after the external channel identity changes", async () => {
+    const secondRef = "UCabcdefghijklmnopqrstuv";
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ access_token: "first-token", expires_in: 3600 }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ items: [{ id: externalChannelRef }] })),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ access_token: "second-token", expires_in: 3600 }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ items: [{ id: secondRef }] })),
+      );
+    const resolver = new GoogleOAuthAccessTokenResolver(
+      "client-id",
+      "client-secret",
+      [
+        { externalChannelRef, refreshToken: "first-refresh" },
+        { externalChannelRef: secondRef, refreshToken: "second-refresh" },
+      ],
+      request,
+      () => 1_000,
+    );
+
+    await expect(
+      resolver.resolve({ channelId, platform: "YOUTUBE", externalChannelRef }),
+    ).resolves.toBe("first-token");
+    await expect(
+      resolver.resolve({
+        channelId,
+        platform: "YOUTUBE",
+        externalChannelRef: secondRef,
+      }),
+    ).resolves.toBe("second-token");
+    expect(request).toHaveBeenCalledTimes(4);
+  });
 });

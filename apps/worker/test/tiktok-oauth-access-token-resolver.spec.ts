@@ -100,4 +100,40 @@ describe("TikTokOAuthAccessTokenResolver", () => {
       "TIKTOK_TOKEN_RESPONSE_INVALID",
     );
   });
+
+  it("does not reuse a cached token after the external creator identity changes", async () => {
+    const secondRef = "second-creator";
+    const response = (accessToken: string, openId: string) =>
+      new Response(
+        JSON.stringify({
+          access_token: accessToken,
+          expires_in: 86_400,
+          open_id: openId,
+          scope: "video.publish",
+        }),
+      );
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(response("first-token", input.externalChannelRef))
+      .mockResolvedValueOnce(response("second-token", secondRef));
+    const resolver = new TikTokOAuthAccessTokenResolver(
+      "client-key",
+      "client-secret",
+      [
+        {
+          externalChannelRef: input.externalChannelRef,
+          refreshToken: "first-refresh",
+        },
+        { externalChannelRef: secondRef, refreshToken: "second-refresh" },
+      ],
+      request,
+      () => 1_000,
+    );
+
+    await expect(resolver.resolve(input)).resolves.toBe("first-token");
+    await expect(
+      resolver.resolve({ ...input, externalChannelRef: secondRef }),
+    ).resolves.toBe("second-token");
+    expect(request).toHaveBeenCalledTimes(2);
+  });
 });

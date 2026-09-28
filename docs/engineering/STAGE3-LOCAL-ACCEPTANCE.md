@@ -148,6 +148,9 @@
 - Custom `OPENAI_BASE_URL`, получающий API key и transcript, валидируется до
   старта worker: внешний endpoint обязан быть HTTPS без credentials/query/hash;
   HTTP допускается только для loopback в explicit local deployment profile.
+- OAuth access-token cache YouTube/TikTok привязан одновременно к внутреннему
+  channel ID и immutable provider identity. Смена external channel ref не может
+  повторно использовать токен ранее выбранного аккаунта.
 - Все PostgreSQL-пулы worker-ролей используют единый fail-fast contract:
   подключение ограничено 5 секундами, SQL statement/query и простаивающая
   транзакция — 30 секундами. Потеря БД больше не может бессрочно удерживать
@@ -158,7 +161,7 @@
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  296/296 unit tests
+Worker:  298/298 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

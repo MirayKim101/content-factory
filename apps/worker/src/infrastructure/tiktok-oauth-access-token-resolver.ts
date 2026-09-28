@@ -49,7 +49,8 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
       (credential.channelId && credential.channelId !== input.channelId)
     )
       throw new Error("TIKTOK_CHANNEL_CREDENTIAL_UNAVAILABLE");
-    const cached = this.cache.get(input.channelId);
+    const cacheKey = `${input.channelId}:${credential.externalChannelRef}`;
+    const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAtMs > this.clock() + 60_000)
       return cached.accessToken;
 
@@ -92,7 +93,7 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
       accessToken: value.access_token,
       expiresAtMs: this.clock() + value.expires_in * 1000,
     };
-    this.cache.set(input.channelId, token);
+    this.cache.set(cacheKey, token);
     return token.accessToken;
   }
 }
