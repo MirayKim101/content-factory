@@ -12,6 +12,7 @@ import { PrismaService } from "../src/database/prisma.service.js";
 import {
   PublicationIdempotencyConflictError,
   PublicationOutcomeResolutionConflictError,
+  PublicationRetryConflictError,
 } from "../src/publishing/domain/publication.js";
 import { PrismaPublicationRepository } from "../src/publishing/infrastructure/prisma-publication.repository.js";
 import { seedFrameContext } from "./fixtures/frame-evidence-fixture.js";
@@ -61,10 +62,7 @@ describe.runIf(process.env.PUBLICATION_ISOLATED_TESTS === "1")(
     afterAll(async () => {
       await prisma?.$disconnect();
       await isolated?.end();
-      if (
-        created &&
-        /^cf_publication_test_[a-f0-9]{32}$/.test(databaseName)
-      )
+      if (created && /^cf_publication_test_[a-f0-9]{32}$/.test(databaseName))
         await admin.query(`DROP DATABASE "${databaseName}"`);
       await admin?.end();
       if (previousDatabase === undefined) delete process.env.POSTGRES_DB;
@@ -97,7 +95,9 @@ describe.runIf(process.env.PUBLICATION_ISOLATED_TESTS === "1")(
         metadataSnapshot: { title: "Exact publication" },
       };
       const createdIntent = await repository.create(createInput);
-      await expect(repository.create(createInput)).resolves.toEqual(createdIntent);
+      await expect(repository.create(createInput)).resolves.toEqual(
+        createdIntent,
+      );
       await expect(
         repository.create({
           ...createInput,
@@ -186,12 +186,61 @@ describe.runIf(process.env.PUBLICATION_ISOLATED_TESTS === "1")(
       await prisma.publicationIntent.update({
         where: { id: unknownIntent.id },
         data: {
+          state: "FAILED_FINAL",
+          failureCode: "PUBLICATION_PROVIDER_REJECTED",
+          failureMessage: "Provider rejected the previous attempt.",
+          finishedAt: new Date("2026-09-29T09:07:15.000Z"),
+        },
+      });
+      await prisma.sourceAuthorization.update({
+        where: {
+          sourceId_sourceVersion: {
+            sourceId: fixture.sourceId,
+            sourceVersion: 1,
+          },
+        },
+        data: {
+          status: "NOT_REVIEWED",
+          basis: null,
+          declarationVersion: null,
+          decidedAt: null,
+          revision: { increment: 1 },
+        },
+      });
+      await expect(
+        repository.retry(
+          unknownIntent.id,
+          new Date("2026-09-29T09:07:30.000Z"),
+        ),
+      ).rejects.toBeInstanceOf(PublicationRetryConflictError);
+      await expect(repository.get(unknownIntent.id)).resolves.toMatchObject({
+        state: "FAILED_FINAL",
+      });
+      await prisma.sourceAuthorization.update({
+        where: {
+          sourceId_sourceVersion: {
+            sourceId: fixture.sourceId,
+            sourceVersion: 1,
+          },
+        },
+        data: {
+          status: "CLEARED",
+          basis: "OPERATOR_ATTESTATION",
+          declarationVersion: "source-rights-v1",
+          decidedAt: new Date("2026-09-29T09:07:45.000Z"),
+          revision: { increment: 1 },
+        },
+      });
+      await prisma.publicationIntent.update({
+        where: { id: unknownIntent.id },
+        data: {
           state: "UNKNOWN_REMOTE_STATE",
           attemptCount: 1,
           remotePublicationId: "remote-video-42",
           remoteStatus: "processing",
           failureCode: "PUBLICATION_FINALIZE_OUTCOME_UNKNOWN",
           failureMessage: "Provider returned a durable remote identifier.",
+          finishedAt: null,
         },
       });
       await expect(

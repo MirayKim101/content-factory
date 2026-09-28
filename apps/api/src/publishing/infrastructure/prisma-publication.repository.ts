@@ -224,53 +224,185 @@ export class PrismaPublicationRepository implements PublicationRepository {
   }
 
   async retry(id: string, now: Date): Promise<PublicationIntentView> {
-    return this.prisma.$transaction(async (tx) => {
-      const row = await tx.publicationIntent.findUnique({
-        where: { id },
-        include: { result: true, providerSession: true, channel: true },
-      });
-      if (!row) throw new PublicationLineageInvalidError();
-      if (
-        row.state !== "FAILED_FINAL" ||
-        row.remotePublicationId !== null ||
-        row.result !== null ||
-        row.providerSession !== null ||
-        row.channel.state !== "ENABLED"
-      )
-        throw new PublicationRetryConflictError();
-      const updated = await tx.publicationIntent.updateMany({
-        where: {
-          id,
-          state: "FAILED_FINAL",
-          remotePublicationId: null,
-          result: { is: null },
-          providerSession: { is: null },
+    return this.retryWithRetry(id, now, 0);
+  }
+
+  private async retryWithRetry(
+    id: string,
+    now: Date,
+    conflictCount: number,
+  ): Promise<PublicationIntentView> {
+    try {
+      return await this.prisma.$transaction(
+        async (tx) => {
+          const row = await tx.publicationIntent.findUnique({
+            where: { id },
+            include: {
+              result: true,
+              providerSession: true,
+              channel: true,
+              exportResult: {
+                include: {
+                  artifact: true,
+                  pipelineJob: true,
+                  exportIntent: {
+                    include: {
+                      approval: {
+                        include: {
+                          source: true,
+                          editorialPackage: true,
+                          assemblyRecipe: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              verticalResult: {
+                include: {
+                  approval: true,
+                  artifact: true,
+                  pipelineJob: true,
+                  intent: {
+                    include: {
+                      source: { include: { authorizations: true } },
+                      cutPipelineJob: true,
+                      cutResultArtifact: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+          if (!row) throw new PublicationLineageInvalidError();
+          if (
+            row.state !== "FAILED_FINAL" ||
+            row.remotePublicationId !== null ||
+            row.result !== null ||
+            row.providerSession !== null ||
+            row.channel.state !== "ENABLED"
+          )
+            throw new PublicationRetryConflictError();
+
+          if (row.contentKind === "EDITORIAL_EXPORT") {
+            const exportResult = row.exportResult;
+            const exportIntent = exportResult?.exportIntent;
+            const approval = exportIntent?.approval;
+            if (
+              !exportResult ||
+              !exportIntent ||
+              !approval ||
+              exportIntent.projectId !== row.projectId ||
+              exportIntent.approvalId !== row.approvalId ||
+              approval.projectId !== row.projectId ||
+              approval.source.sourceVersion !== approval.sourceVersion ||
+              approval.editorialPackage.currentRevision !==
+                approval.editorialRevision ||
+              approval.assemblyRecipe.currentRevision !==
+                approval.recipeRevision ||
+              exportResult.pipelineJob.state !== "READY" ||
+              exportResult.pipelineJob.editorialExportIntentId !==
+                exportIntent.id ||
+              exportResult.pipelineJobId !==
+                exportResult.artifact.pipelineJobId ||
+              exportResult.artifact.status !== "READY" ||
+              exportResult.artifact.role !== "EDITORIAL_EXPORT_PACKAGE" ||
+              exportResult.artifact.projectId !== row.projectId ||
+              exportResult.archiveSha256 !== exportResult.artifact.sha256 ||
+              exportResult.archiveSizeBytes !== exportResult.artifact.sizeBytes
+            )
+              throw new PublicationRetryConflictError();
+          } else {
+            const vertical = row.verticalResult;
+            const verticalAuthorization =
+              vertical?.intent.source.authorizations.find(
+                (item) => item.sourceVersion === vertical.intent.sourceVersion,
+              );
+            if (
+              !vertical ||
+              vertical.approval?.id !== row.verticalApprovalId ||
+              vertical.approval.approvalVersion !==
+                "human-vertical-approval-v1" ||
+              vertical.intent.projectId !== row.projectId ||
+              vertical.intent.source.sourceVersion !==
+                vertical.intent.sourceVersion ||
+              vertical.intent.source.status !== "READY" ||
+              verticalAuthorization?.status !== "CLEARED" ||
+              vertical.intent.cutPipelineJob.type !== "CUT_SEGMENT" ||
+              vertical.intent.cutPipelineJob.state !== "READY" ||
+              vertical.intent.cutResultArtifact.status !== "READY" ||
+              vertical.intent.cutResultArtifact.role !== "CUT_RESULT" ||
+              vertical.intent.cutResultArtifact.pipelineJobId !==
+                vertical.intent.cutPipelineJobId ||
+              vertical.intent.cutResultArtifact.projectId !== row.projectId ||
+              vertical.intent.cutResultArtifact.lineageSourceId !==
+                vertical.intent.sourceId ||
+              vertical.intent.cutResultArtifact.lineageSourceVersion !==
+                vertical.intent.sourceVersion ||
+              vertical.intent.renderContractVersion !== "vertical-render-v1" ||
+              vertical.renderContractVersion !== "vertical-render-v1" ||
+              vertical.width !== 1080 ||
+              vertical.height !== 1920 ||
+              vertical.pipelineJob.state !== "READY" ||
+              vertical.pipelineJob.verticalRenderIntentId !==
+                vertical.intentId ||
+              vertical.artifact.projectId !== row.projectId ||
+              vertical.artifact.pipelineJobId !== vertical.pipelineJobId ||
+              vertical.artifact.lineageSourceId !== vertical.intent.sourceId ||
+              vertical.artifact.lineageSourceVersion !==
+                vertical.intent.sourceVersion ||
+              vertical.artifact.status !== "READY" ||
+              vertical.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+              vertical.sha256 !== vertical.artifact.sha256 ||
+              vertical.sizeBytes !== vertical.artifact.sizeBytes
+            )
+              throw new PublicationRetryConflictError();
+          }
+
+          const updated = await tx.publicationIntent.updateMany({
+            where: {
+              id,
+              state: "FAILED_FINAL",
+              remotePublicationId: null,
+              result: { is: null },
+              providerSession: { is: null },
+            },
+            data: {
+              state: "QUEUED",
+              scheduledAt: now,
+              attemptCount: 0,
+              remoteStatus: null,
+              reconciliationLeaseToken: null,
+              reconciliationLeaseExpiresAt: null,
+              metricsLeaseToken: null,
+              metricsLeaseExpiresAt: null,
+              nextAttemptAt: null,
+              failureCode: null,
+              failureMessage: null,
+              queuedAt: now,
+              startedAt: null,
+              finishedAt: null,
+            },
+          });
+          if (updated.count !== 1) throw new PublicationRetryConflictError();
+          const retried = await tx.publicationIntent.findUnique({
+            where: { id },
+            include: intentInclude,
+          });
+          if (!retried) throw new PublicationLineageInvalidError();
+          return this.map(retried);
         },
-        data: {
-          state: "QUEUED",
-          scheduledAt: now,
-          attemptCount: 0,
-          remoteStatus: null,
-          reconciliationLeaseToken: null,
-          reconciliationLeaseExpiresAt: null,
-          metricsLeaseToken: null,
-          metricsLeaseExpiresAt: null,
-          nextAttemptAt: null,
-          failureCode: null,
-          failureMessage: null,
-          queuedAt: now,
-          startedAt: null,
-          finishedAt: null,
-        },
-      });
-      if (updated.count !== 1) throw new PublicationRetryConflictError();
-      const retried = await tx.publicationIntent.findUnique({
-        where: { id },
-        include: intentInclude,
-      });
-      if (!retried) throw new PublicationLineageInvalidError();
-      return this.map(retried);
-    });
+        { isolationLevel: "Serializable" },
+      );
+    } catch (error) {
+      if (this.isRetryable(error) && conflictCount < 5) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 5 * 2 ** conflictCount),
+        );
+        return this.retryWithRetry(id, now, conflictCount + 1);
+      }
+      throw error;
+    }
   }
 
   async confirmRemoteAbsent(
