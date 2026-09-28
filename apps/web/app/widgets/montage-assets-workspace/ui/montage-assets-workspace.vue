@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import Select from "primevue/select";
 import { computed, ref, watch } from "vue";
 
 import MontageAssetCard from "~/entities/montage-asset/ui/montage-asset-card.vue";
@@ -12,6 +11,11 @@ import {
   createProjectsApi,
   listAllProjects,
 } from "~/shared/api/projects";
+import {
+  type ProjectOption,
+  toProjectOption,
+} from "~/shared/lib/project-option";
+import ProjectSelect from "~/shared/ui/project-select.vue";
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -22,7 +26,7 @@ const montageApi = createMontageAssetsApi({
   apiBasePath: config.public.apiBasePath,
 });
 const selectedProjectId = ref<string>();
-const projects = ref<Array<{ id: string; label: string }>>([]);
+const projects = ref<ProjectOption[]>([]);
 const projectsLoading = ref(true);
 const projectsError = ref<string>();
 const uploadActive = ref(false);
@@ -37,10 +41,7 @@ async function loadProjects(): Promise<void> {
   projectsError.value = undefined;
   try {
     const allProjects = await listAllProjects(projectsApi);
-    projects.value = allProjects.map((project) => ({
-      id: project.id,
-      label: `${project.name} · ${project.source.originalFilename}`,
-    }));
+    projects.value = allProjects.map(toProjectOption);
     const fromUrl =
       typeof route.query.projectId === "string"
         ? route.query.projectId
@@ -106,12 +107,10 @@ void loadProjects();
 
     <section class="project-picker" aria-label="Выбор проекта">
       <label for="montage-project">Проект</label>
-      <Select
-        id="montage-project"
+      <ProjectSelect
+        input-id="montage-project"
         :model-value="selectedProjectId"
         :options="projects"
-        option-label="label"
-        option-value="id"
         :loading="projectsLoading"
         :disabled="uploadActive"
         placeholder="Выберите проект"
@@ -127,7 +126,7 @@ void loadProjects();
       <section class="upload-panel" aria-labelledby="montage-upload-title">
         <h2 id="montage-upload-title">Добавить материал</h2>
         <p v-if="selectedProject" class="selected-project">
-          Для: {{ selectedProject.label }}
+          Для: {{ selectedProject.name }} · {{ selectedProject.detail }}
         </p>
         <MontageAssetUpload
           :project-id="selectedProjectId"

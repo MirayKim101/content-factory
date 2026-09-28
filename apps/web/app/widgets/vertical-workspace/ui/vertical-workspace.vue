@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import Select from "primevue/select";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import {
@@ -8,6 +7,11 @@ import {
   type PipelineJob,
 } from "~/shared/api/media-pipeline";
 import { createProjectsApi, listAllProjects } from "~/shared/api/projects";
+import {
+  type ProjectOption,
+  toProjectOption,
+} from "~/shared/lib/project-option";
+import ProjectSelect from "~/shared/ui/project-select.vue";
 import {
   createVerticalRendersApi,
   type VerticalRender,
@@ -24,7 +28,7 @@ const projectsApi = createProjectsApi({
 });
 const cutsApi = createMediaPipelineApi(config.public.apiBasePath);
 const verticalApi = createVerticalRendersApi(config.public.apiBasePath);
-const projects = ref<Array<{ id: string; name: string }>>([]);
+const projects = ref<ProjectOption[]>([]);
 const projectId = ref("");
 const cuts = ref<PipelineJob[]>([]);
 const renders = ref<VerticalRender[]>([]);
@@ -58,7 +62,7 @@ const summary = computed(() => ({
 
 async function loadProjects() {
   const allProjects = await listAllProjects(projectsApi);
-  projects.value = allProjects.map(({ id, name }) => ({ id, name }));
+  projects.value = allProjects.map(toProjectOption);
   const requested =
     typeof route.query.projectId === "string" ? route.query.projectId : "";
   projectId.value = projects.value.some((item) => item.id === requested)
@@ -236,11 +240,9 @@ onUnmounted(() => {
       </div>
       <label class="project-switcher"
         ><span>Проект</span
-        ><Select
+        ><ProjectSelect
           v-model="projectId"
           :options="projects"
-          option-label="name"
-          option-value="id"
           placeholder="Выберите проект"
       /></label>
     </header>

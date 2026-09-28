@@ -200,7 +200,10 @@ a.action-link:hover {
 :where(.p-select-label) {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
   padding: 0.55rem 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 :where(.p-select-dropdown) {
@@ -217,11 +220,21 @@ a.action-link:hover {
   height: 0.875rem;
 }
 
-:where(.p-select-overlay, .p-select-list-container) {
+:where(.p-select-overlay) {
+  z-index: 1400 !important;
+  max-width: min(32rem, calc(100vw - 2rem));
+  overflow: hidden;
   border: 1px solid var(--cf-border);
   border-radius: var(--cf-radius-md);
   background: var(--cf-surface);
   box-shadow: var(--cf-shadow-lg);
+}
+
+:where(.p-select-list-container) {
+  max-height: min(22rem, calc(100vh - 2rem));
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 :where(.p-select-list) {
@@ -233,9 +246,22 @@ a.action-link:hover {
 }
 
 :where(.p-select-option) {
+  min-width: 0;
+  max-width: 100%;
   padding: 0.6rem 0.7rem;
   border-radius: 0.5rem;
   cursor: pointer;
+}
+
+:where(.p-select-option-label) {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:where(.project-select-panel) {
+  min-width: min(24rem, calc(100vw - 2rem)) !important;
 }
 
 :where(.p-select-option:hover, .p-select-option[data-p-focused="true"]) {

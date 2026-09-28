@@ -12,6 +12,11 @@ import {
 } from "~/shared/api/editorial-exports";
 import { createProjectsApi, listAllProjects } from "~/shared/api/projects";
 import {
+  type ProjectOption,
+  toProjectOption,
+} from "~/shared/lib/project-option";
+import ProjectSelect from "~/shared/ui/project-select.vue";
+import {
   createPublicationsApi,
   type PublicationChannel,
   type PublicationIntent,
@@ -23,8 +28,6 @@ import {
   type VerticalRender,
 } from "~/shared/api/vertical-renders";
 import { hasPendingPublication } from "~/widgets/publication-workspace/model/status";
-
-type ProjectOption = { id: string; name: string };
 
 const route = useRoute();
 const config = useRuntimeConfig();
@@ -146,7 +149,7 @@ function platformEnabled(platform: PublicationChannel["platform"]): boolean {
 
 async function loadProjects(): Promise<void> {
   const allProjects = await listAllProjects(projectsApi);
-  projects.value = allProjects.map(({ id, name }) => ({ id, name }));
+  projects.value = allProjects.map(toProjectOption);
   const requested =
     typeof route.query.projectId === "string" ? route.query.projectId : "";
   projectId.value = projects.value.some((item) => item.id === requested)
@@ -637,11 +640,9 @@ onUnmounted(() => {
       </div>
       <label class="project-switcher">
         <span>Проект</span>
-        <Select
+        <ProjectSelect
           v-model="projectId"
           :options="projects"
-          option-label="name"
-          option-value="id"
           placeholder="Выберите проект"
         />
       </label>
