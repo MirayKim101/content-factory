@@ -51,6 +51,9 @@
   потерянный/невалидный ответ и ошибка сохранения уже полученного `publish_id`
   переводят intent в `UNKNOWN_REMOTE_STATE`, а не повторяют POST. Однозначный
   HTTP 4xx до принятия запроса остаётся в bounded retry.
+- Потеря publication lease или shutdown во время самого TikTok initiation не
+  отменяет этот remote-commit fence: неоднозначный abort имеет приоритет над
+  lease recovery и остаётся в `UNKNOWN_REMOTE_STATE` до ручной/provider сверки.
 - YouTube и TikTok работают через независимые abort-aware provider pools с
   concurrency 1; очередь одного provider не потребляет permit другого. После
   трёх последовательных transient/network/5xx ошибок circuit открывается на
@@ -161,7 +164,7 @@
 ```text
 API:     243/243 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  298/298 unit tests
+Worker:  300/300 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

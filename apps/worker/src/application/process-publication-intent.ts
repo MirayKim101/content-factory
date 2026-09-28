@@ -97,8 +97,6 @@ export class ProcessPublicationIntent {
       }
       return true;
     } catch (error) {
-      if (signal.reason instanceof PublicationLeaseLostError) return false;
-      if (externalWriteConfirmed) throw error;
       if (error instanceof PublicationOutcomeUnknownError) {
         await this.repository.markUnknownRemoteState(
           claim,
@@ -110,6 +108,8 @@ export class ProcessPublicationIntent {
         );
         return true;
       }
+      if (signal.reason instanceof PublicationLeaseLostError) return false;
+      if (externalWriteConfirmed) throw error;
       if (signal.reason instanceof PublicationShutdownError) {
         await this.repository.releaseClaim(claim, this.clock());
         return false;

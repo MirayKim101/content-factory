@@ -115,6 +115,50 @@ describe("ProcessPublicationIntent", () => {
     expect(repo.failFinal).not.toHaveBeenCalled();
   });
 
+  it("quarantines an ambiguous remote result even when lease loss triggered the abort", async () => {
+    vi.useFakeTimers();
+    const remoteClaim = { ...claim, platform: "TIKTOK" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+    vi.mocked(repo.heartbeat).mockResolvedValue(false);
+    const publish = vi.fn(
+      (_claim: PublicationClaim, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          signal?.addEventListener(
+            "abort",
+            () =>
+              reject(
+                new PublicationOutcomeUnknownError(
+                  "TIKTOK_INITIATION_OUTCOME_UNKNOWN",
+                  "Direct Post initiation may have succeeded.",
+                  null,
+                  "initiation_outcome_unknown",
+                ),
+              ),
+            { once: true },
+          );
+        }),
+    );
+    const processing = new ProcessPublicationIntent(repo, [
+      { platform: "TIKTOK", publish },
+    ]).execute(remoteClaim.id);
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    await expect(processing).resolves.toBe(true);
+    expect(repo.markUnknownRemoteState).toHaveBeenCalledWith(
+      remoteClaim,
+      "TIKTOK_INITIATION_OUTCOME_UNKNOWN",
+      expect.any(String),
+      null,
+      "initiation_outcome_unknown",
+      expect.any(Date),
+    );
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
+    expect(repo.releaseClaim).not.toHaveBeenCalled();
+  });
+
   it("fails closed when publication lease ownership cannot be refreshed", async () => {
     vi.useFakeTimers();
     const repo = repository();

@@ -118,7 +118,6 @@ export class TikTokPublicationAdapter implements PublicationProvider {
           signal,
         });
       } catch (error) {
-        signal?.throwIfAborted();
         if (safeTikTokInitiationFailure(error)) throw error;
         throw new PublicationOutcomeUnknownError(
           "TIKTOK_INITIATION_OUTCOME_UNKNOWN",

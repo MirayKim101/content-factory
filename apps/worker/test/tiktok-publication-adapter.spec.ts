@@ -151,6 +151,32 @@ describe("TikTokPublicationAdapter", () => {
     expect(deps.sessions.save).not.toHaveBeenCalled();
   });
 
+  it("quarantines an aborted initiation because its remote outcome is unknown", async () => {
+    const deps = dependencies();
+    const controller = new AbortController();
+    deps.transport.initiate.mockImplementation(async () => {
+      controller.abort(new Error("lease lost"));
+      throw controller.signal.reason;
+    });
+
+    const error = await new TikTokPublicationAdapter(
+      deps.tokens,
+      deps.media,
+      deps.sessions,
+      deps.cipher,
+      deps.transport,
+    )
+      .publish(claim, controller.signal)
+      .catch((caught: unknown) => caught);
+
+    expect(error).toMatchObject({
+      name: "PublicationOutcomeUnknownError",
+      code: "TIKTOK_INITIATION_OUTCOME_UNKNOWN",
+      remotePublicationId: null,
+    });
+    expect(deps.sessions.save).not.toHaveBeenCalled();
+  });
+
   it("keeps deterministic initiation rejection retryable", async () => {
     const deps = dependencies();
     deps.transport.initiate.mockRejectedValue(
