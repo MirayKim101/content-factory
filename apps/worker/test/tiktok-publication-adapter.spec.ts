@@ -145,7 +145,10 @@ describe("TikTokPublicationAdapter", () => {
         deps.cipher,
         deps.transport,
       ).publish(claim),
-    ).rejects.toThrow("TIKTOK_EXPLICIT_CONSENT_INVALID");
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "TIKTOK_EXPLICIT_CONSENT_INVALID",
+    });
     expect(deps.transport.initiate).not.toHaveBeenCalled();
   });
 

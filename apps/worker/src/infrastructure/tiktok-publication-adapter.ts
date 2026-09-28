@@ -305,7 +305,7 @@ function requireTikTokMetadata(
     Number.isNaN(Date.parse(consent.creatorInfoFetchedAt)) ||
     Date.parse(consent.confirmedAt) < Date.parse(consent.creatorInfoFetchedAt)
   )
-    throw new Error("TIKTOK_EXPLICIT_CONSENT_INVALID");
+    throw permanentValidation("TIKTOK_EXPLICIT_CONSENT_INVALID");
   const title = text(snapshot.title, 2200, "TIKTOK_TITLE_INVALID");
   const privacyLevel = text(
     snapshot.privacyLevel,
@@ -313,7 +313,7 @@ function requireTikTokMetadata(
     "TIKTOK_PRIVACY_LEVEL_INVALID",
   );
   if (!creator.privacyLevelOptions.includes(privacyLevel))
-    throw new Error("TIKTOK_PRIVACY_LEVEL_STALE");
+    throw permanentValidation("TIKTOK_PRIVACY_LEVEL_STALE");
   const disableComment = boolean(
     snapshot.disableComment,
     "TIKTOK_COMMENT_SETTING_INVALID",
@@ -331,7 +331,7 @@ function requireTikTokMetadata(
     (creator.duetDisabled && !disableDuet) ||
     (creator.stitchDisabled && !disableStitch)
   )
-    throw new Error("TIKTOK_CREATOR_CAPABILITIES_STALE");
+    throw permanentValidation("TIKTOK_CREATOR_CAPABILITIES_STALE");
   return {
     title,
     privacyLevel,
@@ -354,17 +354,20 @@ function requireTikTokMetadata(
 
 function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value))
-    throw new Error("TIKTOK_EXPLICIT_CONSENT_INVALID");
+    throw permanentValidation("TIKTOK_EXPLICIT_CONSENT_INVALID");
   return value as Record<string, unknown>;
 }
 function text(value: unknown, max: number, code: string): string {
   if (typeof value !== "string" || !value || value.length > max)
-    throw new Error(code);
+    throw permanentValidation(code);
   return value;
 }
 function boolean(value: unknown, code: string): boolean {
-  if (typeof value !== "boolean") throw new Error(code);
+  if (typeof value !== "boolean") throw permanentValidation(code);
   return value;
+}
+function permanentValidation(code: string): PublicationPermanentError {
+  return new PublicationPermanentError(code, code);
 }
 function safeCode(value: string | undefined): string {
   return value && /^[a-z0-9_]{1,128}$/i.test(value) ? value : "unknown";

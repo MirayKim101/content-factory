@@ -247,10 +247,10 @@ function youtubeMetadata(snapshot: Record<string, unknown>) {
   );
   const privacyStatus = snapshot.privacyStatus ?? "private";
   if (!["private", "unlisted", "public"].includes(String(privacyStatus)))
-    throw new Error("YOUTUBE_PRIVACY_STATUS_INVALID");
+    throw permanentValidation("YOUTUBE_PRIVACY_STATUS_INVALID");
   const tags = snapshot.tags;
   if (tags !== undefined && !validTags(tags))
-    throw new Error("YOUTUBE_TAGS_INVALID");
+    throw permanentValidation("YOUTUBE_TAGS_INVALID");
   return {
     snippet: {
       title,
@@ -274,7 +274,7 @@ function validTags(value: unknown): value is string[] {
 
 function requiredText(value: unknown, maximum: number, code: string): string {
   if (typeof value !== "string" || !value.trim() || value.length > maximum)
-    throw new Error(code);
+    throw permanentValidation(code);
   return value.trim();
 }
 
@@ -285,8 +285,12 @@ function optionalText(
 ): string | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "string" || value.length > maximum)
-    throw new Error(code);
+    throw permanentValidation(code);
   return value.trim() || undefined;
+}
+
+function permanentValidation(code: string): PublicationPermanentError {
+  return new PublicationPermanentError(code, code);
 }
 
 function minBigInt(left: bigint, right: bigint): bigint {

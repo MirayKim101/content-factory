@@ -121,6 +121,25 @@ describe("YoutubePublicationAdapter", () => {
     );
   });
 
+  it("classifies invalid metadata as a permanent preflight failure", async () => {
+    const deps = dependencies();
+
+    await expect(
+      new YoutubePublicationAdapter(
+        deps.tokens,
+        deps.media,
+        deps.sessions,
+        deps.cipher,
+        deps.transport,
+      ).publish({ ...claim, metadataSnapshot: { title: "" } }),
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "YOUTUBE_TITLE_INVALID",
+    });
+    expect(deps.transport.initiate).not.toHaveBeenCalled();
+    expect(deps.transport.uploadChunk).not.toHaveBeenCalled();
+  });
+
   it("probes and resumes an encrypted prior session without initiating again", async () => {
     const deps = dependencies();
     const encrypted = deps.cipher.encrypt({
