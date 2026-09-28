@@ -197,8 +197,18 @@ export class TikTokDirectPostTransport {
     });
     const expected = input.final ? 201 : 206;
     const accepted = response.status === expected;
+    const acknowledgedRange = response.headers.get("content-range");
     await response.body?.cancel().catch(() => undefined);
     if (!accepted) throw new Error(`TIKTOK_UPLOAD_FAILED_${response.status}`);
+    const match = /^bytes 0-(\d+)\/(\d+)$/.exec(
+      acknowledgedRange?.trim() ?? "",
+    );
+    if (
+      !match ||
+      BigInt(match[1]!) !== end ||
+      BigInt(match[2]!) !== input.totalBytes
+    )
+      throw new Error("TIKTOK_UPLOAD_PROGRESS_INVALID");
     return { complete: input.final, nextOffset: end + 1n };
   }
 

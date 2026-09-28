@@ -102,10 +102,15 @@ describe("TikTokDirectPostTransport", () => {
   });
 
   it("uploads ranges sequentially with provider response semantics", async () => {
-    const request = vi
-      .fn()
-      .mockResolvedValue(new Response(null, { status: 206 }));
     const chunkSize = 5 * 1024 * 1024;
+    const request = vi.fn().mockResolvedValue(
+      new Response(null, {
+        status: 206,
+        headers: {
+          "content-range": `bytes 0-${chunkSize - 1}/${chunkSize * 2}`,
+        },
+      }),
+    );
     await expect(
       new TikTokDirectPostTransport(request).uploadChunk({
         uploadUrl: "https://open-upload.tiktokapis.com/video/?upload_id=42",
@@ -125,6 +130,27 @@ describe("TikTokDirectPostTransport", () => {
         }),
       }),
     );
+  });
+
+  it("rejects a success status that acknowledges a different range", async () => {
+    const chunkSize = 5 * 1024 * 1024;
+    const request = vi.fn().mockResolvedValue(
+      new Response(null, {
+        status: 206,
+        headers: { "content-range": `bytes 0-99/${chunkSize * 2}` },
+      }),
+    );
+
+    await expect(
+      new TikTokDirectPostTransport(request).uploadChunk({
+        uploadUrl: "https://open-upload.tiktokapis.com/video/?upload_id=42",
+        chunk: new Uint8Array(chunkSize),
+        offset: 0n,
+        totalBytes: BigInt(chunkSize * 2),
+        contentType: "video/mp4",
+        final: false,
+      }),
+    ).rejects.toThrow("TIKTOK_UPLOAD_PROGRESS_INVALID");
   });
 
   it("rejects non-final chunks outside TikTok transfer bounds", async () => {
