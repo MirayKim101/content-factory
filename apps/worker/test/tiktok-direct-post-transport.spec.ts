@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { TikTokDirectPostTransport } from "../src/infrastructure/tiktok-direct-post-transport.js";
+import {
+  tiktokChunkLength,
+  TikTokDirectPostTransport,
+} from "../src/infrastructure/tiktok-direct-post-transport.js";
 
 const ok = (data: object) =>
   new Response(
@@ -71,6 +74,31 @@ describe("TikTokDirectPostTransport", () => {
       source: "FILE_UPLOAD",
       total_chunk_count: 2,
     });
+  });
+
+  it("merges trailing bytes into the final declared chunk", () => {
+    const transport = new TikTokDirectPostTransport();
+    const mib = 1024n * 1024n;
+    const plan = transport.planUpload(130n * mib);
+
+    expect(plan).toEqual({
+      chunkSize: 64 * 1024 * 1024,
+      totalChunkCount: 2,
+    });
+    expect(tiktokChunkLength(130n * mib, 0n, plan.chunkSize)).toBe(
+      64 * 1024 * 1024,
+    );
+    expect(tiktokChunkLength(130n * mib, 64n * mib, plan.chunkSize)).toBe(
+      66 * 1024 * 1024,
+    );
+
+    const exactPlan = transport.planUpload(128n * mib);
+    expect(tiktokChunkLength(128n * mib, 0n, exactPlan.chunkSize)).toBe(
+      64 * 1024 * 1024,
+    );
+    expect(tiktokChunkLength(128n * mib, 64n * mib, exactPlan.chunkSize)).toBe(
+      64 * 1024 * 1024,
+    );
   });
 
   it("uploads ranges sequentially with provider response semantics", async () => {

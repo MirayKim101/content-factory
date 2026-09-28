@@ -13,6 +13,7 @@ import {
 } from "../application/publication.port.js";
 import { PublicationSessionCipher } from "./publication-session-cipher.js";
 import {
+  tiktokChunkLength,
   TikTokDirectPostTransport,
   type TikTokCreatorInfo,
 } from "./tiktok-direct-post-transport.js";
@@ -169,9 +170,7 @@ export class TikTokPublicationAdapter implements PublicationProvider {
 
     while (offset < identity.sizeBytes) {
       signal?.throwIfAborted();
-      const length = Number(
-        minBigInt(BigInt(chunkSize), identity.sizeBytes - offset),
-      );
+      const length = tiktokChunkLength(identity.sizeBytes, offset, chunkSize);
       const final = offset + BigInt(length) === identity.sizeBytes;
       const chunk = await this.media.readRange({ identity, offset, length });
       signal?.throwIfAborted();
@@ -360,10 +359,6 @@ function boolean(value: unknown, code: string): boolean {
 function safeCode(value: string | undefined): string {
   return value && /^[a-z0-9_]{1,128}$/i.test(value) ? value : "unknown";
 }
-function minBigInt(left: bigint, right: bigint): bigint {
-  return left < right ? left : right;
-}
-
 function safeTikTokInitiationFailure(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   return /^(?:TIKTOK_(?:TITLE|PRIVACY_LEVEL|MEDIA_SIZE|MEDIA_CHUNK_COUNT)_INVALID|TIKTOK_API_FAILED_4\d\d)$/.test(

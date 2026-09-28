@@ -28,6 +28,28 @@ export interface TikTokUploadPlan {
   totalChunkCount: number;
 }
 
+export function tiktokChunkLength(
+  totalBytes: bigint,
+  offset: bigint,
+  chunkSize: number,
+): number {
+  if (
+    totalBytes <= 0n ||
+    offset < 0n ||
+    offset >= totalBytes ||
+    !Number.isSafeInteger(chunkSize) ||
+    chunkSize <= 0
+  )
+    throw new Error("TIKTOK_UPLOAD_PROGRESS_INVALID");
+  const remaining = totalBytes - offset;
+  const nominal = BigInt(chunkSize);
+  // TikTok requires floor(video_size / chunk_size) requests. Any remainder is
+  // merged into the final nominal chunk, which may be up to 128 MiB.
+  const length =
+    remaining > nominal && remaining < nominal * 2n ? remaining : nominal;
+  return Number(length < remaining ? length : remaining);
+}
+
 export class TikTokDirectPostTransport {
   constructor(private readonly request: typeof fetch = fetch) {}
 
