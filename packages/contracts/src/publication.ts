@@ -84,6 +84,12 @@ export function isTerminalPublicationState(value: PublicationState): boolean {
 }
 
 export function requirePublicationSchedule(value: string, now: Date): string {
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      value,
+    )
+  )
+    throw new Error("PUBLICATION_SCHEDULE_INVALID");
   const scheduledAt = new Date(value);
   if (
     Number.isNaN(scheduledAt.getTime()) ||

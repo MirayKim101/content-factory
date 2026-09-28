@@ -22,6 +22,9 @@
 - Publication: UTC schedule, channel ownership, exact approved vertical
   lineage, idempotent state machine, LOCAL_DRY_RUN, YouTube resumable upload,
   TikTok Direct Post, unknown-remote reconciliation и metrics snapshots.
+- Publication schedule contract принимает только RFC3339 timestamp с явным
+  `Z` или numeric UTC offset. Date-only и timezone-less значения отклоняются,
+  поэтому timezone production host не может незаметно сдвинуть запуск.
 - UI показывает Twitch import progress, vertical review, расписание и provider
   statuses. При выключенном auto-ingest явно сохраняет ручную привязку.
 - Publishing UI получает эффективные server-side capabilities без секретов;
@@ -170,6 +173,7 @@
 
 ```text
 API:     244/244 unit tests
+Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  301/301 unit tests
 Web:     266/266 tests

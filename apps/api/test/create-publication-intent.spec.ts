@@ -138,6 +138,9 @@ describe("CreatePublicationIntent", () => {
       useCase.execute({ ...base, scheduledAt: "2020-01-01T00:00:00Z" }),
     ).rejects.toBeInstanceOf(PublicationScheduleInvalidError);
     await expect(
+      useCase.execute({ ...base, scheduledAt: "2026-10-01T09:00:00" }),
+    ).rejects.toBeInstanceOf(PublicationScheduleInvalidError);
+    await expect(
       useCase.execute({ ...base, timezone: "Mars/Olympus" }),
     ).rejects.toBeInstanceOf(PublicationTimezoneInvalidError);
     await expect(

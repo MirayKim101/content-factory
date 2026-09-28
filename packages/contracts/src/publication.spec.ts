@@ -44,4 +44,15 @@ describe("publication contracts", () => {
       requirePublicationSchedule("2026-09-27T11:59:59.999Z", now),
     ).toThrow("PUBLICATION_SCHEDULE_INVALID");
   });
+
+  it.each([
+    "2026-09-27",
+    "2026-09-27T13:00:00",
+    "2026-09-27 13:00:00Z",
+    "2026-09-27T13:00Z",
+  ])("rejects a schedule without an explicit RFC3339 offset: %s", (value) => {
+    expect(() =>
+      requirePublicationSchedule(value, new Date("2026-09-27T12:00:00.000Z")),
+    ).toThrow("PUBLICATION_SCHEDULE_INVALID");
+  });
 });
