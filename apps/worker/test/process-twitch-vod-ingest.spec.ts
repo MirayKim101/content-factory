@@ -137,6 +137,62 @@ describe("ProcessTwitchVodIngest", () => {
     );
   });
 
+  it("cancels an opened response before rejecting an oversized VOD", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const cancel = vi.fn();
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "c",
+        providerVideoId: "1",
+        projectName: "x",
+        attemptCount: 1,
+        leaseOwner: "w",
+        downloadedBytes: 0n,
+        totalBytes: null,
+      })),
+      checkpoint: vi.fn(),
+      heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = {
+      open: vi.fn(async () => ({
+        body: new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(new Uint8Array([1]));
+          },
+          cancel,
+        }),
+        contentType: "video/mp4" as const,
+        totalSizeBytes: 1_001n,
+        offset: 0n,
+      })),
+    };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      { upload: vi.fn() } as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    await expect(processor.execute("w")).resolves.toBe(true);
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(repository.checkpoint).not.toHaveBeenCalled();
+    expect(repository.fail).toHaveBeenCalledWith(
+      intentId,
+      "w",
+      "TWITCH_VOD_TOO_LARGE",
+      expect.any(String),
+      false,
+    );
+  });
+
   it("resumes after a crash that left a complete verified-size scratch file", async () => {
     const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
     directories.push(scratch);

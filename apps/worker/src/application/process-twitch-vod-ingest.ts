@@ -71,54 +71,59 @@ export class ProcessTwitchVodIngest {
           offset,
           deadline.signal,
         );
-        if (response.totalSizeBytes > this.maxBytes)
-          throw new Error("TWITCH_VOD_TOO_LARGE");
-        expectedBytes = response.totalSizeBytes;
-        await this.repository.checkpoint(
-          lease.id,
-          workerId,
-          offset,
-          response.totalSizeBytes,
-        );
-        let downloaded = offset;
-        let persisted = offset;
-        const checkpointBytes = 8n * 1024n * 1024n;
-        const progress = new Transform({
-          transform: (chunk: Buffer, _encoding, callback) => {
-            downloaded += BigInt(chunk.length);
-            if (
-              downloaded > response.totalSizeBytes ||
-              downloaded > this.maxBytes
-            ) {
-              callback(new Error("TWITCH_VOD_SIZE_MISMATCH"));
-              return;
-            }
-            if (downloaded - persisted < checkpointBytes) {
-              callback(null, chunk);
-              return;
-            }
-            this.repository
-              .checkpoint(
-                lease.id,
-                workerId,
-                downloaded,
-                response.totalSizeBytes,
-              )
-              .then(() => {
-                persisted = downloaded;
+        try {
+          if (response.totalSizeBytes > this.maxBytes)
+            throw new Error("TWITCH_VOD_TOO_LARGE");
+          expectedBytes = response.totalSizeBytes;
+          await this.repository.checkpoint(
+            lease.id,
+            workerId,
+            offset,
+            response.totalSizeBytes,
+          );
+          let downloaded = offset;
+          let persisted = offset;
+          const checkpointBytes = 8n * 1024n * 1024n;
+          const progress = new Transform({
+            transform: (chunk: Buffer, _encoding, callback) => {
+              downloaded += BigInt(chunk.length);
+              if (
+                downloaded > response.totalSizeBytes ||
+                downloaded > this.maxBytes
+              ) {
+                callback(new Error("TWITCH_VOD_SIZE_MISMATCH"));
+                return;
+              }
+              if (downloaded - persisted < checkpointBytes) {
                 callback(null, chunk);
-              }, callback);
-          },
-        });
-        await pipeline(
-          Readable.from(response.body as AsyncIterable<Uint8Array>),
-          progress,
-          createWriteStream(path, {
-            flags: offset > 0n ? "a" : "w",
-            mode: 0o600,
-          }),
-          { signal: deadline.signal },
-        );
+                return;
+              }
+              this.repository
+                .checkpoint(
+                  lease.id,
+                  workerId,
+                  downloaded,
+                  response.totalSizeBytes,
+                )
+                .then(() => {
+                  persisted = downloaded;
+                  callback(null, chunk);
+                }, callback);
+            },
+          });
+          await pipeline(
+            Readable.from(response.body as AsyncIterable<Uint8Array>),
+            progress,
+            createWriteStream(path, {
+              flags: offset > 0n ? "a" : "w",
+              mode: 0o600,
+            }),
+            { signal: deadline.signal },
+          );
+        } catch (error) {
+          await response.body.cancel(error).catch(() => undefined);
+          throw error;
+        }
       }
       const sizeBytes = BigInt((await stat(path)).size);
       if (expectedBytes === null || sizeBytes !== expectedBytes)
