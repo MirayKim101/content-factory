@@ -9,6 +9,20 @@ export default defineNuxtConfig({
   primevue: {
     options: {
       unstyled: true,
+      pt: {
+        select: {
+          root: { class: "p-select" },
+          label: { class: "p-select-label" },
+          dropdown: { class: "p-select-dropdown" },
+          dropdownIcon: { class: "p-select-dropdown-icon" },
+          overlay: { class: "p-select-overlay" },
+          listContainer: { class: "p-select-list-container" },
+          list: { class: "p-select-list" },
+          option: { class: "p-select-option" },
+          optionLabel: { class: "p-select-option-label" },
+          emptyMessage: { class: "p-select-empty-message" },
+        },
+      },
     },
   },
   runtimeConfig: {
