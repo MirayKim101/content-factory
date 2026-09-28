@@ -44,7 +44,10 @@ export class TwitchAppAccessTokenResolver {
       signal: requestSignal,
     });
     signal?.throwIfAborted();
-    if (!response.ok) throw new Error(`TWITCH_OAUTH_${response.status}`);
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
+      throw new Error(`TWITCH_OAUTH_${response.status}`);
+    }
     const payload: unknown = await response.json();
     signal?.throwIfAborted();
     if (!payload || typeof payload !== "object" || Array.isArray(payload))

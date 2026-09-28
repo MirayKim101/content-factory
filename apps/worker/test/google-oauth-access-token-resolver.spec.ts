@@ -94,6 +94,26 @@ describe("GoogleOAuthAccessTokenResolver", () => {
     expect(request).not.toHaveBeenCalled();
   });
 
+  it("cancels a rejected token response", async () => {
+    const cancel = vi.fn();
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(new ReadableStream({ cancel }), { status: 503 }),
+      );
+    const resolver = new GoogleOAuthAccessTokenResolver(
+      "client-id",
+      "client-secret",
+      [{ channelId, externalChannelRef, refreshToken: "refresh-token" }],
+      request,
+    );
+
+    await expect(
+      resolver.resolve({ channelId, platform: "YOUTUBE", externalChannelRef }),
+    ).rejects.toThrow("YOUTUBE_TOKEN_REFRESH_FAILED_503");
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
   it("does not reuse a cached token after the external channel identity changes", async () => {
     const secondRef = "UCabcdefghijklmnopqrstuv";
     const request = vi

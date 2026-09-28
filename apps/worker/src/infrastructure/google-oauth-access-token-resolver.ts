@@ -86,8 +86,10 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
       redirect: "error",
       signal,
     });
-    if (!response.ok)
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
       throw new Error(`YOUTUBE_TOKEN_REFRESH_FAILED_${response.status}`);
+    }
     const payload: unknown = await response.json();
     const record = objectRecord(payload, "YOUTUBE_TOKEN_RESPONSE_INVALID");
     const accessToken = record.access_token;
@@ -118,8 +120,10 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
       redirect: "error",
       signal,
     });
-    if (!response.ok)
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
       throw new Error(`YOUTUBE_CHANNEL_VERIFY_FAILED_${response.status}`);
+    }
     const payload = objectRecord(
       (await response.json()) as unknown,
       "YOUTUBE_CHANNEL_VERIFY_INVALID",

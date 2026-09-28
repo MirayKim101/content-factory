@@ -101,6 +101,31 @@ describe("TikTokOAuthAccessTokenResolver", () => {
     );
   });
 
+  it("cancels a rejected token response", async () => {
+    const cancel = vi.fn();
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(new ReadableStream({ cancel }), { status: 429 }),
+      );
+    const resolver = new TikTokOAuthAccessTokenResolver(
+      "client-key",
+      "client-secret",
+      [
+        {
+          externalChannelRef: input.externalChannelRef,
+          refreshToken: "refresh-token",
+        },
+      ],
+      request,
+    );
+
+    await expect(resolver.resolve(input)).rejects.toThrow(
+      "TIKTOK_TOKEN_REFRESH_FAILED_429",
+    );
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
   it("does not reuse a cached token after the external creator identity changes", async () => {
     const secondRef = "second-creator";
     const response = (accessToken: string, openId: string) =>

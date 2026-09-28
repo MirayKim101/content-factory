@@ -66,8 +66,10 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
       redirect: "error",
       signal: input.signal,
     });
-    if (!response.ok)
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
       throw new Error(`TIKTOK_TOKEN_REFRESH_FAILED_${response.status}`);
+    }
     const payload: unknown = await response.json();
     if (!payload || typeof payload !== "object" || Array.isArray(payload))
       throw new Error("TIKTOK_TOKEN_RESPONSE_INVALID");

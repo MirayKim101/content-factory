@@ -43,9 +43,12 @@ describe("TwitchAppAccessTokenResolver", () => {
   });
 
   it("does not cache failed or malformed responses", async () => {
+    const cancel = vi.fn();
     const request = vi
       .fn()
-      .mockResolvedValueOnce(new Response("{}", { status: 503 }))
+      .mockResolvedValueOnce(
+        new Response(new ReadableStream({ cancel }), { status: 503 }),
+      )
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ access_token: "bad", expires_in: 10 }), {
           status: 200,
@@ -58,6 +61,7 @@ describe("TwitchAppAccessTokenResolver", () => {
     );
 
     await expect(resolver.resolve()).rejects.toThrow("TWITCH_OAUTH_503");
+    expect(cancel).toHaveBeenCalledOnce();
     await expect(resolver.resolve()).rejects.toThrow(
       "TWITCH_OAUTH_RESPONSE_INVALID",
     );
