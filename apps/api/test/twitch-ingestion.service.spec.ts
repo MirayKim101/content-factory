@@ -51,6 +51,7 @@ function repository(existingHash?: string) {
           id: string;
           state: string;
           importedProjectId: string | null;
+          channel?: { state: string };
           ingestIntent?: { id: string; state: string } | null;
         }> => ({
           id: "vod-1",
@@ -120,6 +121,7 @@ describe("TwitchIngestionService", () => {
       id: "00000000-0000-4000-8000-000000000001",
       state: "READY_FOR_INGEST",
       importedProjectId: null,
+      channel: { state: "ENABLED" },
     });
     const service = new TwitchIngestionService(prisma as never);
     try {
@@ -139,6 +141,31 @@ describe("TwitchIngestionService", () => {
         { isolationLevel: "Serializable" },
       );
       expect(prisma.twitchVodIngestIntent.create).toHaveBeenCalledOnce();
+    } finally {
+      if (originalAuto === undefined)
+        delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+      else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
+    }
+  });
+  it("rejects a new automatic import after its Twitch channel is revoked", async () => {
+    const originalAuto = process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+    const prisma = repository();
+    prisma.twitchVodCandidate.findUnique.mockResolvedValue({
+      id: "00000000-0000-4000-8000-000000000001",
+      state: "READY_FOR_INGEST",
+      importedProjectId: null,
+      channel: { state: "REVOKED" },
+    });
+    try {
+      process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = "1";
+      await expect(
+        new TwitchIngestionService(prisma as never).startVodIngest(
+          "00000000-0000-4000-8000-000000000001",
+          "Creator stream",
+          "twitch-import:revoked",
+        ),
+      ).rejects.toBeInstanceOf(TwitchVodConflictError);
+      expect(prisma.twitchVodIngestIntent.create).not.toHaveBeenCalled();
     } finally {
       if (originalAuto === undefined)
         delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
@@ -198,7 +225,10 @@ describe("TwitchIngestionService", () => {
       totalBytes: 2048n,
       leaseOwner: null,
       leaseExpiresAt: null,
-      candidate: { state: "READY_FOR_INGEST" },
+      candidate: {
+        state: "READY_FOR_INGEST",
+        channel: { state: "ENABLED" },
+      },
     };
     prisma.twitchVodIngestIntent.findUnique
       .mockResolvedValueOnce(failed as never)
@@ -222,6 +252,38 @@ describe("TwitchIngestionService", () => {
           data: expect.objectContaining({ state: "QUEUED", attemptCount: 0 }),
         }),
       );
+    } finally {
+      if (originalAuto === undefined)
+        delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+      else process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = originalAuto;
+    }
+  });
+  it("does not retry a terminal VOD import from a revoked channel", async () => {
+    const originalAuto = process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;
+    const prisma = repository();
+    prisma.twitchVodIngestIntent.findUnique.mockResolvedValue({
+      id: "00000000-0000-4000-8000-000000000009",
+      candidateId: "00000000-0000-4000-8000-000000000001",
+      projectName: "Creator stream",
+      state: "FAILED_FINAL",
+      attemptCount: 3,
+      downloadedBytes: 1024n,
+      totalBytes: 2048n,
+      leaseOwner: null,
+      leaseExpiresAt: null,
+      candidate: {
+        state: "READY_FOR_INGEST",
+        channel: { state: "REVOKED" },
+      },
+    } as never);
+    try {
+      process.env.TWITCH_VOD_AUTO_INGEST_ENABLED = "1";
+      await expect(
+        new TwitchIngestionService(prisma as never).retryVodIngest(
+          "00000000-0000-4000-8000-000000000009",
+        ),
+      ).rejects.toBeInstanceOf(TwitchVodConflictError);
+      expect(prisma.twitchVodIngestIntent.updateMany).not.toHaveBeenCalled();
     } finally {
       if (originalAuto === undefined)
         delete process.env.TWITCH_VOD_AUTO_INGEST_ENABLED;

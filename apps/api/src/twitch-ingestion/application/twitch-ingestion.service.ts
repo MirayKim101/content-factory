@@ -103,12 +103,18 @@ export class TwitchIngestionService {
         async (tx) => {
           const candidate = await tx.twitchVodCandidate.findUnique({
             where: { id },
-            select: { id: true, state: true, importedProjectId: true },
+            select: {
+              id: true,
+              state: true,
+              importedProjectId: true,
+              channel: { select: { state: true } },
+            },
           });
           if (!candidate) return null;
           if (
             candidate.state !== "READY_FOR_INGEST" ||
-            candidate.importedProjectId
+            candidate.importedProjectId ||
+            candidate.channel.state !== "ENABLED"
           )
             throw new TwitchVodConflictError();
           return tx.twitchVodIngestIntent.create({
@@ -143,14 +149,22 @@ export class TwitchIngestionService {
       throw new TwitchVodAutoIngestDisabledError();
     const current = await this.prisma.twitchVodIngestIntent.findUnique({
       where: { id },
-      include: { candidate: { select: { state: true } } },
+      include: {
+        candidate: {
+          select: {
+            state: true,
+            channel: { select: { state: true } },
+          },
+        },
+      },
     });
     if (!current) return null;
     if (current.state === "QUEUED" || current.state === "RETRY_WAIT")
       return this.serializeIngestIntent(current);
     if (
       current.state !== "FAILED_FINAL" ||
-      current.candidate.state !== "READY_FOR_INGEST"
+      current.candidate.state !== "READY_FOR_INGEST" ||
+      current.candidate.channel.state !== "ENABLED"
     )
       throw new TwitchVodConflictError();
     const reset = await this.prisma.twitchVodIngestIntent.updateMany({
@@ -159,7 +173,11 @@ export class TwitchIngestionService {
         state: "FAILED_FINAL",
         leaseOwner: null,
         leaseExpiresAt: null,
-        candidate: { state: "READY_FOR_INGEST", importedProjectId: null },
+        candidate: {
+          state: "READY_FOR_INGEST",
+          importedProjectId: null,
+          channel: { state: "ENABLED" },
+        },
       },
       data: {
         state: "QUEUED",
