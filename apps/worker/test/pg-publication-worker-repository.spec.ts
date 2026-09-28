@@ -56,6 +56,9 @@ describe("PgPublicationWorkerRepository stale external recovery", () => {
     expect(String(query.mock.calls[1]![0])).toContain(
       `vsa."status" = 'CLEARED'`,
     );
+    expect(String(query.mock.calls[1]![0])).toContain(
+      `vr."contentType" = 'video/mp4'`,
+    );
     expect(String(query.mock.calls[2]![0])).toContain(
       "PUBLICATION_STALE_PROCESSING_OUTCOME_UNKNOWN",
     );

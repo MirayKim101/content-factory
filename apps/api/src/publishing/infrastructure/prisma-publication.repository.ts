@@ -375,6 +375,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
                 vertical.intent.sourceVersion ||
               vertical.artifact.status !== "READY" ||
               vertical.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+              vertical.artifact.contentType !== "video/mp4" ||
               vertical.sha256 !== vertical.artifact.sha256 ||
               vertical.sizeBytes !== vertical.artifact.sizeBytes
             )
@@ -666,6 +667,7 @@ export class PrismaPublicationRepository implements PublicationRepository {
                 vertical.intent.sourceVersion ||
               vertical.artifact.status !== "READY" ||
               vertical.artifact.role !== "VERTICAL_RENDER_RESULT" ||
+              vertical.artifact.contentType !== "video/mp4" ||
               vertical.sha256 !== vertical.artifact.sha256 ||
               vertical.sizeBytes !== vertical.artifact.sizeBytes
             )

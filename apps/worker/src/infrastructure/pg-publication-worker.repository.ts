@@ -113,6 +113,7 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
                   AND vr."pipelineJobId" = var."pipelineJobId"
                   AND vr."status" = 'READY'
                   AND vr."role" = 'VERTICAL_RENDER_RESULT'
+                  AND vr."contentType" = 'video/mp4'
                   AND vr."projectId" = i."projectId"
                   AND vr."lineageSourceId" = vi."sourceId"
                   AND vr."lineageSourceVersion" = vi."sourceVersion"
