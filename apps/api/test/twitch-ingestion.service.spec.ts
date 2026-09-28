@@ -371,6 +371,23 @@ describe("TwitchIngestionService", () => {
     expect(prisma.twitchEventInbox.create).not.toHaveBeenCalled();
   });
 
+  it("acknowledges an exact durable replay outside the freshness window", async () => {
+    const prisma = repository();
+    prisma.twitchEventInbox.findUnique.mockResolvedValue({
+      payloadSha256: createHash("sha256").update(rawBody).digest("hex"),
+    });
+
+    await expect(
+      new TwitchIngestionService(prisma as never).receive(
+        headers(),
+        rawBody,
+        body,
+        new Date("2026-09-27T13:00:00.000Z"),
+      ),
+    ).resolves.toEqual({ duplicate: true, messageId: "opaque-message-1" });
+    expect(prisma.twitchEventInbox.create).not.toHaveBeenCalled();
+  });
+
   it("rejects unsigned subscription headers that disagree with the signed body", async () => {
     const prisma = repository();
     await expect(

@@ -365,6 +365,18 @@ export class TwitchIngestionService {
       !this.validSignature(headers, rawBody, config.twitchEventSubSecret)
     )
       throw new TwitchSignatureInvalidError();
+    if (headers.messageId) {
+      const payloadSha256 = createHash("sha256").update(rawBody).digest("hex");
+      const existing = await this.prisma.twitchEventInbox.findUnique({
+        where: { messageId: headers.messageId },
+        select: { payloadSha256: true },
+      });
+      if (existing) {
+        if (existing.payloadSha256 !== payloadSha256)
+          throw new TwitchEventConflictError();
+        return { duplicate: true, messageId: headers.messageId };
+      }
+    }
     this.requireFreshTimestamp(headers.messageTimestamp, now);
     if (headers.messageType === "webhook_callback_verification") {
       const challenge = this.challenge(body, headers);
