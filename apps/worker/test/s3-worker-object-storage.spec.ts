@@ -12,6 +12,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  PUBLICATION_MEDIA_RANGE_MAX_BYTES,
   S3WorkerObjectStorage,
   SINGLE_REQUEST_UPLOAD_MAX_BYTES,
 } from "../src/infrastructure/s3-worker-object-storage.js";
@@ -27,6 +28,10 @@ afterEach(async () => {
 });
 
 describe("S3 worker object storage export upload", () => {
+  it("supports the bounded maximum TikTok final chunk size", () => {
+    expect(PUBLICATION_MEDIA_RANGE_MAX_BYTES).toBe(128 * 1024 * 1024);
+  });
+
   it("verifies immutable publication media before reading an exact range", async () => {
     const storage = new S3WorkerObjectStorage("private", {
       endpoint: "http://127.0.0.1:9000",

@@ -15,6 +15,8 @@
   сетевого вызова и явно возвращает `DRY_RUN_READY`;
 - create/list/get/cancel API с pagination и fail-closed feature flag;
 - отдельный bounded publishing worker/reconciler contract;
+- object-storage range reads ограничены 128 MiB: это покрывает максимальный
+  финальный TikTok chunk, при этом TikTok adapter выполняется с concurrency 1;
 - UI: раздел «Публикации» со списком, датой/часовым поясом, статусом и явным
   предупреждением dry-run;
 - OpenAPI, additive migration, unit/component и disposable PostgreSQL tests.

@@ -19,6 +19,7 @@ import type {
 } from "../application/publication-media.port.js";
 
 export const SINGLE_REQUEST_UPLOAD_MAX_BYTES = 5_000_000_000n;
+export const PUBLICATION_MEDIA_RANGE_MAX_BYTES = 128 * 1024 * 1024;
 
 export class S3WorkerObjectStorage
   implements WorkerObjectStorage, PublicationMediaSource
@@ -123,7 +124,7 @@ export class S3WorkerObjectStorage
       input.offset < 0n ||
       !Number.isSafeInteger(input.length) ||
       input.length < 1 ||
-      input.length > 16 * 1024 * 1024 ||
+      input.length > PUBLICATION_MEDIA_RANGE_MAX_BYTES ||
       input.offset + BigInt(input.length) > input.identity.sizeBytes
     )
       throw new Error("PUBLICATION_MEDIA_RANGE_INVALID");
