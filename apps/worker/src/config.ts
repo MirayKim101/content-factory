@@ -127,6 +127,14 @@ export function twitchVodMediaGatewayConfig(
     throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_BASE_URL_REQUIRED");
   if (!bearerToken)
     throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_TOKEN_REQUIRED");
+  if (
+    bearerToken.length > 4_096 ||
+    [...bearerToken].some((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127;
+    })
+  )
+    throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_TOKEN_INVALID");
   let url: URL;
   try {
     url = new URL(rawBaseUrl);
@@ -137,6 +145,7 @@ export function twitchVodMediaGatewayConfig(
   if (
     url.username ||
     url.password ||
+    url.pathname !== "/" ||
     url.search ||
     url.hash ||
     (url.protocol !== "https:" &&
@@ -147,7 +156,7 @@ export function twitchVodMediaGatewayConfig(
       ))
   )
     throw new Error("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_BASE_URL_UNSAFE");
-  const baseUrl = url.toString().replace(/\/$/, "");
+  const baseUrl = url.origin;
   return {
     baseUrl,
     bearerToken,

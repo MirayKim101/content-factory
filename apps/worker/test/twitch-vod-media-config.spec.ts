@@ -30,6 +30,34 @@ describe("twitchVodMediaGatewayConfig", () => {
       }),
     ).toMatchObject({ baseUrl: "http://127.0.0.1:9999" });
   });
+
+  it("accepts only a fixed origin and a header-safe bearer token", () => {
+    expect(() =>
+      twitchVodMediaGatewayConfig({
+        TWITCH_VOD_MEDIA_GATEWAY_ENABLED: "1",
+        TWITCH_VOD_MEDIA_GATEWAY_BASE_URL:
+          "https://media.example.test/proxy-prefix",
+        TWITCH_VOD_MEDIA_GATEWAY_TOKEN: "secret",
+      }),
+    ).toThrow("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_BASE_URL_UNSAFE");
+    expect(() =>
+      twitchVodMediaGatewayConfig({
+        TWITCH_VOD_MEDIA_GATEWAY_ENABLED: "1",
+        TWITCH_VOD_MEDIA_GATEWAY_BASE_URL: "https://media.example.test",
+        TWITCH_VOD_MEDIA_GATEWAY_TOKEN: "secret\nsecond-header: injected",
+      }),
+    ).toThrow("CONFIG_TWITCH_VOD_MEDIA_GATEWAY_TOKEN_INVALID");
+    expect(
+      twitchVodMediaGatewayConfig({
+        TWITCH_VOD_MEDIA_GATEWAY_ENABLED: "1",
+        TWITCH_VOD_MEDIA_GATEWAY_BASE_URL: "https://media.example.test/",
+        TWITCH_VOD_MEDIA_GATEWAY_TOKEN: "header-safe_secret.token",
+      }),
+    ).toMatchObject({
+      baseUrl: "https://media.example.test",
+      bearerToken: "header-safe_secret.token",
+    });
+  });
 });
 
 describe("twitchVodAutoIngestConfig", () => {
