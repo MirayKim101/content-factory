@@ -102,6 +102,9 @@
 - Полный Twitch VOD ingest attempt ограничен 24 часами, включая streaming
   download, hashing и multipart upload. Timeout сохраняет resumable scratch и
   переводит intent в bounded retry вместо бесконечного lease.
+- Если Twitch object upload завершён, но fenced DB-finalize отклонён или
+  откатывается, worker compensating-delete удаляет orphan из object storage.
+  Проверенный локальный scratch сохраняется для безопасного следующего claim.
 - Production dependency overrides закрепляют исправленные `multer 2.3.0`,
   `deepmerge-ts 8.0.0` и `mysql2 3.23.1`; `pnpm audit --prod` не находит
   известных уязвимостей.

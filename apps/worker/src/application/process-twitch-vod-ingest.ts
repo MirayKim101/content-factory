@@ -54,6 +54,7 @@ export class ProcessTwitchVodIngest {
       "TWITCH_VOD_INGEST_TIMEOUT",
     );
     const heartbeat = this.startHeartbeat(lease.id, workerId, controller);
+    let uploadedObjectKey: string | undefined;
     try {
       await mkdir(dirname(path), { recursive: true, mode: 0o700 });
       const offset = await stat(path)
@@ -150,6 +151,7 @@ export class ProcessTwitchVodIngest {
         uploadMode: "MULTIPART",
         signal: deadline.signal,
       });
+      uploadedObjectKey = objectKey;
       await this.repository.complete({
         intentId: lease.id,
         workerId,
@@ -161,9 +163,12 @@ export class ProcessTwitchVodIngest {
         sha256,
         ...receipt,
       });
+      uploadedObjectKey = undefined;
       await unlink(path).catch(() => undefined);
       return true;
     } catch (error) {
+      if (uploadedObjectKey)
+        await this.storage.delete(uploadedObjectKey).catch(() => undefined);
       if (isTwitchVodIngestLeaseLost(error)) return false;
       if (controller.signal.reason instanceof TwitchVodIngestLeaseLostError)
         return false;
