@@ -54,9 +54,11 @@ const selected = computed(() =>
       <span v-else class="project-select-placeholder">{{ emptyLabel }}</span>
     </template>
     <template #option="{ option }">
-      <span class="project-select-option">
-        <strong :title="option.name">{{ option.name }}</strong>
-        <small :title="option.detail">{{ option.detail }}</small>
+      <span
+        class="project-select-option"
+        :title="`${option.name} · ${option.detail}`"
+      >
+        {{ option.name }} · {{ option.detail }}
       </span>
     </template>
     <template #empty>Проекты не найдены</template>
@@ -78,26 +80,5 @@ const selected = computed(() =>
 }
 .project-select-placeholder {
   color: var(--cf-text-muted);
-}
-.project-select-option {
-  display: grid;
-  min-width: 0;
-  gap: 0.15rem;
-}
-.project-select-option strong,
-.project-select-option small {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.project-select-option strong {
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-.project-select-option small {
-  color: var(--cf-text-muted);
-  font-size: 0.75rem;
-  font-weight: 500;
 }
 </style>
