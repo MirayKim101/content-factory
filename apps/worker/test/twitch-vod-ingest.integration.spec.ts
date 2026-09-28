@@ -294,6 +294,15 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
         });
         projectId = result.rows[0]!.projectId;
         objectKey = result.rows[0]!.objectKey;
+        await expect(
+          repository.completionMatches({
+            intentId,
+            projectId,
+            objectKey,
+            sizeBytes: BigInt(bytes.length),
+            sha256: createSha(bytes),
+          }),
+        ).resolves.toBe(true);
         await storage.verifyIdentity({
           objectKey,
           sizeBytes: BigInt(bytes.length),

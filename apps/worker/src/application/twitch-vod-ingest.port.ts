@@ -40,6 +40,13 @@ export interface TwitchVodIngestRepository {
     etag?: string;
     version?: string;
   }): Promise<void>;
+  completionMatches?(input: {
+    intentId: string;
+    projectId: string;
+    objectKey: string;
+    sizeBytes: bigint;
+    sha256: string;
+  }): Promise<boolean>;
   fail(
     id: string,
     workerId: string,

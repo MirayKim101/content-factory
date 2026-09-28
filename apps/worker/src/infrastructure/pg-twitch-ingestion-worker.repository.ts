@@ -313,6 +313,41 @@ export class PgTwitchIngestionWorkerRepository
     }
   }
 
+  async completionMatches(input: {
+    intentId: string;
+    projectId: string;
+    objectKey: string;
+    sizeBytes: bigint;
+    sha256: string;
+  }): Promise<boolean> {
+    const result = await this.pool.query(
+      `SELECT 1
+         FROM "TwitchVodIngestIntent" i
+         JOIN "Project" p ON p."id" = i."projectId"
+         JOIN "VideoSource" s ON s."projectId" = p."id"
+         JOIN "MediaArtifact" a ON a."projectId" = p."id"
+           AND a."sourceId" = s."id" AND a."role" = 'SOURCE'
+        WHERE i."id" = $1 AND i."state" = 'READY' AND i."projectId" = $2
+          AND p."status" = 'SOURCE_READY' AND s."status" = 'READY'
+          AND s."sourceVersion" = 1 AND s."contentType" = 'video/mp4'
+          AND s."sizeBytes" = $3 AND s."sha256" = $4
+          AND a."status" = 'READY' AND a."objectKey" = $5
+          AND a."contentType" = 'video/mp4' AND a."sizeBytes" = $3
+          AND a."sha256" = $4 AND a."lineageSourceId" = s."id"
+          AND a."lineageSourceVersion" = 1
+          AND a."recipeVersion" = 'twitch-vod-ingest-v1'
+        LIMIT 1`,
+      [
+        input.intentId,
+        input.projectId,
+        input.sizeBytes.toString(),
+        input.sha256,
+        input.objectKey,
+      ],
+    );
+    return result.rowCount === 1;
+  }
+
   async fail(
     id: string,
     workerId: string,

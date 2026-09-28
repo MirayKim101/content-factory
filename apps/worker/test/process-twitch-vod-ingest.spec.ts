@@ -107,6 +107,7 @@ describe("ProcessTwitchVodIngest", () => {
       complete: vi
         .fn()
         .mockRejectedValue(new Error("TWITCH_VOD_INGEST_LEASE_LOST")),
+      completionMatches: vi.fn().mockResolvedValue(false),
       fail: vi.fn(),
     };
     const media = {
@@ -144,6 +145,73 @@ describe("ProcessTwitchVodIngest", () => {
     await expect(
       readFile(join(scratch, "twitch-ingest", `${intentId}.part`)),
     ).resolves.toEqual(bytes);
+  });
+
+  it("preserves a committed upload when the finalize acknowledgement is lost", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const bytes = Buffer.concat([
+      Buffer.from([0, 0, 0, 20]),
+      Buffer.from("ftypisom"),
+      Buffer.alloc(8),
+    ]);
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "candidate",
+        providerVideoId: "123",
+        projectName: "Stream",
+        attemptCount: 1,
+        leaseOwner: "worker",
+        downloadedBytes: 0n,
+        totalBytes: null,
+      })),
+      checkpoint: vi.fn(),
+      heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
+      beginUpload: vi.fn(),
+      complete: vi.fn().mockRejectedValue(new Error("connection lost")),
+      completionMatches: vi.fn().mockResolvedValue(true),
+      fail: vi.fn(),
+    };
+    const media = {
+      open: vi.fn(async () => ({
+        body: new ReadableStream({
+          start(controller) {
+            controller.enqueue(bytes);
+            controller.close();
+          },
+        }),
+        contentType: "video/mp4" as const,
+        totalSizeBytes: BigInt(bytes.length),
+        offset: 0n,
+      })),
+    };
+    const storage = {
+      upload: vi.fn(async () => ({ etag: "etag" })),
+      delete: vi.fn().mockResolvedValue(undefined),
+    };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      storage as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    await expect(processor.execute("worker")).resolves.toBe(true);
+    expect(repository.completionMatches).toHaveBeenCalledWith(
+      expect.objectContaining({
+        intentId,
+        sizeBytes: BigInt(bytes.length),
+      }),
+    );
+    expect(storage.delete).not.toHaveBeenCalled();
+    expect(repository.fail).not.toHaveBeenCalled();
+    await expect(
+      readFile(join(scratch, "twitch-ingest", `${intentId}.part`)),
+    ).rejects.toThrow();
   });
 
   it("rejects non-MP4 media before object storage", async () => {

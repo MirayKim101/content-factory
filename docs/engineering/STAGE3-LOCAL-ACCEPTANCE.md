@@ -118,6 +118,10 @@
 - Если Twitch object upload завершён, но fenced DB-finalize отклонён или
   откатывается, worker compensating-delete удаляет orphan из object storage.
   Проверенный локальный scratch сохраняется для безопасного следующего claim.
+- Потерянный PostgreSQL ACK после фактически успешного Twitch `COMMIT` сначала
+  сверяется по exact intent/project/object/size/SHA lineage. Подтверждённый
+  результат сохраняет referenced object; при недоступной DB deterministic
+  object и scratch остаются для безопасного recovery, а не удаляются вслепую.
 - Compensating delete для Twitch и vertical orphan ограничен отдельным
   30-секундным deadline. Недоступный object storage не удерживает worker за
   пределами graceful-stop после уже отклонённой DB-finalization.
@@ -221,7 +225,7 @@
 API:     253/253 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  324/324 unit tests
+Worker:  325/325 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

@@ -55,7 +55,9 @@ export class ProcessTwitchVodIngest {
       "TWITCH_VOD_INGEST_TIMEOUT",
     );
     const heartbeat = this.startHeartbeat(lease.id, workerId, controller);
-    let uploadedObjectKey: string | undefined;
+    let uploaded:
+      | { objectKey: string; sizeBytes: bigint; sha256: string }
+      | undefined;
     try {
       await mkdir(dirname(path), { recursive: true, mode: 0o700 });
       const offset = await stat(path)
@@ -152,7 +154,7 @@ export class ProcessTwitchVodIngest {
         uploadMode: "MULTIPART",
         signal: deadline.signal,
       });
-      uploadedObjectKey = objectKey;
+      uploaded = { objectKey, sizeBytes, sha256 };
       await this.repository.complete({
         intentId: lease.id,
         workerId,
@@ -164,12 +166,29 @@ export class ProcessTwitchVodIngest {
         sha256,
         ...receipt,
       });
-      uploadedObjectKey = undefined;
+      uploaded = undefined;
       await unlink(path).catch(() => undefined);
       return true;
     } catch (error) {
-      if (uploadedObjectKey)
-        await deleteStorageObjectBestEffort(this.storage, uploadedObjectKey);
+      if (uploaded && this.repository.completionMatches) {
+        try {
+          const committed = await this.repository.completionMatches({
+            intentId: lease.id,
+            projectId: this.stableUuid(lease.id, "project"),
+            ...uploaded,
+          });
+          if (committed) {
+            await unlink(path).catch(() => undefined);
+            return true;
+          }
+        } catch {
+          // The commit outcome remains unknown. Preserve both deterministic
+          // object and scratch until PostgreSQL is available for reconciliation.
+          return false;
+        }
+      }
+      if (uploaded)
+        await deleteStorageObjectBestEffort(this.storage, uploaded.objectKey);
       if (isTwitchVodIngestLeaseLost(error)) return false;
       if (controller.signal.reason instanceof TwitchVodIngestLeaseLostError)
         return false;
