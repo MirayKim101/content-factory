@@ -1,4 +1,5 @@
 import type { PublicationAccessTokenResolver } from "../application/publication-credential.port.js";
+import { PublicationPermanentError } from "../application/publication.port.js";
 
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const YOUTUBE_MINE_ENDPOINT =
@@ -48,14 +49,14 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
     signal?: AbortSignal;
   }): Promise<string> {
     if (input.platform !== "YOUTUBE")
-      throw new Error("YOUTUBE_CREDENTIAL_PLATFORM_MISMATCH");
+      throw permanentCredentialError("YOUTUBE_CREDENTIAL_PLATFORM_MISMATCH");
     const credential = this.credentials.get(input.externalChannelRef);
     if (
       !credential ||
       (credential.channelId !== undefined &&
         credential.channelId !== input.channelId)
     )
-      throw new Error("YOUTUBE_CHANNEL_CREDENTIAL_UNAVAILABLE");
+      throw permanentCredentialError("YOUTUBE_CHANNEL_CREDENTIAL_UNAVAILABLE");
     const cacheKey = `${input.channelId}:${credential.externalChannelRef}`;
     const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAtMs > this.clock() + 60_000)
@@ -135,13 +136,17 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
       objectRecord(payload.items[0], "YOUTUBE_CHANNEL_VERIFY_INVALID").id !==
         expectedChannelId
     )
-      throw new Error("YOUTUBE_CHANNEL_IDENTITY_MISMATCH");
+      throw permanentCredentialError("YOUTUBE_CHANNEL_IDENTITY_MISMATCH");
   }
 }
 
 function credentialRequestSignal(signal?: AbortSignal): AbortSignal {
   const timeout = AbortSignal.timeout(CREDENTIAL_REQUEST_TIMEOUT_MS);
   return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
+function permanentCredentialError(code: string): PublicationPermanentError {
+  return new PublicationPermanentError(code, code);
 }
 
 function requireSecret(value: string, code: string): void {

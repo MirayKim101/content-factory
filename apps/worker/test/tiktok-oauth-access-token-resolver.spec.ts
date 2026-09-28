@@ -69,9 +69,10 @@ describe("TikTokOAuthAccessTokenResolver", () => {
       ],
       request,
     );
-    await expect(resolver.resolve(input)).rejects.toThrow(
-      "TIKTOK_TOKEN_RESPONSE_INVALID",
-    );
+    await expect(resolver.resolve(input)).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "TIKTOK_CHANNEL_IDENTITY_MISMATCH",
+    });
   });
 
   it("rejects tokens without video.publish consent", async () => {
@@ -97,9 +98,10 @@ describe("TikTokOAuthAccessTokenResolver", () => {
       ],
       request,
     );
-    await expect(resolver.resolve(input)).rejects.toThrow(
-      "TIKTOK_TOKEN_RESPONSE_INVALID",
-    );
+    await expect(resolver.resolve(input)).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "TIKTOK_VIDEO_PUBLISH_SCOPE_MISSING",
+    });
   });
 
   it("cancels a rejected token response", async () => {

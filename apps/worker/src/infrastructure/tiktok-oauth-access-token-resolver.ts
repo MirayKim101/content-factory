@@ -1,4 +1,5 @@
 import type { PublicationAccessTokenResolver } from "../application/publication-credential.port.js";
+import { PublicationPermanentError } from "../application/publication.port.js";
 
 const TOKEN_ENDPOINT = "https://open.tiktokapis.com/v2/oauth/token/";
 const CREDENTIAL_REQUEST_TIMEOUT_MS = 10_000;
@@ -43,13 +44,13 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
     signal?: AbortSignal;
   }): Promise<string> {
     if (input.platform !== "TIKTOK")
-      throw new Error("TIKTOK_CREDENTIAL_PLATFORM_MISMATCH");
+      throw permanentCredentialError("TIKTOK_CREDENTIAL_PLATFORM_MISMATCH");
     const credential = this.credentials.get(input.externalChannelRef);
     if (
       !credential ||
       (credential.channelId && credential.channelId !== input.channelId)
     )
-      throw new Error("TIKTOK_CHANNEL_CREDENTIAL_UNAVAILABLE");
+      throw permanentCredentialError("TIKTOK_CHANNEL_CREDENTIAL_UNAVAILABLE");
     const cacheKey = `${input.channelId}:${credential.externalChannelRef}`;
     const cached = this.cache.get(cacheKey);
     if (cached && cached.expiresAtMs > this.clock() + 60_000)
@@ -80,18 +81,23 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
       !value.access_token ||
       value.access_token.length > 4096 ||
       /[\r\n]/.test(value.access_token) ||
-      value.open_id !== credential.externalChannelRef ||
+      typeof value.open_id !== "string" ||
       typeof value.scope !== "string" ||
-      !value.scope
-        .split(",")
-        .map((scope) => scope.trim())
-        .includes("video.publish") ||
       typeof value.expires_in !== "number" ||
       !Number.isSafeInteger(value.expires_in) ||
       value.expires_in < 120 ||
       value.expires_in > 172_800
     )
       throw new Error("TIKTOK_TOKEN_RESPONSE_INVALID");
+    if (value.open_id !== credential.externalChannelRef)
+      throw permanentCredentialError("TIKTOK_CHANNEL_IDENTITY_MISMATCH");
+    if (
+      !value.scope
+        .split(",")
+        .map((scope) => scope.trim())
+        .includes("video.publish")
+    )
+      throw permanentCredentialError("TIKTOK_VIDEO_PUBLISH_SCOPE_MISSING");
     const token = {
       accessToken: value.access_token,
       expiresAtMs: this.clock() + value.expires_in * 1000,
@@ -104,6 +110,10 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
 function credentialRequestSignal(signal?: AbortSignal): AbortSignal {
   const timeout = AbortSignal.timeout(CREDENTIAL_REQUEST_TIMEOUT_MS);
   return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
+function permanentCredentialError(code: string): PublicationPermanentError {
+  return new PublicationPermanentError(code, code);
 }
 
 function secret(value: string, code: string): void {

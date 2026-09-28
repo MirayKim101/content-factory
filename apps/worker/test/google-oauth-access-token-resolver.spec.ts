@@ -73,7 +73,10 @@ describe("GoogleOAuthAccessTokenResolver", () => {
 
     await expect(
       resolver.resolve({ channelId, platform: "YOUTUBE", externalChannelRef }),
-    ).rejects.toThrow("YOUTUBE_CHANNEL_IDENTITY_MISMATCH");
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "YOUTUBE_CHANNEL_IDENTITY_MISMATCH",
+    });
   });
 
   it("does not call OAuth for an unbound application channel", async () => {
@@ -91,7 +94,10 @@ describe("GoogleOAuthAccessTokenResolver", () => {
         platform: "YOUTUBE",
         externalChannelRef,
       }),
-    ).rejects.toThrow("YOUTUBE_CHANNEL_CREDENTIAL_UNAVAILABLE");
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "YOUTUBE_CHANNEL_CREDENTIAL_UNAVAILABLE",
+    });
     expect(request).not.toHaveBeenCalled();
   });
 
