@@ -5,7 +5,10 @@ import type {
   PublicationClaim,
   PublicationWorkerRepository,
 } from "../src/application/publication.port.js";
-import { PublicationOutcomeUnknownError } from "../src/application/publication.port.js";
+import {
+  PublicationOutcomeUnknownError,
+  PublicationPermanentError,
+} from "../src/application/publication.port.js";
 import {
   LOCAL_DRY_RUN_PUBLICATION_ADAPTER_VERSION,
   LocalDryRunPublicationAdapter,
@@ -420,6 +423,32 @@ describe("ProcessPublicationIntent", () => {
       expect.any(Date),
     );
     expect(repo.failFinal).not.toHaveBeenCalled();
+  });
+
+  it("fails a permanent preflight rejection without consuming retries", async () => {
+    const remoteClaim = { ...claim, platform: "YOUTUBE" as const };
+    const repo = repository();
+    vi.mocked(repo.claim).mockReset().mockResolvedValueOnce(remoteClaim);
+
+    await new ProcessPublicationIntent(repo, [
+      {
+        platform: "YOUTUBE",
+        publish: vi.fn().mockRejectedValue(
+          new PublicationPermanentError(
+            "YOUTUBE_CONTENT_TYPE_INVALID",
+            "YouTube publication requires an MP4 render.",
+          ),
+        ),
+      },
+    ]).execute(remoteClaim.id);
+
+    expect(repo.failFinal).toHaveBeenCalledWith(
+      remoteClaim,
+      "YOUTUBE_CONTENT_TYPE_INVALID",
+      "YouTube publication requires an MP4 render.",
+      expect.any(Date),
+    );
+    expect(repo.releaseForRetry).not.toHaveBeenCalled();
   });
 
   it("quarantines a confirmed remote upload when local finalization fails", async () => {

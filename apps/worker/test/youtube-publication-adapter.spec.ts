@@ -72,10 +72,16 @@ describe("YoutubePublicationAdapter", () => {
         contentKind: "EDITORIAL_EXPORT",
         contentType: "application/zip",
       }),
-    ).rejects.toThrow("YOUTUBE_CONTENT_KIND_INVALID");
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "YOUTUBE_CONTENT_KIND_INVALID",
+    });
     await expect(
       adapter.publish({ ...claim, contentType: "video/webm" }),
-    ).rejects.toThrow("YOUTUBE_CONTENT_TYPE_INVALID");
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "YOUTUBE_CONTENT_TYPE_INVALID",
+    });
     expect(deps.tokens.resolve).not.toHaveBeenCalled();
     expect(deps.media.verifyIdentity).not.toHaveBeenCalled();
   });

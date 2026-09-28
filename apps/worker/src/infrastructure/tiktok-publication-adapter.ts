@@ -3,6 +3,7 @@ import type { PublicationMediaSource } from "../application/publication-media.po
 import type { PublicationSessionRepository } from "../application/publication-session.port.js";
 import {
   PublicationOutcomeUnknownError,
+  PublicationPermanentError,
   type PublicationAdapterResult,
   type PublicationClaim,
   type PublicationMetricsClaim,
@@ -41,7 +42,10 @@ export class TikTokPublicationAdapter implements PublicationProvider {
     if (claim.platform !== this.platform)
       throw new Error("TIKTOK_PUBLICATION_PLATFORM_MISMATCH");
     if (claim.contentKind !== "VERTICAL_RESULT")
-      throw new Error("TIKTOK_CONTENT_KIND_INVALID");
+      throw new PublicationPermanentError(
+        "TIKTOK_CONTENT_KIND_INVALID",
+        "TikTok publication requires an approved vertical render.",
+      );
     const identity = {
       objectKey: claim.contentObjectKey,
       storageVersion: claim.contentStorageVersion,
@@ -54,7 +58,10 @@ export class TikTokPublicationAdapter implements PublicationProvider {
         identity.contentType,
       )
     )
-      throw new Error("TIKTOK_CONTENT_TYPE_INVALID");
+      throw new PublicationPermanentError(
+        "TIKTOK_CONTENT_TYPE_INVALID",
+        "TikTok publication requires an MP4, MOV, or WebM render.",
+      );
     await this.media.verifyIdentity(identity, signal);
     signal?.throwIfAborted();
     const accessToken = await this.tokens.resolve({

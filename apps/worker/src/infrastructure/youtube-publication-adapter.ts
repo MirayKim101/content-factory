@@ -10,6 +10,7 @@ import type {
   PublicationReconciliationClaim,
   PublicationReconciliationResult,
 } from "../application/publication.port.js";
+import { PublicationPermanentError } from "../application/publication.port.js";
 import { PublicationSessionCipher } from "./publication-session-cipher.js";
 import { YoutubeResumableTransport } from "./youtube-resumable-transport.js";
 
@@ -46,9 +47,15 @@ export class YoutubePublicationAdapter implements PublicationProvider {
     if (claim.platform !== this.platform)
       throw new Error("YOUTUBE_PUBLICATION_PLATFORM_MISMATCH");
     if (claim.contentKind !== "VERTICAL_RESULT")
-      throw new Error("YOUTUBE_CONTENT_KIND_INVALID");
+      throw new PublicationPermanentError(
+        "YOUTUBE_CONTENT_KIND_INVALID",
+        "YouTube publication requires an approved vertical render.",
+      );
     if (claim.contentType !== "video/mp4")
-      throw new Error("YOUTUBE_CONTENT_TYPE_INVALID");
+      throw new PublicationPermanentError(
+        "YOUTUBE_CONTENT_TYPE_INVALID",
+        "YouTube publication requires an MP4 render.",
+      );
     const identity = {
       objectKey: claim.contentObjectKey,
       storageVersion: claim.contentStorageVersion,

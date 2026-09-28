@@ -170,3 +170,14 @@ export class PublicationOutcomeUnknownError extends Error {
     this.name = "PublicationOutcomeUnknownError";
   }
 }
+
+/** The request is invalid before any provider write and cannot succeed on retry. */
+export class PublicationPermanentError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = "PublicationPermanentError";
+  }
+}

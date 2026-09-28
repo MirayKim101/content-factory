@@ -88,7 +88,10 @@ describe("TikTokPublicationAdapter", () => {
         deps.cipher,
         deps.transport,
       ).publish({ ...claim, contentKind: "EDITORIAL_EXPORT" }),
-    ).rejects.toThrow("TIKTOK_CONTENT_KIND_INVALID");
+    ).rejects.toMatchObject({
+      name: "PublicationPermanentError",
+      code: "TIKTOK_CONTENT_KIND_INVALID",
+    });
     expect(deps.tokens.resolve).not.toHaveBeenCalled();
     expect(deps.media.verifyIdentity).not.toHaveBeenCalled();
   });

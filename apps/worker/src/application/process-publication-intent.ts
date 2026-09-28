@@ -3,7 +3,10 @@ import type {
   PublicationProvider,
   PublicationWorkerRepository,
 } from "./publication.port.js";
-import { PublicationOutcomeUnknownError } from "./publication.port.js";
+import {
+  PublicationOutcomeUnknownError,
+  PublicationPermanentError,
+} from "./publication.port.js";
 import { createAbortDeadline } from "./abort-deadline.js";
 
 const PUBLICATION_HEARTBEAT_INTERVAL_MS = 60_000;
@@ -104,6 +107,15 @@ export class ProcessPublicationIntent {
           error.message,
           error.remotePublicationId,
           error.remoteStatus,
+          this.clock(),
+        );
+        return true;
+      }
+      if (error instanceof PublicationPermanentError) {
+        await this.repository.failFinal(
+          claim,
+          error.code,
+          error.message,
           this.clock(),
         );
         return true;
