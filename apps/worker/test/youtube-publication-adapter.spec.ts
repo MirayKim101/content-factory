@@ -119,6 +119,9 @@ describe("YoutubePublicationAdapter", () => {
     expect(deps.transport.uploadChunk).toHaveBeenCalledWith(
       expect.objectContaining({ signal: controller.signal }),
     );
+    expect(deps.media.readRange).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
+    );
   });
 
   it("classifies invalid metadata as a permanent preflight failure", async () => {

@@ -182,7 +182,12 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       signal?.throwIfAborted();
       const length = tiktokChunkLength(identity.sizeBytes, offset, chunkSize);
       const final = offset + BigInt(length) === identity.sizeBytes;
-      const chunk = await this.media.readRange({ identity, offset, length });
+      const chunk = await this.media.readRange({
+        identity,
+        offset,
+        length,
+        signal,
+      });
       signal?.throwIfAborted();
       const progress = await this.transport.uploadChunk({
         uploadUrl,

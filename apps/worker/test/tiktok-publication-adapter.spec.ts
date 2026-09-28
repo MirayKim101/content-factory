@@ -129,6 +129,9 @@ describe("TikTokPublicationAdapter", () => {
     expect(deps.transport.uploadChunk).toHaveBeenCalledWith(
       expect.objectContaining({ signal: controller.signal }),
     );
+    expect(deps.media.readRange).toHaveBeenCalledWith(
+      expect.objectContaining({ signal: controller.signal }),
+    );
   });
 
   it("rejects stale consent when current creator capabilities changed", async () => {

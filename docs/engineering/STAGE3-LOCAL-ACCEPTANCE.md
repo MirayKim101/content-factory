@@ -58,6 +58,9 @@
 - Общий publication deadline физически проходит через S3 identity check,
   OAuth token refresh/channel verification и все provider transport calls;
   зависший credential endpoint не обходит lease fencing.
+- Тот же deadline/lease-loss signal передаётся в каждое ranged-чтение media из
+  S3 для YouTube и TikTok; зависшее получение очередного chunk прерывается при
+  shutdown, timeout или утрате worker claim.
 - Для `UNKNOWN_REMOTE_STATE` без remote ID оператор может после ручной проверки
   подтвердить отсутствие публикации. Только exact boolean confirmation удаляет
   незавершённую encrypted session и переводит intent в `FAILED_FINAL`, после

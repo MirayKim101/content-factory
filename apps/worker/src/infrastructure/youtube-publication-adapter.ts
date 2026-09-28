@@ -139,7 +139,12 @@ export class YoutubePublicationAdapter implements PublicationProvider {
       const length = Number(
         minBigInt(BigInt(this.chunkBytes), identity.sizeBytes - offset),
       );
-      const chunk = await this.media.readRange({ identity, offset, length });
+      const chunk = await this.media.readRange({
+        identity,
+        offset,
+        length,
+        signal,
+      });
       signal?.throwIfAborted();
       const progress = await this.transport.uploadChunk({
         sessionUrl,
