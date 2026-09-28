@@ -6,6 +6,11 @@
 
 - Twitch control plane: allowlist, signed EventSub inbox, reconciliation,
   delayed VOD candidates и revoke без удаления истории.
+- Точный повтор подписанного durable EventSub notification/revocation
+  подтверждается до freshness/channel admission, поэтому поздний retry Twitch
+  не создаёт дубль и не получает ложный отказ после revoke. Тот же message ID с
+  другим payload остаётся конфликтом, а новые сообщения проходят обычные
+  freshness и channel-state проверки.
 - EventSub subscription callback допускает только HTTPS:443 на публичном host
   и точном `/api/v1/twitch/eventsub`; localhost, private/shared/link-local IP,
   IPv6 loopback/ULA и другой path отклоняются до provider request.
@@ -143,6 +148,9 @@
 - Отзыв Twitch channel закрывает API admission для нового VOD import и
   операторского retry; worker независимо требует `ENABLED` при claim. Уже
   сохранённая история остаётся доступной.
+- Delayed VOD candidate продвигается в `READY` только пока связанный Twitch
+  channel остаётся `ENABLED`; revoke во время задержки не создаёт новый ingest
+  intent, а повторное включение сохраняет возможность штатно продолжить.
 - Shutdown во время pending Twitch claim также fenced: новый transfer не
   стартует после SIGTERM, а уже выданный lease атомарно возвращается в `QUEUED`
   без потери attempt budget и без двухчасовой задержки recovery.
@@ -182,7 +190,7 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     250/250 unit tests
+API:     253/253 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  319/319 unit tests
