@@ -41,20 +41,25 @@ export class HttpTwitchVodMediaProvider implements TwitchVodMediaProvider {
           signal: requestSignal,
         },
       );
-      if (!response.ok)
-        throw new Error(`TWITCH_VOD_MEDIA_HTTP_${response.status}`);
-      if (
-        !response.body ||
-        response.headers.get("content-type") !== "video/mp4"
-      )
-        throw new Error("TWITCH_VOD_MEDIA_RESPONSE_INVALID");
-      const identity = parseIdentity(response, offset);
-      return {
-        body: response.body,
-        contentType: "video/mp4",
-        totalSizeBytes: identity.totalSizeBytes,
-        offset,
-      };
+      try {
+        if (!response.ok)
+          throw new Error(`TWITCH_VOD_MEDIA_HTTP_${response.status}`);
+        if (
+          !response.body ||
+          response.headers.get("content-type") !== "video/mp4"
+        )
+          throw new Error("TWITCH_VOD_MEDIA_RESPONSE_INVALID");
+        const identity = parseIdentity(response, offset);
+        return {
+          body: response.body,
+          contentType: "video/mp4",
+          totalSizeBytes: identity.totalSizeBytes,
+          offset,
+        };
+      } catch (error) {
+        await response.body?.cancel(error).catch(() => undefined);
+        throw error;
+      }
     } finally {
       clearTimeout(timeout);
     }

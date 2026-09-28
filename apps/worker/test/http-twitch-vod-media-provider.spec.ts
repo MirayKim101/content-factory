@@ -64,11 +64,23 @@ describe("HttpTwitchVodMediaProvider", () => {
   });
 
   it("rejects ignored ranges and media type confusion", async () => {
+    const cancel = vi.fn();
     const ignoredRange = vi.fn(
       async () =>
-        new Response(new Uint8Array([1]), {
-          headers: { "content-type": "video/mp4", "content-length": "1" },
-        }),
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([1]));
+            },
+            cancel,
+          }),
+          {
+            headers: {
+              "content-type": "video/mp4",
+              "content-length": "1",
+            },
+          },
+        ),
     );
     const provider = new HttpTwitchVodMediaProvider(
       {
@@ -81,5 +93,35 @@ describe("HttpTwitchVodMediaProvider", () => {
     await expect(provider.open("123", 1n)).rejects.toThrow(
       "TWITCH_VOD_MEDIA_RANGE_UNSUPPORTED",
     );
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("cancels rejected HTTP response bodies so gateway connections are reusable", async () => {
+    const cancel = vi.fn();
+    const fetcher = vi.fn(
+      async () =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([1]));
+            },
+            cancel,
+          }),
+          { status: 503 },
+        ),
+    );
+    const provider = new HttpTwitchVodMediaProvider(
+      {
+        baseUrl: "https://media.example.test",
+        bearerToken: "secret",
+        timeoutMs: 5_000,
+      },
+      fetcher,
+    );
+
+    await expect(provider.open("123", 0n)).rejects.toThrow(
+      "TWITCH_VOD_MEDIA_HTTP_503",
+    );
+    expect(cancel).toHaveBeenCalledOnce();
   });
 });
