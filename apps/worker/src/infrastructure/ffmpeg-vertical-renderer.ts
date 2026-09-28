@@ -26,6 +26,7 @@ export class FfmpegVerticalRenderer implements VerticalRenderer {
     output: string,
     signal: AbortSignal,
   ): Promise<VerticalRenderedFile> {
+    signal.throwIfAborted();
     await run(this.ffmpegPath, verticalRenderArguments(input, output), signal);
     const { stdout } = await execFileAsync(
       this.ffprobePath,
@@ -130,6 +131,7 @@ function run(
     });
     const abort = () => child.kill("SIGKILL");
     signal.addEventListener("abort", abort, { once: true });
+    if (signal.aborted) abort();
     child.once("error", reject);
     child.once("exit", (code) => {
       signal.removeEventListener("abort", abort);

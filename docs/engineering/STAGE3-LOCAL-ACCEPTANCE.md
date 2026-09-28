@@ -102,6 +102,9 @@
 - Полный vertical attempt (download, FFmpeg и upload) ограничен двумя часами;
   timeout прерывает I/O тем же abort signal и освобождает durable lease через
   штатный bounded failure path.
+- Pre-aborted vertical attempt не запускает FFmpeg; abort race между spawn и
+  регистрацией listener закрыт немедленной повторной проверкой signal, поэтому
+  rollout/lease-loss не оставляет бесконтрольный encode-процесс.
 - После длительного FFmpeg/upload vertical worker повторно проверяет exact
   source, authorization, cut artifact и render contracts в той же SERIALIZABLE
   транзакции, где создаётся результат. Устаревший lineage завершается как
@@ -215,7 +218,7 @@
 API:     253/253 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  322/322 unit tests
+Worker:  323/323 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

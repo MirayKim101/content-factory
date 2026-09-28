@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   boundedDiagnosticTail,
+  FfmpegVerticalRenderer,
   verticalRenderArguments,
 } from "../src/infrastructure/ffmpeg-vertical-renderer.js";
 
@@ -33,5 +34,18 @@ describe("FfmpegVerticalRenderer diagnostics", () => {
     expect(args.filter((argument) => argument === "-map")).toHaveLength(2);
     expect(args).toContain("0:v:0");
     expect(args).toContain("0:a:0");
+  });
+
+  it("does not spawn FFmpeg when the attempt is already aborted", async () => {
+    const controller = new AbortController();
+    controller.abort(new Error("vertical lease lost"));
+    const renderer = new FfmpegVerticalRenderer(
+      "definitely-missing-ffmpeg",
+      "definitely-missing-ffprobe",
+    );
+
+    await expect(
+      renderer.render("source.mp4", "vertical.mp4", controller.signal),
+    ).rejects.toThrow("vertical lease lost");
   });
 });
