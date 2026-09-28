@@ -157,8 +157,9 @@
   сохранённая история остаётся доступной.
 - Revoke во время активного Twitch transfer обнаруживается heartbeat: intent
   атомарно возвращается в `QUEUED` без расхода attempt budget. DB-finalize ещё
-  раз блокирует channel state и не создаёт Project/Source/Artifact после
-  отзыва, даже если multipart upload успел завершиться.
+  раз блокирует одновременно intent и channel row, поэтому concurrent revoke
+  имеет однозначный порядок и не создаёт Project/Source/Artifact после отзыва,
+  даже если multipart upload успел завершиться.
 - Delayed VOD candidate продвигается в `READY` только пока связанный Twitch
   channel остаётся `ENABLED`; revoke во время задержки не создаёт новый ingest
   intent, а повторное включение сохраняет возможность штатно продолжить.

@@ -232,7 +232,7 @@ export class PgTwitchIngestionWorkerRepository
            JOIN "TwitchIngestChannel" ch ON ch."id" = v."channelId"
           WHERE i."id" = $1 AND i."leaseOwner" = $2 AND i."state" = 'UPLOADING'
             AND i."leaseExpiresAt" > now()
-          FOR UPDATE OF i`,
+          FOR UPDATE OF i, ch`,
         [input.intentId, input.workerId],
       );
       const intent = locked.rows[0];
