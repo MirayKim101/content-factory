@@ -9,6 +9,9 @@
 - EventSub subscription callback допускает только HTTPS:443 на публичном host
   и точном `/api/v1/twitch/eventsub`; localhost, private/shared/link-local IP,
   IPv6 loopback/ULA и другой path отклоняются до provider request.
+- EventSub subscription type/version берутся из подписанного JSON payload;
+  переданные отдельно unsigned headers разрешены только при точном совпадении.
+  Их подмена не может изменить семантику сохранённого online/offline события.
 - VOD data plane: default-off admission, idempotent durable intent, fenced
   lease/retry, persistent scratch, HTTP Range resume, byte fence, MP4 `ftyp`,
   SHA-256, multipart object upload и атомарный finalize.
@@ -166,7 +169,7 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     243/243 unit tests
+API:     244/244 unit tests
 Publication real disposable PostgreSQL: 1/1
 Worker:  301/301 unit tests
 Web:     266/266 tests
@@ -195,6 +198,10 @@ Publication repository дополнительно воспроизведён н�
 session cleanup при operator-confirmed absence, retry reset и запрет ручного
 absence-resolution при наличии remote ID. База удалена guarded teardown после
 теста; restored runtime database не была test target.
+
+Актуальный publication claim SQL после stale-outcome hardening также выполнен
+как read-only no-op против локальной runtime PostgreSQL; запрос завершился
+`PUBLICATION_CLAIM_SQL_OK`, заведомо отсутствующий intent не был изменён.
 
 ## Fresh migration proof
 

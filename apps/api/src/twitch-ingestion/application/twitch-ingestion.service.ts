@@ -404,8 +404,10 @@ export class TwitchIngestionService {
     };
     const subscription = payload.subscription;
     const broadcasterId = subscription?.condition?.broadcaster_user_id;
-    const type = headers.subscriptionType ?? subscription?.type;
-    const version = headers.subscriptionVersion ?? subscription?.version;
+    const { type, version } = this.subscriptionIdentity(
+      subscription,
+      headers,
+    );
     if (
       !headers.messageId ||
       typeof broadcasterId !== "string" ||
@@ -514,12 +516,15 @@ export class TwitchIngestionService {
       subscription?: { type?: unknown; version?: unknown };
     };
     const event = payload.event ?? {};
+    const { type, version } = this.subscriptionIdentity(
+      payload.subscription,
+      headers,
+    );
     return {
       messageId: headers.messageId,
       messageTimestamp: headers.messageTimestamp,
-      subscriptionType: headers.subscriptionType ?? payload.subscription?.type,
-      subscriptionVersion:
-        headers.subscriptionVersion ?? payload.subscription?.version,
+      subscriptionType: type,
+      subscriptionVersion: version,
       event: {
         id: event.id,
         broadcasterUserId: event.broadcaster_user_id,
@@ -539,14 +544,15 @@ export class TwitchIngestionService {
         condition?: { broadcaster_user_id?: unknown };
       };
     };
+    const { type, version } = this.subscriptionIdentity(
+      payload.subscription,
+      headers,
+    );
     if (
       typeof payload.challenge !== "string" ||
       payload.challenge.length > 500 ||
-      ((headers.subscriptionType ?? payload.subscription?.type) !==
-        "stream.online" &&
-        (headers.subscriptionType ?? payload.subscription?.type) !==
-          "stream.offline") ||
-      (headers.subscriptionVersion ?? payload.subscription?.version) !== "1" ||
+      (type !== "stream.online" && type !== "stream.offline") ||
+      version !== "1" ||
       typeof payload.subscription?.condition?.broadcaster_user_id !== "string"
     )
       throw new TwitchEventInvalidError();
@@ -554,5 +560,21 @@ export class TwitchIngestionService {
       value: payload.challenge,
       broadcasterId: payload.subscription.condition.broadcaster_user_id,
     };
+  }
+
+  private subscriptionIdentity(
+    subscription: { type?: unknown; version?: unknown } | undefined,
+    headers: TwitchHeaders,
+  ): { type: string; version: string } {
+    if (
+      typeof subscription?.type !== "string" ||
+      typeof subscription.version !== "string" ||
+      (headers.subscriptionType !== undefined &&
+        headers.subscriptionType !== subscription.type) ||
+      (headers.subscriptionVersion !== undefined &&
+        headers.subscriptionVersion !== subscription.version)
+    )
+      throw new TwitchEventInvalidError();
+    return { type: subscription.type, version: subscription.version };
   }
 }

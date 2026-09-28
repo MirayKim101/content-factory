@@ -6,6 +6,7 @@ import { TwitchIngestionService } from "../src/twitch-ingestion/application/twit
 import { TwitchIngestionController } from "../src/twitch-ingestion/presentation/twitch-ingestion.controller.js";
 import {
   TwitchEventConflictError,
+  TwitchEventInvalidError,
   TwitchIngestionDisabledError,
   TwitchSignatureInvalidError,
   TwitchVodConflictError,
@@ -239,6 +240,19 @@ describe("TwitchIngestionService", () => {
         now,
       ),
     ).rejects.toBeInstanceOf(TwitchEventConflictError);
+  });
+
+  it("rejects unsigned subscription headers that disagree with the signed body", async () => {
+    const prisma = repository();
+    await expect(
+      new TwitchIngestionService(prisma as never).receive(
+        { ...headers(), subscriptionType: "stream.offline" },
+        rawBody,
+        body,
+        now,
+      ),
+    ).rejects.toBeInstanceOf(TwitchEventInvalidError);
+    expect(prisma.twitchEventInbox.create).not.toHaveBeenCalled();
   });
 
   it("accepts a signed revocation as a durable audit record", async () => {
