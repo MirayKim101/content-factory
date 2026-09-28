@@ -175,13 +175,58 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
-      const locked = await client.query(
-        `SELECT "id" FROM "PipelineJob" WHERE "id"=$1 AND "state"='PROCESSING'
-          AND "leaseToken"=$2 AND "leaseExpiresAt">now() FOR UPDATE`,
+      const locked = await client.query<{ current: boolean }>(
+        `SELECT (j."type" = 'RENDER_VERTICAL' AND j."payloadVersion" = 1
+                 AND j."recipeVersion" = 'vertical-render-v1'
+                 AND j."verticalRenderIntentId" = i."id"
+                 AND i."renderContractVersion" = 'vertical-render-v1'
+                 AND i."framingMode" = 'CENTER_CROP'
+                 AND s."sourceVersion" = j."sourceVersion" AND s."status" = 'READY'
+                 AND sa."status" = 'CLEARED'
+                 AND i."projectId" = j."projectId" AND i."sourceId" = j."sourceId"
+                 AND i."sourceVersion" = j."sourceVersion"
+                 AND i."cutResultArtifactId" = a."id"
+                 AND cut."type" = 'CUT_SEGMENT' AND cut."state" = 'READY'
+                 AND a."status" = 'READY' AND a."role" = 'CUT_RESULT'
+                 AND a."contentType" = 'video/mp4'
+                 AND a."projectId" = j."projectId" AND a."lineageSourceId" = j."sourceId"
+                 AND a."lineageSourceVersion" = j."sourceVersion"
+                 AND a."pipelineJobId" = i."cutPipelineJobId"
+                 AND i."outputWidth" = 1080 AND i."outputHeight" = 1920) AS "current"
+           FROM "PipelineJob" j
+           JOIN "VerticalRenderIntent" i ON i."id" = j."verticalRenderIntentId"
+           JOIN "MediaArtifact" a ON a."id" = i."cutResultArtifactId"
+           JOIN "PipelineJob" cut ON cut."id" = i."cutPipelineJobId"
+           JOIN "VideoSource" s ON s."id" = j."sourceId"
+           JOIN "SourceAuthorization" sa ON sa."sourceId" = j."sourceId"
+             AND sa."sourceVersion" = j."sourceVersion"
+          WHERE j."id"=$1 AND j."state"='PROCESSING'
+            AND j."leaseToken"=$2 AND j."leaseExpiresAt">now()
+          FOR UPDATE OF j`,
         [claim.jobId, claim.leaseToken],
       );
       if (!locked.rowCount) {
         await client.query("ROLLBACK");
+        return false;
+      }
+      if (!locked.rows[0]?.current) {
+        await client.query(
+          `UPDATE "PipelineJob" SET "state"='FAILED_FINAL',
+             "failureCode"='VERTICAL_LINEAGE_STALE',
+             "failureMessage"='Vertical input lineage is no longer current.',
+             "failureRetryable"=false, "finishedAt"=now(), "leaseOwner"=NULL,
+             "leaseToken"=NULL, "leaseExpiresAt"=NULL, "updatedAt"=now()
+           WHERE "id"=$1`,
+          [claim.jobId],
+        );
+        await client.query(
+          `UPDATE "JobAttempt" SET "state"='FAILED_FINAL',
+             "failureCode"='VERTICAL_LINEAGE_STALE', "finishedAt"=now(),
+             "updatedAt"=now()
+           WHERE "jobId"=$1 AND "attemptNumber"=$2 AND "leaseToken"=$3`,
+          [claim.jobId, claim.attemptNumber, claim.leaseToken],
+        );
+        await client.query("COMMIT");
         return false;
       }
       const artifactId = randomUUID();

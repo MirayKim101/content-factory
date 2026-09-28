@@ -92,6 +92,10 @@
 - Полный vertical attempt (download, FFmpeg и upload) ограничен двумя часами;
   timeout прерывает I/O тем же abort signal и освобождает durable lease через
   штатный bounded failure path.
+- После длительного FFmpeg/upload vertical worker повторно проверяет exact
+  source, authorization, cut artifact и render contracts в той же SERIALIZABLE
+  транзакции, где создаётся результат. Устаревший lineage завершается как
+  `FAILED_FINAL`, а уже загруженный orphan удаляется вызывающим процессом.
 - Диагностический stderr длительного vertical FFmpeg render хранится как
   кольцевой хвост максимум 4000 символов; многочасовой progress output не может
   неограниченно увеличивать heap worker’а.
