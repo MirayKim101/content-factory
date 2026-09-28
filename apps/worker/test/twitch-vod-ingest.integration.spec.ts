@@ -303,6 +303,25 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
             sha256: createSha(bytes),
           }),
         ).resolves.toBe(true);
+        await pool.query(
+          `UPDATE "SourceAuthorization" z
+              SET "status"='CLEARED', "basis"='OPERATOR_ATTESTATION',
+                  "declarationVersion"='source-rights-v1', "decidedAt"=now(),
+                  "revision"=z."revision"+1, "updatedAt"=now()
+             FROM "VideoSource" s
+            WHERE z."sourceId"=s."id" AND z."sourceVersion"=s."sourceVersion"
+              AND s."projectId"=$1`,
+          [projectId],
+        );
+        await expect(
+          repository.completionMatches({
+            intentId,
+            projectId,
+            objectKey,
+            sizeBytes: BigInt(bytes.length),
+            sha256: createSha(bytes),
+          }),
+        ).resolves.toBe(true);
         await storage.verifyIdentity({
           objectKey,
           sizeBytes: BigInt(bytes.length),
