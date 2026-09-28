@@ -43,8 +43,9 @@ describe("GoogleOAuthAccessTokenResolver", () => {
     expect(tokenRequest.redirect).toBe("error");
     expect(String(tokenRequest.body)).toContain("refresh_token=refresh-token");
     expect(String(tokenRequest.body)).toContain("client_secret=client-secret");
-    expect(tokenRequest.signal).toBe(input.signal);
-    expect(request.mock.calls[1]![1]!.signal).toBe(input.signal);
+    expect(tokenRequest.signal).toBeInstanceOf(AbortSignal);
+    expect(tokenRequest.signal).not.toBe(input.signal);
+    expect(request.mock.calls[1]![1]!.signal).toBeInstanceOf(AbortSignal);
     expect(request.mock.calls[1]![1]!.redirect).toBe("error");
   });
 
@@ -112,6 +113,36 @@ describe("GoogleOAuthAccessTokenResolver", () => {
       resolver.resolve({ channelId, platform: "YOUTUBE", externalChannelRef }),
     ).rejects.toThrow("YOUTUBE_TOKEN_REFRESH_FAILED_503");
     expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("propagates publication shutdown into a bounded credential request", async () => {
+    const request = vi.fn(
+      (_input: string | URL | Request, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) =>
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(init.signal?.reason),
+            { once: true },
+          ),
+        ),
+    );
+    const resolver = new GoogleOAuthAccessTokenResolver(
+      "client-id",
+      "client-secret",
+      [{ channelId, externalChannelRef, refreshToken: "refresh-token" }],
+      request,
+    );
+    const controller = new AbortController();
+    const pending = resolver.resolve({
+      channelId,
+      platform: "YOUTUBE",
+      externalChannelRef,
+      signal: controller.signal,
+    });
+    await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+    controller.abort(new Error("publication shutdown"));
+
+    await expect(pending).rejects.toThrow("publication shutdown");
   });
 
   it("does not reuse a cached token after the external channel identity changes", async () => {

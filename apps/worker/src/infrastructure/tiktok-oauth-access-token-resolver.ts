@@ -1,6 +1,7 @@
 import type { PublicationAccessTokenResolver } from "../application/publication-credential.port.js";
 
 const TOKEN_ENDPOINT = "https://open.tiktokapis.com/v2/oauth/token/";
+const CREDENTIAL_REQUEST_TIMEOUT_MS = 10_000;
 
 export interface TikTokChannelCredential {
   channelId?: string;
@@ -64,7 +65,7 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
         refresh_token: credential.refreshToken,
       }),
       redirect: "error",
-      signal: input.signal,
+      signal: credentialRequestSignal(input.signal),
     });
     if (!response.ok) {
       await response.body?.cancel().catch(() => undefined);
@@ -98,6 +99,11 @@ export class TikTokOAuthAccessTokenResolver implements PublicationAccessTokenRes
     this.cache.set(cacheKey, token);
     return token.accessToken;
   }
+}
+
+function credentialRequestSignal(signal?: AbortSignal): AbortSignal {
+  const timeout = AbortSignal.timeout(CREDENTIAL_REQUEST_TIMEOUT_MS);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
 }
 
 function secret(value: string, code: string): void {

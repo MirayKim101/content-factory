@@ -3,6 +3,7 @@ import type { PublicationAccessTokenResolver } from "../application/publication-
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const YOUTUBE_MINE_ENDPOINT =
   "https://www.googleapis.com/youtube/v3/channels?part=id&mine=true";
+const CREDENTIAL_REQUEST_TIMEOUT_MS = 10_000;
 
 export interface YoutubeChannelCredential {
   channelId?: string;
@@ -84,7 +85,7 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
         grant_type: "refresh_token",
       }),
       redirect: "error",
-      signal,
+      signal: credentialRequestSignal(signal),
     });
     if (!response.ok) {
       await response.body?.cancel().catch(() => undefined);
@@ -118,7 +119,7 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
     const response = await this.request(YOUTUBE_MINE_ENDPOINT, {
       headers: { authorization: `Bearer ${accessToken}` },
       redirect: "error",
-      signal,
+      signal: credentialRequestSignal(signal),
     });
     if (!response.ok) {
       await response.body?.cancel().catch(() => undefined);
@@ -136,6 +137,11 @@ export class GoogleOAuthAccessTokenResolver implements PublicationAccessTokenRes
     )
       throw new Error("YOUTUBE_CHANNEL_IDENTITY_MISMATCH");
   }
+}
+
+function credentialRequestSignal(signal?: AbortSignal): AbortSignal {
+  const timeout = AbortSignal.timeout(CREDENTIAL_REQUEST_TIMEOUT_MS);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
 }
 
 function requireSecret(value: string, code: string): void {
