@@ -154,16 +154,25 @@ export class PgTwitchIngestionWorkerRepository
     workerId: string,
     leaseMs: number,
   ): Promise<boolean> {
-    const result = await this.pool.query(
-      `UPDATE "TwitchVodIngestIntent"
-          SET "leaseExpiresAt" = now() + ($3 * interval '1 millisecond'),
+    const result = await this.pool.query<{ channelEnabled: boolean }>(
+      `UPDATE "TwitchVodIngestIntent" i
+          SET "state" = CASE WHEN ch."state" = 'ENABLED' THEN i."state" ELSE 'QUEUED' END,
+              "attemptCount" = CASE WHEN ch."state" = 'ENABLED' THEN i."attemptCount"
+                                    ELSE GREATEST(i."attemptCount" - 1, 0) END,
+              "leaseOwner" = CASE WHEN ch."state" = 'ENABLED' THEN i."leaseOwner" ELSE NULL END,
+              "leaseExpiresAt" = CASE WHEN ch."state" = 'ENABLED'
+                                      THEN now() + ($3 * interval '1 millisecond') ELSE NULL END,
+              "nextAttemptAt" = CASE WHEN ch."state" = 'ENABLED' THEN i."nextAttemptAt" ELSE NULL END,
               "updatedAt" = now()
-        WHERE "id" = $1 AND "leaseOwner" = $2
-          AND "state" IN ('DOWNLOADING','UPLOADING')
-          AND "leaseExpiresAt" > now()`,
+         FROM "TwitchVodCandidate" v
+         JOIN "TwitchIngestChannel" ch ON ch."id" = v."channelId"
+        WHERE i."candidateId" = v."id" AND i."id" = $1 AND i."leaseOwner" = $2
+          AND i."state" IN ('DOWNLOADING','UPLOADING')
+          AND i."leaseExpiresAt" > now()
+        RETURNING (ch."state" = 'ENABLED') AS "channelEnabled"`,
       [id, workerId, Math.max(5_000, leaseMs)],
     );
-    return result.rowCount === 1;
+    return result.rows[0]?.channelEnabled === true;
   }
 
   async release(id: string, workerId: string): Promise<boolean> {
@@ -208,19 +217,39 @@ export class PgTwitchIngestionWorkerRepository
     version?: string;
   }): Promise<void> {
     const client = await this.pool.connect();
+    let committed = false;
     try {
       await client.query("BEGIN");
       const locked = await client.query<{
         candidateId: string;
         projectName: string;
+        channelEnabled: boolean;
       }>(
-        `SELECT "candidateId", "projectName" FROM "TwitchVodIngestIntent"
-         WHERE "id" = $1 AND "leaseOwner" = $2 AND "state" = 'UPLOADING'
-           AND "leaseExpiresAt" > now() FOR UPDATE`,
+        `SELECT i."candidateId", i."projectName",
+                (ch."state" = 'ENABLED') AS "channelEnabled"
+           FROM "TwitchVodIngestIntent" i
+           JOIN "TwitchVodCandidate" v ON v."id" = i."candidateId"
+           JOIN "TwitchIngestChannel" ch ON ch."id" = v."channelId"
+          WHERE i."id" = $1 AND i."leaseOwner" = $2 AND i."state" = 'UPLOADING'
+            AND i."leaseExpiresAt" > now()
+          FOR UPDATE OF i`,
         [input.intentId, input.workerId],
       );
       const intent = locked.rows[0];
       if (!intent) throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
+      if (!intent.channelEnabled) {
+        await client.query(
+          `UPDATE "TwitchVodIngestIntent"
+              SET "state"='QUEUED', "attemptCount"=GREATEST("attemptCount"-1,0),
+                  "nextAttemptAt"=NULL, "leaseOwner"=NULL, "leaseExpiresAt"=NULL,
+                  "updatedAt"=now()
+            WHERE "id"=$1 AND "leaseOwner"=$2`,
+          [input.intentId, input.workerId],
+        );
+        await client.query("COMMIT");
+        committed = true;
+        throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
+      }
       await client.query(
         `INSERT INTO "Project" ("id","idempotencyKey","requestFingerprint","name","status","createdAt","updatedAt")
          VALUES ($1,$2,$3,$4,'SOURCE_READY',now(),now())`,
@@ -274,8 +303,10 @@ export class PgTwitchIngestionWorkerRepository
         [input.intentId, input.workerId, input.projectId],
       );
       await client.query("COMMIT");
+      committed = true;
     } catch (error) {
-      await client.query("ROLLBACK").catch(() => undefined);
+      if (!committed)
+        await client.query("ROLLBACK").catch(() => undefined);
       throw error;
     } finally {
       client.release();

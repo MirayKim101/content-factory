@@ -155,6 +155,10 @@
 - Отзыв Twitch channel закрывает API admission для нового VOD import и
   операторского retry; worker независимо требует `ENABLED` при claim. Уже
   сохранённая история остаётся доступной.
+- Revoke во время активного Twitch transfer обнаруживается heartbeat: intent
+  атомарно возвращается в `QUEUED` без расхода attempt budget. DB-finalize ещё
+  раз блокирует channel state и не создаёт Project/Source/Artifact после
+  отзыва, даже если multipart upload успел завершиться.
 - Delayed VOD candidate продвигается в `READY` только пока связанный Twitch
   channel остаётся `ENABLED`; revoke во время задержки не создаёт новый ingest
   intent, а повторное включение сохраняет возможность штатно продолжить.
@@ -200,7 +204,7 @@
 API:     253/253 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  319/319 unit tests
+Worker:  320/320 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

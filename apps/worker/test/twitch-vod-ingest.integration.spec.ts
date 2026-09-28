@@ -82,15 +82,68 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
         );
         expect(marker.rows[0]?.lastIngestClaimedAt).toBeInstanceOf(Date);
         await pool.query(
-          `UPDATE "TwitchVodIngestIntent" SET "leaseExpiresAt"=now()-interval '1 second' WHERE "id"=$1`,
-          [waitingIntentId],
+          `UPDATE "TwitchIngestChannel" SET "state"='REVOKED', "updatedAt"=now()
+            WHERE "id"=$1`,
+          [waitingChannelId],
         );
         await expect(
           repository.heartbeat(waitingIntentId, "fairness-worker", 60_000),
         ).resolves.toBe(false);
+        const released = await pool.query<{
+          state: string;
+          attemptCount: number;
+          leaseOwner: string | null;
+        }>(
+          `SELECT "state", "attemptCount", "leaseOwner"
+             FROM "TwitchVodIngestIntent" WHERE "id"=$1`,
+          [waitingIntentId],
+        );
+        expect(released.rows[0]).toEqual({
+          state: "QUEUED",
+          attemptCount: 0,
+          leaseOwner: null,
+        });
         await expect(
           repository.checkpoint(waitingIntentId, "fairness-worker", 1n, 2n),
         ).rejects.toThrow("TWITCH_VOD_INGEST_LEASE_LOST");
+        await pool.query(
+          `UPDATE "TwitchVodIngestIntent"
+              SET "state"='UPLOADING', "attemptCount"=1,
+                  "leaseOwner"='finalize-worker',
+                  "leaseExpiresAt"=now()+interval '1 minute'
+            WHERE "id"=$1`,
+          [waitingIntentId],
+        );
+        const rejectedProjectId = randomUUID();
+        await expect(
+          repository.complete({
+            intentId: waitingIntentId,
+            workerId: "finalize-worker",
+            projectId: rejectedProjectId,
+            sourceId: randomUUID(),
+            artifactId: randomUUID(),
+            objectKey: "rejected/object.mp4",
+            sizeBytes: 1n,
+            sha256: "0".repeat(64),
+          }),
+        ).rejects.toThrow("TWITCH_VOD_INGEST_LEASE_LOST");
+        const finalizeRejected = await pool.query<{
+          state: string;
+          attemptCount: number;
+          leaseOwner: string | null;
+          projectExists: boolean;
+        }>(
+          `SELECT i."state", i."attemptCount", i."leaseOwner",
+                  EXISTS(SELECT 1 FROM "Project" p WHERE p."id"=$2) AS "projectExists"
+             FROM "TwitchVodIngestIntent" i WHERE i."id"=$1`,
+          [waitingIntentId, rejectedProjectId],
+        );
+        expect(finalizeRejected.rows[0]).toEqual({
+          state: "QUEUED",
+          attemptCount: 0,
+          leaseOwner: null,
+          projectExists: false,
+        });
       } finally {
         await pool.query(
           `DELETE FROM "TwitchVodIngestIntent" WHERE "id" = ANY($1::uuid[])`,
