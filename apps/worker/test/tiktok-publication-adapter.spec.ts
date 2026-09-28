@@ -155,6 +155,54 @@ describe("TikTokPublicationAdapter", () => {
     expect(deps.transport.initiate).not.toHaveBeenCalled();
   });
 
+  it("resumes a durable remote session without repeating mutable consent preflight", async () => {
+    const deps = dependencies();
+    const encrypted = deps.cipher.encrypt({
+      publicationIntentId: claim.id,
+      platform: claim.platform,
+      session: {
+        kind: "tiktok-direct-post-v1",
+        publishId: "publish_existing",
+        uploadUrl: "https://open-upload.tiktokapis.com/video/?id=existing",
+        chunkSize: 6,
+      },
+    });
+    deps.sessions.load.mockResolvedValue({
+      publicationIntentId: claim.id,
+      platform: claim.platform,
+      ...encrypted,
+      uploadOffset: 0n,
+      expiresAt: null,
+    });
+    deps.transport.status.mockResolvedValue({
+      status: "PROCESSING_UPLOAD",
+      postIds: [],
+      uploadedBytes: 0n,
+    });
+    deps.transport.creatorInfo.mockRejectedValue(
+      new Error("mutable creator capabilities are unavailable"),
+    );
+
+    const error = await new TikTokPublicationAdapter(
+      deps.tokens,
+      deps.media,
+      deps.sessions,
+      deps.cipher,
+      deps.transport,
+    )
+      .publish(claim)
+      .catch((caught: unknown) => caught);
+
+    expect(error).toMatchObject({
+      name: "PublicationOutcomeUnknownError",
+      remotePublicationId: "publish_existing",
+      remoteStatus: "PROCESSING_UPLOAD",
+    });
+    expect(deps.transport.creatorInfo).not.toHaveBeenCalled();
+    expect(deps.transport.initiate).not.toHaveBeenCalled();
+    expect(deps.transport.uploadChunk).toHaveBeenCalledOnce();
+  });
+
   it("quarantines an ambiguous Direct Post initiation without retrying it", async () => {
     const deps = dependencies();
     deps.transport.initiate.mockRejectedValue(new TypeError("fetch failed"));

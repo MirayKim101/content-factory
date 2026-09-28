@@ -70,10 +70,6 @@ export class TikTokPublicationAdapter implements PublicationProvider {
       externalChannelRef: claim.externalChannelRef,
       signal,
     });
-    const creator = await this.transport.creatorInfo(accessToken, signal);
-    signal?.throwIfAborted();
-    const metadata = requireTikTokMetadata(claim.metadataSnapshot, creator);
-
     const stored = await this.sessions.load(claim.id, claim.platform);
     signal?.throwIfAborted();
     let publishId: string;
@@ -120,6 +116,9 @@ export class TikTokPublicationAdapter implements PublicationProvider {
         if (!advanced) throw new Error("TIKTOK_UPLOAD_SESSION_CONFLICT");
       }
     } else {
+      const creator = await this.transport.creatorInfo(accessToken, signal);
+      signal?.throwIfAborted();
+      const metadata = requireTikTokMetadata(claim.metadataSnapshot, creator);
       let initialized: Awaited<ReturnType<typeof this.transport.initiate>>;
       try {
         initialized = await this.transport.initiate({

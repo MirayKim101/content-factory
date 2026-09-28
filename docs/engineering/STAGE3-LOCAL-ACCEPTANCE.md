@@ -69,6 +69,10 @@
   потерянный/невалидный ответ и ошибка сохранения уже полученного `publish_id`
   переводят intent в `UNKNOWN_REMOTE_STATE`, а не повторяют POST. Однозначный
   HTTP 4xx до принятия запроса остаётся в bounded retry.
+- Сохранённая TikTok recovery session возобновляется до mutable creator/consent
+  preflight: после получения `publish_id` изменение текущих capabilities не
+  может удалить recovery state или ошибочно объявить возможный remote post
+  terminal. Consent всё ещё строго проверяется перед первой initiation.
 - Потеря publication lease или shutdown во время самого TikTok initiation не
   отменяет этот remote-commit fence: неоднозначный abort имеет приоритет над
   lease recovery и остаётся в `UNKNOWN_REMOTE_STATE` до ручной/provider сверки.
@@ -208,7 +212,7 @@
 API:     253/253 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  320/320 unit tests
+Worker:  321/321 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
