@@ -118,6 +118,9 @@
 - Если Twitch object upload завершён, но fenced DB-finalize отклонён или
   откатывается, worker compensating-delete удаляет orphan из object storage.
   Проверенный локальный scratch сохраняется для безопасного следующего claim.
+- Compensating delete для Twitch и vertical orphan ограничен отдельным
+  30-секундным deadline. Недоступный object storage не удерживает worker за
+  пределами graceful-stop после уже отклонённой DB-finalization.
 - Production dependency overrides закрепляют исправленные `multer 2.3.0`,
   `deepmerge-ts 8.0.0` и `mysql2 3.23.1`; `pnpm audit --prod` не находит
   известных уязвимостей.
@@ -218,7 +221,7 @@
 API:     253/253 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  323/323 unit tests
+Worker:  324/324 unit tests
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

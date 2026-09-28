@@ -138,6 +138,7 @@ describe("ProcessTwitchVodIngest", () => {
     await expect(processor.execute("worker")).resolves.toBe(false);
     expect(storage.delete).toHaveBeenCalledWith(
       expect.stringMatching(/^sources\//),
+      expect.any(AbortSignal),
     );
     expect(repository.fail).not.toHaveBeenCalled();
     await expect(

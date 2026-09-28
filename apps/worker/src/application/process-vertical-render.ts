@@ -5,6 +5,7 @@ import { join } from "node:path";
 
 import type { WorkerObjectStorage } from "./ports.js";
 import { createAbortDeadline } from "./abort-deadline.js";
+import { deleteStorageObjectBestEffort } from "./bounded-storage-delete.js";
 import type {
   VerticalRenderer,
   VerticalRenderRepository,
@@ -115,7 +116,7 @@ export class ProcessVerticalRender {
         storageVersion: uploaded.version,
       });
       if (!completed)
-        await this.storage.delete(objectKey).catch(() => undefined);
+        await deleteStorageObjectBestEffort(this.storage, objectKey);
       return completed;
     } catch (error) {
       if (abort.signal.reason instanceof VerticalRenderShutdownError) {

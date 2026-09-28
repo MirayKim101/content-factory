@@ -6,6 +6,7 @@ import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
 import { createAbortDeadline } from "./abort-deadline.js";
+import { deleteStorageObjectBestEffort } from "./bounded-storage-delete.js";
 import type { TwitchVodMediaProvider } from "./twitch-vod-media.port.js";
 import type { TwitchVodIngestRepository } from "./twitch-vod-ingest.port.js";
 import type { WorkerObjectStorage } from "./ports.js";
@@ -168,7 +169,7 @@ export class ProcessTwitchVodIngest {
       return true;
     } catch (error) {
       if (uploadedObjectKey)
-        await this.storage.delete(uploadedObjectKey).catch(() => undefined);
+        await deleteStorageObjectBestEffort(this.storage, uploadedObjectKey);
       if (isTwitchVodIngestLeaseLost(error)) return false;
       if (controller.signal.reason instanceof TwitchVodIngestLeaseLostError)
         return false;
