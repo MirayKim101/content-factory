@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import { openAiClipGenerationConfig } from "../src/config.js";
+import { clipGenerationConfig } from "../src/config.js";
 
-describe("openAiClipGenerationConfig", () => {
+describe("clipGenerationConfig", () => {
   it("is disabled by default without requiring secrets", () => {
-    expect(openAiClipGenerationConfig({})).toBeNull();
+    expect(clipGenerationConfig({})).toBeNull();
   });
 
   it("requires an explicit model and key when enabled", () => {
     expect(() =>
-      openAiClipGenerationConfig({ CLIP_GENERATION_ENABLED: "1" }),
+      clipGenerationConfig({ CLIP_GENERATION_ENABLED: "1" }),
     ).toThrow("CONFIG_OPENAI_API_KEY_REQUIRED");
     expect(() =>
-      openAiClipGenerationConfig({
+      clipGenerationConfig({
         CLIP_GENERATION_ENABLED: "1",
         OPENAI_API_KEY: "secret",
       }),
@@ -21,7 +21,7 @@ describe("openAiClipGenerationConfig", () => {
 
   it("builds a bounded OpenAI configuration", () => {
     expect(
-      openAiClipGenerationConfig({
+      clipGenerationConfig({
         CLIP_GENERATION_ENABLED: "1",
         CLIP_GENERATION_PROVIDER: "OPENAI",
         OPENAI_API_KEY: "secret",
@@ -30,6 +30,7 @@ describe("openAiClipGenerationConfig", () => {
         OPENAI_BASE_URL: "https://gateway.example.test",
       }),
     ).toEqual({
+      provider: "OPENAI",
       apiKey: "secret",
       model: "gpt-test",
       timeoutMs: 45_000,
@@ -39,13 +40,13 @@ describe("openAiClipGenerationConfig", () => {
 
   it("rejects unsupported providers and unsafe timeouts", () => {
     expect(() =>
-      openAiClipGenerationConfig({
+      clipGenerationConfig({
         CLIP_GENERATION_ENABLED: "1",
         CLIP_GENERATION_PROVIDER: "UNKNOWN",
       }),
     ).toThrow("CONFIG_CLIP_GENERATION_PROVIDER_UNSUPPORTED");
     expect(() =>
-      openAiClipGenerationConfig({
+      clipGenerationConfig({
         CLIP_GENERATION_ENABLED: "1",
         OPENAI_API_KEY: "secret",
         CLIP_GENERATION_MODEL: "gpt-test",
@@ -62,7 +63,7 @@ describe("openAiClipGenerationConfig", () => {
     "https://gateway.example.test#fragment",
   ])("rejects an invalid or unsafe OpenAI base URL: %s", (baseUrl) => {
     expect(() =>
-      openAiClipGenerationConfig({
+      clipGenerationConfig({
         CLIP_GENERATION_ENABLED: "1",
         OPENAI_API_KEY: "secret",
         CLIP_GENERATION_MODEL: "gpt-test",
@@ -73,7 +74,7 @@ describe("openAiClipGenerationConfig", () => {
 
   it("allows local HTTP only in the explicit local deployment profile", () => {
     expect(
-      openAiClipGenerationConfig({
+      clipGenerationConfig({
         CLIP_GENERATION_ENABLED: "1",
         OPENAI_API_KEY: "secret",
         CLIP_GENERATION_MODEL: "gpt-test",
@@ -81,5 +82,25 @@ describe("openAiClipGenerationConfig", () => {
         DEPLOYMENT_PROFILE: "local",
       }),
     ).toMatchObject({ baseUrl: "http://127.0.0.1:8080" });
+  });
+
+  it("allows the deterministic fixture only in the local deployment profile", () => {
+    expect(() =>
+      clipGenerationConfig({
+        CLIP_GENERATION_ENABLED: "1",
+        CLIP_GENERATION_PROVIDER: "LOCAL_FIXTURE",
+      }),
+    ).toThrow("CONFIG_LOCAL_CLIP_PROVIDER_UNSAFE");
+    expect(
+      clipGenerationConfig({
+        CLIP_GENERATION_ENABLED: "1",
+        CLIP_GENERATION_PROVIDER: "LOCAL_FIXTURE",
+        DEPLOYMENT_PROFILE: "local",
+      }),
+    ).toEqual({
+      provider: "LOCAL_FIXTURE",
+      model: "local-deterministic-clip-v1",
+      timeoutMs: 120_000,
+    });
   });
 });

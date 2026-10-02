@@ -10,11 +10,14 @@ import { PrismaService } from "../src/database/prisma.service.js";
 describe("clip generation intent persistence (PostgreSQL)", () => {
   let prisma: PrismaService;
   let previousModel: string | undefined;
+  let previousProvider: string | undefined;
   const projectIds: string[] = [];
 
   beforeAll(async () => {
     previousModel = process.env.CLIP_GENERATION_MODEL;
+    previousProvider = process.env.CLIP_GENERATION_PROVIDER;
     process.env.CLIP_GENERATION_MODEL = "test-model";
+    process.env.CLIP_GENERATION_PROVIDER = "LOCAL_FIXTURE";
     prisma = new PrismaService();
     await prisma.$connect();
   });
@@ -36,6 +39,9 @@ describe("clip generation intent persistence (PostgreSQL)", () => {
     await prisma.$disconnect();
     if (previousModel === undefined) delete process.env.CLIP_GENERATION_MODEL;
     else process.env.CLIP_GENERATION_MODEL = previousModel;
+    if (previousProvider === undefined)
+      delete process.env.CLIP_GENERATION_PROVIDER;
+    else process.env.CLIP_GENERATION_PROVIDER = previousProvider;
   });
 
   it("deduplicates an exact request and rejects changed payload or missing consent before insert", async () => {
@@ -45,6 +51,10 @@ describe("clip generation intent persistence (PostgreSQL)", () => {
     const body = request(true);
 
     const created = await service.create(projectId, idempotencyKey, body);
+    expect(created).toMatchObject({
+      provider: "LOCAL_FIXTURE",
+      model: "test-model",
+    });
     await expect(
       service.create(projectId, idempotencyKey, body),
     ).resolves.toMatchObject({ id: created.id, state: "QUEUED" });

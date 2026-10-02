@@ -18,6 +18,9 @@
   intent в очередь без расхода retry budget;
 - AI suggestions никогда не считаются approval на vertical render или
   публикацию.
+- `LOCAL_FIXTURE` разрешён только при `DEPLOYMENT_PROFILE=local`: он доказывает
+  orchestration без сети, но не закрывает quality/cost acceptance внешнего
+  provider.
 
 ## Acceptance criteria
 

@@ -5,12 +5,13 @@ import type {
 
 export type ClipGenerationResult = Readonly<{
   providerRequestId: string;
-  model: string;
   suggestions: readonly GeneratedClipSuggestion[];
 }>;
 
 export interface ClipGenerationProvider {
   readonly provider: string;
+  readonly model: string;
+  readonly promptVersion: string;
   generate(
     request: ClipGenerationRequest,
     signal?: AbortSignal,

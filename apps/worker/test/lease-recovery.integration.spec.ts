@@ -341,6 +341,8 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     const deferred = Promise.withResolvers<ClipGenerationResult>();
     const slowProvider: ClipGenerationProvider = {
       provider: "TEST",
+      model: "test-model",
+      promptVersion: "test-prompt-v1",
       generate: vi.fn(() => deferred.promise),
     };
     const staleWorker = new PgClipGenerationWorker(
@@ -391,6 +393,8 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     const fixture = await createQueuedClipGeneration();
     const provider: ClipGenerationProvider = {
       provider: "TEST",
+      model: "test-model",
+      promptVersion: "test-prompt-v1",
       generate: vi.fn(async () => {
         throw new Error("CLIP_PROVIDER_FAILED");
       }),
@@ -419,6 +423,60 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     expect(provider.generate).toHaveBeenCalledTimes(2);
     await worker.close();
   });
+
+  it("leaves an intent queued when it belongs to another configured provider", async () => {
+    const fixture = await createQueuedClipGeneration();
+    await prisma.clipGenerationIntent.update({
+      where: { id: fixture.intentId },
+      data: { provider: "OTHER" },
+    });
+    const provider = resolvedClipProvider("must not run");
+    const worker = new PgClipGenerationWorker(
+      workerConfig().databaseUrl,
+      provider,
+      1_000,
+    );
+
+    await worker.process(fixture.intentId);
+
+    expect(provider.generate).not.toHaveBeenCalled();
+    await expect(
+      prisma.clipGenerationIntent.findUniqueOrThrow({
+        where: { id: fixture.intentId },
+      }),
+    ).resolves.toMatchObject({ state: "QUEUED", attemptCount: 0 });
+    await worker.close();
+  });
+
+  it.each([
+    ["model", { model: "other-model" }],
+    ["prompt", { promptVersion: "other-prompt-v2" }],
+  ])(
+    "leaves an intent queued when its persisted %s belongs to another adapter revision",
+    async (_identity, data) => {
+      const fixture = await createQueuedClipGeneration();
+      await prisma.clipGenerationIntent.update({
+        where: { id: fixture.intentId },
+        data,
+      });
+      const provider = resolvedClipProvider("must not run");
+      const worker = new PgClipGenerationWorker(
+        workerConfig().databaseUrl,
+        provider,
+        1_000,
+      );
+
+      await worker.process(fixture.intentId);
+
+      expect(provider.generate).not.toHaveBeenCalled();
+      await expect(
+        prisma.clipGenerationIntent.findUniqueOrThrow({
+          where: { id: fixture.intentId },
+        }),
+      ).resolves.toMatchObject({ state: "QUEUED", attemptCount: 0 });
+      await worker.close();
+    },
+  );
 
   it("does not claim a job whose exact source version is not authorized", async () => {
     const { jobId } = await createQueuedCut(false);
@@ -780,6 +838,8 @@ function abortableClipProvider(): ClipGenerationProvider & {
 } {
   return {
     provider: "TEST",
+    model: "test-model",
+    promptVersion: "test-prompt-v1",
     generate: vi.fn(
       async (_request, signal?: AbortSignal) =>
         new Promise<never>((_resolve, reject) =>
@@ -794,6 +854,8 @@ function abortableClipProvider(): ClipGenerationProvider & {
 function resolvedClipProvider(title: string): ClipGenerationProvider {
   return {
     provider: "TEST",
+    model: "test-model",
+    promptVersion: "test-prompt-v1",
     generate: vi.fn(async () => clipResult(title)),
   };
 }
@@ -801,7 +863,6 @@ function resolvedClipProvider(title: string): ClipGenerationProvider {
 function clipResult(title: string): ClipGenerationResult {
   return {
     providerRequestId: randomUUID(),
-    model: "test-model",
     suggestions: [
       {
         startMs: 10_000,

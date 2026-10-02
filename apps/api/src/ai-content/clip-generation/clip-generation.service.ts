@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import {
   CLIP_GENERATION_CONTRACT_VERSION,
+  CLIP_GENERATION_PROMPT_VERSIONS,
   validateClipGenerationRequest,
 } from "@content-factory/contracts";
 import { Prisma } from "../../generated/prisma/client.js";
@@ -14,8 +15,6 @@ import { Prisma } from "../../generated/prisma/client.js";
 import { apiEnvironment } from "../../config/environment.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import type { CreateClipGenerationDto } from "./clip-generation.dto.js";
-
-const PROMPT_VERSION = "openai-clip-selection-v1";
 
 @Injectable()
 export class ClipGenerationService {
@@ -63,6 +62,9 @@ export class ClipGenerationService {
     const transcriptSha256 = createHash("sha256")
       .update(transcriptJson)
       .digest("hex");
+    const environment = apiEnvironment();
+    const promptVersion =
+      CLIP_GENERATION_PROMPT_VERSIONS[environment.clipGenerationProvider];
     const fingerprint = createHash("sha256")
       .update(
         JSON.stringify([
@@ -70,18 +72,20 @@ export class ClipGenerationService {
           projectId,
           source.id,
           source.sourceVersion,
+          environment.clipGenerationProvider,
+          environment.clipGenerationModel,
+          promptVersion,
           request,
           true,
         ]),
       )
       .digest("hex");
     const id = randomUUID();
-    const environment = apiEnvironment();
     const inserted = await this.prisma.$queryRaw<
       Array<{ id: string }>
     >(Prisma.sql`
       INSERT INTO "ClipGenerationIntent" ("id","idempotencyKey","requestFingerprint","projectId","sourceId","sourceVersion","sourceTitle","sourceDurationMs","transcript","transcriptSha256","language","maximumSuggestions","minimumClipDurationMs","maximumClipDurationMs","externalTransferAllowed","provider","model","contractVersion","promptVersion","updatedAt")
-      VALUES (${id}::uuid,${idempotencyKey},${fingerprint},${projectId}::uuid,${source.id}::uuid,${source.sourceVersion},${body.sourceTitle.trim()},${source.durationMs},${transcriptJson}::jsonb,${transcriptSha256},${body.language},${body.maximumSuggestions},${body.minimumClipDurationMs},${body.maximumClipDurationMs},TRUE,'OPENAI',${environment.clipGenerationModel!},${CLIP_GENERATION_CONTRACT_VERSION},${PROMPT_VERSION},now())
+      VALUES (${id}::uuid,${idempotencyKey},${fingerprint},${projectId}::uuid,${source.id}::uuid,${source.sourceVersion},${body.sourceTitle.trim()},${source.durationMs},${transcriptJson}::jsonb,${transcriptSha256},${body.language},${body.maximumSuggestions},${body.minimumClipDurationMs},${body.maximumClipDurationMs},TRUE,${environment.clipGenerationProvider},${environment.clipGenerationModel!},${CLIP_GENERATION_CONTRACT_VERSION},${promptVersion},now())
       ON CONFLICT ("idempotencyKey") DO NOTHING RETURNING "id"`);
     const resolvedId =
       inserted[0]?.id ?? (await this.idForKey(idempotencyKey, fingerprint));

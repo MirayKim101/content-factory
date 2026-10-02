@@ -15,7 +15,7 @@ import { ProcessFrameJob } from "./application/process-frame-job.js";
 import { PgFrameJobRepository } from "./infrastructure/pg-frame-job.repository.js";
 import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js";
 import {
-  openAiClipGenerationConfig,
+  clipGenerationConfig,
   publicationWorkerAdmissionEnabled,
   twitchVodAutoIngestConfig,
   tiktokPublishingConfig,
@@ -59,6 +59,7 @@ import { TikTokOAuthAccessTokenResolver } from "./infrastructure/tiktok-oauth-ac
 import { TikTokDirectPostTransport } from "./infrastructure/tiktok-direct-post-transport.js";
 import { TikTokPublicationAdapter } from "./infrastructure/tiktok-publication-adapter.js";
 import { OpenAiClipGenerationAdapter } from "./infrastructure/openai-clip-generation-adapter.js";
+import { LocalClipGenerationAdapter } from "./infrastructure/local-clip-generation-adapter.js";
 import { PgClipGenerationWorker } from "./infrastructure/pg-clip-generation-worker.js";
 import { HttpTwitchVodMediaProvider } from "./infrastructure/http-twitch-vod-media-provider.js";
 import { ProcessTwitchVodIngest } from "./application/process-twitch-vod-ingest.js";
@@ -560,7 +561,7 @@ async function startPublicationWorker(): Promise<void> {
 async function startAiWorker(): Promise<void> {
   const config = workerConfig();
   const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
-  const clipConfig = openAiClipGenerationConfig(process.env);
+  const clipConfig = clipGenerationConfig(process.env);
   const transcriptWorker = new PgTranscriptWorker({
     databaseUrl: config.databaseUrl,
     bucket: config.storage.bucket,
@@ -582,7 +583,9 @@ async function startAiWorker(): Promise<void> {
   const clipWorker = clipConfig
     ? new PgClipGenerationWorker(
         config.databaseUrl,
-        new OpenAiClipGenerationAdapter(clipConfig),
+        clipConfig.provider === "OPENAI"
+          ? new OpenAiClipGenerationAdapter(clipConfig)
+          : new LocalClipGenerationAdapter(clipConfig.model),
         clipConfig.timeoutMs + 30_000,
       )
     : null;

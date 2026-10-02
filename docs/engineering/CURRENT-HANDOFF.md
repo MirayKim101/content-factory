@@ -1,6 +1,6 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-09-29. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-10-02. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
 ## Главный результат
 
@@ -16,8 +16,8 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 ## Текущий этап
 
 Актуальный воспроизводимый baseline находится в
-`STAGE3-LOCAL-ACCEPTANCE.md`: API `254/254`, contracts `23/23`, worker
-`331/331`, web `273/273`, lease-recovery PostgreSQL `9/9`, publication
+`STAGE3-LOCAL-ACCEPTANCE.md`: API `255/255`, contracts `23/23`, worker
+`335/335`, web `274/274`, lease-recovery PostgreSQL `12/12`, publication
 disposable PostgreSQL `1/1`, clip-generation API PostgreSQL `2/2`, Twitch
 PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
 `43/43` с 73 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
@@ -41,11 +41,23 @@ compensating cleanup, а недоступная БД оставляет объе
 Clip-suggestion checkpoint реализован и unit-проверен: запуск из `/cuts` через
 локально проверенный SRT/VTT и отдельное external-transfer consent; AI worker
 передаёт provider-у shutdown/lease AbortSignal и при штатном shutdown возвращает
-intent в очередь без расхода retry budget. Disposable PostgreSQL `9/9`
+intent в очередь без расхода retry budget. PostgreSQL `12/12`
 подтверждает repeated shutdown, heartbeat, concurrent reclaim, stale fencing и
-retry exhaustion. Конфигурация compose и `.env.example` остаётся default-off.
-Этот срез ещё не принят полностью: нужны browser smoke и затем отдельный
-provider quality/cost canary.
+retry exhaustion; provider/model/prompt-bound claim/recovery не исполняет
+durable intent другим adapter или его новой revision после смены конфигурации.
+Provider-reported snapshot model не переписывает requested model,
+участвовавшую в fingerprint; aliases при этом не получают ложный отказ.
+Fixture использует нулевую confidence, а UI явно пишет «без оценки качества»
+вместо процента.
+Локальный `LOCAL_FIXTURE` теперь
+позволяет без сети проверить
+реальный API → Redis → worker → PostgreSQL путь только при
+`DEPLOYMENT_PROFILE=local`; runtime smoke создал два предложения, подтвердил
+exact create/accept replay, payload conflict и два независимых cut job, после
+чего fixture был полностью удалён. Конфигурация compose и `.env.example`
+остаётся default-off. Этот fixture не является quality/cost evidence. До полной
+UI-приёмки остаётся browser smoke, затем нужен отдельный внешний provider
+quality/cost canary.
 
 - Stage 3 control/data plane реализован default-off: Twitch allowlist,
   EventSub inbox и Helix reconciliation; durable resumable VOD import через

@@ -74,6 +74,20 @@ describe("OpenAiClipGenerationAdapter", () => {
     );
   });
 
+  it("accepts a provider snapshot name without replacing the durable requested model", async () => {
+    const fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ ...success(), model: "gpt-other" })),
+    );
+    const adapter = new OpenAiClipGenerationAdapter(
+      { apiKey: "secret", model: "gpt-test", timeoutMs: 1_000 },
+      fetch,
+    );
+    await expect(adapter.generate(request)).resolves.toMatchObject({
+      providerRequestId: "resp_1",
+    });
+  });
+
   it("does not hide provider HTTP failures", async () => {
     const fetch = vi.fn(
       async () =>

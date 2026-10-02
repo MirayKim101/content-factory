@@ -8,6 +8,8 @@ describe("PgClipGenerationWorker", () => {
     let providerSignal: AbortSignal | undefined;
     const provider: ClipGenerationProvider = {
       provider: "TEST",
+      model: "test-model",
+      promptVersion: "test-prompt-v1",
       generate: vi.fn(
         async (_request, signal) =>
           new Promise<never>((_resolve, reject) => {
@@ -66,6 +68,15 @@ describe("PgClipGenerationWorker", () => {
     worker.abortAll();
 
     await expect(processing).resolves.toBeUndefined();
+    expect(clientQuery).toHaveBeenCalledWith(
+      expect.stringContaining('i."promptVersion" = $4'),
+      [
+        "00000000-0000-4000-8000-000000000001",
+        "TEST",
+        "test-model",
+        "test-prompt-v1",
+      ],
+    );
     expect(providerSignal?.aborted).toBe(true);
     expect(poolQuery).toHaveBeenCalledOnce();
     expect(String(poolQuery.mock.calls[0]?.[0])).toContain(

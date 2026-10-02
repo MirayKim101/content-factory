@@ -207,8 +207,9 @@ function toggleAll(): void {
           :disabled="generationActive || create.isPending.value"
         />
         <span
-          >Разрешаю передать этот транскрипт настроенному внешнему AI-provider
-          для поиска моментов.</span
+          >Разрешаю использовать этот транскрипт настроенному модулю поиска
+          моментов. При внешнем provider текст будет передан за пределы Content
+          Factory.</span
         >
       </label>
       <div class="generation-actions">
@@ -271,7 +272,15 @@ function toggleAll(): void {
               >{{ formatDisplayTimecode(suggestion.startMs) }}–{{
                 formatDisplayTimecode(suggestion.endMs)
               }}
-              · {{ Math.round(suggestion.confidenceBasisPoints / 100) }}%</span
+              <template v-if="latest.provider === 'LOCAL_FIXTURE'">
+                · проверка workflow без оценки качества</template
+              >
+              <template v-else>
+                ·
+                {{
+                  Math.round(suggestion.confidenceBasisPoints / 100)
+                }}%</template
+              ></span
             >
             <small>{{ suggestion.rationale }}</small>
           </label>

@@ -224,14 +224,26 @@
   heartbeat-ом и на shutdown возвращает intent в `QUEUED` с восстановлением
   attempt budget. `.env.example` и compose задают этот путь default-off без
   committed secret.
-- Clip-generation PostgreSQL recovery/fencing входит в baseline `9/9`: три
+- Clip-generation PostgreSQL recovery/fencing входит в baseline `12/12`: три
   shutdown подряд не расходуют budget, heartbeat продлевает lease, concurrent
-  reclaim блокирует stale finalize, а две provider errors дают terminal state.
+  reclaim блокирует stale finalize, две provider errors дают terminal state,
+  а intent другого provider, model или prompt остаётся `QUEUED` без вызова
+  неверного adapter/revision.
   До полной UI-приёмки остаётся browser smoke
   enabled/disabled/idempotent-retry/manual-fallback сценариев.
 - Clip-generation API persistence `2/2` на PostgreSQL подтверждает exact
   idempotent replay, conflict при изменённом payload и отсутствие intent при
   missing external-transfer consent либо local-auto authorization.
+- `LOCAL_FIXTURE` допускается только при `DEPLOYMENT_PROFILE=local` и не делает
+  сетевых вызовов. Реальный restored-runtime smoke на API `3001` прошёл путь
+  API → Redis → отдельный AI worker → PostgreSQL: intent перешёл `QUEUED` →
+  `READY`, сохранил два deterministic suggestions, exact create и acceptance
+  вернули прежние IDs, изменённый payload получил HTTP 409, а acceptance создал
+  два независимых cut job. Временные Project/Source/Intent/Suggestions/
+  Acceptance/CutRequest/PipelineJob удалены, остаточные счётчики равны нулю.
+  Это orchestration evidence, а не проверка качества внешнего AI provider.
+  Fixture возвращает `confidenceBasisPoints=0`; provider-reported snapshot
+  model не может заменить durable requested model из fingerprint.
 - Custom `OPENAI_BASE_URL`, получающий API key и transcript, валидируется до
   старта worker: внешний endpoint обязан быть HTTPS без credentials/query/hash;
   HTTP допускается только для loopback в explicit local deployment profile.
@@ -246,13 +258,13 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     254/254 unit tests
+API:     255/255 unit tests (253 regular + 2 OpenAPI with 20 s timeout on local Node 22)
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
 Clip-generation API real PostgreSQL: 2/2
-Worker:  331/331 unit tests
-Worker lease recovery real PostgreSQL: 9/9
-Web:     273/273 tests
+Worker:  335/335 unit tests
+Worker lease recovery real PostgreSQL: 12/12
+Web:     274/274 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints

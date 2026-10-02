@@ -70,6 +70,7 @@ export const API_ENVIRONMENT_KEYS = [
   "TWITCH_EVENTSUB_SECRET",
   "VERTICAL_RENDER_ENABLED",
   "CLIP_GENERATION_ENABLED",
+  "CLIP_GENERATION_PROVIDER",
   "CLIP_GENERATION_MODEL",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
@@ -194,6 +195,7 @@ export interface ApiEnvironment {
   twitchEventSubSecret: string | null;
   verticalRenderEnabled: boolean;
   clipGenerationEnabled: boolean;
+  clipGenerationProvider: "OPENAI" | "LOCAL_FIXTURE";
   clipGenerationModel: string | null;
 }
 
@@ -289,17 +291,32 @@ export function apiEnvironment(): ApiEnvironment {
       process.env.TWITCH_VOD_AUTO_INGEST_ENABLED?.trim() === "1",
     twitchEventSubSecret: twitchEventSubSecret(process.env),
     verticalRenderEnabled: verticalRenderAdmissionEnabled(process.env),
-    ...resolveClipGenerationRuntime(process.env),
+    ...resolveClipGenerationRuntime(
+      process.env,
+      authorization.deploymentProfile,
+    ),
   };
 }
 
-export function resolveClipGenerationRuntime(environment: NodeJS.ProcessEnv): {
+export function resolveClipGenerationRuntime(
+  environment: NodeJS.ProcessEnv,
+  deploymentProfile: DeploymentProfile = "other",
+): {
   clipGenerationEnabled: boolean;
+  clipGenerationProvider: "OPENAI" | "LOCAL_FIXTURE";
   clipGenerationModel: string | null;
 } {
+  const provider = environment.CLIP_GENERATION_PROVIDER?.trim() || "OPENAI";
+  if (provider !== "OPENAI" && provider !== "LOCAL_FIXTURE")
+    throw new Error("CONFIG_CLIP_GENERATION_PROVIDER_UNSUPPORTED");
+  if (provider === "LOCAL_FIXTURE" && deploymentProfile !== "local")
+    throw new Error("CONFIG_LOCAL_CLIP_PROVIDER_UNSAFE");
   return {
     clipGenerationEnabled: environment.CLIP_GENERATION_ENABLED?.trim() === "1",
-    clipGenerationModel: environment.CLIP_GENERATION_MODEL?.trim() || null,
+    clipGenerationProvider: provider,
+    clipGenerationModel:
+      environment.CLIP_GENERATION_MODEL?.trim() ||
+      (provider === "LOCAL_FIXTURE" ? "local-deterministic-clip-v1" : null),
   };
 }
 

@@ -85,10 +85,16 @@ export class PgClipGenerationWorker {
   async recover(limit = 20): Promise<number> {
     const result = await this.pool.query<{ id: string }>(
       `SELECT "id" FROM "ClipGenerationIntent"
-        WHERE "state" = 'QUEUED'
+        WHERE "provider" = $1 AND "model" = $2 AND "promptVersion" = $3
+          AND ("state" = 'QUEUED'
            OR ("state" = 'PROCESSING' AND "leaseExpiresAt" <= now())
-        ORDER BY "createdAt", "id" LIMIT $1`,
-      [Math.max(1, Math.min(100, Math.trunc(limit)))],
+        ) ORDER BY "createdAt", "id" LIMIT $4`,
+      [
+        this.provider.provider,
+        this.provider.model,
+        this.provider.promptVersion,
+        Math.max(1, Math.min(100, Math.trunc(limit))),
+      ],
     );
     for (const row of result.rows)
       await this.process(row.id).catch(() => undefined);
@@ -139,8 +145,14 @@ export class PgClipGenerationWorker {
         maximumClipDurationMs: number;
       }>(
         `SELECT i.* FROM "ClipGenerationIntent" i
-          WHERE i."id" = $1 FOR UPDATE`,
-        [intentId],
+          WHERE i."id" = $1 AND i."provider" = $2 AND i."model" = $3
+            AND i."promptVersion" = $4 FOR UPDATE`,
+        [
+          intentId,
+          this.provider.provider,
+          this.provider.model,
+          this.provider.promptVersion,
+        ],
       );
       const row = result.rows[0];
       if (
@@ -216,8 +228,15 @@ export class PgClipGenerationWorker {
       const fenced = await client.query(
         `SELECT "id" FROM "ClipGenerationIntent" WHERE "id" = $1
           AND "state" = 'PROCESSING' AND "leaseToken" = $2
+          AND "provider" = $3 AND "model" = $4 AND "promptVersion" = $5
           AND "leaseExpiresAt" > now() FOR UPDATE`,
-        [claim.intentId, claim.leaseToken],
+        [
+          claim.intentId,
+          claim.leaseToken,
+          this.provider.provider,
+          this.provider.model,
+          this.provider.promptVersion,
+        ],
       );
       if (
         !fenced.rowCount ||
@@ -245,15 +264,10 @@ export class PgClipGenerationWorker {
       }
       await client.query(
         `UPDATE "ClipGenerationIntent" SET "state" = 'READY',
-           "providerRequestId" = $3, "model" = $4, "leaseToken" = NULL,
+           "providerRequestId" = $3, "leaseToken" = NULL,
            "leaseExpiresAt" = NULL, "updatedAt" = now()
          WHERE "id" = $1 AND "leaseToken" = $2`,
-        [
-          claim.intentId,
-          claim.leaseToken,
-          result.providerRequestId,
-          result.model,
-        ],
+        [claim.intentId, claim.leaseToken, result.providerRequestId],
       );
       await client.query("COMMIT");
     } catch (error) {

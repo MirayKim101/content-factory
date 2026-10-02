@@ -16,6 +16,7 @@ describe("clip generation runtime", () => {
   it("is default-off and exposes both root .env keys to the API loader", () => {
     expect(resolveClipGenerationRuntime({})).toEqual({
       clipGenerationEnabled: false,
+      clipGenerationProvider: "OPENAI",
       clipGenerationModel: null,
     });
     expect(
@@ -25,14 +26,35 @@ describe("clip generation runtime", () => {
       }),
     ).toEqual({
       clipGenerationEnabled: true,
+      clipGenerationProvider: "OPENAI",
       clipGenerationModel: "gpt-test",
     });
     expect(API_ENVIRONMENT_KEYS).toEqual(
       expect.arrayContaining([
         "CLIP_GENERATION_ENABLED",
+        "CLIP_GENERATION_PROVIDER",
         "CLIP_GENERATION_MODEL",
       ]),
     );
+  });
+
+  it("allows the deterministic fixture only for local deployment", () => {
+    expect(() =>
+      resolveClipGenerationRuntime(
+        { CLIP_GENERATION_PROVIDER: "LOCAL_FIXTURE" },
+        "other",
+      ),
+    ).toThrow("CONFIG_LOCAL_CLIP_PROVIDER_UNSAFE");
+    expect(
+      resolveClipGenerationRuntime(
+        { CLIP_GENERATION_PROVIDER: "LOCAL_FIXTURE" },
+        "local",
+      ),
+    ).toEqual({
+      clipGenerationEnabled: false,
+      clipGenerationProvider: "LOCAL_FIXTURE",
+      clipGenerationModel: "local-deterministic-clip-v1",
+    });
   });
 });
 

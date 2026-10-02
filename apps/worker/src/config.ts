@@ -89,12 +89,19 @@ export interface TikTokPublishingConfig extends PublicationSessionKeyConfig {
   }>;
 }
 
-export interface OpenAiClipGenerationConfig {
-  apiKey: string;
-  model: string;
-  timeoutMs: number;
-  baseUrl?: string;
-}
+export type ClipGenerationConfig =
+  | {
+      provider: "LOCAL_FIXTURE";
+      model: string;
+      timeoutMs: number;
+    }
+  | {
+      provider: "OPENAI";
+      apiKey: string;
+      model: string;
+      timeoutMs: number;
+      baseUrl?: string;
+    };
 
 export function publicationWorkerAdmissionEnabled(
   environment: NodeJS.ProcessEnv,
@@ -170,17 +177,13 @@ export function twitchVodMediaGatewayConfig(
   };
 }
 
-export function openAiClipGenerationConfig(
+export function clipGenerationConfig(
   environment: NodeJS.ProcessEnv,
-): OpenAiClipGenerationConfig | null {
+): ClipGenerationConfig | null {
   if (environment.CLIP_GENERATION_ENABLED?.trim() !== "1") return null;
   const provider = environment.CLIP_GENERATION_PROVIDER?.trim() || "OPENAI";
-  if (provider !== "OPENAI")
+  if (provider !== "OPENAI" && provider !== "LOCAL_FIXTURE")
     throw new Error("CONFIG_CLIP_GENERATION_PROVIDER_UNSUPPORTED");
-  const apiKey = environment.OPENAI_API_KEY?.trim();
-  const model = environment.CLIP_GENERATION_MODEL?.trim();
-  if (!apiKey) throw new Error("CONFIG_OPENAI_API_KEY_REQUIRED");
-  if (!model) throw new Error("CONFIG_CLIP_GENERATION_MODEL_REQUIRED");
   const timeoutMs = integerFromEnvironment(
     environment,
     "CLIP_GENERATION_TIMEOUT_MS",
@@ -188,6 +191,21 @@ export function openAiClipGenerationConfig(
     5_000,
     600_000,
   );
+  if (provider === "LOCAL_FIXTURE") {
+    if (environment.DEPLOYMENT_PROFILE?.trim() !== "local")
+      throw new Error("CONFIG_LOCAL_CLIP_PROVIDER_UNSAFE");
+    return {
+      provider,
+      model:
+        environment.CLIP_GENERATION_MODEL?.trim() ||
+        "local-deterministic-clip-v1",
+      timeoutMs,
+    };
+  }
+  const apiKey = environment.OPENAI_API_KEY?.trim();
+  const model = environment.CLIP_GENERATION_MODEL?.trim();
+  if (!apiKey) throw new Error("CONFIG_OPENAI_API_KEY_REQUIRED");
+  if (!model) throw new Error("CONFIG_CLIP_GENERATION_MODEL_REQUIRED");
   const rawBaseUrl = environment.OPENAI_BASE_URL?.trim();
   const baseUrl = rawBaseUrl
     ? secureProviderBaseUrl(
@@ -197,7 +215,13 @@ export function openAiClipGenerationConfig(
         "CONFIG_OPENAI_BASE_URL_UNSAFE",
       )
     : undefined;
-  return { apiKey, model, timeoutMs, ...(baseUrl ? { baseUrl } : {}) };
+  return {
+    provider,
+    apiKey,
+    model,
+    timeoutMs,
+    ...(baseUrl ? { baseUrl } : {}),
+  };
 }
 
 function secureProviderBaseUrl(

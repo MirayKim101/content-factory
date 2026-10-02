@@ -80,6 +80,9 @@ describe("ClipSuggestionsPanel", () => {
     await wrapper
       .get("#clip-transcript")
       .setValue("00:00:01,000 --> 00:00:20,000\nПолный момент");
+    expect(wrapper.text()).toContain(
+      "При внешнем provider текст будет передан за пределы Content Factory",
+    );
     await wrapper.get("#clip-transfer-consent").setValue(true);
     await flushPromises();
     const action = wrapper
@@ -96,6 +99,35 @@ describe("ClipSuggestionsPanel", () => {
         externalProviderTransferAllowed: true,
       }),
     );
+    wrapper.unmount();
+  });
+
+  it("does not present local fixture output as a quality confidence score", async () => {
+    api.list.mockResolvedValue({
+      items: [
+        {
+          id: "intent-1",
+          state: "READY",
+          provider: "LOCAL_FIXTURE",
+          model: "local-deterministic-clip-v1",
+          suggestions: [
+            {
+              id: "suggestion-1",
+              startMs: 5_000,
+              endMs: 20_000,
+              title: "Workflow fixture",
+              rationale: "Без оценки качества",
+              confidenceBasisPoints: 0,
+            },
+          ],
+        },
+      ],
+    });
+    const wrapper = setup();
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("проверка workflow без оценки качества");
+    expect(wrapper.text()).not.toContain("0%");
     wrapper.unmount();
   });
 });

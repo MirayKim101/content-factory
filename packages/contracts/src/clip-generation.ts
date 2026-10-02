@@ -1,4 +1,8 @@
 export const CLIP_GENERATION_CONTRACT_VERSION = "clip-generation-v1" as const;
+export const CLIP_GENERATION_PROMPT_VERSIONS = {
+  OPENAI: "openai-clip-selection-v1",
+  LOCAL_FIXTURE: "local-deterministic-clip-v1",
+} as const;
 
 export type ClipTranscriptCue = Readonly<{
   startMs: number;

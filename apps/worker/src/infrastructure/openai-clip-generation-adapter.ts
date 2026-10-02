@@ -1,5 +1,6 @@
 import {
   CLIP_GENERATION_CONTRACT_VERSION,
+  CLIP_GENERATION_PROMPT_VERSIONS,
   validateClipGenerationRequest,
   validateGeneratedClipSuggestions,
   type ClipGenerationRequest,
@@ -10,11 +11,13 @@ import type {
   ClipGenerationResult,
 } from "../application/clip-generation-provider.port.js";
 
-export const OPENAI_CLIP_PROMPT_VERSION = "openai-clip-selection-v1" as const;
+export const OPENAI_CLIP_PROMPT_VERSION =
+  CLIP_GENERATION_PROMPT_VERSIONS.OPENAI;
 type Fetch = typeof globalThis.fetch;
 
 export class OpenAiClipGenerationAdapter implements ClipGenerationProvider {
   readonly provider = "OPENAI";
+  readonly promptVersion = OPENAI_CLIP_PROMPT_VERSION;
   constructor(
     private readonly config: {
       apiKey: string;
@@ -24,6 +27,10 @@ export class OpenAiClipGenerationAdapter implements ClipGenerationProvider {
     },
     private readonly fetchImplementation: Fetch = globalThis.fetch,
   ) {}
+
+  get model(): string {
+    return this.config.model;
+  }
 
   async generate(
     request: ClipGenerationRequest,
@@ -105,14 +112,13 @@ export class OpenAiClipGenerationAdapter implements ClipGenerationProvider {
     );
     const payload = (await response.json()) as unknown;
     if (!response.ok) throw new Error(providerError(payload, response.status));
-    return parseResponse(payload, request, this.config.model);
+    return parseResponse(payload, request);
   }
 }
 
 function parseResponse(
   payload: unknown,
   request: ClipGenerationRequest,
-  requestedModel: string,
 ): ClipGenerationResult {
   if (!payload || typeof payload !== "object" || Array.isArray(payload))
     throw new Error("CLIP_GENERATION_PROVIDER_RESPONSE_INVALID");
@@ -152,7 +158,6 @@ function parseResponse(
   validateGeneratedClipSuggestions(suggestions, request);
   return {
     providerRequestId: value.id,
-    model: typeof value.model === "string" ? value.model : requestedModel,
     suggestions,
   };
 }
