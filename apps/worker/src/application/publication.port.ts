@@ -67,7 +67,11 @@ export type PublicationReconciliationResult =
     };
 
 export interface PublicationWorkerRepository {
-  claim(intentId: string, now: Date): Promise<PublicationClaim | null>;
+  claim(
+    intentId: string,
+    now: Date,
+    admittedPlatforms: readonly PublicationPlatform[],
+  ): Promise<PublicationClaim | null>;
   heartbeat(claim: PublicationClaim, now: Date): Promise<boolean>;
   releaseClaim(claim: PublicationClaim, now: Date): Promise<boolean>;
   finalizeDryRun(

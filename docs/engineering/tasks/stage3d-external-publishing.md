@@ -13,6 +13,9 @@
 
 - общий `PUBLISHING_ENABLED` и отдельный provider flag должны быть включены
   одновременно; по умолчанию все admission flags выключены;
+- worker claim фильтруется по фактически admitted adapters: отключение
+  provider-specific flag оставляет queued intent и resumable session
+  неизменными и не расходует retry budget;
 - intent ссылается только на current exact approval и READY immutable
   horizontal export либо отдельно подтверждённый vertical result;
 - credentials приходят из deployment secret/config reference, не сохраняются

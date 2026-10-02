@@ -332,16 +332,13 @@ describe("ProcessPublicationIntent", () => {
     );
   });
 
-  it("fails closed when no provider is admitted", async () => {
+  it("pauses without spending retry budget when no provider is admitted", async () => {
     const repo = repository();
     const process = new ProcessPublicationIntent(repo, []);
-    await expect(process.execute(claim.id)).resolves.toBe(true);
-    expect(repo.failFinal).toHaveBeenCalledWith(
-      claim,
-      "PUBLICATION_PROVIDER_UNAVAILABLE",
-      expect.any(String),
-      expect.any(Date),
-    );
+    await expect(process.execute(claim.id)).resolves.toBe(false);
+    expect(repo.claim).toHaveBeenCalledWith(claim.id, expect.any(Date), []);
+    expect(repo.releaseClaim).toHaveBeenCalledWith(claim, expect.any(Date));
+    expect(repo.failFinal).not.toHaveBeenCalled();
   });
 
   it("quarantines an ambiguous remote outcome without retrying the POST", async () => {
@@ -433,12 +430,14 @@ describe("ProcessPublicationIntent", () => {
     await new ProcessPublicationIntent(repo, [
       {
         platform: "YOUTUBE",
-        publish: vi.fn().mockRejectedValue(
-          new PublicationPermanentError(
-            "YOUTUBE_CONTENT_TYPE_INVALID",
-            "YouTube publication requires an MP4 render.",
+        publish: vi
+          .fn()
+          .mockRejectedValue(
+            new PublicationPermanentError(
+              "YOUTUBE_CONTENT_TYPE_INVALID",
+              "YouTube publication requires an MP4 render.",
+            ),
           ),
-        ),
       },
     ]).execute(remoteClaim.id);
 

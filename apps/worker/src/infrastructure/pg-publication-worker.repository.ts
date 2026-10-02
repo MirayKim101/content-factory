@@ -39,7 +39,11 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
     this.pool = pool ?? new Pool(workerPgPoolConfig(databaseUrl, 2));
   }
 
-  async claim(intentId: string, now: Date): Promise<PublicationClaim | null> {
+  async claim(
+    intentId: string,
+    now: Date,
+    admittedPlatforms: readonly PublicationClaim["platform"][],
+  ): Promise<PublicationClaim | null> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
@@ -145,8 +149,9 @@ export class PgPublicationWorkerRepository implements PublicationWorkerRepositor
            LEFT JOIN "MediaArtifact" vr ON vr."id" = var."artifactId"
           WHERE i."id" = $1 AND i."scheduledAt" <= $2
             AND (i."nextAttemptAt" IS NULL OR i."nextAttemptAt" <= $2)
+            AND i."platform"::text = ANY($3::text[])
           FOR UPDATE OF i`,
-        [intentId, now],
+        [intentId, now, admittedPlatforms],
       );
       const row = result.rows[0];
       if (

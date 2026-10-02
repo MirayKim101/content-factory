@@ -170,6 +170,10 @@
 - Все захваченные remote-outcome claims начинают heartbeat до последовательного
   provider polling. Поздняя запись в batch больше не теряет двухминутный lease,
   пока ждёт предыдущую, и не может параллельно попасть второму worker.
+- Provider-specific rollback применяется до PostgreSQL claim. Intent платформы
+  без admitted adapter не переходит в `PROCESSING`, не становится ложным
+  `FAILED_FINAL` и не теряет resumable provider session; defensive race fallback
+  возвращает claim без расхода retry budget.
 - Metrics claims также удерживаются heartbeat с момента batch claim. Потеря
   владения или ошибка heartbeat abort-ит provider GET и запрещает старому
   worker записывать snapshot либо освобождать lease нового владельца.

@@ -16,6 +16,7 @@ class PublicationShutdownError extends Error {}
 
 export class ProcessPublicationIntent {
   private readonly activeControllers = new Set<AbortController>();
+  private readonly admittedPlatforms: PublicationClaim["platform"][];
   private stopping = false;
 
   constructor(
@@ -23,7 +24,11 @@ export class ProcessPublicationIntent {
     private readonly providers: readonly PublicationProvider[],
     private readonly clock: () => Date = () => new Date(),
     private readonly attemptTimeoutMs = PUBLICATION_ATTEMPT_TIMEOUT_MS,
-  ) {}
+  ) {
+    this.admittedPlatforms = [
+      ...new Set(providers.map((provider) => provider.platform)),
+    ];
+  }
 
   abortAll(): void {
     this.stopping = true;
@@ -33,7 +38,11 @@ export class ProcessPublicationIntent {
 
   async execute(intentId: string): Promise<boolean> {
     if (this.stopping) return false;
-    const claim = await this.repository.claim(intentId, this.clock());
+    const claim = await this.repository.claim(
+      intentId,
+      this.clock(),
+      this.admittedPlatforms,
+    );
     if (!claim) return false;
     if (this.stopping) {
       await this.repository
@@ -66,13 +75,11 @@ export class ProcessPublicationIntent {
       (candidate) => candidate.platform === claim.platform,
     );
     if (!provider) {
-      await this.repository.failFinal(
-        claim,
-        "PUBLICATION_PROVIDER_UNAVAILABLE",
-        "No enabled adapter exists for the requested platform.",
-        this.clock(),
-      );
-      return true;
+      // A provider-specific rollout flag may be disabled temporarily. Preserve
+      // the durable intent and any resumable session so re-enabling the exact
+      // adapter can continue safely instead of turning rollback into data loss.
+      await this.repository.releaseClaim(claim, this.clock());
+      return false;
     }
     let externalWriteConfirmed = false;
     try {

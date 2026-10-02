@@ -35,6 +35,7 @@ describe("PgPublicationWorkerRepository stale external recovery", () => {
       repository.claim(
         "00000000-0000-4000-8000-000000000001",
         new Date("2026-09-28T00:10:00.000Z"),
+        ["TIKTOK"],
       ),
     ).resolves.toBeNull();
 
@@ -59,6 +60,14 @@ describe("PgPublicationWorkerRepository stale external recovery", () => {
     expect(String(query.mock.calls[1]![0])).toContain(
       `vr."contentType" = 'video/mp4'`,
     );
+    expect(String(query.mock.calls[1]![0])).toContain(
+      `i."platform"::text = ANY($3::text[])`,
+    );
+    expect(query.mock.calls[1]![1]).toEqual([
+      "00000000-0000-4000-8000-000000000001",
+      new Date("2026-09-28T00:10:00.000Z"),
+      ["TIKTOK"],
+    ]);
     expect(String(query.mock.calls[2]![0])).toContain(
       "PUBLICATION_STALE_PROCESSING_OUTCOME_UNKNOWN",
     );

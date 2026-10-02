@@ -79,6 +79,10 @@ quality/cost canary.
 - Publication worker fail-closed при ошибке heartbeat: потеря связи с БД теперь
   немедленно отменяет активный provider request, не оставляя окно для
   параллельной повторной публикации после recovery.
+- Provider-specific rollback теперь действует до PostgreSQL claim: отключённый
+  YouTube/TikTok adapter не меняет queued intent, не расходует retry budget и
+  не удаляет resumable session. Defensive race fallback освобождает уже
+  полученный claim вместо ложного terminal failure.
 - Тот же fail-closed fence применяется к status reconciliation: при ошибке
   продления lease provider polling прерывается, а запись оставляется новому
   владельцу после истечения durable lease.
