@@ -18,7 +18,7 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 Актуальный воспроизводимый baseline находится в
 `STAGE3-LOCAL-ACCEPTANCE.md`: API `254/254`, contracts `23/23`, worker
 `331/331`, web `273/273`, lease-recovery PostgreSQL `9/9`, publication
-disposable PostgreSQL `1/1`, Twitch
+disposable PostgreSQL `1/1`, clip-generation API PostgreSQL `2/2`, Twitch
 PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
 `43/43` с 73 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
 `3001`; порт `3000` не используется. Реальные credentialed Twitch media,

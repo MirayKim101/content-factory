@@ -229,6 +229,9 @@
   reclaim блокирует stale finalize, а две provider errors дают terminal state.
   До полной UI-приёмки остаётся browser smoke
   enabled/disabled/idempotent-retry/manual-fallback сценариев.
+- Clip-generation API persistence `2/2` на PostgreSQL подтверждает exact
+  idempotent replay, conflict при изменённом payload и отсутствие intent при
+  missing external-transfer consent либо local-auto authorization.
 - Custom `OPENAI_BASE_URL`, получающий API key и transcript, валидируется до
   старта worker: внешний endpoint обязан быть HTTPS без credentials/query/hash;
   HTTP допускается только для loopback в explicit local deployment profile.
@@ -246,6 +249,7 @@
 API:     254/254 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
+Clip-generation API real PostgreSQL: 2/2
 Worker:  331/331 unit tests
 Worker lease recovery real PostgreSQL: 9/9
 Web:     273/273 tests
