@@ -7,7 +7,11 @@ describe("HttpTwitchVodMediaProvider", () => {
     const fetcher = vi.fn(
       async () =>
         new Response(new Uint8Array([1, 2, 3]), {
-          headers: { "content-type": "video/mp4", "content-length": "3" },
+          headers: {
+            "content-type": "video/mp4",
+            "content-length": "3",
+            etag: '"vod-a"',
+          },
         }),
     );
     const provider = new HttpTwitchVodMediaProvider(
@@ -18,9 +22,10 @@ describe("HttpTwitchVodMediaProvider", () => {
       },
       fetcher,
     );
-    await expect(provider.open("123", 0n)).resolves.toMatchObject({
+    await expect(provider.open("123", 0n, null)).resolves.toMatchObject({
       totalSizeBytes: 3n,
       offset: 0n,
+      representationEtag: '"vod-a"',
     });
     expect(fetcher).toHaveBeenCalledWith(
       "https://media.example.test/v1/twitch/vods/123/media",
@@ -42,6 +47,7 @@ describe("HttpTwitchVodMediaProvider", () => {
             "content-type": "video/mp4",
             "content-length": "2",
             "content-range": "bytes 2-3/4",
+            etag: '"vod-a"',
           },
         });
       },
@@ -54,12 +60,13 @@ describe("HttpTwitchVodMediaProvider", () => {
       },
       fetcher,
     );
-    await expect(provider.open("123", 2n)).resolves.toMatchObject({
+    await expect(provider.open("123", 2n, '"vod-a"')).resolves.toMatchObject({
       totalSizeBytes: 4n,
       offset: 2n,
     });
     expect(captured?.headers).toMatchObject({
       range: "bytes=2-",
+      "if-range": '"vod-a"',
     });
   });
 
@@ -78,6 +85,7 @@ describe("HttpTwitchVodMediaProvider", () => {
             headers: {
               "content-type": "video/mp4",
               "content-length": "1",
+              etag: '"vod-b"',
             },
           },
         ),
@@ -90,8 +98,8 @@ describe("HttpTwitchVodMediaProvider", () => {
       },
       ignoredRange,
     );
-    await expect(provider.open("123", 1n)).rejects.toThrow(
-      "TWITCH_VOD_MEDIA_RANGE_UNSUPPORTED",
+    await expect(provider.open("123", 1n, '"vod-a"')).rejects.toThrow(
+      "TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED",
     );
     expect(cancel).toHaveBeenCalledOnce();
   });
@@ -119,9 +127,33 @@ describe("HttpTwitchVodMediaProvider", () => {
       fetcher,
     );
 
-    await expect(provider.open("123", 0n)).rejects.toThrow(
+    await expect(provider.open("123", 0n, null)).rejects.toThrow(
       "TWITCH_VOD_MEDIA_HTTP_503",
     );
     expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("rejects responses without a strong representation identity", async () => {
+    const provider = new HttpTwitchVodMediaProvider(
+      {
+        baseUrl: "https://media.example.test",
+        bearerToken: "secret",
+        timeoutMs: 5_000,
+      },
+      vi.fn(
+        async () =>
+          new Response(new Uint8Array([1]), {
+            headers: {
+              "content-type": "video/mp4",
+              "content-length": "1",
+              etag: 'W/"vod-a"',
+            },
+          }),
+      ),
+    );
+
+    await expect(provider.open("123", 0n, null)).rejects.toThrow(
+      "TWITCH_VOD_MEDIA_ETAG_INVALID",
+    );
   });
 });

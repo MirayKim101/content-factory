@@ -37,10 +37,12 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "worker",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -56,6 +58,7 @@ describe("ProcessTwitchVodIngest", () => {
         contentType: "video/mp4" as const,
         totalSizeBytes: BigInt(bytes.length),
         offset,
+        representationEtag: '"vod-a"',
       })),
     };
     const storage = {
@@ -99,10 +102,12 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "worker",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi
         .fn()
@@ -121,6 +126,7 @@ describe("ProcessTwitchVodIngest", () => {
         contentType: "video/mp4" as const,
         totalSizeBytes: BigInt(bytes.length),
         offset: 0n,
+        representationEtag: '"vod-a"',
       })),
     };
     const storage = {
@@ -165,10 +171,12 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "worker",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn().mockRejectedValue(new Error("connection lost")),
       completionMatches: vi.fn().mockResolvedValue(true),
@@ -185,6 +193,7 @@ describe("ProcessTwitchVodIngest", () => {
         contentType: "video/mp4" as const,
         totalSizeBytes: BigInt(bytes.length),
         offset: 0n,
+        representationEtag: '"vod-a"',
       })),
     };
     const storage = {
@@ -228,10 +237,12 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "w",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -247,6 +258,7 @@ describe("ProcessTwitchVodIngest", () => {
         contentType: "video/mp4" as const,
         totalSizeBytes: BigInt(bytes.length),
         offset: 0n,
+        representationEtag: '"vod-a"',
       })),
     };
     const storage = { upload: vi.fn() };
@@ -284,10 +296,12 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "w",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -303,6 +317,7 @@ describe("ProcessTwitchVodIngest", () => {
         contentType: "video/mp4" as const,
         totalSizeBytes: 1_001n,
         offset: 0n,
+        representationEtag: '"vod-a"',
       })),
     };
     const processor = new ProcessTwitchVodIngest(
@@ -340,12 +355,14 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "w",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       checkpoint: vi.fn(async () => {
         throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
       }),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -356,6 +373,7 @@ describe("ProcessTwitchVodIngest", () => {
         contentType: "video/mp4" as const,
         totalSizeBytes: 20n,
         offset: 0n,
+        representationEtag: '"vod-a"',
       })),
     };
     const processor = new ProcessTwitchVodIngest(
@@ -394,10 +412,12 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "w",
         downloadedBytes: 0n,
         totalBytes: BigInt(bytes.length),
+        representationEtag: '"vod-a"',
       })),
       checkpoint: vi.fn(),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
       fail: vi.fn(),
@@ -418,6 +438,105 @@ describe("ProcessTwitchVodIngest", () => {
     expect(repository.complete).toHaveBeenCalledOnce();
   });
 
+  it("restarts from byte zero when the gateway representation changed", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
+    directories.push(scratch);
+    const versionA = Buffer.concat([
+      Buffer.from([0, 0, 0, 20]),
+      Buffer.from("ftypisom"),
+      Buffer.alloc(32, 1),
+    ]);
+    const versionB = Buffer.concat([
+      Buffer.from([0, 0, 0, 20]),
+      Buffer.from("ftypisom"),
+      Buffer.alloc(32, 2),
+    ]);
+    const directory = join(scratch, "twitch-ingest");
+    await mkdir(directory);
+    await writeFile(
+      join(directory, `${intentId}.part`),
+      versionA.subarray(0, 20),
+    );
+    const repository = {
+      claimNext: vi.fn(async () => ({
+        id: intentId,
+        candidateId: "c",
+        providerVideoId: "1",
+        projectName: "x",
+        attemptCount: 2,
+        leaseOwner: "w",
+        downloadedBytes: 20n,
+        totalBytes: BigInt(versionA.length),
+        representationEtag: '"vod-a"',
+      })),
+      checkpoint: vi.fn(),
+      heartbeat: vi.fn().mockResolvedValue(true),
+      release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
+      beginUpload: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+    };
+    const media = {
+      open: vi
+        .fn()
+        .mockRejectedValueOnce(
+          new Error("TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED"),
+        )
+        .mockResolvedValueOnce({
+          body: new ReadableStream({
+            start(controller) {
+              controller.enqueue(versionB);
+              controller.close();
+            },
+          }),
+          contentType: "video/mp4" as const,
+          totalSizeBytes: BigInt(versionB.length),
+          offset: 0n,
+          representationEtag: '"vod-b"',
+        }),
+    };
+    const storage = {
+      upload: vi.fn(async (input: { filePath: string }) => {
+        expect(await readFile(input.filePath)).toEqual(versionB);
+        return {};
+      }),
+    };
+    const processor = new ProcessTwitchVodIngest(
+      repository,
+      media,
+      storage as never,
+      scratch,
+      1_000n,
+      60_000,
+    );
+
+    await expect(processor.execute("w")).resolves.toBe(true);
+    expect(media.open).toHaveBeenNthCalledWith(
+      1,
+      "1",
+      20n,
+      '"vod-a"',
+      expect.any(AbortSignal),
+    );
+    expect(media.open).toHaveBeenNthCalledWith(
+      2,
+      "1",
+      0n,
+      null,
+      expect.any(AbortSignal),
+    );
+    expect(repository.resetDownload).toHaveBeenCalledWith(intentId, "w");
+    expect(repository.checkpoint).toHaveBeenCalledWith(
+      intentId,
+      "w",
+      0n,
+      BigInt(versionB.length),
+      '"vod-b"',
+    );
+    expect(repository.fail).not.toHaveBeenCalled();
+  });
+
   it("aborts a stalled transfer when its lease heartbeat cannot be retained", async () => {
     vi.useFakeTimers();
     const scratch = await mkdtemp(join(tmpdir(), "twitch-ingest-"));
@@ -432,9 +551,11 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "w",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       heartbeat: vi.fn().mockRejectedValue(new Error("database offline")),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       checkpoint: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
@@ -442,7 +563,12 @@ describe("ProcessTwitchVodIngest", () => {
     };
     const media = {
       open: vi.fn(
-        async (_id: string, _offset: bigint, signal: AbortSignal) => ({
+        async (
+          _id: string,
+          _offset: bigint,
+          _etag: string | null,
+          signal: AbortSignal,
+        ) => ({
           body: new ReadableStream<Uint8Array>({
             start(controller) {
               signal.addEventListener(
@@ -455,6 +581,7 @@ describe("ProcessTwitchVodIngest", () => {
           contentType: "video/mp4" as const,
           totalSizeBytes: 100n,
           offset: 0n,
+          representationEtag: '"vod-a"',
         }),
       ),
     };
@@ -490,9 +617,11 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "w",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       checkpoint: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
@@ -500,7 +629,12 @@ describe("ProcessTwitchVodIngest", () => {
     };
     const media = {
       open: vi.fn(
-        async (_id: string, _offset: bigint, signal: AbortSignal) => ({
+        async (
+          _id: string,
+          _offset: bigint,
+          _etag: string | null,
+          signal: AbortSignal,
+        ) => ({
           body: new ReadableStream<Uint8Array>({
             start(controller) {
               signal.addEventListener(
@@ -513,6 +647,7 @@ describe("ProcessTwitchVodIngest", () => {
           contentType: "video/mp4" as const,
           totalSizeBytes: 100n,
           offset: 0n,
+          representationEtag: '"vod-a"',
         }),
       ),
     };
@@ -548,6 +683,7 @@ describe("ProcessTwitchVodIngest", () => {
           leaseOwner: string;
           downloadedBytes: bigint;
           totalBytes: null;
+          representationEtag: null;
         }) => void)
       | undefined;
     const repository = {
@@ -562,12 +698,14 @@ describe("ProcessTwitchVodIngest", () => {
             leaseOwner: string;
             downloadedBytes: bigint;
             totalBytes: null;
+            representationEtag: null;
           }>((resolve) => {
             resolveClaim = resolve;
           }),
       ),
       heartbeat: vi.fn(),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       checkpoint: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
@@ -595,6 +733,7 @@ describe("ProcessTwitchVodIngest", () => {
       leaseOwner: "w",
       downloadedBytes: 0n,
       totalBytes: null,
+      representationEtag: null,
     });
 
     await expect(processing).resolves.toBe(false);
@@ -616,9 +755,11 @@ describe("ProcessTwitchVodIngest", () => {
         leaseOwner: "w",
         downloadedBytes: 0n,
         totalBytes: null,
+        representationEtag: null,
       })),
       heartbeat: vi.fn().mockResolvedValue(true),
       release: vi.fn().mockResolvedValue(true),
+      resetDownload: vi.fn(),
       checkpoint: vi.fn(),
       beginUpload: vi.fn(),
       complete: vi.fn(),
@@ -626,7 +767,12 @@ describe("ProcessTwitchVodIngest", () => {
     };
     const media = {
       open: vi.fn(
-        async (_id: string, _offset: bigint, signal: AbortSignal) => ({
+        async (
+          _id: string,
+          _offset: bigint,
+          _etag: string | null,
+          signal: AbortSignal,
+        ) => ({
           body: new ReadableStream<Uint8Array>({
             start(controller) {
               signal.addEventListener(
@@ -639,6 +785,7 @@ describe("ProcessTwitchVodIngest", () => {
           contentType: "video/mp4" as const,
           totalSizeBytes: 100n,
           offset: 0n,
+          representationEtag: '"vod-a"',
         }),
       ),
     };

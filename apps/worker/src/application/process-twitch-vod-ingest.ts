@@ -56,34 +56,67 @@ export class ProcessTwitchVodIngest {
     );
     const heartbeat = this.startHeartbeat(lease.id, workerId, controller);
     let uploaded:
-      | { objectKey: string; sizeBytes: bigint; sha256: string }
-      | undefined;
+      { objectKey: string; sizeBytes: bigint; sha256: string } | undefined;
     try {
       await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-      const offset = await stat(path)
+      let offset = await stat(path)
         .then((value) => BigInt(value.size))
         .catch(() => 0n);
       let expectedBytes = lease.totalBytes;
+      let representationEtag = lease.representationEtag;
+      if (
+        (offset > 0n && representationEtag === null) ||
+        (offset === 0n &&
+          (lease.downloadedBytes > 0n ||
+            lease.totalBytes !== null ||
+            representationEtag !== null))
+      ) {
+        await unlink(path).catch(() => undefined);
+        await this.repository.resetDownload(lease.id, workerId);
+        offset = 0n;
+        expectedBytes = null;
+        representationEtag = null;
+      }
       if (
         offset > this.maxBytes ||
         (expectedBytes !== null && expectedBytes > this.maxBytes)
       )
         throw new Error("TWITCH_VOD_TOO_LARGE");
-      if (lease.totalBytes === null || offset !== lease.totalBytes) {
-        const response = await this.media.open(
-          lease.providerVideoId,
-          offset,
-          deadline.signal,
-        );
+      if (expectedBytes === null || offset !== expectedBytes) {
+        let response;
+        try {
+          response = await this.media.open(
+            lease.providerVideoId,
+            offset,
+            representationEtag,
+            deadline.signal,
+          );
+        } catch (error) {
+          if (offset === 0n || !isTwitchVodRepresentationChanged(error))
+            throw error;
+          await unlink(path).catch(() => undefined);
+          await this.repository.resetDownload(lease.id, workerId);
+          offset = 0n;
+          expectedBytes = null;
+          representationEtag = null;
+          response = await this.media.open(
+            lease.providerVideoId,
+            0n,
+            null,
+            deadline.signal,
+          );
+        }
         try {
           if (response.totalSizeBytes > this.maxBytes)
             throw new Error("TWITCH_VOD_TOO_LARGE");
           expectedBytes = response.totalSizeBytes;
+          representationEtag = response.representationEtag;
           await this.repository.checkpoint(
             lease.id,
             workerId,
             offset,
             response.totalSizeBytes,
+            response.representationEtag,
           );
           let downloaded = offset;
           let persisted = offset;
@@ -108,6 +141,7 @@ export class ProcessTwitchVodIngest {
                   workerId,
                   downloaded,
                   response.totalSizeBytes,
+                  response.representationEtag,
                 )
                 .then(() => {
                   persisted = downloaded;
@@ -132,6 +166,8 @@ export class ProcessTwitchVodIngest {
       const sizeBytes = BigInt((await stat(path)).size);
       if (expectedBytes === null || sizeBytes !== expectedBytes)
         throw new Error("TWITCH_VOD_SIZE_MISMATCH");
+      if (representationEtag === null)
+        throw new Error("TWITCH_VOD_MEDIA_ETAG_INVALID");
       await this.assertMp4(path);
       const sha256 = await this.hash(path, deadline.signal);
       await this.repository.checkpoint(
@@ -139,6 +175,7 @@ export class ProcessTwitchVodIngest {
         workerId,
         sizeBytes,
         sizeBytes,
+        representationEtag,
       );
       const projectId = this.stableUuid(lease.id, "project");
       const sourceId = this.stableUuid(lease.id, "source");
@@ -290,5 +327,12 @@ export class ProcessTwitchVodIngest {
 function isTwitchVodIngestLeaseLost(error: unknown): boolean {
   return (
     error instanceof Error && error.message === "TWITCH_VOD_INGEST_LEASE_LOST"
+  );
+}
+
+function isTwitchVodRepresentationChanged(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message === "TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED"
   );
 }

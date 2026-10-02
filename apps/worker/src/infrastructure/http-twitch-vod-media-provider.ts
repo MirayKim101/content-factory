@@ -16,6 +16,7 @@ export class HttpTwitchVodMediaProvider implements TwitchVodMediaProvider {
   async open(
     providerVideoId: string,
     offset: bigint,
+    expectedRepresentationEtag: string | null,
     signal?: AbortSignal,
   ): Promise<TwitchVodMediaResponse> {
     if (!/^\d{1,64}$/.test(providerVideoId))
@@ -35,7 +36,12 @@ export class HttpTwitchVodMediaProvider implements TwitchVodMediaProvider {
         {
           headers: {
             authorization: `Bearer ${this.config.bearerToken}`,
-            ...(offset > 0n ? { range: `bytes=${offset}-` } : {}),
+            ...(offset > 0n
+              ? {
+                  range: `bytes=${offset}-`,
+                  "if-range": requireStrongEtag(expectedRepresentationEtag),
+                }
+              : {}),
           },
           redirect: "error",
           signal: requestSignal,
@@ -49,12 +55,17 @@ export class HttpTwitchVodMediaProvider implements TwitchVodMediaProvider {
           response.headers.get("content-type") !== "video/mp4"
         )
           throw new Error("TWITCH_VOD_MEDIA_RESPONSE_INVALID");
-        const identity = parseIdentity(response, offset);
+        const identity = parseIdentity(
+          response,
+          offset,
+          expectedRepresentationEtag,
+        );
         return {
           body: response.body,
           contentType: "video/mp4",
           totalSizeBytes: identity.totalSizeBytes,
           offset,
+          representationEtag: identity.representationEtag,
         };
       } catch (error) {
         await response.body?.cancel(error).catch(() => undefined);
@@ -69,15 +80,25 @@ export class HttpTwitchVodMediaProvider implements TwitchVodMediaProvider {
 function parseIdentity(
   response: Response,
   offset: bigint,
-): { totalSizeBytes: bigint } {
+  expectedRepresentationEtag: string | null,
+): { totalSizeBytes: bigint; representationEtag: string } {
   if (offset === 0n) {
     if (response.status !== 200)
       throw new Error("TWITCH_VOD_MEDIA_RANGE_MISMATCH");
+    const representationEtag = requireStrongEtag(response.headers.get("etag"));
     const length = positiveBigInt(response.headers.get("content-length"));
-    return { totalSizeBytes: length };
+    return { totalSizeBytes: length, representationEtag };
   }
   if (response.status !== 206)
-    throw new Error("TWITCH_VOD_MEDIA_RANGE_UNSUPPORTED");
+    throw new Error("TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED");
+  let representationEtag: string;
+  try {
+    representationEtag = requireStrongEtag(response.headers.get("etag"));
+  } catch {
+    throw new Error("TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED");
+  }
+  if (representationEtag !== expectedRepresentationEtag)
+    throw new Error("TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED");
   const range = /^bytes (\d+)-(\d+)\/(\d+)$/.exec(
     response.headers.get("content-range") ?? "",
   );
@@ -93,7 +114,18 @@ function parseIdentity(
     contentLength !== end - start + 1n
   )
     throw new Error("TWITCH_VOD_MEDIA_RANGE_MISMATCH");
-  return { totalSizeBytes };
+  return { totalSizeBytes, representationEtag };
+}
+
+function requireStrongEtag(value: string | null): string {
+  if (
+    !value ||
+    value.length > 200 ||
+    value.startsWith("W/") ||
+    !/^"[\x21\x23-\x7e]+"$/.test(value)
+  )
+    throw new Error("TWITCH_VOD_MEDIA_ETAG_INVALID");
+  return value;
 }
 
 function positiveBigInt(value: string | null): bigint {

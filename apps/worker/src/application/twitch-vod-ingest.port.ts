@@ -7,6 +7,7 @@ export interface TwitchVodIngestLease {
   leaseOwner: string;
   downloadedBytes: bigint;
   totalBytes: bigint | null;
+  representationEtag: string | null;
 }
 
 export interface TwitchVodIngestRepository {
@@ -21,7 +22,9 @@ export interface TwitchVodIngestRepository {
     workerId: string,
     downloaded: bigint,
     total: bigint,
+    representationEtag: string,
   ): Promise<void>;
+  resetDownload(id: string, workerId: string): Promise<void>;
   beginUpload(
     id: string,
     workerId: string,

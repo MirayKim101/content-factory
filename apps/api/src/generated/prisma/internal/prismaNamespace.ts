@@ -7229,6 +7229,7 @@ export const TwitchVodIngestIntentScalarFieldEnum = {
   projectId: 'projectId',
   downloadedBytes: 'downloadedBytes',
   totalBytes: 'totalBytes',
+  representationEtag: 'representationEtag',
   objectKey: 'objectKey',
   sha256: 'sha256',
   attemptCount: 'attemptCount',

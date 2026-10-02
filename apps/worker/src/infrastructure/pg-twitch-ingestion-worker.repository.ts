@@ -113,7 +113,8 @@ export class PgTwitchIngestionWorkerRepository
            "nextAttemptAt" = NULL, "failureCode" = NULL, "failureMessage" = NULL, "updatedAt" = now()
          FROM candidate c WHERE i."id" = c."id"
          RETURNING i."id", i."candidateId", c."providerVideoId", c."channelId",
-           i."projectName", i."attemptCount", i."leaseOwner", i."downloadedBytes", i."totalBytes"
+           i."projectName", i."attemptCount", i."leaseOwner", i."downloadedBytes", i."totalBytes",
+           i."representationEtag"
        ), touched AS (
          UPDATE "TwitchIngestChannel" ch
          SET "lastIngestClaimedAt" = now(), "updatedAt" = now()
@@ -121,7 +122,8 @@ export class PgTwitchIngestionWorkerRepository
          RETURNING ch."id"
        )
        SELECT c."id", c."candidateId", c."providerVideoId", c."projectName",
-         c."attemptCount", c."leaseOwner", c."downloadedBytes", c."totalBytes"
+         c."attemptCount", c."leaseOwner", c."downloadedBytes", c."totalBytes",
+         c."representationEtag"
        FROM claimed c JOIN touched t ON t."id" = c."channelId"`,
       [workerId, Math.max(5_000, leaseMs)],
     );
@@ -140,12 +142,47 @@ export class PgTwitchIngestionWorkerRepository
     workerId: string,
     downloaded: bigint,
     total: bigint,
+    representationEtag: string,
   ): Promise<void> {
+    const result = await this.pool.query(
+      `UPDATE "TwitchVodIngestIntent"
+          SET "downloadedBytes"=$3, "totalBytes"=$4,
+              "representationEtag"=COALESCE("representationEtag", $5),
+              "leaseExpiresAt"=now()+interval '2 hours', "updatedAt"=now()
+        WHERE "id"=$1 AND "leaseOwner"=$2
+          AND "state" IN ('DOWNLOADING','UPLOADING')
+          AND "leaseExpiresAt">now()
+          AND ("representationEtag" IS NULL OR "representationEtag"=$5)
+          AND ("totalBytes" IS NULL OR "totalBytes"=$4)`,
+      [
+        id,
+        workerId,
+        downloaded.toString(),
+        total.toString(),
+        representationEtag,
+      ],
+    );
+    if (result.rowCount === 1) return;
+    const active = await this.pool.query<{ representationEtag: string | null }>(
+      `SELECT "representationEtag" FROM "TwitchVodIngestIntent"
+        WHERE "id"=$1 AND "leaseOwner"=$2
+          AND "state" IN ('DOWNLOADING','UPLOADING')
+          AND "leaseExpiresAt">now()`,
+      [id, workerId],
+    );
+    if (active.rowCount === 1)
+      throw new Error("TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED");
+    throw new Error("TWITCH_VOD_INGEST_LEASE_LOST");
+  }
+
+  async resetDownload(id: string, workerId: string): Promise<void> {
     await this.fencedUpdate(
       id,
       workerId,
-      `"downloadedBytes" = $3, "totalBytes" = $4, "leaseExpiresAt" = now() + interval '2 hours'`,
-      [downloaded.toString(), total.toString()],
+      `"downloadedBytes"=0, "totalBytes"=NULL, "representationEtag"=NULL,
+       "objectKey"=NULL, "sha256"=NULL,
+       "leaseExpiresAt"=now()+interval '2 hours'`,
+      [],
     );
   }
 
@@ -305,8 +342,7 @@ export class PgTwitchIngestionWorkerRepository
       await client.query("COMMIT");
       committed = true;
     } catch (error) {
-      if (!committed)
-        await client.query("ROLLBACK").catch(() => undefined);
+      if (!committed) await client.query("ROLLBACK").catch(() => undefined);
       throw error;
     } finally {
       client.release();

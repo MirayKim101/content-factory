@@ -48,6 +48,7 @@ export type TwitchVodIngestIntentMinAggregateOutputType = {
   projectId: string | null
   downloadedBytes: bigint | null
   totalBytes: bigint | null
+  representationEtag: string | null
   objectKey: string | null
   sha256: string | null
   attemptCount: number | null
@@ -70,6 +71,7 @@ export type TwitchVodIngestIntentMaxAggregateOutputType = {
   projectId: string | null
   downloadedBytes: bigint | null
   totalBytes: bigint | null
+  representationEtag: string | null
   objectKey: string | null
   sha256: string | null
   attemptCount: number | null
@@ -92,6 +94,7 @@ export type TwitchVodIngestIntentCountAggregateOutputType = {
   projectId: number
   downloadedBytes: number
   totalBytes: number
+  representationEtag: number
   objectKey: number
   sha256: number
   attemptCount: number
@@ -128,6 +131,7 @@ export type TwitchVodIngestIntentMinAggregateInputType = {
   projectId?: true
   downloadedBytes?: true
   totalBytes?: true
+  representationEtag?: true
   objectKey?: true
   sha256?: true
   attemptCount?: true
@@ -150,6 +154,7 @@ export type TwitchVodIngestIntentMaxAggregateInputType = {
   projectId?: true
   downloadedBytes?: true
   totalBytes?: true
+  representationEtag?: true
   objectKey?: true
   sha256?: true
   attemptCount?: true
@@ -172,6 +177,7 @@ export type TwitchVodIngestIntentCountAggregateInputType = {
   projectId?: true
   downloadedBytes?: true
   totalBytes?: true
+  representationEtag?: true
   objectKey?: true
   sha256?: true
   attemptCount?: true
@@ -281,6 +287,7 @@ export type TwitchVodIngestIntentGroupByOutputType = {
   projectId: string | null
   downloadedBytes: bigint
   totalBytes: bigint | null
+  representationEtag: string | null
   objectKey: string | null
   sha256: string | null
   attemptCount: number
@@ -326,6 +333,7 @@ export type TwitchVodIngestIntentWhereInput = {
   projectId?: Prisma.UuidNullableFilter<"TwitchVodIngestIntent"> | string | null
   downloadedBytes?: Prisma.BigIntFilter<"TwitchVodIngestIntent"> | bigint | number
   totalBytes?: Prisma.BigIntNullableFilter<"TwitchVodIngestIntent"> | bigint | number | null
+  representationEtag?: Prisma.StringNullableFilter<"TwitchVodIngestIntent"> | string | null
   objectKey?: Prisma.StringNullableFilter<"TwitchVodIngestIntent"> | string | null
   sha256?: Prisma.StringNullableFilter<"TwitchVodIngestIntent"> | string | null
   attemptCount?: Prisma.IntFilter<"TwitchVodIngestIntent"> | number
@@ -350,6 +358,7 @@ export type TwitchVodIngestIntentOrderByWithRelationInput = {
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder
   downloadedBytes?: Prisma.SortOrder
   totalBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  representationEtag?: Prisma.SortOrderInput | Prisma.SortOrder
   objectKey?: Prisma.SortOrderInput | Prisma.SortOrder
   sha256?: Prisma.SortOrderInput | Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
@@ -377,6 +386,7 @@ export type TwitchVodIngestIntentWhereUniqueInput = Prisma.AtLeast<{
   projectName?: Prisma.StringFilter<"TwitchVodIngestIntent"> | string
   downloadedBytes?: Prisma.BigIntFilter<"TwitchVodIngestIntent"> | bigint | number
   totalBytes?: Prisma.BigIntNullableFilter<"TwitchVodIngestIntent"> | bigint | number | null
+  representationEtag?: Prisma.StringNullableFilter<"TwitchVodIngestIntent"> | string | null
   objectKey?: Prisma.StringNullableFilter<"TwitchVodIngestIntent"> | string | null
   sha256?: Prisma.StringNullableFilter<"TwitchVodIngestIntent"> | string | null
   attemptCount?: Prisma.IntFilter<"TwitchVodIngestIntent"> | number
@@ -401,6 +411,7 @@ export type TwitchVodIngestIntentOrderByWithAggregationInput = {
   projectId?: Prisma.SortOrderInput | Prisma.SortOrder
   downloadedBytes?: Prisma.SortOrder
   totalBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  representationEtag?: Prisma.SortOrderInput | Prisma.SortOrder
   objectKey?: Prisma.SortOrderInput | Prisma.SortOrder
   sha256?: Prisma.SortOrderInput | Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
@@ -431,6 +442,7 @@ export type TwitchVodIngestIntentScalarWhereWithAggregatesInput = {
   projectId?: Prisma.UuidNullableWithAggregatesFilter<"TwitchVodIngestIntent"> | string | null
   downloadedBytes?: Prisma.BigIntWithAggregatesFilter<"TwitchVodIngestIntent"> | bigint | number
   totalBytes?: Prisma.BigIntNullableWithAggregatesFilter<"TwitchVodIngestIntent"> | bigint | number | null
+  representationEtag?: Prisma.StringNullableWithAggregatesFilter<"TwitchVodIngestIntent"> | string | null
   objectKey?: Prisma.StringNullableWithAggregatesFilter<"TwitchVodIngestIntent"> | string | null
   sha256?: Prisma.StringNullableWithAggregatesFilter<"TwitchVodIngestIntent"> | string | null
   attemptCount?: Prisma.IntWithAggregatesFilter<"TwitchVodIngestIntent"> | number
@@ -451,6 +463,7 @@ export type TwitchVodIngestIntentCreateInput = {
   projectName: string
   downloadedBytes?: bigint | number
   totalBytes?: bigint | number | null
+  representationEtag?: string | null
   objectKey?: string | null
   sha256?: string | null
   attemptCount?: number
@@ -475,6 +488,7 @@ export type TwitchVodIngestIntentUncheckedCreateInput = {
   projectId?: string | null
   downloadedBytes?: bigint | number
   totalBytes?: bigint | number | null
+  representationEtag?: string | null
   objectKey?: string | null
   sha256?: string | null
   attemptCount?: number
@@ -495,6 +509,7 @@ export type TwitchVodIngestIntentUpdateInput = {
   projectName?: Prisma.StringFieldUpdateOperationsInput | string
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -519,6 +534,7 @@ export type TwitchVodIngestIntentUncheckedUpdateInput = {
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -541,6 +557,7 @@ export type TwitchVodIngestIntentCreateManyInput = {
   projectId?: string | null
   downloadedBytes?: bigint | number
   totalBytes?: bigint | number | null
+  representationEtag?: string | null
   objectKey?: string | null
   sha256?: string | null
   attemptCount?: number
@@ -561,6 +578,7 @@ export type TwitchVodIngestIntentUpdateManyMutationInput = {
   projectName?: Prisma.StringFieldUpdateOperationsInput | string
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -583,6 +601,7 @@ export type TwitchVodIngestIntentUncheckedUpdateManyInput = {
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -610,6 +629,7 @@ export type TwitchVodIngestIntentCountOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   downloadedBytes?: Prisma.SortOrder
   totalBytes?: Prisma.SortOrder
+  representationEtag?: Prisma.SortOrder
   objectKey?: Prisma.SortOrder
   sha256?: Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
@@ -638,6 +658,7 @@ export type TwitchVodIngestIntentMaxOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   downloadedBytes?: Prisma.SortOrder
   totalBytes?: Prisma.SortOrder
+  representationEtag?: Prisma.SortOrder
   objectKey?: Prisma.SortOrder
   sha256?: Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
@@ -660,6 +681,7 @@ export type TwitchVodIngestIntentMinOrderByAggregateInput = {
   projectId?: Prisma.SortOrder
   downloadedBytes?: Prisma.SortOrder
   totalBytes?: Prisma.SortOrder
+  representationEtag?: Prisma.SortOrder
   objectKey?: Prisma.SortOrder
   sha256?: Prisma.SortOrder
   attemptCount?: Prisma.SortOrder
@@ -754,6 +776,7 @@ export type TwitchVodIngestIntentCreateWithoutProjectInput = {
   projectName: string
   downloadedBytes?: bigint | number
   totalBytes?: bigint | number | null
+  representationEtag?: string | null
   objectKey?: string | null
   sha256?: string | null
   attemptCount?: number
@@ -776,6 +799,7 @@ export type TwitchVodIngestIntentUncheckedCreateWithoutProjectInput = {
   projectName: string
   downloadedBytes?: bigint | number
   totalBytes?: bigint | number | null
+  representationEtag?: string | null
   objectKey?: string | null
   sha256?: string | null
   attemptCount?: number
@@ -812,6 +836,7 @@ export type TwitchVodIngestIntentUpdateWithoutProjectInput = {
   projectName?: Prisma.StringFieldUpdateOperationsInput | string
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -834,6 +859,7 @@ export type TwitchVodIngestIntentUncheckedUpdateWithoutProjectInput = {
   projectName?: Prisma.StringFieldUpdateOperationsInput | string
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -854,6 +880,7 @@ export type TwitchVodIngestIntentCreateWithoutCandidateInput = {
   projectName: string
   downloadedBytes?: bigint | number
   totalBytes?: bigint | number | null
+  representationEtag?: string | null
   objectKey?: string | null
   sha256?: string | null
   attemptCount?: number
@@ -876,6 +903,7 @@ export type TwitchVodIngestIntentUncheckedCreateWithoutCandidateInput = {
   projectId?: string | null
   downloadedBytes?: bigint | number
   totalBytes?: bigint | number | null
+  representationEtag?: string | null
   objectKey?: string | null
   sha256?: string | null
   attemptCount?: number
@@ -912,6 +940,7 @@ export type TwitchVodIngestIntentUpdateWithoutCandidateInput = {
   projectName?: Prisma.StringFieldUpdateOperationsInput | string
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -934,6 +963,7 @@ export type TwitchVodIngestIntentUncheckedUpdateWithoutCandidateInput = {
   projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   downloadedBytes?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   totalBytes?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  representationEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
@@ -958,6 +988,7 @@ export type TwitchVodIngestIntentSelect<ExtArgs extends runtime.Types.Extensions
   projectId?: boolean
   downloadedBytes?: boolean
   totalBytes?: boolean
+  representationEtag?: boolean
   objectKey?: boolean
   sha256?: boolean
   attemptCount?: boolean
@@ -982,6 +1013,7 @@ export type TwitchVodIngestIntentSelectCreateManyAndReturn<ExtArgs extends runti
   projectId?: boolean
   downloadedBytes?: boolean
   totalBytes?: boolean
+  representationEtag?: boolean
   objectKey?: boolean
   sha256?: boolean
   attemptCount?: boolean
@@ -1006,6 +1038,7 @@ export type TwitchVodIngestIntentSelectUpdateManyAndReturn<ExtArgs extends runti
   projectId?: boolean
   downloadedBytes?: boolean
   totalBytes?: boolean
+  representationEtag?: boolean
   objectKey?: boolean
   sha256?: boolean
   attemptCount?: boolean
@@ -1030,6 +1063,7 @@ export type TwitchVodIngestIntentSelectScalar = {
   projectId?: boolean
   downloadedBytes?: boolean
   totalBytes?: boolean
+  representationEtag?: boolean
   objectKey?: boolean
   sha256?: boolean
   attemptCount?: boolean
@@ -1042,7 +1076,7 @@ export type TwitchVodIngestIntentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type TwitchVodIngestIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "candidateId" | "state" | "projectName" | "projectId" | "downloadedBytes" | "totalBytes" | "objectKey" | "sha256" | "attemptCount" | "nextAttemptAt" | "leaseOwner" | "leaseExpiresAt" | "failureCode" | "failureMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["twitchVodIngestIntent"]>
+export type TwitchVodIngestIntentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idempotencyKey" | "requestFingerprint" | "candidateId" | "state" | "projectName" | "projectId" | "downloadedBytes" | "totalBytes" | "representationEtag" | "objectKey" | "sha256" | "attemptCount" | "nextAttemptAt" | "leaseOwner" | "leaseExpiresAt" | "failureCode" | "failureMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["twitchVodIngestIntent"]>
 export type TwitchVodIngestIntentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   candidate?: boolean | Prisma.TwitchVodCandidateDefaultArgs<ExtArgs>
   project?: boolean | Prisma.TwitchVodIngestIntent$projectArgs<ExtArgs>
@@ -1072,6 +1106,7 @@ export type $TwitchVodIngestIntentPayload<ExtArgs extends runtime.Types.Extensio
     projectId: string | null
     downloadedBytes: bigint
     totalBytes: bigint | null
+    representationEtag: string | null
     objectKey: string | null
     sha256: string | null
     attemptCount: number
@@ -1516,6 +1551,7 @@ export interface TwitchVodIngestIntentFieldRefs {
   readonly projectId: Prisma.FieldRef<"TwitchVodIngestIntent", 'String'>
   readonly downloadedBytes: Prisma.FieldRef<"TwitchVodIngestIntent", 'BigInt'>
   readonly totalBytes: Prisma.FieldRef<"TwitchVodIngestIntent", 'BigInt'>
+  readonly representationEtag: Prisma.FieldRef<"TwitchVodIngestIntent", 'String'>
   readonly objectKey: Prisma.FieldRef<"TwitchVodIngestIntent", 'String'>
   readonly sha256: Prisma.FieldRef<"TwitchVodIngestIntent", 'String'>
   readonly attemptCount: Prisma.FieldRef<"TwitchVodIngestIntent", 'Int'>

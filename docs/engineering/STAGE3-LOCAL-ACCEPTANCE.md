@@ -266,12 +266,12 @@ API:     255/255 unit tests (253 regular + 2 OpenAPI with 20 s timeout on local 
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
 Clip-generation API real PostgreSQL: 2/2
-Worker:  335/335 unit tests
+Worker:  337/337 unit tests
 Worker lease recovery real PostgreSQL: 12/12
 Web:     274/274 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
-Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints
+Fresh PostgreSQL migration: 44/44, 73 public tables, 0 unvalidated constraints
 ```
 
 Дополнительно прошли Prisma validate/migration deploy, OpenAPI regeneration and
@@ -301,10 +301,17 @@ absence-resolution при наличии remote ID. База удалена guar
 
 ## Fresh migration proof
 
-Все 43 миграции применены с нуля; последний proof выполнен на отдельно созданной
-базе `cf_stage3_retry_acceptance_20260929` на PostgreSQL 18.6. После deploy база
+Все 44 миграции применены с нуля; последний proof выполнен на отдельно созданной
+базе `cf_twitch_identity_proof_20261002` на PostgreSQL 18.6. После deploy база
 содержала 73 public-таблицы и 0 непрвалидированных constraints. Disposable база
 удалена guarded exact-name командой; повторная проверка `pg_database` вернула 0. Restored runtime database в этом proof не изменялась.
+
+Возобновление Twitch VOD теперь привязано к durable strong ETag. Gateway получает
+`If-Range`, PostgreSQL атомарно fencing-ует ETag и полный размер, а смена
+представления удаляет partial scratch и запускает одно полное скачивание с нуля.
+Regression test с одинаковыми по длине версиями доказывает, что гибридный файл
+не загружается. Additive migration применена к restored runtime при нулевом
+числе активных Twitch ingest leases; real PostgreSQL + MinIO acceptance `2/2`.
 
 ## Не является локально доказанным
 

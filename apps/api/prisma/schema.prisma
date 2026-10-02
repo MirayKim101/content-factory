@@ -1988,6 +1988,7 @@ model TwitchVodIngestIntent {
   project            Project?             @relation(fields: [projectId], references: [id], onDelete: Restrict)
   downloadedBytes    BigInt               @default(0)
   totalBytes         BigInt?
+  representationEtag String?
   objectKey          String?
   sha256             String?
   attemptCount       Int                  @default(0)

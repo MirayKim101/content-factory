@@ -17,13 +17,22 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 
 Актуальный воспроизводимый baseline находится в
 `STAGE3-LOCAL-ACCEPTANCE.md`: API `255/255`, contracts `23/23`, worker
-`335/335`, web `274/274`, lease-recovery PostgreSQL `12/12`, publication
+`337/337`, web `274/274`, lease-recovery PostgreSQL `12/12`, publication
 disposable PostgreSQL `1/1`, clip-generation API PostgreSQL `2/2`, Twitch
 PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
-`43/43` с 73 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
+`44/44` с 73 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
 `3001`; порт `3000` не используется. Реальные credentialed Twitch media,
 YouTube и TikTok canary остаются rollout gate и не подменяются локальным
 утверждением о production-публикации.
+
+Twitch VOD resume больше не доверяет одному byte offset: strong ETag хранится
+в intent, передаётся gateway через `If-Range` и fenced вместе с total size.
+Если representation сменилась или старый partial не имеет durable identity,
+scratch сбрасывается и текущая версия скачивается целиком. Тест с равными по
+размеру VOD A/B исключает гибрид A-prefix + B-suffix. Миграция
+`20261002130000_twitch_vod_representation_identity` применена к restored DB
+после проверки нулевых active ingest leases и отдельно прошла fresh deploy
+`44/44`; worker `337/337`, Twitch PostgreSQL + MinIO `2/2`.
 
 Последний hardening закрывает late/exact EventSub replay, revoke во время
 активного VOD transfer и конкурентный revoke/finalize, повторную проверку

@@ -81,6 +81,36 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
           [waitingChannelId],
         );
         expect(marker.rows[0]?.lastIngestClaimedAt).toBeInstanceOf(Date);
+        await repository.checkpoint(
+          waitingIntentId,
+          "fairness-worker",
+          1n,
+          2n,
+          '"vod-a"',
+        );
+        const identity = await pool.query<{
+          downloadedBytes: string;
+          totalBytes: string;
+          representationEtag: string;
+        }>(
+          `SELECT "downloadedBytes", "totalBytes", "representationEtag"
+             FROM "TwitchVodIngestIntent" WHERE "id"=$1`,
+          [waitingIntentId],
+        );
+        expect(identity.rows[0]).toEqual({
+          downloadedBytes: "1",
+          totalBytes: "2",
+          representationEtag: '"vod-a"',
+        });
+        await expect(
+          repository.checkpoint(
+            waitingIntentId,
+            "fairness-worker",
+            1n,
+            2n,
+            '"vod-b"',
+          ),
+        ).rejects.toThrow("TWITCH_VOD_MEDIA_REPRESENTATION_CHANGED");
         await pool.query(
           `UPDATE "TwitchIngestChannel" SET "state"='REVOKED', "updatedAt"=now()
             WHERE "id"=$1`,
@@ -104,7 +134,13 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
           leaseOwner: null,
         });
         await expect(
-          repository.checkpoint(waitingIntentId, "fairness-worker", 1n, 2n),
+          repository.checkpoint(
+            waitingIntentId,
+            "fairness-worker",
+            1n,
+            2n,
+            '"vod-a"',
+          ),
         ).rejects.toThrow("TWITCH_VOD_INGEST_LEASE_LOST");
         await pool.query(
           `UPDATE "TwitchIngestChannel" SET "state"='ENABLED', "updatedAt"=now()
@@ -152,9 +188,7 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
             await revokeClient.query("ROLLBACK").catch(() => undefined);
           revokeClient.release();
         }
-        await expect(finalize).rejects.toThrow(
-          "TWITCH_VOD_INGEST_LEASE_LOST",
-        );
+        await expect(finalize).rejects.toThrow("TWITCH_VOD_INGEST_LEASE_LOST");
         const finalizeRejected = await pool.query<{
           state: string;
           attemptCount: number;
@@ -223,6 +257,7 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
         response.writeHead(offset ? 206 : 200, {
           "content-type": "video/mp4",
           "content-length": body.length,
+          etag: '"integration-vod-v1"',
           ...(offset
             ? {
                 "content-range": `bytes ${offset}-${bytes.length - 1}/${bytes.length}`,
