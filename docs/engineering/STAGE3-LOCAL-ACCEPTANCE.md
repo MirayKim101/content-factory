@@ -109,6 +109,15 @@
   source, authorization, cut artifact и render contracts в той же SERIALIZABLE
   транзакции, где создаётся результат. Устаревший lineage завершается как
   `FAILED_FINAL`, а уже загруженный orphan удаляется вызывающим процессом.
+- Перед vertical upload exact object key сохраняется в `JobAttempt` как durable
+  cleanup intent. Если DB-finalize теряет ACK, worker сначала сверяет exact
+  job/intent/object/size/SHA: подтверждённый commit сохраняет объект, доказанный
+  rollback делает bounded compensating delete, а недоступная БД оставляет
+  объект и cleanup marker штатному reconciler вместо небезопасного удаления.
+- Shutdown после подготовки vertical output сохраняет pending marker, снимает
+  lease без расхода retry budget и блокирует повторный claim того же ordinal до
+  завершения cleanup. Три последовательных shutdown/reconcile цикла проверены
+  на disposable PostgreSQL без ложного `FAILED_FINAL`.
 - Диагностический stderr длительного vertical FFmpeg render хранится как
   кольцевой хвост максимум 4000 символов; многочасовой progress output не может
   неограниченно увеличивать heap worker’а.
@@ -225,7 +234,8 @@
 API:     253/253 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  325/325 unit tests
+Worker:  330/330 unit tests
+Worker lease recovery real PostgreSQL: 6/6
 Web:     266/266 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1

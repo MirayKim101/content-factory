@@ -161,14 +161,17 @@
 
 ## Ближайшие действия
 
-Актуализировано 2026-09-27. Этапы 1 и 2 реализованы; точные проверки и
+Актуализировано 2026-10-02. Этапы 1 и 2 реализованы; точные проверки и
 операционные ограничения сохранены в
 [`CURRENT-HANDOFF`](../engineering/CURRENT-HANDOFF.md). Backend этапа 2B-1
 и UI также приняты после независимого review и live browser smoke, см.
 [acceptance](../engineering/CREATOR-CONTEXT-BROWSER-ACCEPTANCE.md).
 Техническая реализация pre-Twitch этапа 2B завершена. До её продуктового
 принятия остаются одинаковый manual/assisted операторский benchmark и визуальный
-browser smoke; этап 3 остаётся отдельным следующим срезом полного MVP.
+browser smoke. Локальный Stage 3 control/data plane по ADR-010 реализован и
+прошёл воспроизводимую приёмку; до production rollout остаются credentialed
+Twitch media gateway и отдельные YouTube/TikTok canary с admission по одному
+provider/channel.
 
 1. Этап 2B-1 завершён: профиль, reference image и права, точные версии
    source context/prompt, stale/rebind/reload и ручной fallback проверены.
@@ -188,8 +191,11 @@ browser smoke; этап 3 остаётся отдельным следующим
    object-storage E2E прошли. Exact lineage/snapshot/economics tampering и
    AI/MIXED admission через historical v1 закрыты fail-closed. Остался реальный
    одинаковый manual/assisted операторский benchmark и визуальный smoke.
-7. Этап 3: Twitch, вертикальный pipeline, публикация и сбор статусов по
-   отдельным acceptance criteria.
+7. Этап 3A–3D технически реализован default-off: Twitch control/data plane,
+   vertical render/approval, publishing/reconciliation и metrics. Локальные
+   критерии и непройденные внешние canary явно разделены в
+   [`STAGE3-LOCAL-ACCEPTANCE`](../engineering/STAGE3-LOCAL-ACCEPTANCE.md) и
+   [`stage3d-external-publishing`](../engineering/tasks/stage3d-external-publishing.md).
 
 Следующий срез начинается после проверки предыдущего. Платные providers,
 credentials и внешняя публикация требуют конкретного согласованного подключения;

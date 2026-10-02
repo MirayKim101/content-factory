@@ -19,6 +19,7 @@ import type {
 import { workerConfig } from "../src/config.js";
 import { LocalSourceCache } from "../src/infrastructure/local-source-cache.js";
 import { PgMediaJobRepository } from "../src/infrastructure/pg-media-job.repository.js";
+import { PgVerticalRenderRepository } from "../src/infrastructure/pg-vertical-render.repository.js";
 
 describe("worker lease recovery race (PostgreSQL)", () => {
   let prisma: PrismaService;
@@ -215,6 +216,66 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     }
   });
 
+  it("preserves cleanup markers across repeated vertical shutdowns without spending retry budget", async () => {
+    const fixture = await createQueuedVertical();
+    const repository = new PgVerticalRenderRepository(
+      workerConfig().databaseUrl,
+    );
+    const reconciliation = new PrismaPipelineRepository(prisma);
+    const storage = new MemoryStorage();
+    const reconciler = new ReconcileAttemptCleanups(
+      reconciliation,
+      storage.asApiStorage(),
+    );
+
+    try {
+      for (let cycle = 1; cycle <= 3; cycle += 1) {
+        const claimed = await repository.claim(fixture.jobId, 30_000);
+        expect(claimed).toMatchObject({ attemptNumber: 1 });
+        const objectKey = `vertical/release-cycle-${cycle}.mp4`;
+        await repository.prepareOutput(claimed!, objectKey);
+        storage.objects.set(objectKey, fakeMp4(String(cycle)));
+
+        await expect(repository.release(claimed!)).resolves.toBe(true);
+        await expect(
+          prisma.pipelineJob.findUniqueOrThrow({
+            where: { id: fixture.jobId },
+          }),
+        ).resolves.toMatchObject({ state: "QUEUED", attemptCount: 0 });
+        await expect(
+          repository.claim(fixture.jobId, 30_000),
+        ).resolves.toBeNull();
+        await reconciler.execute(10);
+        await expect(
+          prisma.jobAttempt.findUniqueOrThrow({
+            where: {
+              jobId_attemptNumber: {
+                jobId: fixture.jobId,
+                attemptNumber: 1,
+              },
+            },
+          }),
+        ).resolves.toMatchObject({ cleanupStatus: "COMPLETED" });
+        expect(storage.objects.has(objectKey)).toBe(false);
+      }
+
+      const fourthClaim = await repository.claim(fixture.jobId, 30_000);
+      expect(fourthClaim).toMatchObject({ attemptNumber: 1 });
+      await expect(repository.release(fourthClaim!)).resolves.toBe(true);
+      await expect(
+        prisma.pipelineJob.findUniqueOrThrow({
+          where: { id: fixture.jobId },
+        }),
+      ).resolves.toMatchObject({ state: "QUEUED", attemptCount: 0 });
+    } finally {
+      await prisma.pipelineJob.deleteMany({ where: { id: fixture.jobId } });
+      await prisma.verticalRenderIntent.deleteMany({
+        where: { id: fixture.intentId },
+      });
+      await repository.close();
+    }
+  });
+
   it("does not claim a job whose exact source version is not authorized", async () => {
     const { jobId } = await createQueuedCut(false);
     const job = await prisma.pipelineJob.findUniqueOrThrow({
@@ -388,6 +449,117 @@ describe("worker lease recovery race (PostgreSQL)", () => {
       },
     });
     return { projectId, jobId };
+  }
+
+  async function createQueuedVertical(): Promise<{
+    projectId: string;
+    jobId: string;
+    intentId: string;
+  }> {
+    const projectId = randomUUID();
+    const sourceId = randomUUID();
+    const cutJobId = randomUUID();
+    const cutArtifactId = randomUUID();
+    const intentId = randomUUID();
+    const jobId = randomUUID();
+    projectIds.push(projectId);
+    await prisma.project.create({
+      data: {
+        id: projectId,
+        idempotencyKey: `vertical-release-${randomUUID()}`,
+        requestFingerprint: "b".repeat(64),
+        name: "Vertical shutdown recovery",
+        status: "SOURCE_READY",
+        rightsConfirmedAt: new Date(),
+        rightsDeclarationVersion: "upload-rights-v1",
+        source: {
+          create: {
+            id: sourceId,
+            status: "READY",
+            originalFilename: "source.mp4",
+            contentType: "video/mp4",
+            sizeBytes: 24n,
+            sha256: "c".repeat(64),
+            durationMs: 30_000,
+            probedAt: new Date(),
+            probeVersion: "ffprobe integration",
+            authorizations: {
+              create: {
+                sourceVersion: 1,
+                status: "CLEARED",
+                basis: "OPERATOR_ATTESTATION",
+                declarationVersion: "upload-rights-v1",
+                decidedAt: new Date(),
+              },
+            },
+          },
+        },
+      },
+    });
+    await prisma.pipelineJob.create({
+      data: {
+        id: cutJobId,
+        projectId,
+        sourceId,
+        sourceVersion: 1,
+        type: "CUT_SEGMENT",
+        state: "READY",
+        idempotencyKey: `vertical-cut-${randomUUID()}`,
+        recipeVersion: "stage1-cut-h264-v1",
+        segment: {
+          create: {
+            id: randomUUID(),
+            clientSegmentId: randomUUID(),
+            startMs: 0,
+            endMs: 30_000,
+          },
+        },
+      },
+    });
+    await prisma.mediaArtifact.create({
+      data: {
+        id: cutArtifactId,
+        projectId,
+        sourceId,
+        role: "CUT_RESULT",
+        status: "READY",
+        objectKey: `vertical-input/${cutArtifactId}.mp4`,
+        sizeBytes: 24n,
+        sha256: "d".repeat(64),
+        contentType: "video/mp4",
+        lineageSourceId: sourceId,
+        lineageSourceVersion: 1,
+        recipeVersion: "stage1-cut-h264-v1",
+        pipelineJobId: cutJobId,
+      },
+    });
+    await prisma.verticalRenderIntent.create({
+      data: {
+        id: intentId,
+        idempotencyKey: `vertical-intent-${randomUUID()}`,
+        requestFingerprint: "e".repeat(64),
+        projectId,
+        sourceId,
+        sourceVersion: 1,
+        cutPipelineJobId: cutJobId,
+        cutResultArtifactId: cutArtifactId,
+        renderContractVersion: "vertical-render-v1",
+      },
+    });
+    await prisma.pipelineJob.create({
+      data: {
+        id: jobId,
+        projectId,
+        sourceId,
+        sourceVersion: 1,
+        type: "RENDER_VERTICAL",
+        idempotencyKey: `vertical-job-${randomUUID()}`,
+        recipeVersion: "vertical-render-v1",
+        retryBudget: 2,
+        verticalRenderIntentId: intentId,
+      },
+    });
+    return { projectId, jobId, intentId };
   }
 });
 

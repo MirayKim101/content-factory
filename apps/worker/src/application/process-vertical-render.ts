@@ -98,6 +98,7 @@ export class ProcessVerticalRender {
       const objectKey =
         `projects/${claim.projectId}/vertical/${claim.intentId}/attempts/` +
         `${claim.attemptNumber}-${claim.leaseToken}/${sha256}.mp4`;
+      await this.repository.prepareOutput(claim, objectKey);
       const uploaded = await this.storage.upload({
         objectKey,
         filePath: output,
@@ -107,14 +108,31 @@ export class ProcessVerticalRender {
         uploadMode: "MULTIPART",
         signal: deadline.signal,
       });
-      const completed = await this.repository.complete(claim, {
+      const outputIdentity = {
         ...rendered,
         objectKey,
         sizeBytes: BigInt(file.size),
         sha256,
         etag: uploaded.etag,
         storageVersion: uploaded.version,
-      });
+      };
+      let completed: boolean;
+      try {
+        completed = await this.repository.complete(claim, outputIdentity);
+      } catch (error) {
+        try {
+          if (await this.repository.completionMatches(claim, outputIdentity))
+            return true;
+        } catch {
+          // The database commit outcome is unknown. The prepared JobAttempt
+          // cleanup marker retains the exact object key; preserve the object
+          // until the durable reconciler can distinguish committed output from
+          // an orphan after PostgreSQL recovers.
+          return false;
+        }
+        await deleteStorageObjectBestEffort(this.storage, objectKey);
+        throw error;
+      }
       if (!completed)
         await deleteStorageObjectBestEffort(this.storage, objectKey);
       return completed;

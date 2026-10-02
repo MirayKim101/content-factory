@@ -34,6 +34,7 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
         sizeBytes: string;
         expectedDurationMs: number;
         current: boolean;
+        cleanupPending: boolean;
       }>(
         `SELECT j."id" AS "jobId", i."id" AS "intentId", j."projectId", j."sourceId",
                 j."sourceVersion", j."attemptCount", j."retryBudget",
@@ -55,7 +56,13 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
                  AND a."projectId" = j."projectId" AND a."lineageSourceId" = j."sourceId"
                  AND a."lineageSourceVersion" = j."sourceVersion"
                  AND a."pipelineJobId" = i."cutPipelineJobId"
-                 AND i."outputWidth" = 1080 AND i."outputHeight" = 1920) AS "current"
+                 AND i."outputWidth" = 1080 AND i."outputHeight" = 1920) AS "current",
+                EXISTS (
+                  SELECT 1 FROM "JobAttempt" pending
+                   WHERE pending."jobId"=j."id"
+                     AND pending."attemptNumber"=j."attemptCount"+1
+                     AND pending."cleanupStatus"='PENDING'
+                ) AS "cleanupPending"
            FROM "PipelineJob" j
            JOIN "VerticalRenderIntent" i ON i."id" = j."verticalRenderIntentId"
            JOIN "MediaArtifact" a ON a."id" = i."cutResultArtifactId"
@@ -69,14 +76,29 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
         [jobId],
       );
       const row = selected.rows[0];
-      if (!row || !row.current || row.attemptCount > row.retryBudget) {
-        if (row)
+      if (
+        !row ||
+        row.cleanupPending ||
+        !row.current ||
+        row.attemptCount > row.retryBudget
+      ) {
+        if (row && !row.cleanupPending) {
+          const exhausted = row.attemptCount > row.retryBudget;
           await client.query(
-            `UPDATE "PipelineJob" SET "state"='FAILED_FINAL', "failureCode"='VERTICAL_LINEAGE_STALE',
-              "failureMessage"='Vertical input lineage is no longer current.', "failureRetryable"=false,
+            `UPDATE "PipelineJob" SET "state"='FAILED_FINAL', "failureCode"=$2,
+              "failureMessage"=$3, "failureRetryable"=false,
               "finishedAt"=now(), "updatedAt"=now() WHERE "id"=$1`,
-            [jobId],
+            [
+              jobId,
+              exhausted
+                ? "VERTICAL_RETRY_BUDGET_EXHAUSTED"
+                : "VERTICAL_LINEAGE_STALE",
+              exhausted
+                ? "Vertical render retry budget is exhausted."
+                : "Vertical input lineage is no longer current.",
+            ],
           );
+        }
         await client.query("COMMIT");
         return null;
       }
@@ -95,7 +117,11 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
         `INSERT INTO "JobAttempt" ("id","jobId","attemptNumber","state","workerId","leaseToken","startedAt","heartbeatAt","createdAt","updatedAt")
          VALUES ($1,$2,$3,'PROCESSING','vertical-worker',$4,now(),now(),now(),now())
          ON CONFLICT ("jobId","attemptNumber") DO UPDATE SET "state"='PROCESSING',
-           "workerId"='vertical-worker', "leaseToken"=$4, "startedAt"=now(), "heartbeatAt"=now(), "updatedAt"=now()`,
+           "workerId"='vertical-worker', "leaseToken"=$4, "startedAt"=now(),
+           "heartbeatAt"=now(), "finishedAt"=NULL, "failureCode"=NULL,
+           "outputObjectKey"=NULL, "cleanupStatus"='NOT_REQUIRED',
+           "cleanupAttemptCount"=0, "cleanupLastErrorCode"=NULL,
+           "cleanupRequestedAt"=NULL, "cleanupCompletedAt"=NULL, "updatedAt"=now()`,
         [randomUUID(), jobId, attemptNumber, leaseToken],
       );
       await client.query("COMMIT");
@@ -137,6 +163,21 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
+      const locked = await client.query<{ preserveOutput: boolean }>(
+        `SELECT (a."outputObjectKey" IS NOT NULL AND a."cleanupStatus"='PENDING') AS "preserveOutput"
+           FROM "PipelineJob" j
+           JOIN "JobAttempt" a ON a."jobId"=j."id"
+            AND a."attemptNumber"=$3 AND a."leaseToken"=$2
+          WHERE j."id"=$1 AND j."state"='PROCESSING' AND j."leaseToken"=$2
+            AND j."leaseExpiresAt">now()
+          FOR UPDATE OF j,a`,
+        [claim.jobId, claim.leaseToken, claim.attemptNumber],
+      );
+      const row = locked.rows[0];
+      if (!row) {
+        await client.query("COMMIT");
+        return false;
+      }
       const updated = await client.query(
         `UPDATE "PipelineJob" SET "state"='QUEUED',
           "attemptCount"=GREATEST("attemptCount"-1,0),
@@ -146,7 +187,16 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
            AND "leaseExpiresAt">now()`,
         [claim.jobId, claim.leaseToken],
       );
-      if (updated.rowCount)
+      if (updated.rowCount && row.preserveOutput)
+        await client.query(
+          `UPDATE "JobAttempt" SET "state"='FAILED_RETRYABLE',
+            "failureCode"='VERTICAL_SHUTDOWN_AFTER_OUTPUT_PREPARED',
+            "finishedAt"=now(), "updatedAt"=now()
+           WHERE "jobId"=$1 AND "attemptNumber"=$2 AND "leaseToken"=$3
+             AND "outputObjectKey" IS NOT NULL AND "cleanupStatus"='PENDING'`,
+          [claim.jobId, claim.attemptNumber, claim.leaseToken],
+        );
+      else if (updated.rowCount)
         await client.query(
           `DELETE FROM "JobAttempt" WHERE "jobId"=$1 AND "attemptNumber"=$2
             AND "leaseToken"=$3 AND "state"='PROCESSING'`,
@@ -274,7 +324,9 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
       );
       await client.query(
         `UPDATE "JobAttempt" SET "state"='READY', "finishedAt"=now(), "outputObjectKey"=$4,
-          "updatedAt"=now() WHERE "jobId"=$1 AND "attemptNumber"=$2 AND "leaseToken"=$3`,
+          "cleanupStatus"='NOT_REQUIRED', "cleanupLastErrorCode"=NULL,
+          "cleanupCompletedAt"=NULL, "updatedAt"=now()
+          WHERE "jobId"=$1 AND "attemptNumber"=$2 AND "leaseToken"=$3`,
         [claim.jobId, claim.attemptNumber, claim.leaseToken, output.objectKey],
       );
       await client.query("COMMIT");
@@ -285,6 +337,50 @@ export class PgVerticalRenderRepository implements VerticalRenderRepository {
     } finally {
       client.release();
     }
+  }
+
+  async prepareOutput(
+    claim: VerticalRenderClaim,
+    objectKey: string,
+  ): Promise<void> {
+    const result = await this.pool.query(
+      `UPDATE "JobAttempt" a
+          SET "outputObjectKey"=$4, "cleanupStatus"='PENDING',
+              "cleanupLastErrorCode"=NULL, "cleanupRequestedAt"=now(),
+              "cleanupCompletedAt"=NULL, "updatedAt"=now()
+         FROM "PipelineJob" j
+        WHERE a."jobId"=$1 AND a."attemptNumber"=$2 AND a."leaseToken"=$3
+          AND (a."outputObjectKey" IS NULL OR a."outputObjectKey"=$4)
+          AND j."id"=a."jobId" AND j."state"='PROCESSING'
+          AND j."leaseToken"=$3 AND j."leaseExpiresAt">now()`,
+      [claim.jobId, claim.attemptNumber, claim.leaseToken, objectKey],
+    );
+    if (result.rowCount !== 1) throw new Error("VERTICAL_LEASE_LOST");
+  }
+
+  async completionMatches(
+    claim: VerticalRenderClaim,
+    output: { objectKey: string; sizeBytes: bigint; sha256: string },
+  ): Promise<boolean> {
+    const result = await this.pool.query(
+      `SELECT 1
+         FROM "PipelineJob" j
+         JOIN "MediaArtifact" a ON a."pipelineJobId"=j."id"
+         JOIN "VerticalRenderResult" r ON r."pipelineJobId"=j."id"
+          AND r."artifactId"=a."id" AND r."intentId"=j."verticalRenderIntentId"
+        WHERE j."id"=$1 AND j."verticalRenderIntentId"=$2
+          AND j."state"='READY' AND a."status"='READY'
+          AND a."objectKey"=$3 AND a."sizeBytes"=$4::bigint AND a."sha256"=$5
+          AND r."sizeBytes"=$4::bigint AND r."sha256"=$5`,
+      [
+        claim.jobId,
+        claim.intentId,
+        output.objectKey,
+        output.sizeBytes.toString(),
+        output.sha256,
+      ],
+    );
+    return result.rowCount === 1;
   }
 
   async fail(

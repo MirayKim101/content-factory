@@ -39,7 +39,9 @@ function repository(overrides: Partial<VerticalRenderRepository> = {}) {
     claim: vi.fn().mockResolvedValue(claim),
     heartbeat: vi.fn().mockResolvedValue(true),
     release: vi.fn().mockResolvedValue(true),
+    prepareOutput: vi.fn(),
     complete: vi.fn().mockResolvedValue(true),
+    completionMatches: vi.fn().mockResolvedValue(false),
     fail: vi.fn(),
     due: vi.fn().mockResolvedValue([]),
     close: vi.fn(),
@@ -104,6 +106,79 @@ describe("ProcessVerticalRender", () => {
         objectKey: expect.stringContaining("/attempts/1-lease-1/"),
       }),
     );
+    expect(repo.prepareOutput).toHaveBeenCalledBefore(
+      vi.mocked(objectStorage.upload),
+    );
+    expect(repo.fail).not.toHaveBeenCalled();
+  });
+
+  it("deletes an uploaded orphan when database finalization definitely rolled back", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "cf-vertical-test-"));
+    directories.push(scratch);
+    const repo = repository({
+      complete: vi.fn().mockRejectedValue(new Error("DB_FINALIZE_FAILED")),
+      completionMatches: vi.fn().mockResolvedValue(false),
+    });
+    const objectStorage = storage();
+    const process = new ProcessVerticalRender(
+      repo,
+      objectStorage,
+      renderer,
+      scratch,
+      60_000,
+    );
+
+    await expect(process.execute(claim.jobId)).rejects.toThrow(
+      "DB_FINALIZE_FAILED",
+    );
+    expect(objectStorage.delete).toHaveBeenCalledOnce();
+    expect(repo.fail).toHaveBeenCalledWith(
+      claim,
+      "DB_FINALIZE_FAILED",
+      expect.any(String),
+    );
+  });
+
+  it("preserves a committed output after a lost database acknowledgement", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "cf-vertical-test-"));
+    directories.push(scratch);
+    const repo = repository({
+      complete: vi.fn().mockRejectedValue(new Error("DB_ACK_LOST")),
+      completionMatches: vi.fn().mockResolvedValue(true),
+    });
+    const objectStorage = storage();
+    const process = new ProcessVerticalRender(
+      repo,
+      objectStorage,
+      renderer,
+      scratch,
+      60_000,
+    );
+
+    await expect(process.execute(claim.jobId)).resolves.toBe(true);
+    expect(objectStorage.delete).not.toHaveBeenCalled();
+    expect(repo.fail).not.toHaveBeenCalled();
+  });
+
+  it("preserves an unknown output for durable cleanup reconciliation", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "cf-vertical-test-"));
+    directories.push(scratch);
+    const repo = repository({
+      complete: vi.fn().mockRejectedValue(new Error("DB_FINALIZE_UNKNOWN")),
+      completionMatches: vi.fn().mockRejectedValue(new Error("DB_DOWN")),
+    });
+    const objectStorage = storage();
+    const process = new ProcessVerticalRender(
+      repo,
+      objectStorage,
+      renderer,
+      scratch,
+      60_000,
+    );
+
+    await expect(process.execute(claim.jobId)).resolves.toBe(false);
+    expect(repo.prepareOutput).toHaveBeenCalledOnce();
+    expect(objectStorage.delete).not.toHaveBeenCalled();
     expect(repo.fail).not.toHaveBeenCalled();
   });
 
@@ -215,6 +290,37 @@ describe("ProcessVerticalRender", () => {
 
     await expect(processing).resolves.toBe(false);
     expect(repo.release).toHaveBeenCalledWith(claim);
+    expect(repo.fail).not.toHaveBeenCalled();
+  });
+
+  it("preserves the durable cleanup marker when shutdown interrupts an upload", async () => {
+    const scratch = await mkdtemp(join(tmpdir(), "cf-vertical-test-"));
+    directories.push(scratch);
+    const repo = repository();
+    const objectStorage = storage();
+    vi.mocked(objectStorage.upload).mockImplementation(
+      async ({ signal }) =>
+        new Promise<never>((_resolve, reject) =>
+          signal.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          }),
+        ),
+    );
+    const process = new ProcessVerticalRender(
+      repo,
+      objectStorage,
+      renderer,
+      scratch,
+      60_000,
+    );
+
+    const processing = process.execute(claim.jobId);
+    await vi.waitFor(() => expect(repo.prepareOutput).toHaveBeenCalledOnce());
+    process.abortAll();
+
+    await expect(processing).resolves.toBe(false);
+    expect(repo.release).toHaveBeenCalledWith(claim);
+    expect(objectStorage.delete).not.toHaveBeenCalled();
     expect(repo.fail).not.toHaveBeenCalled();
   });
 

@@ -33,3 +33,14 @@
 6. Duplicate queue delivery создаёт один result.
 7. Approval возможен только для READY current result.
 8. До отдельного approval publishing не принимает vertical result.
+9. До upload exact object key сохраняется как durable cleanup intent; потеря
+   DB-finalize ACK не удаляет подтверждённый result и не оставляет доказанный
+   rollback без bounded cleanup.
+
+## Rollback
+
+Сначала выключить `VERTICAL_RENDER_ENABLED`, затем остановить vertical worker
+после прекращения новых claims. Существующие intents, attempts, artifacts и
+cleanup markers не удалять. Pending cleanup reconciler должен оставаться
+доступным до обработки сирот; ручной horizontal/ZIP путь от vertical profile не
+зависит.

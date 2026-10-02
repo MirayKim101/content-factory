@@ -17,7 +17,8 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 
 Актуальный воспроизводимый baseline находится в
 `STAGE3-LOCAL-ACCEPTANCE.md`: API `253/253`, contracts `23/23`, worker
-`325/325`, web `266/266`, publication disposable PostgreSQL `1/1`, Twitch
+`330/330`, web `266/266`, lease-recovery PostgreSQL `6/6`, publication
+disposable PostgreSQL `1/1`, Twitch
 PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
 `43/43` с 73 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
 `3001`; порт `3000` не используется. Реальные credentialed Twitch media,
@@ -29,6 +30,13 @@ YouTube и TikTok canary остаются rollout gate и не подменяю�
 vertical lineage после долгого render/upload, orphan cleanup после неуспешной
 Twitch DB-finalization, abort-aware S3 publication chunks и сохранение TikTok
 recovery session после необратимой Direct Post initiation.
+
+Vertical DB-finalization теперь также защищён durable cleanup marker до
+upload. Потерянный ACK сверяется по exact job/intent/object/size/SHA:
+подтверждённый commit сохраняется, доказанный rollback удаляется bounded
+compensating cleanup, а недоступная БД оставляет объект reconciler-у. Shutdown
+после подготовки output не расходует retry budget: следующий claim ждёт
+завершения durable cleanup и затем безопасно переиспользует attempt ordinal.
 
 - Stage 3 control/data plane реализован default-off: Twitch allowlist,
   EventSub inbox и Helix reconciliation; durable resumable VOD import через

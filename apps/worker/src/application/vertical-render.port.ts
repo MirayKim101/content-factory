@@ -25,6 +25,7 @@ export interface VerticalRenderRepository {
   claim(jobId: string, leaseMs: number): Promise<VerticalRenderClaim | null>;
   heartbeat(claim: VerticalRenderClaim, leaseMs: number): Promise<boolean>;
   release(claim: VerticalRenderClaim): Promise<boolean>;
+  prepareOutput(claim: VerticalRenderClaim, objectKey: string): Promise<void>;
   complete(
     claim: VerticalRenderClaim,
     output: VerticalRenderedFile & {
@@ -33,6 +34,14 @@ export interface VerticalRenderRepository {
       sha256: string;
       etag?: string;
       storageVersion?: string;
+    },
+  ): Promise<boolean>;
+  completionMatches(
+    claim: VerticalRenderClaim,
+    output: {
+      objectKey: string;
+      sizeBytes: bigint;
+      sha256: string;
     },
   ): Promise<boolean>;
   fail(
