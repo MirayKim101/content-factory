@@ -323,9 +323,12 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
    фиксирует реальное foreground attention, wall clock, direct cost, mode и
    acceptance. Точный пошаговый лист: `STAGE2B6-OPERATOR-ACCEPTANCE.md`. Это
    последний незакрытый pre-Twitch product-acceptance gate.
-3. Провести браузерный smoke текущего UI на порту 3100. Автоматизированный
-   Windows computer-use из этой WSL-сессии не подключился, поэтому HTTP health
-   и web `238/238` не заменяют визуальную операторскую проверку.
+3. Завершить браузерные disabled/idempotent-retry/manual-fallback сценарии
+   AI clip panel и операторскую визуальную приёмку. На 2026-10-02 bundled
+   Windows Playwright/Edge из WSL успешно проверил 10 доступных selector
+   overlays на desktop/mobile и enabled consent/selection/job-navigation
+   сценарий с mock API. Скрипт и границы evidence:
+   `scripts/browser-stage3-smoke.cjs`, `STAGE3-LOCAL-ACCEPTANCE.md`.
 4. Перед production rollout подключить утверждённые Twitch media gateway и
    OAuth credentials YouTube/TikTok, включать admission flags по одному и
    выполнить credentialed canary. До этого внешние записи закрыты, local

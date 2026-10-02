@@ -233,8 +233,9 @@
   reclaim блокирует stale finalize, две provider errors дают terminal state,
   а intent другого provider, model или prompt остаётся `QUEUED` без вызова
   неверного adapter/revision.
-  До полной UI-приёмки остаётся browser smoke
-  enabled/disabled/idempotent-retry/manual-fallback сценариев.
+  Браузерная проверка enabled consent/selection/navigation выполнена на
+  1440/390 px с перехваченными API writes (см. ниже). До полной UI-приёмки
+  остаются disabled/idempotent-retry/manual-fallback сценарии.
 - Clip-generation API persistence `2/2` на PostgreSQL подтверждает exact
   idempotent replay, conflict при изменённом payload и отсутствие intent при
   missing external-transfer consent либо local-auto authorization.
@@ -288,6 +289,38 @@ Publication workspace дополнительно проверен реальны
 desktop и узком layout: проект загружается без ложной ошибки валидации,
 сводные карточки и форма переходят в одну колонку, длинное имя проекта не
 растягивает страницу.
+
+### Browser checkpoint 2026-10-02
+
+`scripts/browser-stage3-smoke.cjs` прошёл в headless Edge через bundled
+Playwright без установки dependencies. Live UI `/montage-assets`, `/vertical`,
+`/publications`, `/sources`, `/library`, `/horizontal` проверен на 1440×900 и
+390×900. Проверены 10 доступных Select overlays: absolute/fixed positioning,
+непрозрачный фон, отсутствие горизонтального clipping, высота options ≥32 px,
+ArrowDown и Escape, закрытие с `aria-expanded=false`; страницы не создают
+горизонтальный overflow. Выключенные controls не считаются проверенными.
+
+AI `/cuts` проверен на обоих размерах с mock API: без transcript или consent
+кнопка выключена; валидный SRT и явное согласие допускают create с idempotency
+header; LOCAL_FIXTURE не выдаётся за quality score; после ответа consent
+сбрасывается; до ручного выбора acceptance выключен; выбранный exact suggestion
+создаёт один acceptance и переводит к job ID в URL. Все API writes перехвачены,
+fixture media/job endpoints возвращают контролируемый 503. Это browser workflow
+evidence, не live end-to-end render и не внешний AI quality benchmark.
+
+Воспроизведение при доступных Node, Playwright и Edge:
+
+```sh
+NODE_PATH=/absolute/path/to/node_modules node scripts/browser-stage3-smoke.cjs
+```
+
+Для runtime в другой ОС задайте `CF_PLAYWRIGHT_MODULE` как абсолютный путь к
+Playwright; `CF_BROWSER_CHANNEL` по умолчанию `msedge`. UI должен уже работать
+на 3100, script не запускает сервисы и не использует 3000. При изменениях
+runtime flags доступность selectors может отличаться; минимальное покрытие
+требует enabled project controls и material type filter текущего local setup.
+Rollback: удалить только smoke script и этот evidence block; runtime/schema
+не изменены.
 
 Publication repository дополнительно воспроизведён на отдельной базе, созданной
 из всех migration SQL: exact idempotent replay/conflict, atomic channel revoke,
