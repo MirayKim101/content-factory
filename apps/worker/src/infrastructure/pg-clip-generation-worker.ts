@@ -15,8 +15,12 @@ type Claim = Readonly<{
   request: ClipGenerationRequest;
 }>;
 
+class ClipGenerationShutdownError extends Error {}
+
 export class PgClipGenerationWorker {
   private readonly pool: Pool;
+  private readonly activeControllers = new Set<AbortController>();
+  private stopping = false;
 
   constructor(
     databaseUrl: string,
@@ -27,18 +31,55 @@ export class PgClipGenerationWorker {
   }
 
   async process(intentId: string): Promise<void> {
+    if (this.stopping) return;
     const claim = await this.claim(intentId);
     if (!claim) return;
+    if (this.stopping) {
+      await this.release(claim).catch(() => false);
+      return;
+    }
+    const abort = new AbortController();
+    this.activeControllers.add(abort);
+    let heartbeatRunning = false;
+    const heartbeat = setInterval(
+      () => {
+        if (heartbeatRunning || abort.signal.aborted) return;
+        heartbeatRunning = true;
+        void this.heartbeat(claim)
+          .then((active) => {
+            if (!active) abort.abort(new Error("CLIP_GENERATION_LEASE_LOST"));
+          })
+          .catch(() =>
+            abort.abort(new Error("CLIP_GENERATION_HEARTBEAT_FAILED")),
+          )
+          .finally(() => (heartbeatRunning = false));
+      },
+      Math.max(1_000, Math.floor(this.leaseMs / 3)),
+    );
+    heartbeat.unref();
     try {
-      const result = await this.provider.generate(claim.request);
+      const result = await this.provider.generate(claim.request, abort.signal);
       await this.finalize(claim, result);
     } catch (error) {
+      if (abort.signal.reason instanceof ClipGenerationShutdownError) {
+        await this.release(claim).catch(() => false);
+        return;
+      }
       await this.fail(
         claim,
         error instanceof Error ? error.message : "CLIP_GENERATION_FAILED",
       );
       throw error;
+    } finally {
+      clearInterval(heartbeat);
+      this.activeControllers.delete(abort);
     }
+  }
+
+  abortAll(): void {
+    this.stopping = true;
+    for (const controller of this.activeControllers)
+      controller.abort(new ClipGenerationShutdownError());
   }
 
   async recover(limit = 20): Promise<number> {
@@ -56,6 +97,28 @@ export class PgClipGenerationWorker {
 
   async close(): Promise<void> {
     await this.pool.end();
+  }
+
+  private async heartbeat(claim: Claim): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "ClipGenerationIntent" SET
+         "leaseExpiresAt"=now()+$3 * interval '1 millisecond', "updatedAt"=now()
+       WHERE "id"=$1 AND "state"='PROCESSING' AND "leaseToken"=$2
+         AND "leaseExpiresAt">now()`,
+      [claim.intentId, claim.leaseToken, this.leaseMs],
+    );
+    return result.rowCount === 1;
+  }
+
+  private async release(claim: Claim): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "ClipGenerationIntent" SET "state"='QUEUED',
+         "attemptCount"=GREATEST("attemptCount"-1,0),
+         "leaseToken"=NULL, "leaseExpiresAt"=NULL, "updatedAt"=now()
+       WHERE "id"=$1 AND "state"='PROCESSING' AND "leaseToken"=$2`,
+      [claim.intentId, claim.leaseToken],
+    );
+    return result.rowCount === 1;
   }
 
   private async claim(intentId: string): Promise<Claim | null> {

@@ -217,6 +217,18 @@
 - Тот же запрет применяется к Google/YouTube, TikTok и OpenAI: OAuth secrets,
   bearer tokens и media chunks не следуют за HTTP redirect. Разрешённые
   resumable upload URL по-прежнему принимаются только после host allowlist.
+- Реализованный unit-проверенный `/cuts` создаёт clip-generation intent только после локального разбора
+  ordered SRT/VTT cues и отдельного явного согласия на передачу транскрипта.
+  Ручная нарезка не зависит от feature flag или provider-а.
+- AI clip worker в unit-контракте передаёт provider-вызову `AbortSignal`, продлевает fenced lease
+  heartbeat-ом и на shutdown возвращает intent в `QUEUED` с восстановлением
+  attempt budget. `.env.example` и compose задают этот путь default-off без
+  committed secret.
+- Clip-generation PostgreSQL recovery/fencing входит в baseline `9/9`: три
+  shutdown подряд не расходуют budget, heartbeat продлевает lease, concurrent
+  reclaim блокирует stale finalize, а две provider errors дают terminal state.
+  До полной UI-приёмки остаётся browser smoke
+  enabled/disabled/idempotent-retry/manual-fallback сценариев.
 - Custom `OPENAI_BASE_URL`, получающий API key и transcript, валидируется до
   старта worker: внешний endpoint обязан быть HTTPS без credentials/query/hash;
   HTTP допускается только для loopback в explicit local deployment profile.
@@ -231,12 +243,12 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     253/253 unit tests
+API:     254/254 unit tests
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Worker:  330/330 unit tests
-Worker lease recovery real PostgreSQL: 6/6
-Web:     266/266 tests
+Worker:  331/331 unit tests
+Worker lease recovery real PostgreSQL: 9/9
+Web:     273/273 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 43/43, 73 public tables, 0 unvalidated constraints

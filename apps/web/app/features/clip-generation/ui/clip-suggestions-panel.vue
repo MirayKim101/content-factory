@@ -2,15 +2,24 @@
 import { useMutation, useQuery } from "@tanstack/vue-query";
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
+import Textarea from "primevue/textarea";
 import { computed, ref } from "vue";
 
+import {
+  ClipTranscriptFormatError,
+  parseClipTranscript,
+} from "~/features/clip-generation/model/parse-transcript";
 import {
   createClipGenerationApi,
   ClipGenerationApiError,
 } from "~/shared/api/clip-generation";
 import { formatDisplayTimecode } from "~/shared/lib/timecode";
 
-const props = defineProps<{ projectId: string }>();
+const props = defineProps<{
+  projectId: string;
+  sourceTitle: string;
+  sourceDurationMs: number;
+}>();
 const emit = defineEmits<{
   seek: [milliseconds: number];
   accepted: [jobIds: string[]];
@@ -18,7 +27,10 @@ const emit = defineEmits<{
 const config = useRuntimeConfig();
 const api = createClipGenerationApi(config.public.apiBasePath);
 const selected = ref<string[]>([]);
+const transcriptText = ref("");
+const transferAllowed = ref(false);
 let retryIdentity: { fingerprint: string; key: string } | undefined;
+let generationIdentity: { fingerprint: string; key: string } | undefined;
 
 const query = useQuery({
   queryKey: computed(() => ["clip-generations", props.projectId]),
@@ -43,6 +55,64 @@ const readyIds = computed(
 );
 const validSelection = computed(() =>
   selected.value.filter((id) => readyIds.value.has(id)),
+);
+const parsedTranscript = computed(() => {
+  try {
+    return {
+      cues: parseClipTranscript(transcriptText.value, props.sourceDurationMs),
+      error: undefined,
+    };
+  } catch (error) {
+    return {
+      cues: [],
+      error:
+        error instanceof ClipTranscriptFormatError
+          ? error.message
+          : "Не удалось проверить транскрипт.",
+    };
+  }
+});
+const generationActive = computed(
+  () =>
+    latest.value?.state === "QUEUED" || latest.value?.state === "PROCESSING",
+);
+const create = useMutation({
+  mutationFn: async () => {
+    const fingerprint = JSON.stringify([
+      props.projectId,
+      props.sourceTitle,
+      transcriptText.value,
+      transferAllowed.value,
+    ]);
+    const key =
+      generationIdentity?.fingerprint === fingerprint
+        ? generationIdentity.key
+        : `clip-create-${crypto.randomUUID()}`;
+    generationIdentity = { fingerprint, key };
+    return api.create({
+      projectId: props.projectId,
+      idempotencyKey: key,
+      sourceTitle: props.sourceTitle,
+      transcript: parsedTranscript.value.cues,
+      maximumSuggestions: 5,
+      minimumClipDurationMs: 15_000,
+      maximumClipDurationMs: 60_000,
+      language: "ru",
+      externalProviderTransferAllowed: transferAllowed.value,
+    });
+  },
+  onSuccess: async () => {
+    generationIdentity = undefined;
+    transferAllowed.value = false;
+    await query.refetch();
+  },
+});
+const canCreate = computed(
+  () =>
+    parsedTranscript.value.cues.length > 0 &&
+    transferAllowed.value &&
+    !generationActive.value &&
+    !create.isPending.value,
 );
 const accept = useMutation({
   mutationFn: async () => {
@@ -103,10 +173,59 @@ function toggleAll(): void {
       Не удалось получить рекомендации.
       <button type="button" @click="query.refetch()">Повторить</button>
     </div>
-    <div v-else-if="!latest" class="empty-state">
-      AI-запусков пока нет. Ручная нарезка ниже продолжает работать независимо.
+    <div v-else class="generation-form">
+      <div>
+        <strong>Новый анализ</strong>
+        <p>
+          Вставьте SRT или WebVTT с точными таймкодами. Ручная нарезка ниже
+          продолжает работать независимо.
+        </p>
+      </div>
+      <label for="clip-transcript">Транскрипт с таймкодами</label>
+      <Textarea
+        id="clip-transcript"
+        v-model="transcriptText"
+        rows="7"
+        placeholder="00:00:05,000 --> 00:00:12,000&#10;Текст фрагмента"
+        :disabled="generationActive || create.isPending.value"
+      />
+      <p
+        v-if="transcriptText && parsedTranscript.error"
+        class="inline-error"
+        role="alert"
+      >
+        {{ parsedTranscript.error }}
+      </p>
+      <p v-else-if="parsedTranscript.cues.length" class="validation-ok">
+        Распознано cue: {{ parsedTranscript.cues.length }}
+      </p>
+      <label class="consent-row" for="clip-transfer-consent">
+        <Checkbox
+          v-model="transferAllowed"
+          input-id="clip-transfer-consent"
+          binary
+          :disabled="generationActive || create.isPending.value"
+        />
+        <span
+          >Разрешаю передать этот транскрипт настроенному внешнему AI-provider
+          для поиска моментов.</span
+        >
+      </label>
+      <div class="generation-actions">
+        <span v-if="generationActive">Текущий анализ уже выполняется.</span>
+        <Button
+          type="button"
+          :disabled="!canCreate"
+          :loading="create.isPending.value"
+          @click="create.mutate()"
+          >Найти моменты</Button
+        >
+      </div>
+      <p v-if="create.isError.value" class="inline-error" role="alert">
+        {{ (create.error.value as Error).message }}
+      </p>
     </div>
-    <template v-else>
+    <template v-if="latest">
       <div class="run-status">
         <span class="status-dot" :class="latest.state.toLowerCase()" />
         <strong>{{
@@ -279,6 +398,39 @@ function toggleAll(): void {
 }
 .panel-footer p {
   margin: 0;
+}
+.generation-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--cf-border);
+  border-radius: 0.85rem;
+  background: #fff;
+}
+.generation-form p {
+  margin: 0.25rem 0 0;
+  color: var(--cf-text-muted);
+}
+.generation-form textarea {
+  width: 100%;
+  resize: vertical;
+}
+.consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  cursor: pointer;
+}
+.generation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+.validation-ok {
+  color: #087d5b !important;
+  font-weight: 700;
 }
 .empty-state,
 .inline-error {

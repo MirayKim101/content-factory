@@ -3,6 +3,42 @@ import { describe, expect, it, vi } from "vitest";
 import { createClipGenerationApi } from "../app/shared/api/clip-generation";
 
 describe("clip generation API", () => {
+  it("creates a durable run with explicit transfer consent", async () => {
+    const response = {
+      id: "00000000-0000-4000-8000-000000000001",
+      projectId: "00000000-0000-4000-8000-000000000002",
+      state: "QUEUED",
+      provider: "OPENAI",
+      model: "gpt-test",
+      failureCode: null,
+      failureMessage: null,
+      createdAt: "2026-09-28T00:00:00.000Z",
+      updatedAt: "2026-09-28T00:00:00.000Z",
+      suggestions: [],
+    };
+    const fetcher = vi.fn(async () => new Response(JSON.stringify(response)));
+    await createClipGenerationApi("/api/v1", fetcher).create({
+      projectId: response.projectId,
+      idempotencyKey: "clip-create-key",
+      sourceTitle: "Stream",
+      transcript: [{ startMs: 0, endMs: 10_000, text: "Moment" }],
+      maximumSuggestions: 5,
+      minimumClipDurationMs: 15_000,
+      maximumClipDurationMs: 60_000,
+      language: "ru",
+      externalProviderTransferAllowed: true,
+    });
+    const [url, init] = fetcher.mock.calls[0]!;
+    expect(url).toContain(`/projects/${response.projectId}/clip-generations`);
+    expect(init?.headers).toMatchObject({
+      "Idempotency-Key": "clip-create-key",
+    });
+    expect(JSON.parse(String(init?.body))).toMatchObject({
+      language: "ru",
+      externalProviderTransferAllowed: true,
+    });
+  });
+
   it("parses durable intents and suggestions", async () => {
     const fetcher = vi.fn(
       async () =>

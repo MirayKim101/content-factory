@@ -4,7 +4,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
 
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import { PrismaService } from "../../api/src/database/prisma.service.js";
 import { ReconcileAttemptCleanups } from "../../api/src/media-pipeline/application/reconcile-attempt-cleanups.js";
@@ -12,12 +20,17 @@ import { PrismaPipelineRepository } from "../../api/src/media-pipeline/infrastru
 import type { ObjectStorage } from "../../api/src/projects/application/object-storage.port.js";
 import { ProcessMediaJob } from "../src/application/process-media-job.js";
 import type {
+  ClipGenerationProvider,
+  ClipGenerationResult,
+} from "../src/application/clip-generation-provider.port.js";
+import type {
   MediaJobPhaseTelemetry,
   MediaProcessor,
   WorkerObjectStorage,
 } from "../src/application/ports.js";
 import { workerConfig } from "../src/config.js";
 import { LocalSourceCache } from "../src/infrastructure/local-source-cache.js";
+import { PgClipGenerationWorker } from "../src/infrastructure/pg-clip-generation-worker.js";
 import { PgMediaJobRepository } from "../src/infrastructure/pg-media-job.repository.js";
 import { PgVerticalRenderRepository } from "../src/infrastructure/pg-vertical-render.repository.js";
 
@@ -32,6 +45,12 @@ describe("worker lease recovery race (PostgreSQL)", () => {
 
   afterEach(async () => {
     for (const id of projectIds.splice(0)) {
+      await prisma.clipGenerationSuggestion.deleteMany({
+        where: { intent: { projectId: id } },
+      });
+      await prisma.clipGenerationIntent.deleteMany({
+        where: { projectId: id },
+      });
       await prisma.project.deleteMany({ where: { id } });
     }
   });
@@ -274,6 +293,131 @@ describe("worker lease recovery race (PostgreSQL)", () => {
       });
       await repository.close();
     }
+  });
+
+  it("requeues repeated clip-generation shutdowns without spending retry budget", async () => {
+    const fixture = await createQueuedClipGeneration();
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      const provider = abortableClipProvider();
+      const worker = new PgClipGenerationWorker(
+        workerConfig().databaseUrl,
+        provider,
+        30_000,
+      );
+      const processing = worker.process(fixture.intentId);
+      await vi.waitFor(() => expect(provider.generate).toHaveBeenCalledOnce());
+      worker.abortAll();
+      await expect(processing).resolves.toBeUndefined();
+      await expect(
+        prisma.clipGenerationIntent.findUniqueOrThrow({
+          where: { id: fixture.intentId },
+        }),
+      ).resolves.toMatchObject({ state: "QUEUED", attemptCount: 0 });
+      await worker.close();
+    }
+
+    const success = resolvedClipProvider("Recovered suggestion");
+    const worker = new PgClipGenerationWorker(
+      workerConfig().databaseUrl,
+      success,
+      30_000,
+    );
+    await worker.process(fixture.intentId);
+    await expect(
+      prisma.clipGenerationIntent.findUniqueOrThrow({
+        where: { id: fixture.intentId },
+        include: { suggestions: true },
+      }),
+    ).resolves.toMatchObject({
+      state: "READY",
+      attemptCount: 1,
+      suggestions: [{ title: "Recovered suggestion" }],
+    });
+    await worker.close();
+  });
+
+  it("heartbeats a clip claim and fences stale finalization after a concurrent reclaim", async () => {
+    const fixture = await createQueuedClipGeneration();
+    const deferred = Promise.withResolvers<ClipGenerationResult>();
+    const slowProvider: ClipGenerationProvider = {
+      provider: "TEST",
+      generate: vi.fn(() => deferred.promise),
+    };
+    const staleWorker = new PgClipGenerationWorker(
+      workerConfig().databaseUrl,
+      slowProvider,
+      1_500,
+    );
+    const staleProcessing = staleWorker.process(fixture.intentId);
+    await vi.waitFor(() =>
+      expect(slowProvider.generate).toHaveBeenCalledOnce(),
+    );
+    const initial = await prisma.clipGenerationIntent.findUniqueOrThrow({
+      where: { id: fixture.intentId },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 1_100));
+    const heartbeaten = await prisma.clipGenerationIntent.findUniqueOrThrow({
+      where: { id: fixture.intentId },
+    });
+    expect(heartbeaten.leaseExpiresAt!.getTime()).toBeGreaterThan(
+      initial.leaseExpiresAt!.getTime(),
+    );
+
+    await prisma.clipGenerationIntent.update({
+      where: { id: fixture.intentId },
+      data: { leaseExpiresAt: new Date(Date.now() - 1_000) },
+    });
+    const winner = new PgClipGenerationWorker(
+      workerConfig().databaseUrl,
+      resolvedClipProvider("Winning suggestion"),
+      30_000,
+    );
+    await winner.process(fixture.intentId);
+    deferred.resolve(clipResult("Stale suggestion"));
+    await expect(staleProcessing).resolves.toBeUndefined();
+
+    const stored = await prisma.clipGenerationIntent.findUniqueOrThrow({
+      where: { id: fixture.intentId },
+      include: { suggestions: true },
+    });
+    expect(stored).toMatchObject({ state: "READY", attemptCount: 2 });
+    expect(stored.suggestions.map((item) => item.title)).toEqual([
+      "Winning suggestion",
+    ]);
+    await Promise.all([staleWorker.close(), winner.close()]);
+  });
+
+  it("moves clip generation to terminal failure after its bounded retry budget", async () => {
+    const fixture = await createQueuedClipGeneration();
+    const provider: ClipGenerationProvider = {
+      provider: "TEST",
+      generate: vi.fn(async () => {
+        throw new Error("CLIP_PROVIDER_FAILED");
+      }),
+    };
+    const worker = new PgClipGenerationWorker(
+      workerConfig().databaseUrl,
+      provider,
+      30_000,
+    );
+    await expect(worker.process(fixture.intentId)).rejects.toThrow(
+      "CLIP_PROVIDER_FAILED",
+    );
+    await expect(worker.process(fixture.intentId)).rejects.toThrow(
+      "CLIP_PROVIDER_FAILED",
+    );
+    await expect(worker.process(fixture.intentId)).resolves.toBeUndefined();
+    await expect(
+      prisma.clipGenerationIntent.findUniqueOrThrow({
+        where: { id: fixture.intentId },
+      }),
+    ).resolves.toMatchObject({
+      state: "FAILED_FINAL",
+      attemptCount: 2,
+      failureCode: "CLIP_PROVIDER_FAILED",
+    });
+    expect(provider.generate).toHaveBeenCalledTimes(2);
+    await worker.close();
   });
 
   it("does not claim a job whose exact source version is not authorized", async () => {
@@ -561,7 +705,114 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     });
     return { projectId, jobId, intentId };
   }
+
+  async function createQueuedClipGeneration(): Promise<{
+    projectId: string;
+    intentId: string;
+  }> {
+    const projectId = randomUUID();
+    const sourceId = randomUUID();
+    const intentId = randomUUID();
+    projectIds.push(projectId);
+    await prisma.project.create({
+      data: {
+        id: projectId,
+        idempotencyKey: `clip-recovery-${randomUUID()}`,
+        requestFingerprint: "f".repeat(64),
+        name: "Clip generation recovery",
+        status: "SOURCE_READY",
+        rightsConfirmedAt: new Date(),
+        rightsDeclarationVersion: "upload-rights-v1",
+        source: {
+          create: {
+            id: sourceId,
+            status: "READY",
+            originalFilename: "source.mp4",
+            contentType: "video/mp4",
+            sizeBytes: 24n,
+            sha256: "a".repeat(64),
+            durationMs: 120_000,
+            probedAt: new Date(),
+            probeVersion: "ffprobe integration",
+            authorizations: {
+              create: {
+                sourceVersion: 1,
+                status: "CLEARED",
+                basis: "OPERATOR_ATTESTATION",
+                declarationVersion: "upload-rights-v1",
+                decidedAt: new Date(),
+              },
+            },
+          },
+        },
+        clipGenerationIntents: {
+          create: {
+            id: intentId,
+            idempotencyKey: `clip-intent-${randomUUID()}`,
+            requestFingerprint: "b".repeat(64),
+            sourceId,
+            sourceVersion: 1,
+            sourceTitle: "Test stream",
+            sourceDurationMs: 120_000,
+            transcript: [
+              { startMs: 0, endMs: 120_000, text: "Complete moment" },
+            ],
+            transcriptSha256: "c".repeat(64),
+            language: "en",
+            maximumSuggestions: 2,
+            minimumClipDurationMs: 10_000,
+            maximumClipDurationMs: 60_000,
+            externalTransferAllowed: true,
+            provider: "TEST",
+            model: "test-model",
+            contractVersion: "clip-generation-v1",
+            promptVersion: "test-prompt-v1",
+          },
+        },
+      },
+    });
+    return { projectId, intentId };
+  }
 });
+
+function abortableClipProvider(): ClipGenerationProvider & {
+  generate: ReturnType<typeof vi.fn>;
+} {
+  return {
+    provider: "TEST",
+    generate: vi.fn(
+      async (_request, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) =>
+          signal?.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          }),
+        ),
+    ),
+  };
+}
+
+function resolvedClipProvider(title: string): ClipGenerationProvider {
+  return {
+    provider: "TEST",
+    generate: vi.fn(async () => clipResult(title)),
+  };
+}
+
+function clipResult(title: string): ClipGenerationResult {
+  return {
+    providerRequestId: randomUUID(),
+    model: "test-model",
+    suggestions: [
+      {
+        startMs: 10_000,
+        endMs: 40_000,
+        title,
+        rationale: "Complete story",
+        confidenceBasisPoints: 8_500,
+      },
+    ],
+  };
+}
 
 class MemoryStorage implements WorkerObjectStorage {
   readonly objects = new Map<string, Buffer>();

@@ -34,6 +34,11 @@ const errorSchema = z.object({
 });
 
 export type ClipGenerationIntent = z.infer<typeof intentSchema>;
+export type ClipTranscriptCue = {
+  startMs: number;
+  endMs: number;
+  text: string;
+};
 
 export class ClipGenerationApiError extends Error {
   constructor(
@@ -52,6 +57,40 @@ export function createClipGenerationApi(
 ) {
   const basePath = parseApiBasePath(apiBasePath);
   return {
+    create(input: {
+      projectId: string;
+      idempotencyKey: string;
+      sourceTitle: string;
+      transcript: ClipTranscriptCue[];
+      maximumSuggestions: number;
+      minimumClipDurationMs: number;
+      maximumClipDurationMs: number;
+      language: string;
+      externalProviderTransferAllowed: boolean;
+    }) {
+      return request(
+        fetchImplementation,
+        `${basePath}/projects/${encodeURIComponent(input.projectId)}/clip-generations`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": input.idempotencyKey,
+          },
+          body: JSON.stringify({
+            sourceTitle: input.sourceTitle,
+            transcript: input.transcript,
+            maximumSuggestions: input.maximumSuggestions,
+            minimumClipDurationMs: input.minimumClipDurationMs,
+            maximumClipDurationMs: input.maximumClipDurationMs,
+            language: input.language,
+            externalProviderTransferAllowed:
+              input.externalProviderTransferAllowed,
+          }),
+        },
+        intentSchema,
+      );
+    },
     list(projectId: string) {
       return request(
         fetchImplementation,

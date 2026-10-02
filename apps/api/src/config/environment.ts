@@ -24,7 +24,7 @@ export function loadEnvironment(): void {
   loaded = true;
 }
 
-const API_ENVIRONMENT_KEYS = [
+export const API_ENVIRONMENT_KEYS = [
   "POSTGRES_DB",
   "POSTGRES_USER",
   "POSTGRES_PASSWORD",
@@ -69,6 +69,8 @@ const API_ENVIRONMENT_KEYS = [
   "TWITCH_VOD_AUTO_INGEST_ENABLED",
   "TWITCH_EVENTSUB_SECRET",
   "VERTICAL_RENDER_ENABLED",
+  "CLIP_GENERATION_ENABLED",
+  "CLIP_GENERATION_MODEL",
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
@@ -287,8 +289,17 @@ export function apiEnvironment(): ApiEnvironment {
       process.env.TWITCH_VOD_AUTO_INGEST_ENABLED?.trim() === "1",
     twitchEventSubSecret: twitchEventSubSecret(process.env),
     verticalRenderEnabled: verticalRenderAdmissionEnabled(process.env),
-    clipGenerationEnabled: process.env.CLIP_GENERATION_ENABLED?.trim() === "1",
-    clipGenerationModel: process.env.CLIP_GENERATION_MODEL?.trim() || null,
+    ...resolveClipGenerationRuntime(process.env),
+  };
+}
+
+export function resolveClipGenerationRuntime(environment: NodeJS.ProcessEnv): {
+  clipGenerationEnabled: boolean;
+  clipGenerationModel: string | null;
+} {
+  return {
+    clipGenerationEnabled: environment.CLIP_GENERATION_ENABLED?.trim() === "1",
+    clipGenerationModel: environment.CLIP_GENERATION_MODEL?.trim() || null,
   };
 }
 

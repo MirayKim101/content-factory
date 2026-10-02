@@ -1,14 +1,40 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  API_ENVIRONMENT_KEYS,
   aiContextAdmissionEnabled,
   editorialExportAdmissionEnabled,
   editorialIntegratedReviewAdmissionEnabled,
   publishingAdmissionEnabled,
+  resolveClipGenerationRuntime,
   twitchIngestionAdmissionEnabled,
   twitchEventSubSecret,
   verticalRenderAdmissionEnabled,
 } from "../src/config/environment.js";
+
+describe("clip generation runtime", () => {
+  it("is default-off and exposes both root .env keys to the API loader", () => {
+    expect(resolveClipGenerationRuntime({})).toEqual({
+      clipGenerationEnabled: false,
+      clipGenerationModel: null,
+    });
+    expect(
+      resolveClipGenerationRuntime({
+        CLIP_GENERATION_ENABLED: "1",
+        CLIP_GENERATION_MODEL: "gpt-test",
+      }),
+    ).toEqual({
+      clipGenerationEnabled: true,
+      clipGenerationModel: "gpt-test",
+    });
+    expect(API_ENVIRONMENT_KEYS).toEqual(
+      expect.arrayContaining([
+        "CLIP_GENERATION_ENABLED",
+        "CLIP_GENERATION_MODEL",
+      ]),
+    );
+  });
+});
 
 describe("editorial export rollout flag", () => {
   it.each([

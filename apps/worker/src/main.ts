@@ -744,6 +744,7 @@ async function startAiWorker(): Promise<void> {
     clearInterval(imageRecoveryTimer);
     clearInterval(transcriptRecoveryTimer);
     if (clipRecoveryTimer) clearInterval(clipRecoveryTimer);
+    clipWorker?.abortAll();
     shutdownPromise = (async () => {
       await clearWorkerReadiness(readinessFile);
       await Promise.allSettled([

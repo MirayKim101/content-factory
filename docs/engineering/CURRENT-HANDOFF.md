@@ -16,8 +16,8 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 ## Текущий этап
 
 Актуальный воспроизводимый baseline находится в
-`STAGE3-LOCAL-ACCEPTANCE.md`: API `253/253`, contracts `23/23`, worker
-`330/330`, web `266/266`, lease-recovery PostgreSQL `6/6`, publication
+`STAGE3-LOCAL-ACCEPTANCE.md`: API `254/254`, contracts `23/23`, worker
+`331/331`, web `273/273`, lease-recovery PostgreSQL `9/9`, publication
 disposable PostgreSQL `1/1`, Twitch
 PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
 `43/43` с 73 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
@@ -37,6 +37,15 @@ upload. Потерянный ACK сверяется по exact job/intent/object
 compensating cleanup, а недоступная БД оставляет объект reconciler-у. Shutdown
 после подготовки output не расходует retry budget: следующий claim ждёт
 завершения durable cleanup и затем безопасно переиспользует attempt ordinal.
+
+Clip-suggestion checkpoint реализован и unit-проверен: запуск из `/cuts` через
+локально проверенный SRT/VTT и отдельное external-transfer consent; AI worker
+передаёт provider-у shutdown/lease AbortSignal и при штатном shutdown возвращает
+intent в очередь без расхода retry budget. Disposable PostgreSQL `9/9`
+подтверждает repeated shutdown, heartbeat, concurrent reclaim, stale fencing и
+retry exhaustion. Конфигурация compose и `.env.example` остаётся default-off.
+Этот срез ещё не принят полностью: нужны browser smoke и затем отдельный
+provider quality/cost canary.
 
 - Stage 3 control/data plane реализован default-off: Twitch allowlist,
   EventSub inbox и Helix reconciliation; durable resumable VOD import через

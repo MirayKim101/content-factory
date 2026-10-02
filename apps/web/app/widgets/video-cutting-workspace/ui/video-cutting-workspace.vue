@@ -414,6 +414,8 @@ async function submit(): Promise<void> {
       <ClipSuggestionsPanel
         v-if="authorizationCleared && durationMs !== undefined && projectId"
         :project-id="projectId"
+        :source-title="projectQuery.data.value?.name ?? 'Видео'"
+        :source-duration-ms="durationMs"
         @seek="seekTo"
         @accepted="showAcceptedJobs"
       />
