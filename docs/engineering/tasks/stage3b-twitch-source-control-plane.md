@@ -27,6 +27,10 @@ reconciliation VOD-кандидатов. На этом срезе приложе
   в Stage 3C;
 - токены, client secret и подписанные raw headers не попадают в API, job payload
   или логи.
+- webhook secret имеет отдельный opaque `TWITCH_EVENTSUB_SECRET_VERSION`;
+  версия обязана меняться при каждой ротации секрета. Worker под durable
+  PostgreSQL lease удаляет старые subscriptions и фиксирует новую версию только
+  после строгого пересоздания полного набора.
 
 ## Acceptance criteria
 
@@ -68,6 +72,37 @@ retry после неизвестного результата не создаё
 `TWITCH_VOD_AUTO_INGEST_ENABLED=0`, затем
 `TWITCH_VOD_MEDIA_GATEWAY_ENABLED=0`. Уже импортированные проекты и ручной
 `link-project` путь сохраняются.
+
+Для плановой ротации остановить все Twitch workers, одновременно задать новый
+`TWITCH_EVENTSUB_SECRET` и новую `TWITCH_EVENTSUB_SECRET_VERSION`, затем
+перезапустить API и все Twitch workers с одинаковой конфигурацией. Rolling
+overlap воркеров с разными версиями секрета запрещён: opaque version не задаёт
+порядок версий. PostgreSQL lease сериализует сверку и ротацию одинаково.
+Значение версии не является секретом, но должно быть новым безопасным
+идентификатором длиной до 64 символов. До durable completion worker повторяет
+полную ротацию; HTTP 409 при strict recreate не считается успехом. Старую
+версию секрета не удалять из secret manager до появления успешного
+`twitch_reconciliation_completed` после ротации.
+
+Первый запуск версии также пересоздаёт существующие managed subscriptions:
+их secret не возвращается Twitch API, поэтому старый набор нельзя признать
+совместимым по одному callback. Failed/disabled subscriptions сохраняются в
+remote list до cleanup и удаляются перед повторным созданием. Обычная сверка
+также удерживает lease, поэтому не создаёт подписки посреди ротации.
+
+Local verification 2026-10-02: worker `342/342`, worker lint/typecheck/build,
+API typecheck/build; fresh database `cf_eventsub_rotation_20261002` содержит
+`45/45` миграций, 74 public tables и 0 unvalidated constraints. Twitch
+PostgreSQL + MinIO acceptance `2/2` включает CURRENT/BUSY, expiration reclaim,
+stale completion rejection и release fencing. Для этого integration scenario
+обязательна отдельная база с префиксом `cf_eventsub_rotation_`: тест singleton
+rotation state не допускается на сохранённой runtime базе.
+
+Rollback: остановить Twitch workers, отключить admission, вернуть прежние
+secret/config и совместимые API/worker версии. Новую таблицу и применённые
+миграции сохранять. При повторном включении использовать новую secret version
+и дать worker пересоздать managed subscriptions; вручную менять applied version
+нельзя. Live credentialed rotation требует отдельной canary-проверки доставки.
 Таблицы channel/inbox/candidate не удалять: они нужны для deduplication и
 возобновления reconciliation. Ручной pre-Twitch путь остаётся основным.
 

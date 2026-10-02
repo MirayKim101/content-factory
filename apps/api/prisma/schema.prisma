@@ -2004,6 +2004,15 @@ model TwitchVodIngestIntent {
   @@index([leaseExpiresAt])
 }
 
+/// Durable fencing for EventSub webhook-secret rotation across worker restarts.
+model TwitchEventSubReconciliationState {
+  id                     String    @id
+  appliedSecretVersion   String?
+  rotationLeaseOwner     String?
+  rotationLeaseExpiresAt DateTime?
+  updatedAt              DateTime  @updatedAt
+}
+
 model VerticalRenderIntent {
   id                    String                @id @db.Uuid
   idempotencyKey        String                @unique

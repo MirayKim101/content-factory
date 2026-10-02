@@ -40,3 +40,20 @@ export interface TwitchIngestionWorkerRepository {
   ): Promise<boolean>;
   close(): Promise<void>;
 }
+
+export interface TwitchEventSubRotationRepository {
+  claimEventSubSecretRotation(
+    workerId: string,
+    desiredVersion: string,
+    leaseMs: number,
+  ): Promise<"CURRENT" | "CLAIMED" | "BUSY">;
+  heartbeatEventSubSecretRotation(
+    workerId: string,
+    leaseMs: number,
+  ): Promise<boolean>;
+  completeEventSubSecretRotation(
+    workerId: string,
+    desiredVersion: string,
+  ): Promise<void>;
+  releaseEventSubSecretRotation(workerId: string): Promise<void>;
+}

@@ -22,7 +22,7 @@ describe("Twitch EventSub reconciliation", () => {
           callback,
         },
       ]),
-      createWebhookSubscription: vi.fn(async () => undefined),
+      createWebhookSubscription: vi.fn(async () => true),
       deleteWebhookSubscription: vi.fn(async () => undefined),
     };
 
@@ -42,6 +42,58 @@ describe("Twitch EventSub reconciliation", () => {
       "sub-revoked",
       undefined,
     );
+  });
+
+  it("recreates every managed subscription during a secret rotation", async () => {
+    const progress = vi.fn(async () => undefined);
+    const provider = {
+      listWebhookSubscriptions: vi.fn(async () => [
+        {
+          id: "old-online",
+          type: "stream.online",
+          broadcasterId: "1337",
+          callback,
+        },
+        {
+          id: "old-offline",
+          type: "stream.offline",
+          broadcasterId: "1337",
+          callback,
+        },
+      ]),
+      createWebhookSubscription: vi.fn(async () => true),
+      deleteWebhookSubscription: vi.fn(async () => undefined),
+    };
+
+    await expect(
+      new ReconcileTwitchEventSub(provider, callback).execute(
+        ["1337"],
+        undefined,
+        { recreateAll: true, onProgress: progress },
+      ),
+    ).resolves.toEqual({ created: 2, deleted: 2 });
+    expect(provider.deleteWebhookSubscription.mock.calls).toEqual([
+      ["old-online", undefined],
+      ["old-offline", undefined],
+    ]);
+    expect(provider.createWebhookSubscription).toHaveBeenCalledTimes(2);
+    expect(progress).toHaveBeenCalledTimes(9);
+  });
+
+  it("does not commit a rotation when Twitch reports an existing subscription", async () => {
+    const provider = {
+      listWebhookSubscriptions: vi.fn(async () => []),
+      createWebhookSubscription: vi.fn(async () => false),
+      deleteWebhookSubscription: vi.fn(async () => undefined),
+    };
+
+    await expect(
+      new ReconcileTwitchEventSub(provider, callback).execute(
+        ["1337"],
+        undefined,
+        { recreateAll: true },
+      ),
+    ).rejects.toThrow("TWITCH_EVENTSUB_ROTATION_CONFLICT");
   });
 
   it("propagates shutdown abort into an active EventSub request", async () => {
@@ -69,6 +121,57 @@ describe("Twitch EventSub reconciliation", () => {
     controller.abort(new Error("TWITCH_WORKER_SHUTDOWN"));
 
     await expect(pending).rejects.toThrow("TWITCH_WORKER_SHUTDOWN");
+  });
+
+  it("removes failed subscriptions before recreating the missing events", async () => {
+    const request = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [
+            {
+              id: "failed-online",
+              type: "stream.online",
+              version: "1",
+              status: "notification_failures_exceeded",
+              condition: { broadcaster_user_id: "1337" },
+              transport: { method: "webhook", callback },
+            },
+          ],
+          pagination: {},
+        }),
+      ),
+    );
+    const client = new TwitchEventSubClient(
+      "client-id",
+      { resolve: async () => "app-token" },
+      callback,
+      "eventsub-secret-value",
+      request,
+    );
+    const subscriptions = await client.listWebhookSubscriptions();
+    expect(subscriptions[0]).toMatchObject({
+      id: "failed-online",
+      active: false,
+    });
+    const calls: string[] = [];
+    const provider = {
+      listWebhookSubscriptions: async () => subscriptions,
+      deleteWebhookSubscription: async (id: string) => {
+        calls.push(`delete:${id}`);
+      },
+      createWebhookSubscription: async (type: string) => {
+        calls.push(`create:${type}`);
+        return true;
+      },
+    };
+    await expect(
+      new ReconcileTwitchEventSub(provider, callback).execute(["1337"]),
+    ).resolves.toEqual({ created: 2, deleted: 1 });
+    expect(calls).toEqual([
+      "delete:failed-online",
+      "create:stream.online",
+      "create:stream.offline",
+    ]);
   });
 
   it("uses bounded official webhook payloads and keeps the secret out of the URL", async () => {
@@ -99,7 +202,7 @@ describe("Twitch EventSub reconciliation", () => {
     await expect(client.listWebhookSubscriptions()).resolves.toEqual([]);
     await expect(
       client.createWebhookSubscription("stream.online", "1337"),
-    ).resolves.toBeUndefined();
+    ).resolves.toBe(true);
     expect(createCancel).toHaveBeenCalledOnce();
     const [url, init] = request.mock.calls[1]!;
     expect(String(url)).not.toContain("eventsub-secret-value");

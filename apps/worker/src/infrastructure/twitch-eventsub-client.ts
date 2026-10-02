@@ -24,13 +24,20 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
   async listWebhookSubscriptions(
     signal?: AbortSignal,
   ): Promise<
-    Array<{ id: string; type: string; broadcasterId: string; callback: string }>
+    Array<{
+      id: string;
+      type: string;
+      broadcasterId: string;
+      callback: string;
+      active: boolean;
+    }>
   > {
     const result: Array<{
       id: string;
       type: string;
       broadcasterId: string;
       callback: string;
+      active: boolean;
     }> = [];
     let cursor: string | null = null;
     const seen = new Set<string>();
@@ -61,7 +68,7 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
     type: "stream.online" | "stream.offline",
     broadcasterId: string,
     signal?: AbortSignal,
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (!/^\d{1,64}$/.test(broadcasterId))
       throw new Error("TWITCH_BROADCASTER_ID_INVALID");
     const response = await this.authorizedFetch(
@@ -82,9 +89,11 @@ export class TwitchEventSubClient implements TwitchEventSubProvider {
       },
       signal,
     );
-    const accepted = response.status === 202 || response.status === 409;
+    const created = response.status === 202;
+    const accepted = created || response.status === 409;
     await discardResponseBody(response);
     if (!accepted) throw new Error(`TWITCH_EVENTSUB_CREATE_${response.status}`);
+    return created;
   }
 
   async deleteWebhookSubscription(
@@ -160,6 +169,7 @@ function parseSubscriptionPage(value: unknown): {
     type: string;
     broadcasterId: string;
     callback: string;
+    active: boolean;
   }>;
   nextCursor: string | null;
 } {
@@ -177,8 +187,7 @@ function parseSubscriptionPage(value: unknown): {
       (row.type !== "stream.online" && row.type !== "stream.offline") ||
       typeof row.id !== "string" ||
       !/^[A-Za-z0-9_-]{1,128}$/.test(row.id) ||
-      (row.status !== "enabled" &&
-        row.status !== "webhook_callback_verification_pending") ||
+      typeof row.status !== "string" ||
       typeof condition?.broadcaster_user_id !== "string" ||
       transport?.method !== "webhook" ||
       typeof transport.callback !== "string"
@@ -190,6 +199,9 @@ function parseSubscriptionPage(value: unknown): {
         type: row.type,
         broadcasterId: condition.broadcaster_user_id,
         callback: transport.callback,
+        active:
+          row.status === "enabled" ||
+          row.status === "webhook_callback_verification_pending",
       },
     ];
   });

@@ -5,6 +5,7 @@ import { workerPgPoolConfig } from "./worker-pg-pool.js";
 
 import type {
   TwitchChannelReconciliationTarget,
+  TwitchEventSubRotationRepository,
   TwitchIngestionWorkerRepository,
   TwitchVodPage,
 } from "../application/twitch-reconciliation.port.js";
@@ -14,7 +15,10 @@ import type {
 } from "../application/twitch-vod-ingest.port.js";
 
 export class PgTwitchIngestionWorkerRepository
-  implements TwitchIngestionWorkerRepository, TwitchVodIngestRepository
+  implements
+    TwitchIngestionWorkerRepository,
+    TwitchVodIngestRepository,
+    TwitchEventSubRotationRepository
 {
   private readonly pool: Pool;
 
@@ -88,6 +92,73 @@ export class PgTwitchIngestionWorkerRepository
       [now],
     );
     return result.rowCount ?? 0;
+  }
+
+  async claimEventSubSecretRotation(
+    workerId: string,
+    desiredVersion: string,
+    leaseMs: number,
+  ): Promise<"CURRENT" | "CLAIMED" | "BUSY"> {
+    await this.pool.query(
+      `INSERT INTO "TwitchEventSubReconciliationState"
+         ("id","appliedSecretVersion","updatedAt")
+       VALUES ('webhook',NULL,now()) ON CONFLICT ("id") DO NOTHING`,
+    );
+    const claimed = await this.pool.query<{ current: boolean }>(
+      `UPDATE "TwitchEventSubReconciliationState"
+          SET "rotationLeaseOwner"=$1,
+              "rotationLeaseExpiresAt"=now()+($3*interval '1 millisecond'),
+              "updatedAt"=now()
+        WHERE "id"='webhook'
+          AND ("rotationLeaseOwner" IS NULL
+            OR "rotationLeaseExpiresAt"<=now()
+            OR "rotationLeaseOwner"=$1)
+        RETURNING ("appliedSecretVersion"=$2) AS "current"`,
+      [workerId, desiredVersion, Math.max(30_000, leaseMs)],
+    );
+    if (claimed.rowCount !== 1) return "BUSY";
+    return claimed.rows[0]?.current ? "CURRENT" : "CLAIMED";
+  }
+
+  async heartbeatEventSubSecretRotation(
+    workerId: string,
+    leaseMs: number,
+  ): Promise<boolean> {
+    const result = await this.pool.query(
+      `UPDATE "TwitchEventSubReconciliationState"
+          SET "rotationLeaseExpiresAt"=now()+($2*interval '1 millisecond'),
+              "updatedAt"=now()
+        WHERE "id"='webhook' AND "rotationLeaseOwner"=$1
+          AND "rotationLeaseExpiresAt">now()`,
+      [workerId, Math.max(30_000, leaseMs)],
+    );
+    return result.rowCount === 1;
+  }
+
+  async completeEventSubSecretRotation(
+    workerId: string,
+    desiredVersion: string,
+  ): Promise<void> {
+    const result = await this.pool.query(
+      `UPDATE "TwitchEventSubReconciliationState"
+          SET "appliedSecretVersion"=$2, "rotationLeaseOwner"=NULL,
+              "rotationLeaseExpiresAt"=NULL, "updatedAt"=now()
+        WHERE "id"='webhook' AND "rotationLeaseOwner"=$1
+          AND "rotationLeaseExpiresAt">now()`,
+      [workerId, desiredVersion],
+    );
+    if (result.rowCount !== 1)
+      throw new Error("TWITCH_EVENTSUB_ROTATION_LEASE_LOST");
+  }
+
+  async releaseEventSubSecretRotation(workerId: string): Promise<void> {
+    await this.pool.query(
+      `UPDATE "TwitchEventSubReconciliationState"
+          SET "rotationLeaseOwner"=NULL, "rotationLeaseExpiresAt"=NULL,
+              "updatedAt"=now()
+        WHERE "id"='webhook' AND "rotationLeaseOwner"=$1`,
+      [workerId],
+    );
   }
 
   async claimNext(

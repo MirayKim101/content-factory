@@ -348,6 +348,11 @@ export type TwitchVodCandidate = Prisma.TwitchVodCandidateModel
  */
 export type TwitchVodIngestIntent = Prisma.TwitchVodIngestIntentModel
 /**
+ * Model TwitchEventSubReconciliationState
+ * Durable fencing for EventSub webhook-secret rotation across worker restarts.
+ */
+export type TwitchEventSubReconciliationState = Prisma.TwitchEventSubReconciliationStateModel
+/**
  * Model VerticalRenderIntent
  * 
  */

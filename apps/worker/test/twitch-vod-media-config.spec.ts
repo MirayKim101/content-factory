@@ -1,9 +1,42 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  twitchEventSubSecretVersion,
   twitchVodAutoIngestConfig,
   twitchVodMediaGatewayConfig,
 } from "../src/config.js";
+
+describe("twitchEventSubSecretVersion", () => {
+  it("requires callback, secret and an explicit rotation version together", () => {
+    expect(twitchEventSubSecretVersion({})).toBeNull();
+    expect(() =>
+      twitchEventSubSecretVersion({
+        TWITCH_EVENTSUB_CALLBACK_URL:
+          "https://content.example.test/api/v1/twitch/eventsub",
+        TWITCH_EVENTSUB_SECRET: "secret",
+      }),
+    ).toThrow("CONFIG_TWITCH_EVENTSUB_CALLBACK_SECRET_AND_VERSION_REQUIRED");
+    expect(
+      twitchEventSubSecretVersion({
+        TWITCH_EVENTSUB_CALLBACK_URL:
+          "https://content.example.test/api/v1/twitch/eventsub",
+        TWITCH_EVENTSUB_SECRET: "secret",
+        TWITCH_EVENTSUB_SECRET_VERSION: "rotation-2026-10",
+      }),
+    ).toBe("rotation-2026-10");
+  });
+
+  it("rejects versions that are unsafe for durable comparison", () => {
+    expect(() =>
+      twitchEventSubSecretVersion({
+        TWITCH_EVENTSUB_CALLBACK_URL:
+          "https://content.example.test/api/v1/twitch/eventsub",
+        TWITCH_EVENTSUB_SECRET: "secret",
+        TWITCH_EVENTSUB_SECRET_VERSION: "bad version",
+      }),
+    ).toThrow("CONFIG_TWITCH_EVENTSUB_SECRET_VERSION_INVALID");
+  });
+});
 
 describe("twitchVodMediaGatewayConfig", () => {
   it("is default-off and requires secrets only when enabled", () => {

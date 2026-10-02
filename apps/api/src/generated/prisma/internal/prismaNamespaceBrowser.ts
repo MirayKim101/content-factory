@@ -117,6 +117,7 @@ export const ModelName = {
   TwitchEventInbox: 'TwitchEventInbox',
   TwitchVodCandidate: 'TwitchVodCandidate',
   TwitchVodIngestIntent: 'TwitchVodIngestIntent',
+  TwitchEventSubReconciliationState: 'TwitchEventSubReconciliationState',
   VerticalRenderIntent: 'VerticalRenderIntent',
   VerticalRenderResult: 'VerticalRenderResult',
   VerticalApproval: 'VerticalApproval',
@@ -1529,6 +1530,17 @@ export const TwitchVodIngestIntentScalarFieldEnum = {
 } as const
 
 export type TwitchVodIngestIntentScalarFieldEnum = (typeof TwitchVodIngestIntentScalarFieldEnum)[keyof typeof TwitchVodIngestIntentScalarFieldEnum]
+
+
+export const TwitchEventSubReconciliationStateScalarFieldEnum = {
+  id: 'id',
+  appliedSecretVersion: 'appliedSecretVersion',
+  rotationLeaseOwner: 'rotationLeaseOwner',
+  rotationLeaseExpiresAt: 'rotationLeaseExpiresAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchEventSubReconciliationStateScalarFieldEnum = (typeof TwitchEventSubReconciliationStateScalarFieldEnum)[keyof typeof TwitchEventSubReconciliationStateScalarFieldEnum]
 
 
 export const VerticalRenderIntentScalarFieldEnum = {

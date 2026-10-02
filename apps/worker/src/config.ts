@@ -115,6 +115,22 @@ export interface TwitchVodMediaGatewayConfig {
   timeoutMs: number;
 }
 
+export function twitchEventSubSecretVersion(
+  environment: NodeJS.ProcessEnv,
+): string | null {
+  const callback = environment.TWITCH_EVENTSUB_CALLBACK_URL?.trim();
+  const secret = environment.TWITCH_EVENTSUB_SECRET?.trim();
+  const version = environment.TWITCH_EVENTSUB_SECRET_VERSION?.trim();
+  if (!callback && !secret && !version) return null;
+  if (!callback || !secret || !version)
+    throw new Error(
+      "CONFIG_TWITCH_EVENTSUB_CALLBACK_SECRET_AND_VERSION_REQUIRED",
+    );
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(version))
+    throw new Error("CONFIG_TWITCH_EVENTSUB_SECRET_VERSION_INVALID");
+  return version;
+}
+
 export function twitchVodAutoIngestConfig(
   environment: NodeJS.ProcessEnv,
 ): TwitchVodMediaGatewayConfig | null {

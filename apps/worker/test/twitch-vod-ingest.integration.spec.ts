@@ -18,6 +18,13 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
   () => {
     it("claims work fairly across channels", async () => {
       const config = workerConfig();
+      // This test exercises the singleton rotation state and requires an isolated DB.
+      if (
+        !new URL(config.databaseUrl).pathname.startsWith(
+          "/cf_eventsub_rotation_",
+        )
+      )
+        throw new Error("TEST_EVENTSUB_ROTATION_DISPOSABLE_DATABASE_REQUIRED");
       const pool = new Pool({ connectionString: config.databaseUrl });
       const repository = new PgTwitchIngestionWorkerRepository(
         config.databaseUrl,
@@ -29,8 +36,87 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
       const recentIntentId = randomUUID();
       const waitingIntentId = randomUUID();
       const suffix = Date.now().toString();
+      const priorRotation = await pool.query<{
+        appliedSecretVersion: string | null;
+        rotationLeaseOwner: string | null;
+        rotationLeaseExpiresAt: Date | null;
+      }>(
+        `SELECT "appliedSecretVersion", "rotationLeaseOwner", "rotationLeaseExpiresAt"
+           FROM "TwitchEventSubReconciliationState" WHERE "id"='webhook'`,
+      );
 
       try {
+        await pool.query(
+          `DELETE FROM "TwitchEventSubReconciliationState" WHERE "id"='webhook'`,
+        );
+        await expect(
+          repository.claimEventSubSecretRotation(
+            "rotation-worker-a",
+            "secret-v1",
+            60_000,
+          ),
+        ).resolves.toBe("CLAIMED");
+        await expect(
+          repository.claimEventSubSecretRotation(
+            "rotation-worker-b",
+            "secret-v1",
+            60_000,
+          ),
+        ).resolves.toBe("BUSY");
+        await expect(
+          repository.heartbeatEventSubSecretRotation(
+            "rotation-worker-a",
+            60_000,
+          ),
+        ).resolves.toBe(true);
+        await repository.completeEventSubSecretRotation(
+          "rotation-worker-a",
+          "secret-v1",
+        );
+        await expect(
+          repository.claimEventSubSecretRotation(
+            "rotation-worker-b",
+            "secret-v1",
+            60_000,
+          ),
+        ).resolves.toBe("CURRENT");
+        await expect(
+          repository.claimEventSubSecretRotation(
+            "rotation-worker-a",
+            "secret-v2",
+            60_000,
+          ),
+        ).resolves.toBe("BUSY");
+        await expect(
+          repository.claimEventSubSecretRotation(
+            "rotation-worker-b",
+            "secret-v2",
+            60_000,
+          ),
+        ).resolves.toBe("CLAIMED");
+        await pool.query(
+          `UPDATE "TwitchEventSubReconciliationState"
+             SET "rotationLeaseExpiresAt"=now()-interval '1 second'
+           WHERE "id"='webhook'`,
+        );
+        await expect(
+          repository.claimEventSubSecretRotation(
+            "rotation-worker-a",
+            "secret-v2",
+            60_000,
+          ),
+        ).resolves.toBe("CLAIMED");
+        await expect(
+          repository.completeEventSubSecretRotation(
+            "rotation-worker-b",
+            "secret-v2",
+          ),
+        ).rejects.toThrow("TWITCH_EVENTSUB_ROTATION_LEASE_LOST");
+        await repository.releaseEventSubSecretRotation("rotation-worker-b");
+        await repository.completeEventSubSecretRotation(
+          "rotation-worker-a",
+          "secret-v2",
+        );
         await pool.query(
           `INSERT INTO "TwitchIngestChannel" ("id","broadcasterId","broadcasterLogin","broadcasterDisplayName","state","ingestDelaySeconds","lastIngestClaimedAt","createdAt","updatedAt")
            VALUES ($1,$2,$3,'Recent','ENABLED',60,now(),now(),now()),
@@ -207,6 +293,21 @@ describe.skipIf(process.env.RUN_TWITCH_INGEST_INTEGRATION !== "1")(
           projectExists: false,
         });
       } finally {
+        await pool.query(
+          `DELETE FROM "TwitchEventSubReconciliationState" WHERE "id"='webhook'`,
+        );
+        const previous = priorRotation.rows[0];
+        if (previous)
+          await pool.query(
+            `INSERT INTO "TwitchEventSubReconciliationState"
+               ("id","appliedSecretVersion","rotationLeaseOwner","rotationLeaseExpiresAt","updatedAt")
+             VALUES ('webhook',$1,$2,$3,now())`,
+            [
+              previous.appliedSecretVersion,
+              previous.rotationLeaseOwner,
+              previous.rotationLeaseExpiresAt,
+            ],
+          );
         await pool.query(
           `DELETE FROM "TwitchVodIngestIntent" WHERE "id" = ANY($1::uuid[])`,
           [[recentIntentId, waitingIntentId]],

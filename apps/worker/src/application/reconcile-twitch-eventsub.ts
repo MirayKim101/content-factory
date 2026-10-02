@@ -2,13 +2,19 @@ export interface TwitchEventSubProvider {
   listWebhookSubscriptions(
     signal?: AbortSignal,
   ): Promise<
-    Array<{ id: string; type: string; broadcasterId: string; callback: string }>
+    Array<{
+      id: string;
+      type: string;
+      broadcasterId: string;
+      callback: string;
+      active?: boolean;
+    }>
   >;
   createWebhookSubscription(
     type: "stream.online" | "stream.offline",
     broadcasterId: string,
     signal?: AbortSignal,
-  ): Promise<void>;
+  ): Promise<boolean>;
   deleteWebhookSubscription(id: string, signal?: AbortSignal): Promise<void>;
 }
 
@@ -21,22 +27,37 @@ export class ReconcileTwitchEventSub {
   async execute(
     broadcasterIds: string[],
     signal?: AbortSignal,
+    options: {
+      recreateAll?: boolean;
+      onProgress?: () => Promise<void>;
+    } = {},
   ): Promise<{ created: number; deleted: number }> {
     signal?.throwIfAborted();
     const allowed = new Set(broadcasterIds);
-    const managed = (
-      await this.provider.listWebhookSubscriptions(signal)
-    ).filter((item) => item.callback === this.callback);
+    let managed = (await this.provider.listWebhookSubscriptions(signal)).filter(
+      (item) => item.callback === this.callback,
+    );
+    await options.onProgress?.();
     let deleted = 0;
     for (const item of managed) {
       signal?.throwIfAborted();
-      if (allowed.has(item.broadcasterId)) continue;
+      if (
+        !options.recreateAll &&
+        item.active !== false &&
+        allowed.has(item.broadcasterId)
+      )
+        continue;
+      await options.onProgress?.();
       await this.provider.deleteWebhookSubscription(item.id, signal);
+      await options.onProgress?.();
       deleted += 1;
     }
+    if (options.recreateAll) managed = [];
     const existing = new Set(
       managed
-        .filter((item) => allowed.has(item.broadcasterId))
+        .filter(
+          (item) => item.active !== false && allowed.has(item.broadcasterId),
+        )
         .map((item) => `${item.type}:${item.broadcasterId}`),
     );
     let created = 0;
@@ -45,13 +66,17 @@ export class ReconcileTwitchEventSub {
         signal?.throwIfAborted();
         const key = `${type}:${broadcasterId}`;
         if (existing.has(key)) continue;
-        await this.provider.createWebhookSubscription(
+        await options.onProgress?.();
+        const createdNow = await this.provider.createWebhookSubscription(
           type,
           broadcasterId,
           signal,
         );
+        if (options.recreateAll && !createdNow)
+          throw new Error("TWITCH_EVENTSUB_ROTATION_CONFLICT");
+        await options.onProgress?.();
         existing.add(key);
-        created += 1;
+        if (createdNow) created += 1;
       }
     }
     return { created, deleted };

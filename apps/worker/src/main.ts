@@ -17,6 +17,7 @@ import { FfmpegFrameExtractor } from "./infrastructure/ffmpeg-frame-extractor.js
 import {
   clipGenerationConfig,
   publicationWorkerAdmissionEnabled,
+  twitchEventSubSecretVersion,
   twitchVodAutoIngestConfig,
   tiktokPublishingConfig,
   workerConfig,
@@ -210,6 +211,7 @@ async function startTwitchWorker(): Promise<void> {
   const staticAccessToken = process.env.TWITCH_APP_ACCESS_TOKEN?.trim();
   const eventSubCallback = process.env.TWITCH_EVENTSUB_CALLBACK_URL?.trim();
   const eventSubSecret = process.env.TWITCH_EVENTSUB_SECRET?.trim();
+  const eventSubSecretVersion = twitchEventSubSecretVersion(process.env);
   if (!clientSecret && !staticAccessToken)
     throw new Error("CONFIG_TWITCH_CLIENT_SECRET_OR_APP_ACCESS_TOKEN_REQUIRED");
   const tokenResolver = clientSecret
@@ -239,10 +241,8 @@ async function startTwitchWorker(): Promise<void> {
     repository,
     new TwitchHelixClient(clientId, tokenProvider),
   );
-  if (Boolean(eventSubCallback) !== Boolean(eventSubSecret))
-    throw new Error("CONFIG_TWITCH_EVENTSUB_CALLBACK_AND_SECRET_REQUIRED");
   const eventSubReconciler =
-    eventSubCallback && eventSubSecret
+    eventSubCallback && eventSubSecret && eventSubSecretVersion
       ? new ReconcileTwitchEventSub(
           new TwitchEventSubClient(
             clientId,
@@ -257,15 +257,45 @@ async function startTwitchWorker(): Promise<void> {
   const controlAbort = new AbortController();
   const controlReconciliation = new SingleFlightTask(async () => {
     let subscriptionChanges = { created: 0, deleted: 0 };
-    if (eventSubReconciler && Date.now() >= nextEventSubReconciliationAt) {
+    if (
+      eventSubReconciler &&
+      eventSubSecretVersion &&
+      Date.now() >= nextEventSubReconciliationAt
+    ) {
       try {
-        subscriptionChanges = await eventSubReconciler.execute(
-          await repository.enabledBroadcasterIds(),
-          controlAbort.signal,
+        const rotation = await repository.claimEventSubSecretRotation(
+          workerId,
+          eventSubSecretVersion,
+          TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS,
         );
+        if (rotation !== "BUSY") {
+          subscriptionChanges = await eventSubReconciler.execute(
+            await repository.enabledBroadcasterIds(),
+            controlAbort.signal,
+            {
+              recreateAll: rotation === "CLAIMED",
+              onProgress: async () => {
+                if (
+                  !(await repository.heartbeatEventSubSecretRotation(
+                    workerId,
+                    TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS,
+                  ))
+                )
+                  throw new Error("TWITCH_EVENTSUB_ROTATION_LEASE_LOST");
+              },
+            },
+          );
+          await repository.completeEventSubSecretRotation(
+            workerId,
+            eventSubSecretVersion,
+          );
+        }
         nextEventSubReconciliationAt =
           Date.now() + TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS;
       } catch (error) {
+        await repository
+          .releaseEventSubSecretRotation(workerId)
+          .catch(() => undefined);
         if (controlAbort.signal.aborted)
           throw controlAbort.signal.reason ?? error;
         console.error(

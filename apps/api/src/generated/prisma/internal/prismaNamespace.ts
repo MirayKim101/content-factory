@@ -463,6 +463,7 @@ export const ModelName = {
   TwitchEventInbox: 'TwitchEventInbox',
   TwitchVodCandidate: 'TwitchVodCandidate',
   TwitchVodIngestIntent: 'TwitchVodIngestIntent',
+  TwitchEventSubReconciliationState: 'TwitchEventSubReconciliationState',
   VerticalRenderIntent: 'VerticalRenderIntent',
   VerticalRenderResult: 'VerticalRenderResult',
   VerticalApproval: 'VerticalApproval',
@@ -484,7 +485,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationProviderSession" | "publicationResult" | "publicationMetricSnapshot" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact" | "twitchIngestChannel" | "twitchEventInbox" | "twitchVodCandidate" | "twitchVodIngestIntent" | "verticalRenderIntent" | "verticalRenderResult" | "verticalApproval" | "clipGenerationIntent" | "clipGenerationSuggestion" | "clipGenerationAcceptance"
+    modelProps: "project" | "videoSource" | "sourceAuthorization" | "mediaArtifact" | "cutRequest" | "pipelineJob" | "montageAsset" | "assemblyRecipe" | "assemblyRecipeRevision" | "assemblyRecipeAssetReference" | "assemblyRecipeMutationRequest" | "assemblyRenderIntent" | "assemblyRenderRequest" | "assemblyRenderResult" | "processingTemplate" | "processingTemplateRevision" | "editorialAsset" | "editorialPackage" | "editorialPackageRevision" | "editorialMutationRequest" | "editorialApproval" | "editorialApprovalComponentSnapshot" | "editorialApprovalEconomicsV2" | "editorialApprovalMetrics" | "editorialOperationRequest" | "editorialExportIntent" | "editorialExportResult" | "publicationChannel" | "publicationIntent" | "publicationProviderSession" | "publicationResult" | "publicationMetricSnapshot" | "cutSegment" | "jobAttempt" | "creatorProfile" | "creatorProfileOfficialUrlIdentity" | "creatorProfileRevision" | "creatorReferenceAsset" | "creatorReferenceAuthorizationRevision" | "sourceEditorialContext" | "sourceEditorialContextRevision" | "cutEditorialPrompt" | "cutEditorialPromptRevision" | "aiContentOperationRequest" | "editorialComponentProvenance" | "frameEvidenceIntent" | "frameExtractionPool" | "frameExtractionSlot" | "frameEvidenceAttempt" | "frameEvidenceAttemptOutput" | "frameEvidenceResult" | "frameEvidenceFrame" | "transcriptEvidenceIntent" | "researchSuggestionIntent" | "researchCitation" | "researchSuggestionAttempt" | "researchSuggestionSet" | "imageSuggestionIntent" | "imageSuggestionAttempt" | "imageSuggestionCandidate" | "transcriptEvidenceAttempt" | "transcriptEvidenceArtifact" | "twitchIngestChannel" | "twitchEventInbox" | "twitchVodCandidate" | "twitchVodIngestIntent" | "twitchEventSubReconciliationState" | "verticalRenderIntent" | "verticalRenderResult" | "verticalApproval" | "clipGenerationIntent" | "clipGenerationSuggestion" | "clipGenerationAcceptance"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5372,6 +5373,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TwitchEventSubReconciliationState: {
+      payload: Prisma.$TwitchEventSubReconciliationStatePayload<ExtArgs>
+      fields: Prisma.TwitchEventSubReconciliationStateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TwitchEventSubReconciliationStateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TwitchEventSubReconciliationStateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>
+        }
+        findFirst: {
+          args: Prisma.TwitchEventSubReconciliationStateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TwitchEventSubReconciliationStateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>
+        }
+        findMany: {
+          args: Prisma.TwitchEventSubReconciliationStateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>[]
+        }
+        create: {
+          args: Prisma.TwitchEventSubReconciliationStateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>
+        }
+        createMany: {
+          args: Prisma.TwitchEventSubReconciliationStateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TwitchEventSubReconciliationStateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>[]
+        }
+        delete: {
+          args: Prisma.TwitchEventSubReconciliationStateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>
+        }
+        update: {
+          args: Prisma.TwitchEventSubReconciliationStateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>
+        }
+        deleteMany: {
+          args: Prisma.TwitchEventSubReconciliationStateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TwitchEventSubReconciliationStateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TwitchEventSubReconciliationStateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>[]
+        }
+        upsert: {
+          args: Prisma.TwitchEventSubReconciliationStateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwitchEventSubReconciliationStatePayload>
+        }
+        aggregate: {
+          args: Prisma.TwitchEventSubReconciliationStateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTwitchEventSubReconciliationState>
+        }
+        groupBy: {
+          args: Prisma.TwitchEventSubReconciliationStateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchEventSubReconciliationStateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TwitchEventSubReconciliationStateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwitchEventSubReconciliationStateCountAggregateOutputType> | number
+        }
+      }
+    }
     VerticalRenderIntent: {
       payload: Prisma.$VerticalRenderIntentPayload<ExtArgs>
       fields: Prisma.VerticalRenderIntentFieldRefs
@@ -7245,6 +7320,17 @@ export const TwitchVodIngestIntentScalarFieldEnum = {
 export type TwitchVodIngestIntentScalarFieldEnum = (typeof TwitchVodIngestIntentScalarFieldEnum)[keyof typeof TwitchVodIngestIntentScalarFieldEnum]
 
 
+export const TwitchEventSubReconciliationStateScalarFieldEnum = {
+  id: 'id',
+  appliedSecretVersion: 'appliedSecretVersion',
+  rotationLeaseOwner: 'rotationLeaseOwner',
+  rotationLeaseExpiresAt: 'rotationLeaseExpiresAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwitchEventSubReconciliationStateScalarFieldEnum = (typeof TwitchEventSubReconciliationStateScalarFieldEnum)[keyof typeof TwitchEventSubReconciliationStateScalarFieldEnum]
+
+
 export const VerticalRenderIntentScalarFieldEnum = {
   id: 'id',
   idempotencyKey: 'idempotencyKey',
@@ -8290,6 +8376,7 @@ export type GlobalOmitConfig = {
   twitchEventInbox?: Prisma.TwitchEventInboxOmit
   twitchVodCandidate?: Prisma.TwitchVodCandidateOmit
   twitchVodIngestIntent?: Prisma.TwitchVodIngestIntentOmit
+  twitchEventSubReconciliationState?: Prisma.TwitchEventSubReconciliationStateOmit
   verticalRenderIntent?: Prisma.VerticalRenderIntentOmit
   verticalRenderResult?: Prisma.VerticalRenderResultOmit
   verticalApproval?: Prisma.VerticalApprovalOmit
