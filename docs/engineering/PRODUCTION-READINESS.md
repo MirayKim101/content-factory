@@ -69,10 +69,12 @@ OS/FFmpeg baseline replacement needs a material ADR, measured candidate scans,
 compatibility/resource/output evidence and an independent review; it is not an
 unreviewed transitive override or a promise that another distribution is clean.
 
-ADR-010 still carries a `proposed` header despite task-level local acceptance.
-An architect is reconciling this approval record. Until clarified, do not infer
-new external Stage 3 authority from local acceptance. Current runtime preparation
-uses accepted Stage 1/2 boundaries and ADR-011, with external admission disabled.
+ADR-010 is accepted only for the local/default-off implementation, following
+the architect decision and independent scope review on 2026-10-03. External
+provider rollout and production deployment remain unapproved. This status
+correction grants no credentials, feature flags, storage selection or security
+exception. Runtime preparation remains bounded by ADR-011 with external
+admission disabled; local acceptance is not a credentialed provider canary.
 
 ## Safe order of remaining work
 

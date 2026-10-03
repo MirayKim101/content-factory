@@ -1,6 +1,6 @@
 # ADR-010: Stage 3 ingestion, vertical и publishing boundaries
 
-- Статус: proposed
+- Статус: accepted (local/default-off implementation only; external provider rollout and production deployment remain unapproved; Content Factory architect decision 2026-10-03)
 - Дата: 2026-09-27
 - Область: Stage 3
 
