@@ -5451,12 +5451,19 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description Recent clip generation intents */
+      /** @description Recent clip generation intents and effective write admission */
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          "application/json": {
+            generationEnabled: boolean;
+            items: {
+              [key: string]: unknown;
+            }[];
+          };
+        };
       };
     };
   };

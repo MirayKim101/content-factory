@@ -26,6 +26,10 @@
 
 1. Выключенный flag запрещает новый create до записи строки, но история и
    ручная нарезка доступны.
+   GET detail/list не требуют write admission; list возвращает эффективный
+   `generationEnabled` (flag + model + queue). При rollback UI сохраняет
+   историю и просмотр, но блокирует create/accept; отсутствующая capability
+   старого API трактуется fail-closed, не как разрешение новых задач.
 2. `.env.example` и compose описывают default-off конфигурацию без secrets.
 3. UI позволяет запустить генерацию только с валидным transcript и явным
    external-transfer consent, показывает progress/failure и ручной fallback.

@@ -9527,7 +9527,27 @@
         ],
         "responses": {
           "200": {
-            "description": "Recent clip generation intents"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "generationEnabled": {
+                      "type": "boolean"
+                    },
+                    "items": {
+                      "items": {
+                        "additionalProperties": true,
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": ["items", "generationEnabled"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Recent clip generation intents and effective write admission"
           }
         },
         "tags": ["clip-generation"]

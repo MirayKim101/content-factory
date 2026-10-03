@@ -44,6 +44,9 @@ const query = useQuery({
   retry: false,
 });
 const latest = computed(() => query.data.value?.items[0]);
+const generationEnabled = computed(
+  () => query.data.value?.generationEnabled === true && !query.isError.value,
+);
 const unavailable = computed(
   () =>
     query.error.value instanceof ClipGenerationApiError &&
@@ -110,6 +113,7 @@ const create = useMutation({
 const canCreate = computed(
   () =>
     parsedTranscript.value.cues.length > 0 &&
+    generationEnabled.value &&
     transferAllowed.value &&
     !generationActive.value &&
     !create.isPending.value,
@@ -150,11 +154,7 @@ function toggleAll(): void {
 </script>
 
 <template>
-  <section
-    v-if="!unavailable"
-    class="ai-panel"
-    aria-labelledby="ai-clips-title"
-  >
+  <section class="ai-panel" aria-labelledby="ai-clips-title">
     <div class="panel-heading">
       <div>
         <p class="panel-kicker">AI-помощник · решение принимает редактор</p>
@@ -169,15 +169,22 @@ function toggleAll(): void {
       >
     </div>
     <p v-if="query.isLoading.value" role="status">Проверяем рекомендации…</p>
+    <p v-else-if="unavailable" role="status">
+      AI-анализ выключен. Используйте ручные отрезки выше.
+    </p>
     <div v-else-if="query.isError.value" class="inline-error" role="alert">
       Не удалось получить рекомендации.
       <button type="button" @click="query.refetch()">Повторить</button>
     </div>
+    <p v-else-if="!generationEnabled" role="status">
+      AI-анализ выключен. История доступна; новые задания из рекомендаций не
+      запускаются. Используйте ручные отрезки выше.
+    </p>
     <div v-else class="generation-form">
       <div>
         <strong>Новый анализ</strong>
         <p>
-          Вставьте SRT или WebVTT с точными таймкодами. Ручная нарезка ниже
+          Вставьте SRT или WebVTT с точными таймкодами. Ручная нарезка выше
           продолжает работать независимо.
         </p>
       </div>
@@ -300,7 +307,11 @@ function toggleAll(): void {
         </p>
         <Button
           type="button"
-          :disabled="validSelection.length === 0 || accept.isPending.value"
+          :disabled="
+            !generationEnabled ||
+            validSelection.length === 0 ||
+            accept.isPending.value
+          "
           @click="accept.mutate()"
           >{{
             accept.isPending.value

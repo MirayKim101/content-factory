@@ -98,18 +98,32 @@ export class ClipGenerationController implements OnModuleDestroy {
   detail(
     @Param("intentId", new ParseUUIDPipe({ version: "4" })) intentId: string,
   ) {
-    this.requireEnabled();
     return this.service.detail(intentId);
   }
 
   @Get("projects/:projectId/clip-generations")
   @ApiParam({ name: "projectId", format: "uuid" })
-  @ApiOkResponse({ description: "Recent clip generation intents" })
+  @ApiOkResponse({
+    description: "Recent clip generation intents and effective write admission",
+    schema: {
+      type: "object",
+      required: ["items", "generationEnabled"],
+      properties: {
+        items: {
+          type: "array",
+          items: { type: "object", additionalProperties: true },
+        },
+        generationEnabled: { type: "boolean" },
+      },
+    },
+  })
   list(
     @Param("projectId", new ParseUUIDPipe({ version: "4" })) projectId: string,
   ) {
-    this.requireEnabled();
-    return this.service.list(projectId).then((items) => ({ items }));
+    return this.service.list(projectId).then((items) => ({
+      items,
+      generationEnabled: this.isEnabled(),
+    }));
   }
 
   @Post("clip-generations/:intentId/accept")
@@ -142,13 +156,15 @@ export class ClipGenerationController implements OnModuleDestroy {
     return toCreateCutsResponse(result);
   }
 
-  private requireEnabled(): void {
+  private isEnabled(): boolean {
     const config = apiEnvironment();
-    if (
-      !config.clipGenerationEnabled ||
-      !config.clipGenerationModel ||
-      !this.queue
-    )
+    return Boolean(
+      config.clipGenerationEnabled && config.clipGenerationModel && this.queue,
+    );
+  }
+
+  private requireEnabled(): void {
+    if (!this.isEnabled())
       throw new ServiceUnavailableException({
         code: "CLIP_GENERATION_DISABLED",
         message: "AI clip generation is disabled.",

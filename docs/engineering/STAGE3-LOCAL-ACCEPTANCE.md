@@ -233,9 +233,8 @@
   reclaim блокирует stale finalize, две provider errors дают terminal state,
   а intent другого provider, model или prompt остаётся `QUEUED` без вызова
   неверного adapter/revision.
-  Браузерная проверка enabled consent/selection/navigation выполнена на
-  1440/390 px с перехваченными API writes (см. ниже). До полной UI-приёмки
-  остаются disabled/idempotent-retry/manual-fallback сценарии.
+  Браузерная проверка enabled/disabled/idempotent-retry/manual-fallback
+  выполнена на 1440/390 px с перехваченными API writes (см. ниже).
 - Clip-generation API persistence `2/2` на PostgreSQL подтверждает exact
   idempotent replay, conflict при изменённом payload и отсутствие intent при
   missing external-transfer consent либо local-auto authorization.
@@ -263,13 +262,13 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     255/255 unit tests (253 regular + 2 OpenAPI with 20 s timeout on local Node 22)
+API:     259/259 unit tests (Node 24.15.0, 20 s deadline for subprocess OpenAPI tests)
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
-Clip-generation API real PostgreSQL: 2/2
+Clip-generation API real PostgreSQL: 3/3 (including disabled rollback history/read-write fence)
 Worker:  342/342 unit tests
 Worker lease recovery real PostgreSQL: 12/12
-Web:     274/274 tests
+Web:     277/277 tests
 Twitch ingest real PostgreSQL + MinIO: 2/2 (transfer + cross-channel fairness)
 Vertical real Docker FFmpeg render/decode: 1/1
 Fresh PostgreSQL migration: 45/45, 74 public tables, 0 unvalidated constraints
@@ -321,6 +320,48 @@ runtime flags доступность selectors может отличаться; 
 требует enabled project controls и material type filter текущего local setup.
 Rollback: удалить только smoke script и этот evidence block; runtime/schema
 не изменены.
+
+### Clip rollback and browser checkpoint 2026-10-03
+
+Исправлен read/write admission: GET list/detail возвращают сохранённую историю
+даже при `CLIP_GENERATION_ENABLED=0`; POST create/accept остаются закрыты до
+любой записи. List содержит эффективный `generationEnabled`, учитывающий flag,
+model и доступность queue. UI показывает историю и объяснение rollback, не
+предлагает новые AI задачи; отсутствие capability у старого API fail-closed.
+Описание «ручные отрезки выше» соответствует расположению формы.
+
+Расширенный `scripts/browser-stage3-smoke.cjs` воспроизведён в Edge:
+8 сценариев (enabled/retry/disabled/query-failure × 1440/390 px) плюс 10 Select
+overlays. Принудительная потеря ответа create и accept допускает отдельный
+ручной retry с теми же exact payload/idempotency key; успешный acceptance один
+раз переводит к job ID. При выключенном анализе READY history остаётся видимой,
+acceptance выключен; при отказе history API видна контролируемая ошибка.
+В обоих случаях ручные границы 1–20 секунд оставляют manual submit доступным.
+Все API запросы clip-сценариев перехвачены, поэтому это не live media render,
+не настоящая внешняя публикация и не качество provider.
+
+Gate среза: API 259/259, web 277/277; API/web typecheck, lint, build и OpenAPI
+generation/drift checks прошли. Первый запуск некорректно передал timeout через
+дополнительный `--`; default 5 секунд оказался недостаточен для двух OpenAPI
+subprocess tests как на Node 22, так и на Node 24. Только эти тесты получили
+явный 20-секундный deadline; обычный `pnpm --filter @content-factory/api test`
+прошёл без command-line overrides. Добавлена проверка capability в реальном
+экспортированном schema, остальные assertions не ослаблены.
+
+Финальные API tests/typecheck/build/lint и web tests/typecheck/build выполнены
+на Node 24.15.0, извлечённом из уже закреплённого worker image в ignored
+`tmp/runtime-node24/node`; системный Node не изменён, новых images/dependencies
+не загружали. Windows browser runner использует bundled Node 24.19.0.
+Real PostgreSQL integration 3/3 проверяет также controller list/detail после
+rollback, disabled mutations до persistence и ровно один сохранённый intent.
+Random fixture rows удалены штатным exact-ID teardown; migrations не изменены.
+После roll-forward локальный API запущен на Node 24.15.0 с прежними default-off
+admission flags. HTTP через same-origin 3100 вернул health 200 и history list
+200 с `generationEnabled=false`; внешний provider не вызывался.
+
+Rollback поведения: вернуть прежние controller/UI/OpenAPI вместе; миграции и
+durable history не изменены. Старый UI против нового API безопасен, новый UI
+против старого API блокирует AI writes, сохраняя независимую manual cutting.
 
 Publication repository дополнительно воспроизведён на отдельной базе, созданной
 из всех migration SQL: exact idempotent replay/conflict, atomic channel revoke,

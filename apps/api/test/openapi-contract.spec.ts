@@ -603,7 +603,20 @@ describe("authoritative OpenAPI export", () => {
     expect(() =>
       assertArtifactMatches(first, `${second} `, "OpenAPI JSON"),
     ).toThrow(/OpenAPI JSON drift detected/);
-  });
+    expect(
+      document.paths["/api/v1/projects/{projectId}/clip-generations"]?.get
+        ?.responses?.["200"],
+    ).toMatchObject({
+      content: {
+        "application/json": {
+          schema: {
+            required: ["items", "generationEnabled"],
+            properties: { generationEnabled: { type: "boolean" } },
+          },
+        },
+      },
+    });
+  }, 20_000);
 
   it("fails the frontend contract check for stale JSON and generated types", async () => {
     const staleSchema = join(temporaryDirectory, "stale-openapi.json");
@@ -630,7 +643,7 @@ describe("authoritative OpenAPI export", () => {
     expect(result.output).toContain(
       "app/shared/api/generated/openapi.ts differs from generated types",
     );
-  });
+  }, 20_000);
 });
 
 async function runNode(arguments_: string[]): Promise<{

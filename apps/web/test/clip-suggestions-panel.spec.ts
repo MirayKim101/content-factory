@@ -62,7 +62,9 @@ beforeEach(() => {
     public: { apiBasePath: "/api/v1" },
   }));
   api.create.mockReset();
-  api.list.mockReset().mockResolvedValue({ items: [] });
+  api.list
+    .mockReset()
+    .mockResolvedValue({ items: [], generationEnabled: true });
   api.accept.mockReset();
 });
 
@@ -72,6 +74,72 @@ afterEach(() => {
 });
 
 describe("ClipSuggestionsPanel", () => {
+  it("retains history and disables generation/acceptance on rollback", async () => {
+    api.list.mockResolvedValue({
+      generationEnabled: false,
+      items: [
+        {
+          id: "intent-1",
+          state: "READY",
+          provider: "LOCAL_FIXTURE",
+          model: "fixture",
+          suggestions: [
+            {
+              id: "suggestion-1",
+              startMs: 1000,
+              endMs: 20000,
+              title: "Historical moment",
+              rationale: "Saved result",
+              confidenceBasisPoints: 0,
+            },
+          ],
+        },
+      ],
+    });
+    const wrapper = setup();
+    await flushPromises();
+    expect(wrapper.text()).toContain("История доступна");
+    expect(wrapper.text()).toContain("Historical moment");
+    expect(wrapper.find("#clip-transcript").exists()).toBe(false);
+    await wrapper
+      .findAll("button")
+      .find((button) => button.text() === "Выбрать все")!
+      .trigger("click");
+    await flushPromises();
+    const accept = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Нарезать выбранное"));
+    expect(accept?.text()).toContain("Нарезать выбранное (1)");
+    expect(accept?.attributes("disabled")).toBeDefined();
+    expect(api.create).not.toHaveBeenCalled();
+    expect(api.accept).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  it("reuses the create idempotency key after an unknown network result", async () => {
+    api.create
+      .mockRejectedValueOnce(new Error("Network unavailable"))
+      .mockResolvedValueOnce({ id: "intent-1" });
+    const wrapper = setup();
+    await flushPromises();
+    await wrapper
+      .get("#clip-transcript")
+      .setValue("00:00:01,000 --> 00:00:20,000\nMoment");
+    await wrapper.get("#clip-transfer-consent").setValue(true);
+    const action = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Найти моменты"))!;
+    await action.trigger("click");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Network unavailable");
+    await action.trigger("click");
+    await flushPromises();
+    expect(api.create).toHaveBeenCalledTimes(2);
+    expect(api.create.mock.calls[0]?.[0]).toEqual(
+      api.create.mock.calls[1]?.[0],
+    );
+    wrapper.unmount();
+  });
   it("requires a valid timed transcript and explicit transfer consent", async () => {
     api.create.mockResolvedValue({ id: "intent-1" });
     const wrapper = setup();
@@ -104,6 +172,7 @@ describe("ClipSuggestionsPanel", () => {
 
   it("does not present local fixture output as a quality confidence score", async () => {
     api.list.mockResolvedValue({
+      generationEnabled: true,
       items: [
         {
           id: "intent-1",

@@ -323,16 +323,25 @@ SHA-256 `ee75746798fb66614c204f8730f6da9d19346dea182f3a707ae1641d3d0724b7`.
    фиксирует реальное foreground attention, wall clock, direct cost, mode и
    acceptance. Точный пошаговый лист: `STAGE2B6-OPERATOR-ACCEPTANCE.md`. Это
    последний незакрытый pre-Twitch product-acceptance gate.
-3. Завершить браузерные disabled/idempotent-retry/manual-fallback сценарии
-   AI clip panel и операторскую визуальную приёмку. На 2026-10-02 bundled
-   Windows Playwright/Edge из WSL успешно проверил 10 доступных selector
-   overlays на desktop/mobile и enabled consent/selection/job-navigation
-   сценарий с mock API. Скрипт и границы evidence:
+3. Операторская визуальная/quality приёмка остаётся отдельным gate.
+   На 2026-10-03 bundled Windows Playwright/Edge из WSL проверил 10 доступных
+   selector overlays и восемь AI clip enabled/retry/disabled/query-failure
+   сценариев desktop/mobile с mock API, включая ручной fallback. Исправлен
+   доступ к history при disabled flag; write admission остаётся fail-closed.
+   Скрипт и границы evidence:
    `scripts/browser-stage3-smoke.cjs`, `STAGE3-LOCAL-ACCEPTANCE.md`.
 4. Перед production rollout подключить утверждённые Twitch media gateway и
    OAuth credentials YouTube/TikTok, включать admission flags по одному и
    выполнить credentialed canary. До этого внешние записи закрыты, local
    dry-run и весь ручной путь доступны.
+5. Production infrastructure audit 2026-10-03 выявил незакрытые P0:
+   Compose содержит workers и stateful dependencies, но не deployable
+   API/web/закрытый TLS edge; существующий PostgreSQL restore proof не
+   восстанавливает совместно matching metadata и MinIO media. Следующие
+   delivery slices: private production runtime с архитектурно согласованным
+   access boundary, затем согласованный DB/object-storage backup/restore.
+   Generated-client CI не заменяет полный release gate; API/web readiness
+   и operational monitoring также требуют реализации и проверки.
 
 Ручная реклама, ручные обложки и полный локальный horizontal pipeline уже
 существуют. Техническая реализация pre-Twitch Stage 2B завершена; полный

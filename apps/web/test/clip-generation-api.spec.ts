@@ -75,6 +75,18 @@ describe("clip generation API", () => {
       "00000000-0000-4000-8000-000000000002",
     );
     expect(result.items[0]?.suggestions[0]?.startMs).toBe(10_000);
+    expect(result.generationEnabled).toBe(false);
+  });
+
+  it("reads an explicit server admission without enabling a legacy response", async () => {
+    const fetcher = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [], generationEnabled: true })),
+    );
+    expect(
+      (await createClipGenerationApi("/api/v1", fetcher).list("project"))
+        .generationEnabled,
+    ).toBe(true);
   });
 
   it("sends the exact selected suggestion ids with an idempotency key", async () => {

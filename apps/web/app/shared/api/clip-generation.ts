@@ -23,7 +23,11 @@ const intentSchema = z.object({
   updatedAt: z.union([z.iso.datetime(), z.date()]).transform(String),
   suggestions: z.array(suggestionSchema),
 });
-const listSchema = z.object({ items: z.array(intentSchema) });
+const listSchema = z.object({
+  items: z.array(intentSchema),
+  // A previous API may omit capabilities; do not enable writes by assumption.
+  generationEnabled: z.boolean().optional().default(false),
+});
 const cutResponseSchema = z.object({
   requestId: z.uuid(),
   projectId: z.uuid(),

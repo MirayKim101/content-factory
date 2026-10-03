@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { ClipGenerationService } from "../src/ai-content/clip-generation/clip-generation.service.js";
+import { ClipGenerationController } from "../src/ai-content/clip-generation/clip-generation.controller.js";
 import { PrismaService } from "../src/database/prisma.service.js";
 
 describe("clip generation intent persistence (PostgreSQL)", () => {
@@ -91,6 +92,56 @@ describe("clip generation intent persistence (PostgreSQL)", () => {
     expect(
       await prisma.clipGenerationIntent.count({ where: { projectId } }),
     ).toBe(0);
+  });
+
+  it("reads durable history after rollback and rejects mutations without creating a second intent", async () => {
+    const projectId = await createSource("OPERATOR_ATTESTATION");
+    const service = new ClipGenerationService(prisma);
+    const created = await service.create(
+      projectId,
+      `clip-rollback-${randomUUID()}`,
+      request(true),
+    );
+    const previousFlag = process.env.CLIP_GENERATION_ENABLED;
+    process.env.CLIP_GENERATION_ENABLED = "0";
+    const controller = new ClipGenerationController(service, {
+      execute: () => {
+        throw new Error("WRITE_MUST_NOT_RUN");
+      },
+    } as never);
+    try {
+      expect(await controller.list(projectId)).toMatchObject({
+        generationEnabled: false,
+        items: [{ id: created.id }],
+      });
+      expect(await controller.detail(created.id as string)).toMatchObject({
+        id: created.id,
+      });
+      await expect(
+        controller.create(
+          projectId,
+          `clip-denied-${randomUUID()}`,
+          request(true),
+        ),
+      ).rejects.toMatchObject({
+        response: { code: "CLIP_GENERATION_DISABLED" },
+      });
+      await expect(
+        controller.accept(created.id as string, `clip-denied-${randomUUID()}`, {
+          suggestionIds: [randomUUID()],
+        }),
+      ).rejects.toMatchObject({
+        response: { code: "CLIP_GENERATION_DISABLED" },
+      });
+      expect(
+        await prisma.clipGenerationIntent.count({ where: { projectId } }),
+      ).toBe(1);
+    } finally {
+      await controller.onModuleDestroy();
+      if (previousFlag === undefined)
+        delete process.env.CLIP_GENERATION_ENABLED;
+      else process.env.CLIP_GENERATION_ENABLED = previousFlag;
+    }
   });
 
   async function createSource(

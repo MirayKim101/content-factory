@@ -129,127 +129,225 @@ async function selectors(browser) {
 
 async function clips(browser) {
   for (const width of [1440, 390]) {
-    const page = await browser.newPage({ viewport: { width, height: 900 } });
-    const source = {
-      id: suggestionId,
-      status: "READY",
-      sourceVersion: 1,
-      originalFilename: "fixture.mp4",
-      contentType: "video/mp4",
-      sizeBytes: "24",
-      sha256: "a".repeat(64),
-      durationMs: 30000,
-      authorization: {
+    for (const scenario of ["enabled", "retry", "disabled", "query-failure"]) {
+      const page = await browser.newPage({ viewport: { width, height: 900 } });
+      page.setDefaultTimeout(10000);
+      const source = {
+        id: suggestionId,
+        status: "READY",
         sourceVersion: 1,
-        status: "CLEARED",
-        usable: true,
-        revision: 1,
-      },
-    };
-    let created = false;
-    let accepted = 0;
-    await page.route("**/api/v1/**", async (route) => {
-      const request = route.request();
-      const path = new URL(request.url()).pathname;
-      const json = (body) =>
-        route.fulfill({
+        originalFilename: "fixture.mp4",
+        contentType: "video/mp4",
+        sizeBytes: "24",
+        sha256: "a".repeat(64),
+        durationMs: 30000,
+        authorization: {
+          sourceVersion: 1,
+          status: "CLEARED",
+          usable: true,
+          revision: 1,
+        },
+      };
+      let created = scenario === "disabled";
+      let accepted = 0;
+      const createRequests = [];
+      const acceptRequests = [];
+      await page.route("**/api/v1/**", async (route) => {
+        const request = route.request();
+        const path = new URL(request.url()).pathname;
+        const json = (body) =>
+          route.fulfill({
+            contentType: "application/json",
+            body: JSON.stringify(body),
+          });
+        if (path === `/api/v1/projects/${projectId}`)
+          return json({
+            id: projectId,
+            name: "Browser smoke source",
+            status: "SOURCE_READY",
+            rights: null,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            source,
+            artifact: {
+              id: intentId,
+              role: "SOURCE",
+              status: "READY",
+              sizeBytes: "24",
+              sha256: "a".repeat(64),
+              contentType: "video/mp4",
+              lineageSourceId: source.id,
+              lineageSourceVersion: 1,
+              recipeVersion: "fixture",
+            },
+          });
+        if (path.endsWith("/clip-generations")) {
+          if (request.method() === "GET") {
+            if (scenario === "query-failure")
+              return route.fulfill({
+                status: 503,
+                contentType: "application/json",
+                body: JSON.stringify({
+                  error: {
+                    code: "UNAVAILABLE",
+                    message: "Controlled list failure",
+                  },
+                }),
+              });
+            return json({
+              items: created ? [intent] : [],
+              generationEnabled: scenario !== "disabled",
+            });
+          }
+          assert.equal(request.method(), "POST");
+          const body = request.postDataJSON();
+          assert.equal(body.externalProviderTransferAllowed, true);
+          assert.equal(body.transcript.length, 1);
+          assert.ok(request.headers()["idempotency-key"]);
+          createRequests.push({
+            key: request.headers()["idempotency-key"],
+            body,
+          });
+          if (scenario === "retry" && createRequests.length === 1)
+            return route.abort();
+          created = true;
+          return json(intent);
+        }
+        if (path === `/api/v1/clip-generations/${intentId}/accept`) {
+          assert.equal(request.method(), "POST");
+          assert.deepEqual(request.postDataJSON().suggestionIds, [
+            suggestionId,
+          ]);
+          assert.ok(request.headers()["idempotency-key"]);
+          acceptRequests.push({
+            key: request.headers()["idempotency-key"],
+            body: request.postDataJSON(),
+          });
+          if (scenario === "retry" && acceptRequests.length === 1)
+            return route.abort();
+          accepted++;
+          return json({
+            requestId: intentId,
+            projectId,
+            jobs: [{ id: jobId }],
+          });
+        }
+        return route.fulfill({
+          status: 503,
           contentType: "application/json",
-          body: JSON.stringify(body),
+          body: JSON.stringify({
+            error: {
+              code: "BROWSER_FIXTURE",
+              message: "No real media in browser fixture",
+            },
+          }),
         });
-      if (path === `/api/v1/projects/${projectId}`)
-        return json({
-          id: projectId,
-          name: "Browser smoke source",
-          status: "SOURCE_READY",
-          rights: null,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-          source,
-          artifact: {
-            id: intentId,
-            role: "SOURCE",
-            status: "READY",
-            sizeBytes: "24",
-            sha256: "a".repeat(64),
-            contentType: "video/mp4",
-            lineageSourceId: source.id,
-            lineageSourceVersion: 1,
-            recipeVersion: "fixture",
-          },
-        });
-      if (path.endsWith("/clip-generations")) {
-        if (request.method() === "GET")
-          return json({ items: created ? [intent] : [] });
-        assert.equal(request.method(), "POST");
-        const body = request.postDataJSON();
-        assert.equal(body.externalProviderTransferAllowed, true);
-        assert.equal(body.transcript.length, 1);
-        assert.ok(request.headers()["idempotency-key"]);
-        created = true;
-        return json(intent);
-      }
-      if (path === `/api/v1/clip-generations/${intentId}/accept`) {
-        assert.equal(request.method(), "POST");
-        assert.deepEqual(request.postDataJSON().suggestionIds, [suggestionId]);
-        assert.ok(request.headers()["idempotency-key"]);
-        accepted++;
-        return json({ requestId: intentId, projectId, jobs: [{ id: jobId }] });
-      }
-      return route.fulfill({
-        status: 503,
-        contentType: "application/json",
-        body: JSON.stringify({
-          error: {
-            code: "BROWSER_FIXTURE",
-            message: "No real media in browser fixture",
-          },
-        }),
       });
-    });
-    await page.goto(`${origin}/cuts?projectId=${projectId}`);
-    const panel = page.locator(".ai-panel");
-    await panel.waitFor();
-    const create = panel.getByRole("button", {
-      name: "Найти моменты",
-      exact: true,
-    });
-    assert.equal(await create.isEnabled(), false);
-    await page
-      .locator("#clip-transcript")
-      .fill("1\n00:00:01,000 --> 00:00:20,000\nFixture transcript.");
-    assert.equal(await create.isEnabled(), false);
-    await page.locator("#clip-transfer-consent").check();
-    await create.click();
-    await panel.getByText("Рекомендации готовы", { exact: true }).waitFor();
-    assert.ok((await panel.innerText()).includes("без оценки качества"));
-    assert.ok(!(await panel.innerText()).includes("0%"));
-    assert.equal(
-      await page.locator("#clip-transfer-consent").isChecked(),
-      false,
-    );
-    const accept = panel.getByRole("button", {
-      name: "Нарезать выбранное (0)",
-      exact: true,
-    });
-    assert.equal(await accept.isEnabled(), false);
-    await panel
-      .getByRole("button", { name: "Выбрать все", exact: true })
-      .click();
-    await panel
-      .getByRole("button", { name: "Нарезать выбранное (1)", exact: true })
-      .click();
-    await page.waitForURL((url) => url.searchParams.get("jobs") === jobId);
-    assert.equal(accepted, 1);
-    assert.ok(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth + 1,
-      ),
-      `clip panel overflow at ${width}`,
-    );
-    await page.close();
-    console.log(
-      `PASS clip consent, human selection, exact acceptance and job navigation: ${width}px (mocked API)`,
-    );
+      await page.goto(`${origin}/cuts?projectId=${projectId}`);
+      const panel = page.locator(".ai-panel");
+      await panel.waitFor();
+      if (scenario === "disabled" || scenario === "query-failure") {
+        await panel
+          .getByText(
+            scenario === "disabled"
+              ? /AI-анализ выключен/
+              : /Не удалось получить рекомендации/,
+          )
+          .waitFor();
+        if (scenario === "disabled") {
+          await panel
+            .getByText("Browser fixture moment", { exact: true })
+            .waitFor();
+          await panel
+            .getByRole("button", { name: "Выбрать все", exact: true })
+            .click();
+          assert.equal(
+            await panel
+              .getByRole("button", {
+                name: "Нарезать выбранное (1)",
+                exact: true,
+              })
+              .isEnabled(),
+            false,
+          );
+        }
+        assert.equal(await page.locator("#clip-transcript").count(), 0);
+        await page.locator("#segment-0-start").fill("00:00:01");
+        await page.locator("#segment-0-end").fill("00:00:20");
+        await page.locator("#segment-0-end").blur();
+        assert.equal(
+          await page
+            .getByRole("button", { name: "Запустить нарезку (1)", exact: true })
+            .isEnabled(),
+          true,
+        );
+        assert.equal(createRequests.length + acceptRequests.length, 0);
+        await page.close();
+        console.log(
+          `PASS ${scenario}: history/error and independent manual fallback ${width}px (mocked API)`,
+        );
+        continue;
+      }
+      const create = panel.getByRole("button", {
+        name: "Найти моменты",
+        exact: true,
+      });
+      assert.equal(await create.isEnabled(), false);
+      await page
+        .locator("#clip-transcript")
+        .fill("1\n00:00:01,000 --> 00:00:20,000\nFixture transcript.");
+      assert.equal(await create.isEnabled(), false);
+      await page.locator("#clip-transfer-consent").check();
+      await create.click();
+      if (scenario === "retry") {
+        await panel
+          .getByRole("alert")
+          .filter({ hasText: "Не удалось связаться с API" })
+          .waitFor();
+        await create.click();
+      }
+      await panel.getByText("Рекомендации готовы", { exact: true }).waitFor();
+      assert.ok((await panel.innerText()).includes("без оценки качества"));
+      assert.ok(!(await panel.innerText()).includes("0%"));
+      assert.equal(
+        await page.locator("#clip-transfer-consent").isChecked(),
+        false,
+      );
+      const accept = panel.getByRole("button", {
+        name: "Нарезать выбранное (0)",
+        exact: true,
+      });
+      assert.equal(await accept.isEnabled(), false);
+      await panel
+        .getByRole("button", { name: "Выбрать все", exact: true })
+        .click();
+      await panel
+        .getByRole("button", { name: "Нарезать выбранное (1)", exact: true })
+        .click();
+      if (scenario === "retry") {
+        await panel
+          .getByRole("alert")
+          .filter({ hasText: "Не удалось связаться с API" })
+          .waitFor();
+        await panel
+          .getByRole("button", { name: "Нарезать выбранное (1)", exact: true })
+          .click();
+        assert.deepEqual(createRequests[0], createRequests[1]);
+        assert.deepEqual(acceptRequests[0], acceptRequests[1]);
+      }
+      await page.waitForURL((url) => url.searchParams.get("jobs") === jobId);
+      assert.equal(accepted, 1);
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+        `clip panel overflow at ${width}`,
+      );
+      await page.close();
+      console.log(
+        `PASS ${scenario}: clip consent, human selection, exact acceptance and job navigation: ${width}px (mocked API)`,
+      );
+    }
   }
 }
 
