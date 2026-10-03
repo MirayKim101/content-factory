@@ -65,7 +65,7 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 ## Текущий этап
 
 Актуальный воспроизводимый baseline находится в
-`STAGE3-LOCAL-ACCEPTANCE.md`: API `259/259`, contracts `23/23`, worker
+`STAGE3-LOCAL-ACCEPTANCE.md`: API `269/269`, contracts `23/23`, worker
 `342/342`, web `277/277`, lease-recovery PostgreSQL `12/12`, publication
 disposable PostgreSQL `1/1`, clip-generation API PostgreSQL `3/3`, Twitch
 PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
@@ -73,6 +73,34 @@ PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
 `3001`; порт `3000` не используется. Реальные credentialed Twitch media,
 YouTube и TikTok canary остаются rollout gate и не подменяются локальным
 утверждением о production-публикации.
+
+### API readiness checkpoint 2026-10-03
+
+Добавлен read-only `GET /api/v1/readiness`: `200 {status:"ready"}` только после
+PostgreSQL `SELECT 1`, Redis `INFO` и S3 `HeadBucket`; иначе generic `503`
+`DEPENDENCIES_UNAVAILABLE`. Оба ответа `Cache-Control: no-store`, без host,
+credentials или dependency details. `health` остаётся dependency-free.
+Dedicated probes идут параллельно, coalesce в один batch и отвечают менее чем
+за две секунды. PostgreSQL max-one pool server-enforced read-only; HTTP/Redis
+timeouts и teardown ограничены. Shutdown не может вернуть late `ready`.
+
+Проверено на Node 24.15.0: API 269/269 (10 readiness tests), HTTP 3/3 и real
+PG/Redis/S3 4/4, typecheck/lint/build, оба OpenAPI drift checks и web
+typecheck/build. Реальные dependency-loss probes использовали owned loopback
+blackholes, не остановку сервисов; DB/media/queue writes отсутствуют.
+Schema/client regenerated, explicit Swagger primitive types проверяются
+contract test. Independent readiness review `CLEAN`.
+
+API перезапущен только в текущем локальном Content Factory процессе на 3001:
+plain `node dist/main.js`, без `tsx`, Stage 3 admission off. Same-origin
+3100 вернул readiness 200/no-store и health 200; clip history 200 с
+`generationEnabled=false`. Browser smoke повторён: 12 route/viewport checks,
+10 selector overlays и 8 mock clip flows. UI доступен на 3100; 3000 не трогали.
+Это local runtime proof, не минимальный final image или production deployment.
+
+Hosted run `37120609697` для `65e7e2b` подтвердил все non-audit source steps,
+включая Docker context/compile, и PostgreSQL job. Только оба audit steps
+красные на двух известных high; этот release blocker сохраняется.
 
 EventSub secret rotation теперь требует explicit `TWITCH_EVENTSUB_SECRET_VERSION`.
 Общий PostgreSQL lease сериализует обычную сверку и пересоздание подписок;

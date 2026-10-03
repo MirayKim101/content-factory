@@ -85,6 +85,30 @@ describe("authoritative OpenAPI export", () => {
       openapi: "3.0.0",
       paths: {
         "/api/v1/projects": { post: { requestBody: { required: true } } },
+        "/api/v1/readiness": {
+          get: {
+            responses: {
+              "200": {
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ReadinessResponseDto",
+                    },
+                  },
+                },
+              },
+              "503": {
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ReadinessUnavailableResponseDto",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       components: {
         schemas: {
@@ -103,6 +127,18 @@ describe("authoritative OpenAPI export", () => {
           EditorialReviewResponseDto: {},
           EditorialApprovalResponseDto: {},
           CreateEditorialApprovalDto: {},
+          ReadinessResponseDto: {
+            required: ["status"],
+            properties: { status: { type: "string", enum: ["ready"] } },
+          },
+          DependencyUnavailableErrorDto: {
+            required: ["code", "message"],
+            properties: {
+              code: { type: "string", enum: ["DEPENDENCIES_UNAVAILABLE"] },
+              message: { type: "string" },
+            },
+          },
+          ReadinessUnavailableResponseDto: { required: ["error"] },
         },
       },
     });

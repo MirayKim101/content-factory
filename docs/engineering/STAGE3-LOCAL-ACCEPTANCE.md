@@ -262,7 +262,9 @@
 ## Воспроизведённые проверки
 
 ```text
-API:     259/259 unit tests (Node 24.15.0, 20 s deadline for subprocess OpenAPI tests)
+API:     269/269 unit tests (Node 24.15.0, 20 s deadline for subprocess OpenAPI tests)
+Readiness HTTP fixture: 3/3
+Readiness real read-only PostgreSQL/Redis/S3: 4/4 (blackhole timeout + recovery)
 Contracts: 23/23 unit tests
 Publication real disposable PostgreSQL: 1/1
 Clip-generation API real PostgreSQL: 3/3 (including disabled rollback history/read-write fence)
@@ -403,7 +405,23 @@ Regression test с одинаковыми по длине версиями до�
 не загружается. Additive migration применена к restored runtime при нулевом
 числе активных Twitch ingest leases; real PostgreSQL + MinIO acceptance `2/2`.
 
+## Проверка готовности API
+
+API readiness checkpoint 2026-10-03 отдельно прошёл 10 unit и 7 integration
+tests на Node 24. Реальные service probes не пишут DB/media/queues; dependency
+blackholes отвечают unavailable менее чем за две секунды, recovery даёт ready.
+Новый schema/client добавляет только GET readiness 200/503 и generic DTO.
+Shutdown во время успешного cleanup возвращает unavailable, concurrent healthy
+calls coalesce. Independent review `CLEAN`; live API на plain Node без loader
+вернул readiness 200/no-store через 3100, health 200, disabled clip history 200.
+После restart/build browser smoke повторён успешно; его API scenarios mocked.
+
 ## Не является локально доказанным
+
+Hosted CI `65e7e2b`, run `37120609697`: все non-audit source steps и
+PostgreSQL job успешны. Оба обязательных audit steps failed; production
+promotion остаётся запрещённым. Readiness не подтверждает ни private edge/TLS,
+ни matching DB/MinIO restore, ни provider canary.
 
 Реальные внешние публикации и получение байтов конкретным Twitch media gateway
 не проверяются без выбранного gateway deployment и production OAuth secrets.

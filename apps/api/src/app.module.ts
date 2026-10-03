@@ -8,6 +8,7 @@ import { AiContentModule } from "./ai-content/ai-content.module.js";
 import { PublishingModule } from "./publishing/publishing.module.js";
 import { TwitchIngestionModule } from "./twitch-ingestion/twitch-ingestion.module.js";
 import { VerticalModule } from "./vertical/vertical.module.js";
+import { ReadinessModule } from "./readiness/readiness.module.js";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { VerticalModule } from "./vertical/vertical.module.js";
     PublishingModule,
     TwitchIngestionModule,
     VerticalModule,
+    ReadinessModule,
   ],
   controllers: [AppController],
 })

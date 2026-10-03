@@ -166,6 +166,42 @@ docker compose --env-file .env -f infrastructure/compose.yaml run --rm minio-ini
    `sourceVersion`, `expectedRevision`, literal
    `declarationVersion=source-authorization-v1` и `attested=true`.
 
+### Проверка процесса и его зависимостей
+
+После запуска API проверь процесс и зависимости из второго терминала.
+`GET /api/v1/health` отвечает `{"status":"ok"}` без обращения к БД/очереди/S3.
+Это liveness: процесс жив, но обработка запросов ещё может быть недоступна.
+`GET /api/v1/readiness` отдельно проверяет PostgreSQL `SELECT 1`, Redis `INFO`
+и доступ к configured bucket через S3 `HeadBucket`, не записывая данные.
+
+```sh
+curl --fail-with-body http://127.0.0.1:3001/api/v1/health
+curl --fail-with-body --include http://127.0.0.1:3001/api/v1/readiness
+```
+
+Ожидаемый результат readiness: HTTP 200, `Cache-Control: no-store`,
+`{"status":"ready"}`. При отказе/таймауте любой зависимости — HTTP 503,
+`{"error":{"code":"DEPENDENCIES_UNAVAILABLE","message":"Required dependencies are unavailable."}}`;
+`curl --fail-with-body` тогда завершается ненулевым кодом и показывает тело ошибки.
+Body не раскрывает host, credentials и конкретную зависимость. Health остаётся
+200; это не повод бесконечно перезапускать живой процесс вместо восстановления
+зависимости.
+
+Probes параллельны и coalesced, budget ответа менее двух секунд. PG pool
+отдельный, max 1, server-enforced read-only и с query/connect timeout;
+Redis использует public BullMQ connection и owned error listener, S3 abort
+и max one attempt. Каждый batch закрывает clients, новый batch не начинается
+до окончания teardown; shutdown делает readiness unavailable.
+
+Приёмка Node 24: 10 unit, 3 HTTP fixture и 4 real-dependency integration tests,
+включая blackhole/recovery каждого backend без изменения рабочих контейнеров.
+Эти tests запускаются крупным completed slice, не после каждого edit.
+OpenAPI schema/client включают оба response types и проверяются общим gate.
+Rollback: reviewed revert readiness module/AppModule registration/schema/client
+вместе. DB migrations отсутствуют, authoritative data/media не меняются;
+health и остальные API routes сохраняются. Production runtime всё ещё требует
+отдельного edge/access/backup/image-scan acceptance по ADR-011.
+
 ### Что API гарантирует на этом шаге
 
 - принимает только один MP4 размером до `API_MAX_UPLOAD_BYTES` (по умолчанию

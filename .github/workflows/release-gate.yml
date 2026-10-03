@@ -144,11 +144,12 @@ jobs:
       - name: Apply all committed migrations to the disposable service
         run: pnpm --filter @content-factory/api db:migrate
 
-      - name: Prove durable clip admission and publication fences
+      - name: Prove clip admission, publication fences and readiness HTTP contract
         run: |
           pnpm --filter @content-factory/api exec vitest run \
             --config vitest.integration.config.ts \
             test/clip-generation.persistence.integration.spec.ts \
+            test/readiness.http.integration.spec.ts \
             test/publication-isolated.integration.spec.ts --testTimeout=20000
 
       - name: Prove worker retry, lease loss and restart recovery

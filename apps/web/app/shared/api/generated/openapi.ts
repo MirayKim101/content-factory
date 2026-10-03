@@ -1073,6 +1073,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/readiness": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Check API dependency readiness. */
+    get: operations["ReadinessController_getReadiness"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/research-suggestions/{researchIntentId}": {
     parameters: {
       query?: never;
@@ -1931,6 +1948,12 @@ export interface components {
       clientSegmentId: string;
       endMs: number;
       startMs: number;
+    };
+    DependencyUnavailableErrorDto: {
+      /** @enum {string} */
+      code: "DEPENDENCIES_UNAVAILABLE";
+      /** @example Required dependencies are unavailable. */
+      message: string;
     };
     EditorialApprovalAttentionV2ResponseDto: {
       finalReviewForegroundMs: number;
@@ -2871,6 +2894,13 @@ export interface components {
       operatorNotes: string;
       restrictions: string[];
       sourceTitle: string;
+    };
+    ReadinessResponseDto: {
+      /** @enum {string} */
+      status: "ready";
+    };
+    ReadinessUnavailableResponseDto: {
+      error: components["schemas"]["DependencyUnavailableErrorDto"];
     };
     ResearchCitationDto: {
       excerpt: string;
@@ -6612,6 +6642,33 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["PublishingCapabilitiesResponseDto"];
+        };
+      };
+    };
+  };
+  ReadinessController_getReadiness: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadinessResponseDto"];
+        };
+      };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadinessUnavailableResponseDto"];
         };
       };
     };

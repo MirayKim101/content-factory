@@ -1829,6 +1829,20 @@
         "required": ["clientSegmentId", "startMs", "endMs"],
         "type": "object"
       },
+      "DependencyUnavailableErrorDto": {
+        "properties": {
+          "code": {
+            "enum": ["DEPENDENCIES_UNAVAILABLE"],
+            "type": "string"
+          },
+          "message": {
+            "example": "Required dependencies are unavailable.",
+            "type": "string"
+          }
+        },
+        "required": ["code", "message"],
+        "type": "object"
+      },
       "EditorialApprovalAttentionV2ResponseDto": {
         "properties": {
           "finalReviewForegroundMs": {
@@ -4944,6 +4958,25 @@
           "operatorNotes",
           "expectedRevision"
         ],
+        "type": "object"
+      },
+      "ReadinessResponseDto": {
+        "properties": {
+          "status": {
+            "enum": ["ready"],
+            "type": "string"
+          }
+        },
+        "required": ["status"],
+        "type": "object"
+      },
+      "ReadinessUnavailableResponseDto": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/DependencyUnavailableErrorDto"
+          }
+        },
+        "required": ["error"],
         "type": "object"
       },
       "ResearchCitationDto": {
@@ -11164,6 +11197,36 @@
           }
         },
         "tags": ["publishing"]
+      }
+    },
+    "/api/v1/readiness": {
+      "get": {
+        "operationId": "ReadinessController_getReadiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponseDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessUnavailableResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Check API dependency readiness.",
+        "tags": ["Readiness"]
       }
     },
     "/api/v1/research-suggestions/{researchIntentId}": {
