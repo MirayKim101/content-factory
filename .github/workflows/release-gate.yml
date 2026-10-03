@@ -97,6 +97,16 @@ jobs:
             --file "$context_path/apps/worker/Dockerfile" \
             --tag content-factory-worker:ci-diagnostic-only "$context_path"
 
+      - name: Verify static web preparation from exact committed source
+        run: |
+          node --test scripts/export-web-build-context.test.mjs scripts/web-edge-artifact-policy.test.mjs scripts/web-edge-smoke.test.mjs
+          context_json=$(node scripts/export-web-build-context.mjs "$GITHUB_SHA")
+          context_path=$(printf '%s' "$context_json" | node -e 'let s="";process.stdin.on("data", c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
+          pnpm --dir "$context_path" install --frozen-lockfile --filter ...@content-factory/web
+          pnpm --dir "$context_path" --filter @content-factory/web exec nuxt generate
+          test -f "$context_path/apps/web/.output/public/index.html"
+          test ! -d "$context_path/apps/web/.output/server"
+
       - name: Validate Compose without starting deployment services
         run: |
           docker compose --env-file .env.example -f infrastructure/compose.yaml \

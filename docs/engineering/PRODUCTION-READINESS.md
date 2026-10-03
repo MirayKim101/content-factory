@@ -39,8 +39,11 @@ where ADR-011 explicitly permits it.
    No allowlist, `ignore-unfixed`, severity reduction
    or final-image-only substitution for the source gate is allowed.
 2. **Static web-edge runtime.** ADR-011 specifies static Nuxt SPA assets in a
-   pinned Caddy image, with the fixed streaming `/api/v1` route. The build,
-   image inventory, cache/deep-link behavior, streaming failures and real
+   pinned Caddy image, with the fixed streaming `/api/v1` route. Exact-Git
+   static generation, strict web types and 11 preparation policies passed;
+   see `tasks/web-edge-runtime.md`. Official `caddy:2.11.7-alpine` publication
+   is still pending; no replacement binary or older image is authorized.
+   Actual image inventory, cache/deep-link behavior, streaming failures and real
    browser acceptance must pass independently of dev UI on port 3100.
 3. **Production storage and operations.** Select and verify persistent disk
    capacity, bounded non-RAM media scratch, cleanup/retention, encrypted

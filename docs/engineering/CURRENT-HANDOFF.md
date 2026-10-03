@@ -4,6 +4,14 @@
 
 ## Worker final runtime и scanner capacity — следующий крупный срез
 
+Static web-edge preparation независимо проверена: closed export 106 Git blobs,
+frozen Nuxt static generation 219 files без `.output/server`, strict web types,
+11 policy tests, formatting и lint без warnings прошли. CI повторяет exact-Git
+static build, но не собирает/запускает Caddy. Official `2.11.7-alpine` ещё не
+опубликован; older version, mutable tag и собственный release binary запрещены.
+Настоящие edge/proxy/browser/artifact acceptance остаются непройденными.
+Подробности: `tasks/web-edge-runtime.md`.
+
 Follow-up с ровно пятью approved Bookworm OS patches также прошёл exact Git
 build, полный package inventory diff и повторный media/recovery/failure batch.
 Node, FFmpeg и application graph не изменились. Actual full scan снизился с

@@ -1,0 +1,68 @@
+# Static same-origin edge preparation. The image pin and final runtime remain
+# blocked until the official caddy:2.11.7-alpine image is published and pinned.
+{
+	admin off
+	auto_https off
+}
+
+http://:8080 {
+	root * /usr/share/caddy
+
+	log {
+		output stdout
+		format json
+	}
+
+	@liveness path /healthz
+	handle @liveness {
+		respond "ok" 200
+	}
+
+	@api path /api/v1 /api/v1/*
+	handle @api {
+		reverse_proxy api:3001 {
+			# Do not trust client-supplied forwarding metadata. Caddy's own
+			# proxy metadata is evaluated independently of these incoming values.
+			header_up -Forwarded
+			header_up -X-Forwarded-*
+			# No request_buffers/response_buffers: bodies stay streaming. The
+			# default proxy deadline is left unset rather than shortening API work.
+			flush_interval -1
+			transport http {
+				compression off
+			}
+		}
+	}
+
+	@hashedNuxtAsset {
+		path /_nuxt/*
+		file
+	}
+	handle @hashedNuxtAsset {
+		route {
+			header Cache-Control "public, max-age=31536000, immutable"
+			file_server
+		}
+	}
+
+	# A missing generated asset must stay a 404, never become the SPA shell.
+	handle /_nuxt/* {
+		file_server
+	}
+
+@staticAsset path_regexp staticAsset (?i)\.(?:avif|css|gif|ico|jpe?g|js|map|mjs|png|svg|webp|woff2?)$
+	handle @staticAsset {
+		file_server
+	}
+
+	# Nuxt ssr:false produces a single static SPA entrypoint. Apply no-store
+	# after the fallback rewrite so deep links and index.html cannot pin a stale
+	# asset manifest in a browser cache.
+	handle {
+		route {
+			try_files {path} /index.html
+			header Cache-Control "no-store"
+			file_server
+		}
+	}
+}
