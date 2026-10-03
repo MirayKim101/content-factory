@@ -85,6 +85,33 @@ RUN apt-get update \
     && sha256sum /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf > /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf.sha256 \
     && rm -rf /var/lib/apt/lists/*
 
+# Patch only the five reviewed Bookworm packages. Reject any other inventory
+# change; this bounded remediation does not make the artifact gate clean.
+RUN set -eu; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.before; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends --only-upgrade \
+      libgcrypt20=1.10.1-3+deb12u1 \
+      libgnutls30=3.7.9-2+deb12u7 \
+      liblzma5=5.4.1-1+deb12u2 \
+      libpcre2-8-0=10.42-1+deb12u1 \
+      tzdata=2026c-0+deb12u1; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.after; \
+    awk 'NR == FNR { before[$1] = $2; next } !($1 in before) || before[$1] != $2 { print $1 }' \
+      /tmp/packages.before /tmp/packages.after | sort > /tmp/packages.changed; \
+    awk 'NR == FNR { after[$1] = $2; next } !($1 in after) { print $1 }' \
+      /tmp/packages.after /tmp/packages.before | sort > /tmp/packages.removed; \
+    printf '%s\n' libgcrypt20 libgnutls30 liblzma5 libpcre2-8-0 tzdata > /tmp/packages.expected; \
+    cmp /tmp/packages.expected /tmp/packages.changed; \
+    test ! -s /tmp/packages.removed; \
+    test "$(dpkg-query -W -f='${Version}' libgcrypt20)" = '1.10.1-3+deb12u1'; \
+    test "$(dpkg-query -W -f='${Version}' libgnutls30)" = '3.7.9-2+deb12u7'; \
+    test "$(dpkg-query -W -f='${Version}' liblzma5)" = '5.4.1-1+deb12u2'; \
+    test "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" = '10.42-1+deb12u1'; \
+    test "$(dpkg-query -W -f='${Version}' tzdata)" = '2026c-0+deb12u1'; \
+    rm -rf /var/lib/apt/lists/*; \
+    rm -f /tmp/packages.before /tmp/packages.after /tmp/packages.changed /tmp/packages.removed /tmp/packages.expected
+
 # Final runtime invokes Node directly, never a package manager. Remove only
 # verified trees/shims inherited from the pinned base, not application packages.
 RUN set -eu; \

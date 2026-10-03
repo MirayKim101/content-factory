@@ -243,3 +243,64 @@ admitted v3 jobs. Production stays blocked by the 717 artifact records and the
 separate two-high source gate. OS/FFmpeg replacement needs a material ADR and
 independently reviewed scan, compatibility, output, resource and recovery
 evidence. No deployment, provider admission or security exception follows.
+
+## Follow-up: exactly five Bookworm package updates
+
+The architect approved a separate final-only patch, without replacing the
+Node/OS/FFmpeg baseline. Candidate
+`5e336496db144aa23aa29a818c62c75fcbfef86b` was exported as 93 exact Git blobs
+into `tmp/worker-context-5knW9D`. The new Docker build asserts a complete
+before/after package inventory: only these existing packages may change;
+additions, removals or other upgrades fail the build:
+
+- `libgcrypt20=1.10.1-3+deb12u1`;
+- `libgnutls30=3.7.9-2+deb12u7`;
+- `liblzma5=5.4.1-1+deb12u2`;
+- `libpcre2-8-0=10.42-1+deb12u1`;
+- `tzdata=2026c-0+deb12u1`.
+
+These versions were checked against official Debian Bookworm package pages:
+[libgcrypt20](https://packages.debian.org/bookworm/libgcrypt20),
+[libgnutls30](https://packages.debian.org/bookworm/libgnutls30),
+[liblzma5](https://packages.debian.org/bookworm/liblzma5),
+[libpcre2](https://packages.debian.org/bookworm/libpcre2-8-0),
+[tzdata](https://packages.debian.org/bookworm/tzdata).
+
+Actual immutable `linux/amd64` maximum-provenance artifact:
+
+- local image: `content-factory-worker:os-proof-5e33649`;
+- archive: `tmp/worker-os-hardening-5e336496/worker-linux-amd64.oci.tar`;
+- archive SHA-256:
+  `5bcfa7936e1d868bbfbd1f30bd8f1098a62898ba545aac4be76ae13616341efd`;
+- manifest:
+  `sha256:00247c29017f4e1836bfdb106ce72321bfcc4ec31c823ababce2c05326bed396`;
+- config:
+  `sha256:db6bd64adb3774b2900663d8d823fdc80dd0c25f3cb84d3c97bcea82bb71d1f3`;
+- full scan: `tmp/artifact-scan-hgBPz4`, using the same fresh DB and pins;
+- report SHA-256:
+  `f0e0c9089d5052f3aa60f3f55de2e395c6fcf7395a9c28714e54785853797547`;
+- SBOM SHA-256:
+  `da59dab3f4f3b1f89b62b41ea7cd680ca26ba5ac92c20d5a75c7872b327f256f`;
+- LOW 216, MEDIUM 407, HIGH 242, CRITICAL 10, UNKNOWN 36;
+- **695 blocking records remain**, down from 717. Promotion still denied.
+
+Independent of build assertions, read-only/network-disabled comparison proves
+exactly the five allowed package version changes, no additions/removals among
+288 packages, identical 66 native production packages and unchanged Node,
+FFmpeg/ffprobe/font hashes. Configuration failure remains exit 78. Inventory
+proof: `tmp/worker-os-hardening-5e336496/inventory-proof.json`, SHA-256
+`f7b7ee28b42b19875a1e42a93b0f5d5a64b4122436ed914519f29bb4ee7e0cc9`.
+
+The complete real-media batch was repeated against this image: normal/replay,
+queue loss, SIGKILL while PROCESSING, attempt 2 with one artifact, and controlled
+corrupt-media failure all passed. Both result sizes/checksums match those above.
+Proof: `tmp/worker-os-hardening-5e336496/media-evidence.json`, SHA-256
+`bbcce763541874f4c99438bf6216b60a3446076df2cf05d202f0fa713f8a300a`.
+An initial diagnostic command used the wrong healthcheck path and stopped after
+normal acceptance; the actual installed healthcheck at
+`/usr/local/bin/content-factory-media-worker-healthcheck.mjs` then passed before
+the remaining recovery/failure phases ran. This was not an application defect.
+
+Rollback remains the prior v3-capable immutable worker after drain, without
+schema/data changes. The security deny and production prerequisites remain;
+no replacement distribution, package override or provider admission is approved.

@@ -32,7 +32,8 @@ where ADR-011 explicitly permits it.
    patched version in the recorded audit. Actual hardened API/migrate scans
    still deny promotion at 160/170 non-LOW records. Those counts are not unique
    CVEs or a percentage of readiness. The exact hardened worker scan denies
-   promotion at 717 non-LOW records, down from its 743-record baseline; native
+   promotion at 695 non-LOW records after five bounded OS updates, down from
+   717 after global-manager removal and its original 743-record baseline; native
    dependencies and media/recovery behavior are unchanged. See
    `tasks/worker-runtime-hardening.md`. The web-edge scan is a separate gate.
    No allowlist, `ignore-unfixed`, severity reduction

@@ -4,6 +4,13 @@
 
 ## Worker final runtime и scanner capacity — следующий крупный срез
 
+Follow-up с ровно пятью approved Bookworm OS patches также прошёл exact Git
+build, полный package inventory diff и повторный media/recovery/failure batch.
+Node, FFmpeg и application graph не изменились. Actual full scan снизился с
+717 до **695 non-LOW records**, но release gate по-прежнему красный. Immutable
+candidate `5e336496`, hashes, private proofs и rollback записаны в
+`tasks/worker-runtime-hardening.md`; это не новый production baseline.
+
 Из final worker удалены только inherited global npm/Corepack/Yarn и shims.
 Node, FFmpeg/ffprobe, font hashes, все 288 OS packages и 66 native production
 packages остались прежними. Большой реальный batch прошёл normal/replay,
