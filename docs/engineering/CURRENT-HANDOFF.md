@@ -34,6 +34,23 @@ Formatting CI проверяет изменённые tracked files; полны�
 не гарантирован зелёным до отдельной очистки baseline. Детали и rollback:
 `../infrastructure/local-development.md`.
 
+Первый hosted run для `f77da4b` подтвердил PostgreSQL job, но source job
+остановился до audit: Turbo strict mode не передавал inert CI settings тестам.
+Последующий fix явно объявляет семь test env keys в `turbo.json`, ограничивает
+запуск одним workspace и двумя Vitest workers. Local `.env` не является CI proof:
+приёмка повторена в отдельном committed-source snapshot без `.env`:
+typecheck и forced 901/901 tests прошли, cache hits отсутствуют.
+
+Worker Docker context теперь действительно закрыт: reopening parent dirs
+сопровождается повторным запретом descendants до exact includes. Root и
+Dockerfile-specific policy одинаковы, включают только 11 runtime contract
+modules и исключают specs. Новый script сверяет aliases/allowlist, diagnostic
+`COPY .` target проверяет effective context; worker build-stage прошёл без кеша.
+Это не scan или приёмка final runtime image. Linux shell programs получили
+узкую LF policy в `.gitattributes`, без изменения пользовательских API-файлов.
+Independent review CI/context и ADR-011: `CLEAN`. ADR разрешает только bounded
+preparation; production deployment, credentials и внешний доступ не настроены.
+
 ## Главный результат
 
 Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммиченных файлов) —

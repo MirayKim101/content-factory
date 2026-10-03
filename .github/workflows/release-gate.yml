@@ -63,7 +63,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Run all unit tests
-        run: pnpm test
+        run: pnpm test --concurrency=1 -- --maxWorkers=2
 
       - name: Verify authoritative OpenAPI and generated client
         run: |
@@ -72,6 +72,14 @@ jobs:
 
       - name: Build all workspaces
         run: pnpm build
+
+      - name: Verify closed worker context and container compilation
+        run: |
+          node scripts/check-worker-build-context.mjs
+          docker build --file infrastructure/worker/context-check.Dockerfile \
+            --tag content-factory-worker:ci-context-only .
+          docker build --target build --file apps/worker/Dockerfile \
+            --tag content-factory-worker:ci-build-only .
 
       - name: Validate Compose without starting deployment services
         run: |

@@ -1,0 +1,6 @@
+# These programs execute on Linux even when the checkout is created on Windows.
+*.sh text eol=lf
+/infrastructure/minio/provision text eol=lf
+/infrastructure/minio/healthcheck text eol=lf
+/infrastructure/worker/entrypoint text eol=lf
+/scripts/benchmarks/test-fixtures/mock-bin/* text eol=lf

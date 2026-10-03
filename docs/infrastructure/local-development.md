@@ -584,3 +584,35 @@ package manifests и `pnpm-lock.yaml` вместе, затем frozen install. �
 меняет БД/медиа и не требует destructive migration. Возврат старых версий
 возвращает известные vulnerabilities и не является безопасным production
 rollback; предпочтителен supported forward security fix.
+
+### CI strict environment и фактический worker context
+
+Первый hosted source job (`f77da4b`) обнаружил missing S3/Redis fixture config,
+хотя PostgreSQL job прошёл. [Turbo strict mode](https://turborepo.com/docs/crafting-your-repository/using-environment-variables)
+отфильтровывает undeclared env; семь inert test keys теперь перечислены в
+`turbo.json` и участвуют в cache hash. CI запускает один test workspace за раз,
+не более двух Vitest workers. Loose mode и отключение cache safety не нужны.
+Для локального clean-source proof snapshot не содержит `.env`, а typecheck
+подготавливает Nuxt generated config перед тестами. При Git archive из WSL
+с `core.autocrlf=true` используй `git -c core.autocrlf=false archive`:
+иначе archive может преобразовать Linux scripts в CRLF. `.gitattributes`
+фиксирует LF только для shell programs, не для защищённых API edits.
+
+[Dockerfile-specific ignore имеет приоритет над root policy](https://docs.docker.com/build/concepts/context/#dockerignore-files).
+В обоих worker policies parent-dir includes теперь сопровождаются descendant
+denies перед exact child includes. До исправления builder содержал contract
+specs, несмотря на кажущуюся allowlist. Теперь проверяются обе политики,
+exact contract import set и regular files:
+
+```sh
+node scripts/check-worker-build-context.mjs
+docker build --file infrastructure/worker/context-check.Dockerfile --tag content-factory-worker:diagnostic-context .
+docker build --no-cache --target build --file apps/worker/Dockerfile --tag content-factory-worker:diagnostic-build .
+```
+
+Ожидаемый результат: `EFFECTIVE_WORKER_CONTEXT_CLOSED`, 11 runtime modules,
+worker TypeScript compilation без contract specs, посторонних приложений,
+credentials и local data. Diagnostic images не публикуются и не называются
+release artifacts. Final worker всё ещё требует отдельной production-only
+dependency closure, native Node startup и digest-bound scan по ADR-011.
+Rollback fix возвращает прежний риск контекста; не используй его для promotion.
