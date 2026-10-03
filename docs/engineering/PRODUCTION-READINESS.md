@@ -1,6 +1,6 @@
 # Production readiness — evidence, not a percentage
 
-Updated: 2026-10-03. Current status: **production release blocked**.
+Updated: 2026-10-04. Current status: **production release blocked**.
 Local product acceptance, container preparation and actual external operation
 are separate milestones. No real publishing/provider admission is authorized
 by a green local test.
@@ -22,6 +22,14 @@ Exact candidate identities, test scopes, evidence paths and rollback are in
 `CURRENT-HANDOFF.md` and the linked task records. Protected pending API files
 are not part of these deliveries; their committed Git baseline is used only
 where ADR-011 explicitly permits it.
+
+The subsequent worker scratch-capability slice separately passed its full
+366-test worker batch, strict types/build, 19 actual native startup cases and
+the combined media/recovery/failure scenario. It rejects unusable roots before
+queue/network initialization and makes readiness-cleanup failures visible;
+see `tasks/worker-scratch-capability.md`. Independent review is CLEAN. This
+does not establish shared-filesystem admission, replica quotas or persistent
+production scratch. Its actual full artifact scan remains DENY at 695 records.
 
 ## Mandatory unfinished gates
 

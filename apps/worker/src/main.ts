@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { chmod, mkdir } from "node:fs/promises";
 
 import {
   parseMediaJobReference,
@@ -26,6 +25,10 @@ import {
 import { FfmpegMediaProcessor } from "./infrastructure/ffmpeg-media-processor.js";
 import { FfmpegAssemblyRenderer } from "./infrastructure/ffmpeg-assembly-renderer.js";
 import { LocalSourceCache } from "./infrastructure/local-source-cache.js";
+import {
+  ScratchCapabilityError,
+  verifyScratchCapability,
+} from "./infrastructure/scratch-capability.js";
 import { PgMediaJobRepository } from "./infrastructure/pg-media-job.repository.js";
 import { S3WorkerObjectStorage } from "./infrastructure/s3-worker-object-storage.js";
 import { StreamingZip64PackageExporter } from "./infrastructure/streaming-zip64-package-exporter.js";
@@ -70,29 +73,40 @@ import {
   clearWorkerReadiness,
   markWorkerReady,
   prepareWorkerReadiness,
+  tryClearWorkerReadiness,
 } from "./application/worker-readiness.js";
 
 const TWITCH_EVENTSUB_RECONCILIATION_INTERVAL_MS = 5 * 60_000;
 
-if (process.argv.includes("--verify-admission-off-rollback")) {
-  const rollbackConfig = workerConfig();
-  await mkdir(rollbackConfig.scratchDirectory, { recursive: true });
-  await chmod(rollbackConfig.scratchDirectory, 0o700);
-  await verifyWorkerRollbackCompatibility({
-    databaseUrl: rollbackConfig.databaseUrl,
-    sourceAuthorizationPolicy: rollbackConfig.sourceAuthorizationPolicy,
-    scratchDirectory: rollbackConfig.scratchDirectory,
-  });
-} else {
-  await (process.env.WORKER_ROLE === "ai"
-    ? startAiWorker()
-    : process.env.WORKER_ROLE === "publication"
-      ? startPublicationWorker()
-      : process.env.WORKER_ROLE === "twitch"
-        ? startTwitchWorker()
-        : process.env.WORKER_ROLE === "vertical"
-          ? startVerticalWorker()
-          : startWorker());
+try {
+  if (process.argv.includes("--verify-admission-off-rollback")) {
+    const rollbackConfig = workerConfig();
+    await verifyScratchCapability(rollbackConfig.scratchDirectory);
+    await verifyWorkerRollbackCompatibility({
+      databaseUrl: rollbackConfig.databaseUrl,
+      sourceAuthorizationPolicy: rollbackConfig.sourceAuthorizationPolicy,
+      scratchDirectory: rollbackConfig.scratchDirectory,
+    });
+  } else {
+    await (process.env.WORKER_ROLE === "ai"
+      ? startAiWorker()
+      : process.env.WORKER_ROLE === "publication"
+        ? startPublicationWorker()
+        : process.env.WORKER_ROLE === "twitch"
+          ? startTwitchWorker()
+          : process.env.WORKER_ROLE === "vertical"
+            ? startVerticalWorker()
+            : startWorker());
+  }
+} catch (error) {
+  if (!(error instanceof ScratchCapabilityError)) throw error;
+  console.error(
+    JSON.stringify({
+      event: "media_worker_configuration_invalid",
+      code: "CONFIG_SCRATCH_UNUSABLE",
+    }),
+  );
+  process.exitCode = 78;
 }
 
 async function startVerticalWorker(): Promise<void> {
@@ -179,7 +193,7 @@ async function startVerticalWorker(): Promise<void> {
     clearInterval(timer);
     processor.abortAll();
     shutdownPromise = (async () => {
-      await clearWorkerReadiness(readinessFile);
+      if (!(await tryClearWorkerReadiness(readinessFile))) process.exitCode = 1;
       await queue.close().catch(() => undefined);
       await reconciliation.wait().catch(() => undefined);
       await repository.close().catch(() => undefined);
@@ -370,7 +384,7 @@ async function startTwitchWorker(): Promise<void> {
     controlAbort.abort(new Error("TWITCH_WORKER_SHUTDOWN"));
     ingestProcessor?.abortAll();
     shutdownPromise = (async () => {
-      await clearWorkerReadiness(readinessFile);
+      if (!(await tryClearWorkerReadiness(readinessFile))) process.exitCode = 1;
       await Promise.allSettled([
         controlReconciliation.wait(),
         ingestReconciliation.wait(),
@@ -563,7 +577,7 @@ async function startPublicationWorker(): Promise<void> {
     outcomeReconciler.abortAll();
     metricsCollector.abortAll();
     shutdownPromise = (async () => {
-      await clearWorkerReadiness(readinessFile);
+      if (!(await tryClearWorkerReadiness(readinessFile))) process.exitCode = 1;
       await worker.close().catch(() => undefined);
       await reconciliation.wait().catch(() => undefined);
       await Promise.allSettled([
@@ -779,7 +793,7 @@ async function startAiWorker(): Promise<void> {
     if (clipRecoveryTimer) clearInterval(clipRecoveryTimer);
     clipWorker?.abortAll();
     shutdownPromise = (async () => {
-      await clearWorkerReadiness(readinessFile);
+      if (!(await tryClearWorkerReadiness(readinessFile))) process.exitCode = 1;
       await Promise.allSettled([
         transcriptQueue.close(),
         researchQueue.close(),
@@ -828,10 +842,7 @@ async function startAiWorker(): Promise<void> {
 
 async function startWorker(): Promise<void> {
   const config = workerConfig();
-  await mkdir(config.scratchDirectory, { recursive: true });
-  await mkdir(config.sourceCacheDirectory, { recursive: true });
-  await chmod(config.scratchDirectory, 0o700);
-  await chmod(config.sourceCacheDirectory, 0o700);
+  await verifyScratchCapability(config.sourceCacheDirectory);
   const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
   const workerId = `media-worker-${randomUUID()}`;
   const repository = new PgMediaJobRepository(
@@ -1026,7 +1037,8 @@ async function startWorker(): Promise<void> {
     clearInterval(frameReconcileTimer);
     processFrameJob.abortAll();
     shutdownPromise = (async () => {
-      await clearWorkerReadiness(readinessFile);
+      if (!(await tryClearWorkerReadiness(readinessFile)))
+        exitCode = Math.max(exitCode, 1);
       console.log(
         JSON.stringify({ event: "media_worker_stopping", workerId, signal }),
       );

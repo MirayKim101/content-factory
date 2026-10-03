@@ -1,6 +1,27 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-10-03. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-10-04. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
+
+## Worker scratch capability — завершённый verification slice
+
+Проверка временного хранилища теперь выполняется до подключения worker к
+очередям и внешним системам: private `0700`, правильный non-root UID,
+отсутствие symlink, реальная запись/fsync/readback и удаление своего probe.
+Непригодный root даёт только generic `CONFIG_SCRATCH_UNUSABLE`, exit 78.
+Ошибка удаления readiness больше не скрывается; shutdown продолжает закрывать
+ресурсы и сохраняет ненулевой exit status. Rollback probe не меняет marker.
+
+Крупный immutable-source batch candidate `5349e0b` прошёл lint, строгие типы,
+366 worker tests и build. Exact 94-file context собран в native final image;
+19 startup cases и combined media upload/replay/queue-loss/SIGKILL/failure batch
+прошли. Полный scan остаётся DENY: 695 non-LOW records. Independent review
+CLEAN: повторены полный worker gate и все 19 native startup cases. Детали и hashes:
+`tasks/worker-scratch-capability.md`. Это не общая capacity ledger и не
+подтверждение production storage.
+
+Hosted CI checkpoint `85a4c02` завершён: fresh migrations/recovery и isolated
+media integration PASS, новый exact-source static-web build PASS. Source job
+красный только на двух обязательных dependency audit steps, без исключений.
 
 ## Worker final runtime и scanner capacity — следующий крупный срез
 
