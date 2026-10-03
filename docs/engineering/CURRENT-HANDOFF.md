@@ -51,6 +51,57 @@ modules и исключают specs. Новый script сверяет aliases/al
 Independent review CI/context и ADR-011: `CLEAN`. ADR разрешает только bounded
 preparation; production deployment, credentials и внешний доступ не настроены.
 
+## Native worker и offline artifact checkpoint 2026-10-03
+
+Worker final runtime собирается из exact Git-object context (93 files), с
+отдельным frozen `--prod --no-optional` graph: 66 packages, direct ioredis,
+native Node 24 contracts вне physical node_modules, без Prisma/engines,
+TypeScript/tsx, tests и build tooling. Missing configuration даёт exit 78.
+CI экспортирует тот же immutable context и строит final diagnostic target,
+а не только compile stage. Preparation касается только media role;
+publishing/Twitch/vertical/AI admission остаётся выключенным.
+
+Крупный isolated acceptance использовал новое non-root/read-only runtime image,
+one-CPU/PID-128 fixture, собственный 12-second blue 1080p MP4 и disposable
+PG/Redis/MinIO. Manual upload/rights/probe/cut/download прошли; idempotency
+replay сохраняет один job и один artifact. После удаления только disposable
+Redis queue PostgreSQL reconciliation восстановила queued cut. Наблюдаемый
+PROCESSING cut прерван SIGKILL только fixture worker: restart завершил attempt 2
+с одним result artifact и совпадающей SHA-256. Повреждённые encoded samples
+завершились controlled `FFMPEG_CUT_FAILED`, без result. Это acceptance native
+media image, **не** production disk admission или полноценный edge rollout.
+
+Добавлены pinned Syft 1.54.0 и Trivy 0.75.0 artifact helper/policy. Connected
+tool/DB preparation отделена от scan: `--pull=never`, network none, UID 1000,
+read-only input/DB mounts, no Docker socket/capabilities/credentials, bounded
+stdout and RAM scratch. OCI archive проверяется по descriptor/layer hashes,
+source revision, platform и BuildKit subject; Trivy получает layout только
+из проверенных content-addressed entries. Unsupported platforms fail closed,
+поэтому multi-platform acceptance не заявляется. DB machine timestamp должен
+быть valid/nonfuture/не старше 24 hours; hashes и SBOM/report evidence связаны
+с archive SHA-256 и image manifest digest. Inventory всех severity: только
+exact LOW не блокирует, UNKNOWN/malformed/medium+ запрещают release.
+
+**Новые production blockers:** actual native API/migrate artifacts из public
+`d6d3d30c1a984df556556118b9a78d5982e960ac` прошли offline inventory, но получили
+hard denial: 208/218 non-LOW findings соответственно, включая critical и unknown.
+Это counts records, не unique advisories; один advisory может повторяться в
+нескольких packages. DB UpdatedAt `2026-10-03T07:01:46.027466673Z`, SHA-256
+`60b704c31056edb9b6c2ccb271c3837f4ecca531d2da6d79663136f53ba20027`.
+Evidence всегда `promotionApproved=false`; source audits остаются отдельными
+hard gates. Никаких image publish/deploy/allowlist/ignore-unfixed не было.
+
+Срез выявил старое отсутствие thread limits у cut recipes v1/v2. Architect
+утвердил следующую отдельную v3 revision с bounded decoder/encoder/filter
+pools; v1/v2 и persisted jobs должны остаться неизменными. Эта revision пока
+не реализована и не входит в acceptance текущего image.
+
+Rollback: не запускать diagnostic images на рабочих данных; удалить только
+свой diagnostic Compose project после сохранения evidence. Existing local UI
+3100/API 3001 и пользовательские pending API files не менялись этим срезом.
+Paired restore, minimal edge, capacity/admission, security remediation и
+deployment facts остаются незавершёнными production gates.
+
 ## Главный результат
 
 Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммиченных файлов) —

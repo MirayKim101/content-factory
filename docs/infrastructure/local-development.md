@@ -735,3 +735,86 @@ worker/edge, disk admission, matching DB/MinIO restore и human deployment facts
 остаются отдельными обязательными gates по ADR-011. Rollback preparation:
 не использовать diagnostic images; текущая локалка и authoritative data не
 изменяются.
+
+## Native media и offline artifact проверка — diagnostic only
+
+1. Из того же exact source commit экспортируй worker context:
+
+   ```sh
+   cf_worker_context_json=$(node scripts/export-worker-build-context.mjs "$cf_revision")
+   cf_worker_context=$(printf '%s' "$cf_worker_context_json" | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
+   docker build --file "$cf_worker_context/apps/worker/Dockerfile" --build-arg SOURCE_REVISION="$cf_revision" --tag content-factory-worker:diagnostic-local "$cf_worker_context"
+   export CF_DIAGNOSTIC_WORKER_IMAGE=$(docker image inspect content-factory-worker:diagnostic-local --format '{{.Id}}')
+   ```
+
+   Успех: 93 source inputs, native Node 24, direct ioredis и 66 prod packages,
+   без TSX/Prisma/тестов. Это media-only acceptance, не разрешение других ролей.
+
+2. Только на одноразовом стенде включи очередь и media profile:
+
+   ```sh
+   export CF_DIAGNOSTIC_MEDIA_QUEUE_DISABLED=0
+   docker compose --env-file /dev/null -p content-factory-api-diagnostic -f infrastructure/api/diagnostic.compose.yaml --profile media up --detach --wait --wait-timeout 100 api media-worker
+   cf_api_container=$(docker compose --env-file /dev/null -p content-factory-api-diagnostic -f infrastructure/api/diagnostic.compose.yaml ps --quiet api)
+   ```
+
+   Создай свой обычный faststart MP4 длительностью 12 seconds, 1920×1080,
+   меньше 1 MiB; fragmented pipe MP4 намеренно не подходит upload validation.
+   Передай его в API fixture как в предыдущем разделе. Затем:
+
+   ```sh
+   docker exec -i --env CF_DIAGNOSTIC_PHASE=prepare "$cf_api_container" node --input-type=module < scripts/media-container-smoke.mjs
+   docker exec -i --env CF_DIAGNOSTIC_PHASE=failure "$cf_api_container" node --input-type=module < scripts/media-container-smoke.mjs
+   ```
+
+   Успех: `passed:true`, обычный cut/download/hash/один artifact и controlled
+   failure повреждённых samples. Фазы enqueue/verify и interrupt/verify-interrupt
+   предназначены только для deliberate queue-loss/worker-kill теста в этом
+   disposable namespace. Не используй FLUSHDB, kill или helper на рабочих данных.
+
+3. Экспортируй named native OCI archive, не загружая его в daemon/registry:
+
+   ```sh
+   cf_artifact_dir=$(mktemp -d "$PWD/tmp/artifact-proof-XXXXXX")
+   docker build --platform linux/amd64 --provenance=mode=max --file "$cf_context/infrastructure/api/Dockerfile" --build-arg SOURCE_REVISION="$cf_revision" --target api-runtime --tag content-factory-api:diagnostic-oci-local --output "type=oci,dest=$cf_artifact_dir/api.oci.tar" "$cf_context"
+   ```
+
+   Tag здесь нужен BuildKit для subject-bound provenance; registry push не
+   происходит. Без subject, с другим source SHA или неизвестной платформой
+   helper откажет. Первый scanner gate поддерживает ровно linux/amd64.
+
+4. Подготовь инструменты и fresh Trivy DB отдельным connected step. Версии,
+   immutable image digests и repository — в `scripts/artifact-scan-pins.json`;
+   reference без digest не подходит. DB refresh работает non-root, без socket,
+   artifact/checkout/credentials, с новым owned cache directory и bounded 2 GiB
+   RAM scratch. Нужны `db/trivy.db` и `db/metadata.json`, schema 2, valid
+   `UpdatedAt` не старше 24 hours. Ошибка или stale DB — запрет продолжать.
+
+   ```sh
+   cf_trivy_image=$(node --input-type=module -e 'import fs from "node:fs";console.log(JSON.parse(fs.readFileSync("scripts/artifact-scan-pins.json")).trivy.image)')
+   cf_syft_image=$(node --input-type=module -e 'import fs from "node:fs";console.log(JSON.parse(fs.readFileSync("scripts/artifact-scan-pins.json")).syft.image)')
+   docker pull "$cf_trivy_image"
+   docker pull "$cf_syft_image"
+   cf_trivy_cache=$(mktemp -d "$PWD/tmp/trivy-db-connected-XXXXXX")
+   docker run --rm --pull=never --user 1000:1000 --read-only --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 --memory 3g --cpus 2 --tmpfs /tmp:rw,noexec,nosuid,size=2g,uid=1000,gid=1000,mode=0700 --mount "type=bind,source=$cf_trivy_cache,target=/cache" "$cf_trivy_image" --cache-dir /cache image --download-db-only --db-repository ghcr.io/aquasecurity/trivy-db:2 --skip-java-db-update --skip-check-update --skip-version-check --disable-telemetry --no-progress
+   ```
+
+5. Выполни offline scan с exact source commit:
+
+   ```sh
+   node scripts/scan-oci-artifact.mjs "$cf_artifact_dir/api.oci.tar" "$cf_trivy_cache" "$cf_revision"
+   ```
+
+   `cf_trivy_cache` — только новый task-owned каталог внутри ContentFactory/tmp;
+   symlinks и внешние каталоги запрещены. Scanner containers используют
+   `--pull=never`, network none, UID 1000, read-only inputs и DB, no socket,
+   no capabilities; JSON stdout ограничен 128 MiB. Layout материализуется
+   только из проверенных OCI hashes, не произвольных tar paths. JSON результата
+   указывает новый owned evidence directory; оно содержит SBOM, Trivy report,
+   source/platform/manifest/archive hashes, DB timestamp/digest и verdict.
+
+   Успех scan machinery не означает clean image: actual API/migrate
+   `d6d3d30` получили exit 1 и 208/218 blocking records. UNKNOWN и medium+
+   запрещают release; только exact LOW не блокирует. `promotionApproved`
+   всегда false: отдельные source audits и все ADR-011 gates обязательны.
+   При cleanup удаляй только свой diagnostic project после сохранения evidence.

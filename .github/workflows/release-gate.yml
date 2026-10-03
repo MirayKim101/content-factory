@@ -88,10 +88,14 @@ jobs:
       - name: Verify closed worker context and container compilation
         run: |
           node scripts/check-worker-build-context.mjs
-          docker build --file infrastructure/worker/context-check.Dockerfile \
-            --tag content-factory-worker:ci-context-only .
-          docker build --target build --file apps/worker/Dockerfile \
-            --tag content-factory-worker:ci-build-only .
+          node --test scripts/export-worker-build-context.test.mjs scripts/artifact-scan-policy.test.mjs
+          context_json=$(node scripts/export-worker-build-context.mjs "$GITHUB_SHA")
+          context_path=$(printf '%s' "$context_json" | node -e 'let s="";process.stdin.on("data", c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
+          docker build --file "$context_path/infrastructure/worker/context-check.Dockerfile" \
+            --tag content-factory-worker:ci-context-only "$context_path"
+          docker build --build-arg SOURCE_REVISION="$GITHUB_SHA" \
+            --file "$context_path/apps/worker/Dockerfile" \
+            --tag content-factory-worker:ci-diagnostic-only "$context_path"
 
       - name: Validate Compose without starting deployment services
         run: |

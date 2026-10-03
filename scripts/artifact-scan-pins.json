@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "trivy": {
+    "version": "0.75.0",
+    "image": "aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa",
+    "source": "https://github.com/aquasecurity/trivy/releases/tag/v0.75.0"
+  },
+  "syft": {
+    "version": "1.54.0",
+    "image": "anchore/syft:v1.54.0@sha256:0356562f495d432056237fbea5cbc2d4839c9c75cd500784a66de2e7cc95ca7c",
+    "source": "https://github.com/anchore/syft/releases/tag/v1.54.0"
+  },
+  "databaseMaxAgeMs": 86400000,
+  "databaseRepository": "ghcr.io/aquasecurity/trivy-db:2"
+}

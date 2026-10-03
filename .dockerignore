@@ -3,10 +3,13 @@
 !package.json
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
+!build-provenance.json
 !apps/
 apps/**
 !apps/worker/
 apps/worker/**
+!apps/worker/Dockerfile
+!apps/worker/Dockerfile.dockerignore
 !apps/worker/package.json
 !apps/worker/tsconfig.json
 !apps/worker/tsconfig.build.json

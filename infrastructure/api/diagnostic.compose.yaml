@@ -108,7 +108,66 @@ services:
       S3_SOURCE_BUCKET: cf-api-diagnostic
       S3_ACCESS_KEY: cf_diagnostic_api
       S3_SECRET_KEY: cf_diagnostic_api_fixture_only
-      MEDIA_QUEUE_DISABLED: "1"
+      MEDIA_QUEUE_DISABLED: ${CF_DIAGNOSTIC_MEDIA_QUEUE_DISABLED:-1}
+      AI_CONTEXT_ENABLED: "0"
+      EDITORIAL_FRAMES_ENABLED: "0"
+      RESEARCH_TEXT_ENABLED: "0"
+      THUMBNAIL_SUGGESTIONS_ENABLED: "0"
+      PUBLISHING_ENABLED: "0"
+      YOUTUBE_PUBLISHING_ENABLED: "0"
+      TIKTOK_PUBLISHING_ENABLED: "0"
+      TWITCH_INGESTION_ENABLED: "0"
+      TWITCH_VOD_AUTO_INGEST_ENABLED: "0"
+      TWITCH_VOD_MEDIA_GATEWAY_ENABLED: "0"
+      VERTICAL_RENDER_ENABLED: "0"
+      CLIP_GENERATION_ENABLED: "0"
+    networks: [proof]
+    depends_on:
+      api-migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio-init: { condition: service_completed_successfully }
+
+  media-worker:
+    profiles: [media]
+    image: ${CF_DIAGNOSTIC_WORKER_IMAGE:-content-factory-worker:diagnostic-not-built}
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    stop_grace_period: 20s
+    # Tiny acceptance fixtures only; not production media disk admission.
+    tmpfs:
+      [
+        "/tmp/media-worker:rw,noexec,nosuid,size=256m,uid=1000,gid=1000,mode=0700",
+        "/tmp/media-cache:rw,noexec,nosuid,size=128m,uid=1000,gid=1000,mode=0700",
+      ]
+    environment:
+      WORKER_ROLE: media
+      DEPLOYMENT_PROFILE: other
+      SOURCE_AUTHORIZATION_POLICY: manual
+      POSTGRES_DB: cf_api_diagnostic
+      POSTGRES_USER: cf_diagnostic
+      POSTGRES_PASSWORD: cf_diagnostic_fixture_only
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: cf_diagnostic_fixture_only
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_SOURCE_BUCKET: cf-api-diagnostic
+      S3_ACCESS_KEY: cf_diagnostic_api
+      S3_SECRET_KEY: cf_diagnostic_api_fixture_only
+      MEDIA_WORKER_CONCURRENCY: "1"
+      MEDIA_JOB_LEASE_MS: "10000"
+      MEDIA_SCRATCH_SAFETY_MIB: "64"
+      MEDIA_SOURCE_CACHE_MAX_MIB: "64"
+      MEDIA_SOURCE_CACHE_DIRECTORY: /tmp/media-cache
+      FFMPEG_THREADS: "1"
       AI_CONTEXT_ENABLED: "0"
       EDITORIAL_FRAMES_ENABLED: "0"
       RESEARCH_TEXT_ENABLED: "0"

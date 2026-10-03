@@ -5,7 +5,8 @@
   approved
 - Дата: 2026-10-03
 - Автор решения: Content Factory architect
-- Independent reviewer: Content Factory reviewer, CLEAN, 2026-10-03
+- Independent reviewer: baseline CLEAN, 2026-10-03; worker/scanner clarification
+  independently CLEAN, 2026-10-03
 - Owner authority: autonomous production preparation is authorized;
   deployment, external access and credentials are not approved
 
@@ -163,10 +164,27 @@ public Twitch webhook являются отдельными operating-model deci
    запускается non-root/read-only и содержит только SPA assets, Caddy binary и
    edge configuration. В нём нет Node, pnpm, Nuxt/Nitro runtime, source tree или
    `node_modules`.
-4. Существующие worker roles остаются независимыми. Base private runtime
-   запускает только роли, необходимые ручному горизонтальному pipeline.
-   External AI, Twitch, vertical и publication roles отсутствуют в default
-   profile либо остаются non-default и независимо hard-disabled.
+4. `worker-runtime` остаётся одним общим image для существующих независимых
+   worker roles, потому что текущий entrypoint статически импортирует общий role
+   graph. Build использует полный frozen development graph, а final image
+   получает отдельный scoped `pnpm install --prod --no-optional` closure. Worker
+   объявляет direct pinned production dependency `ioredis@5.11.1`, чтобы
+   необходимый BullMQ Redis backend не зависел от optional metadata. Final image
+   не содержит `tsx`, TypeScript, test/lint tools, Prisma CLI/engines, pnpm store,
+   builder lifecycle state или full build `node_modules`. Worker использует
+   `pg` pure-JS runtime и не применяет schema migrations; canonical schema
+   заранее применяет отдельный successful `api-migrate` target.
+5. Worker запускается как `node dist/main.js` без loader. Exact
+   `@content-factory/contracts` runtime source closure копируется в workspace
+   package path вне `node_modules`; workspace link разрешается в этот path.
+   Использование Node 24 native TypeScript stripping допустимо только для
+   проверенного `erasableSyntaxOnly` closure и должно быть доказано реальным
+   final-image startup. Base private runtime запускает только media role,
+   необходимую ручному горизонтальному pipeline. Текущие entrypoint и
+   healthcheck являются media-specific evidence. External AI, Twitch, vertical
+   и publication roles отсутствуют в default profile либо остаются non-default
+   и независимо hard-disabled; их включение требует отдельного role-aware
+   startup/readiness review.
 
 ### Routing и сеть
 
@@ -231,6 +249,14 @@ public Twitch webhook являются отдельными operating-model deci
   Allowlist closure проверяется против imports/TypeScript dependency graph
   выбранного commit. Packaging не stage/reset/overwrite защищённые pending
   working-tree paths.
+- Для worker context root manifests/lockfile, `apps/worker/Dockerfile*`, worker
+  manifests/config/source, exact contracts closure и
+  `infrastructure/worker` runtime helpers материализуются из одного reviewed
+  commit. Dockerfile нельзя передавать через `-f` из mutable checkout. Context
+  manifest фиксирует каждый path, Git blob ID и content digest; missing,
+  unexpected или symlink entries завершают preparation non-zero. Полный
+  committed worker `src` входит в build closure из-за статических role imports,
+  но tests/specs, uncommitted/ignored files, credentials и local data исключены.
 - Dockerfile frontend, base images и promoted application images закрепляются
   version + immutable digest; install использует committed lockfile и
   `pnpm install --frozen-lockfile`.
@@ -272,9 +298,29 @@ public Twitch webhook являются отдельными operating-model deci
   allowlist, `continue-on-error`, `ignore-unfixed` и threshold lowering
   запрещены.
 - Каждый final OCI image получает digest-bound SBOM, provenance и artifact
-  scan. Moderate/high/critical finding блокирует promotion даже при зелёном
-  source audit. Clean final Caddy image не отменяет красный Nuxt build graph.
-- До устранения `GHSA-86w9-cpqp-85rv` и `GHSA-vfj7-8cjw-p6xm` разрешены только
+  scan. Scanner binary/image закреплён version + immutable digest. На момент
+  начала scan machine-readable vulnerability DB metadata должна быть доступна,
+  корректна и не старше 24 часов; filesystem mtime не является доказательством
+  freshness. Missing, unparsable, future-dated или stale metadata завершает gate
+  non-zero. DB timestamp и digest записываются в evidence.
+- Vulnerability DB обновляется отдельным bounded step, после чего scan идёт
+  offline по immutable OCI archive/layout, экспортированному BuildKit. Scanner
+  не получает Docker socket, daemon image reference, privileged mode,
+  deployment credentials или network. Он работает non-root с read-only
+  artifact/DB mounts, dropped capabilities, `no-new-privileges` и bounded
+  writable output. Scan покрывает каждый platform manifest candidate index и
+  связывает результат с OCI manifest digest и archive SHA-256.
+- Artifact scanner инвентаризирует findings всех severity без `--severity` или
+  эквивалентного pre-filter. Promotion допускает только отсутствие findings либо
+  finding с точно распознанным literal `LOW`. `UNKNOWN`, `MEDIUM`, `HIGH`,
+  `CRITICAL`, отсутствующая/unclassified severity, unparseable record или любой
+  иной severity literal блокируют promotion fail-closed. Неполный platform scan
+  или нарушение freshness/isolation также блокирует promotion даже при зелёном
+  source audit. Clean final Caddy/worker/API image не отменяет красный
+  source/build graph.
+- До устранения `GHSA-86w9-cpqp-85rv`, `GHSA-vfj7-8cjw-p6xm` и любых иных
+  findings, из-за которых complete source/build либо production-classified
+  audit не возвращает `0` при threshold `moderate`, разрешены только
   implementation, tests и non-promotable diagnostic images. Публикация или
   promotion release image запрещены.
 - CI не получает deployment credentials, не обращается к production data и не
@@ -413,9 +459,14 @@ runtime быть не должно.
 11. Complete source/build и production-classified audits возвращают `0` без
     исключений. Пока два unresolved high существуют, критерий не выполнен и
     promotion остаётся запрещённым.
-12. Каждый final image имеет привязанные к digest SBOM/provenance и clean
-    artifact scan на том же severity threshold; clean artifact не подменяет
-    source gate.
+12. Каждый final image имеет привязанные к digest SBOM/provenance и полный
+    artifact scan без severity pre-filter. Scanner и DB закреплены digests; DB не
+    старше 24 часов на момент scan. Offline scanner читает BuildKit OCI
+    archive/layout без Docker socket, сети, privileges или credentials и
+    покрывает каждый candidate platform manifest. Gate принимает только zero
+    findings либо findings с распознанным literal `LOW`; `UNKNOWN`, `MEDIUM`,
+    `HIGH`, `CRITICAL`, missing/unclassified/unparseable или иной literal
+    завершают gate non-zero. Clean artifact не подменяет source gate.
 13. Fresh-empty data path либо paired PostgreSQL + MinIO backup/restore доказан
     в disposable environment; migration lineage, checksums и rollback evidence
     сохранены. Redis loss не теряет authoritative state.
@@ -427,10 +478,13 @@ runtime быть не должно.
 16. External private access, server/domain/VPN, TLS/ACL, credentials и real
     publishing остаются явно `not configured / not approved` до отдельного
     human deployment decision.
-17. Build evidence называет exact commit/tree; API source в context совпадает с
-    committed blobs этого commit. Uncommitted/ignored content, `.idea`, root
-    `package-lock.json`, `.env*` и local data отсутствуют, а protected pending
-    paths не staged/reset/overwritten.
+17. Build evidence называет exact commit/tree; API и worker source, Dockerfiles,
+    manifests/lockfile, contracts closure и runtime helpers в contexts совпадают
+    с committed blobs этого commit. Build definition не читается из mutable
+    checkout; context manifest не содержит missing, unexpected или symlink
+    entries. Uncommitted/ignored content, `.idea`, root `package-lock.json`,
+    `.env*` и local data отсутствуют, а protected pending paths не
+    staged/reset/overwritten.
 18. `api-runtime` inventory подтверждает direct `ioredis@5.11.1` и
     production-only graph без Prisma CLI, engines/dev tooling и случайного
     optional-peer pollution. `api-migrate` отдельно содержит pinned
@@ -453,6 +507,16 @@ runtime быть не должно.
     `msgpackr-extract`, его platform packages или
     `node-gyp-build-optional-packages`; pure-JS MessagePack round-trip и real API-to-BullMQ
     dispatch/consume smoke проходят после independent vendor fallback review.
+21. `worker-runtime` inventory подтверждает production-only `--no-optional`
+    closure с direct `ioredis@5.11.1`, `bullmq`, `pg`, AWS SDK, `dotenv` и exact
+    contracts package, но без Prisma CLI/engines, `tsx`, TypeScript, test/lint
+    tools, optional-native pollution или build `node_modules`. Final container
+    запускает `node dist/main.js` без loader; contracts workspace link
+    разрешается вне `node_modules`, а Node 24 загружает exact
+    `erasableSyntaxOnly` closure. Real PostgreSQL, Redis/BullMQ job, S3 checksum
+    upload/download и FFmpeg smoke проходят вместе с dependency-loss, restart,
+    graceful-shutdown и readiness-clear checks. Только media role считается
+    принятой; disabled roles не становятся ready и не выполняют external writes.
 
 ## Promotion и deployment gate
 
@@ -473,7 +537,9 @@ loopback не заменяется public bind.
 
 На дату ADR оба source audits остаются красными из-за
 `GHSA-86w9-cpqp-85rv` и `GHSA-vfj7-8cjw-p6xm`; поэтому promotion и deployment
-запрещены независимо от будущего clean Caddy runtime scan.
+запрещены независимо от будущего clean Caddy/API/worker runtime scan. Любой
+другой source finding, нарушающий обязательный threshold/exit-code gate, имеет
+тот же блокирующий эффект.
 
 ## Решение tech lead
 
