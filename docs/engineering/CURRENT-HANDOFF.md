@@ -2,6 +2,27 @@
 
 Обновлено: 2026-10-03. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
+## Worker final runtime и scanner capacity — следующий крупный срез
+
+Из final worker удалены только inherited global npm/Corepack/Yarn и shims.
+Node, FFmpeg/ffprobe, font hashes, все 288 OS packages и 66 native production
+packages остались прежними. Большой реальный batch прошёл normal/replay,
+потерю disposable Redis queue, SIGKILL в PROCESSING с attempt 2 без duplicate
+artifact и controlled corrupt-media failure. Checksums результата совпали с
+предыдущим v3-capable worker. Детали и private evidence:
+`tasks/worker-runtime-hardening.md`.
+
+Исправлен scanner-helper: JSON limit 128 MiB больше не ограничивает уже
+проверенные OCI layers; blob проверяется по exact descriptor size и SHA-256.
+JSON cap, scanner isolation и fail-closed severity policy сохранены; 25 related
+helper tests прошли. Actual worker full scan остаётся красным: 717 non-LOW
+Debian records вместо baseline 743; два source high также остаются. Это
+remediation checkpoint, не разрешение production promotion.
+
+Hosted CI для `853e60b` прошёл оба реальных integration/recovery jobs и все
+non-audit source checks. Source job красный только на двух mandatory audit
+steps; исключений и скрытого `continue-on-error` не добавлено.
+
 ## Recovery, recipe v3 и API hardening — текущий крупный срез
 
 Новые cut intents сохраняют `stage1-cut-h264-v3`: decoder, encoder и filter

@@ -88,7 +88,7 @@ jobs:
       - name: Verify closed worker context and container compilation
         run: |
           node scripts/check-worker-build-context.mjs
-          node --test scripts/export-worker-build-context.test.mjs scripts/artifact-scan-policy.test.mjs scripts/diagnostic-pair-recovery.test.mjs
+          node --test scripts/export-worker-build-context.test.mjs scripts/artifact-scan-policy.test.mjs scripts/scan-oci-artifact.test.mjs scripts/diagnostic-pair-recovery.test.mjs
           context_json=$(node scripts/export-worker-build-context.mjs "$GITHUB_SHA")
           context_path=$(printf '%s' "$context_json" | node -e 'let s="";process.stdin.on("data", c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
           docker build --file "$context_path/infrastructure/worker/context-check.Dockerfile" \

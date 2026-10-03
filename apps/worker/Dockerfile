@@ -76,15 +76,45 @@ LABEL org.opencontainers.image.revision=$SOURCE_REVISION \
 ARG FFMPEG_VERSION=7:5.1.9-0+deb12u1
 ARG DEJAVU_FONT_VERSION=2.37-6
 
-# Debian Bookworm's security-updated FFmpeg package is version-pinned. Package
-# metadata is removed in the same layer so credentials and build state cannot
-# leak into the runtime image.
+# The Bookworm FFmpeg package is version-pinned; this is not a clean security
+# gate. Remove package metadata in the same layer to avoid retaining build state.
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends "ffmpeg=${FFMPEG_VERSION}" "fonts-dejavu-core=${DEJAVU_FONT_VERSION}" \
     && ffmpeg -version \
     && ffprobe -version \
     && sha256sum /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf > /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf.sha256 \
     && rm -rf /var/lib/apt/lists/*
+
+# Final runtime invokes Node directly, never a package manager. Remove only
+# verified trees/shims inherited from the pinned base, not application packages.
+RUN set -eu; \
+    rm -rf \
+      /usr/local/lib/node_modules/npm \
+      /usr/local/lib/node_modules/corepack \
+      /opt/yarn-v1.22.22; \
+    rm -f \
+      /usr/local/bin/npm \
+      /usr/local/bin/npx \
+      /usr/local/bin/yarn \
+      /usr/local/bin/yarnpkg \
+      /usr/local/bin/corepack \
+      /usr/local/bin/pnpm \
+      /usr/local/bin/pnpx; \
+    for path in \
+      /usr/local/lib/node_modules/npm \
+      /usr/local/lib/node_modules/corepack \
+      /opt/yarn-v1.22.22 \
+      /usr/local/bin/npm \
+      /usr/local/bin/npx \
+      /usr/local/bin/yarn \
+      /usr/local/bin/yarnpkg \
+      /usr/local/bin/corepack \
+      /usr/local/bin/pnpm \
+      /usr/local/bin/pnpx; do \
+      test ! -e "$path"; \
+      test ! -L "$path"; \
+    done; \
+    test "$(node --version)" = 'v24.15.0'
 
 ENV NODE_ENV=production \
     DEPLOYMENT_PROFILE=other \

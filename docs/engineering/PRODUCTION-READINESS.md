@@ -31,8 +31,11 @@ where ADR-011 explicitly permits it.
    [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), with no published
    patched version in the recorded audit. Actual hardened API/migrate scans
    still deny promotion at 160/170 non-LOW records. Those counts are not unique
-   CVEs or a percentage of readiness. A worker artifact baseline and web-edge
-   scan are separate gates. No allowlist, `ignore-unfixed`, severity reduction
+   CVEs or a percentage of readiness. The exact hardened worker scan denies
+   promotion at 717 non-LOW records, down from its 743-record baseline; native
+   dependencies and media/recovery behavior are unchanged. See
+   `tasks/worker-runtime-hardening.md`. The web-edge scan is a separate gate.
+   No allowlist, `ignore-unfixed`, severity reduction
    or final-image-only substitution for the source gate is allowed.
 2. **Static web-edge runtime.** ADR-011 specifies static Nuxt SPA assets in a
    pinned Caddy image, with the fixed streaming `/api/v1` route. The build,

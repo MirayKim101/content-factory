@@ -66,7 +66,61 @@ export async function sha256File(path) {
   return hash.digest("hex");
 }
 
-async function execute(command, args, timeoutMs = 300000, outputPath) {
+export async function captureOutput(stream, output, descriptor) {
+  const limit = descriptor ? descriptor.size : 128 * 1024 ** 2;
+  if (descriptor) {
+    assert.ok(
+      Number.isSafeInteger(limit) && limit > 0 && limit < 2 * 1024 ** 3,
+    );
+    assert.match(descriptor.digest, /^sha256:[a-f0-9]{64}$/);
+  }
+  const hash = descriptor ? createHash("sha256") : undefined;
+  let size = 0;
+  for await (const chunk of stream) {
+    assert.ok(Buffer.isBuffer(chunk), "Expected binary output stream");
+    size += chunk.length;
+    assert.ok(
+      size <= limit,
+      descriptor
+        ? "OCI blob exceeded descriptor size"
+        : "Scanner output exceeded 128 MiB",
+    );
+    let offset = 0;
+    while (offset < chunk.length) {
+      const { bytesWritten } = await output.write(
+        chunk,
+        offset,
+        chunk.length - offset,
+        null,
+      );
+      assert.ok(
+        Number.isSafeInteger(bytesWritten) &&
+          bytesWritten > 0 &&
+          bytesWritten <= chunk.length - offset,
+        "Incomplete output write",
+      );
+      offset += bytesWritten;
+    }
+    hash?.update(chunk);
+  }
+  if (descriptor) {
+    assert.equal(size, descriptor.size, "OCI blob size mismatch");
+    assert.equal(
+      `sha256:${hash.digest("hex")}`,
+      descriptor.digest,
+      "OCI blob checksum mismatch",
+    );
+  }
+  return size;
+}
+
+async function execute(
+  command,
+  args,
+  timeoutMs = 300000,
+  outputPath,
+  descriptor,
+) {
   const output = outputPath ? await open(outputPath, "wx", 0o600) : undefined;
   let child;
   let timer;
@@ -83,14 +137,7 @@ async function execute(command, args, timeoutMs = 300000, outputPath) {
       child.on("error", (error) => resolveExit({ error }));
       child.on("exit", (code, signal) => resolveExit({ code, signal }));
     });
-    if (output) {
-      let size = 0;
-      for await (const chunk of child.stdout) {
-        size += chunk.length;
-        assert.ok(size <= 128 * 1024 ** 2, "Scanner output exceeded 128 MiB");
-        await output.write(chunk);
-      }
-    }
+    if (output) await captureOutput(child.stdout, output, descriptor);
     const result = await exited;
     if (result.error) throw result.error;
     assert.equal(result.signal, null, `${command} was terminated`);
@@ -229,6 +276,9 @@ export async function scanArtifact(archiveInput, cacheInput, expectedRevision) {
   // only previously validated content-addressed blobs, never arbitrary tar paths.
   const layout = resolve(output, "layout");
   await mkdir(resolve(layout, "blobs/sha256"), { recursive: true });
+  const descriptors = new Map(
+    oci.blobs.map((blob) => [`blobs/sha256/${blob.digest.slice(7)}`, blob]),
+  );
   for (const entry of [
     "oci-layout",
     "index.json",
@@ -240,6 +290,7 @@ export async function scanArtifact(archiveInput, cacheInput, expectedRevision) {
         ["-xOf", archive, "--", entry],
         60000,
         resolve(layout, entry),
+        descriptors.get(entry),
       ),
       0,
     );
