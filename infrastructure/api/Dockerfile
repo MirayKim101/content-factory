@@ -75,7 +75,89 @@ RUN node --input-type=module -e '\
 FROM source AS migration-dependencies
 RUN pnpm install --frozen-lockfile --prod --no-optional --filter @content-factory/api-migrate
 
-FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d AS api-runtime
+FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d AS runtime-base
+# Patch only the five reviewed Bookworm packages. The package inventory diff
+# makes an unexpected dependency addition, removal, or upgrade fail the build.
+RUN set -eu; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.before; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends --only-upgrade \
+      libgcrypt20=1.10.1-3+deb12u1 \
+      libgnutls30=3.7.9-2+deb12u7 \
+      liblzma5=5.4.1-1+deb12u2 \
+      libpcre2-8-0=10.42-1+deb12u1 \
+      tzdata=2026c-0+deb12u1; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.after; \
+    awk 'NR == FNR { before[$1] = $2; next } !($1 in before) || before[$1] != $2 { print $1 }' \
+      /tmp/packages.before /tmp/packages.after | sort > /tmp/packages.changed; \
+    awk 'NR == FNR { after[$1] = $2; next } !($1 in after) { print $1 }' \
+      /tmp/packages.after /tmp/packages.before | sort > /tmp/packages.removed; \
+    printf '%s\n' libgcrypt20 libgnutls30 liblzma5 libpcre2-8-0 tzdata > /tmp/packages.expected; \
+    cmp /tmp/packages.expected /tmp/packages.changed; \
+    test ! -s /tmp/packages.removed; \
+    test "$(dpkg-query -W -f='${Version}' libgcrypt20)" = '1.10.1-3+deb12u1'; \
+    test "$(dpkg-query -W -f='${Version}' libgnutls30)" = '3.7.9-2+deb12u7'; \
+    test "$(dpkg-query -W -f='${Version}' liblzma5)" = '5.4.1-1+deb12u2'; \
+    test "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" = '10.42-1+deb12u1'; \
+    test "$(dpkg-query -W -f='${Version}' tzdata)" = '2026c-0+deb12u1'; \
+    rm -rf /var/lib/apt/lists/*; \
+    rm -f /tmp/packages.before /tmp/packages.after /tmp/packages.changed /tmp/packages.removed /tmp/packages.expected
+# Final images run Node directly. Remove only the global package-manager trees
+# and shims shipped by the pinned official Node image; application dependencies
+# remain the untouched frozen pnpm production closure copied below.
+RUN set -eu; \
+    rm -rf \
+      /usr/local/lib/node_modules/npm \
+      /usr/local/lib/node_modules/corepack \
+      /opt/yarn-v1.22.22; \
+    rm -f \
+      /usr/local/bin/npm \
+      /usr/local/bin/npx \
+      /usr/local/bin/yarn \
+      /usr/local/bin/yarnpkg \
+      /usr/local/bin/corepack \
+      /usr/local/bin/pnpm \
+      /usr/local/bin/pnpx; \
+    for path in \
+      /usr/local/lib/node_modules/npm \
+      /usr/local/lib/node_modules/corepack \
+      /opt/yarn-v1.22.22 \
+      /usr/local/bin/npm \
+      /usr/local/bin/npx \
+      /usr/local/bin/yarn \
+      /usr/local/bin/yarnpkg \
+      /usr/local/bin/corepack \
+      /usr/local/bin/pnpm \
+      /usr/local/bin/pnpx; do \
+      test ! -e "$path"; \
+      test ! -L "$path"; \
+    done; \
+    test "$(node --version)" = 'v24.15.0'
+
+FROM runtime-base AS migration-runtime-base
+# Prisma's schema engine needs these two exact packages. Assert that installing
+# them changes no other package in the already-patched runtime base.
+RUN set -eu; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.before; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends \
+      libssl3=3.0.22-1~deb12u1 \
+      openssl=3.0.22-1~deb12u1; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.after; \
+    awk 'NR == FNR { before[$1] = $2; next } !($1 in before) || before[$1] != $2 { print $1 }' \
+      /tmp/packages.before /tmp/packages.after | sort > /tmp/packages.changed; \
+    awk 'NR == FNR { after[$1] = $2; next } !($1 in after) { print $1 }' \
+      /tmp/packages.after /tmp/packages.before | sort > /tmp/packages.removed; \
+    printf '%s\n' libssl3 openssl > /tmp/packages.expected; \
+    cmp /tmp/packages.expected /tmp/packages.changed; \
+    test ! -s /tmp/packages.removed; \
+    test "$(dpkg-query -W -f='${Version}' libssl3)" = '3.0.22-1~deb12u1'; \
+    test "$(dpkg-query -W -f='${Version}' openssl)" = '3.0.22-1~deb12u1'; \
+    openssl version; \
+    rm -rf /var/lib/apt/lists/*; \
+    rm -f /tmp/packages.before /tmp/packages.after /tmp/packages.changed /tmp/packages.removed /tmp/packages.expected
+
+FROM runtime-base AS api-runtime
 ARG SOURCE_REVISION
 LABEL org.opencontainers.image.revision=$SOURCE_REVISION \
     io.content-factory.promotion="blocked-until-all-release-gates-pass"
@@ -99,7 +181,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
     CMD node -e 'fetch("http://127.0.0.1:3001/api/v1/readiness", {signal: AbortSignal.timeout(2200)}).then(r => {if (!r.ok) process.exitCode=1}).catch(() => {process.exitCode=1})'
 CMD ["node", "dist/main.js"]
 
-FROM migration-base AS api-migrate
+FROM migration-runtime-base AS api-migrate
 ARG SOURCE_REVISION
 LABEL org.opencontainers.image.revision=$SOURCE_REVISION \
     io.content-factory.promotion="blocked-until-all-release-gates-pass"

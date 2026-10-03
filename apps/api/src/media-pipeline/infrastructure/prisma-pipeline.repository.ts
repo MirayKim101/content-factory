@@ -175,7 +175,7 @@ export class PrismaPipelineRepository implements PipelineRepository {
                 sourceVersion: project.source!.sourceVersion,
                 type: "CUT_SEGMENT" as const,
                 idempotencyKey: `cut:${input.idempotencyKey}:${segment.clientSegmentId}`,
-                recipeVersion: "stage1-cut-h264-v2",
+                recipeVersion: "stage1-cut-h264-v3",
                 totalMs: segment.endMs - segment.startMs,
                 segment: {
                   create: {

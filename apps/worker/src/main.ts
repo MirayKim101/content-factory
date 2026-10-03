@@ -880,6 +880,7 @@ async function startWorker(): Promise<void> {
   const processor = new FfmpegMediaProcessor(
     config.ffmpegPath,
     config.ffprobePath,
+    config.ffmpegThreads,
   );
   const assemblyRenderer = new FfmpegAssemblyRenderer(
     config.ffmpegPath,

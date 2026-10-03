@@ -90,6 +90,7 @@ ENV NODE_ENV=production \
     DEPLOYMENT_PROFILE=other \
     SOURCE_AUTHORIZATION_POLICY=manual \
     WORKER_ROLE=media \
+    FFMPEG_THREADS=1 \
     MEDIA_SCRATCH_DIRECTORY=/tmp/media-worker \
     FFMPEG_PATH=/usr/bin/ffmpeg \
     FFPROBE_PATH=/usr/bin/ffprobe \

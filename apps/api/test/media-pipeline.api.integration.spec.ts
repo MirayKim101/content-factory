@@ -85,7 +85,7 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
     });
     expect(persisted).toHaveLength(2);
     expect(
-      persisted.every((job) => job.recipeVersion === "stage1-cut-h264-v2"),
+      persisted.every((job) => job.recipeVersion === "stage1-cut-h264-v3"),
     ).toBe(true);
     expect(
       persisted.every(
@@ -142,6 +142,83 @@ describe("Stage 1 cut intent API (PostgreSQL + BullMQ)", () => {
         expect(body.error.code).toBe("IDEMPOTENCY_CONFLICT"),
       );
   });
+
+  it.each(["stage1-cut-h264-v1", "stage1-cut-h264-v2"])(
+    "replays persisted %s cut jobs without rewriting their recipe version",
+    async (recipeVersion) => {
+      const projectId = await readyProject(120_000);
+      const segments = [
+        { clientSegmentId: randomUUID(), startMs: 1_000, endMs: 4_000 },
+      ];
+      const idempotencyKey = `legacy-replay-${recipeVersion}`;
+      const first = await request(app.getHttpServer())
+        .post(`/api/v1/projects/${projectId}/cuts`)
+        .set("Idempotency-Key", idempotencyKey)
+        .send({ segments })
+        .expect(201);
+      const originalUpdatedAt = first.body.jobs[0]?.updatedAt;
+      expect(typeof originalUpdatedAt).toBe("string");
+
+      await prisma.pipelineJob.updateMany({
+        where: { cutRequestId: first.body.requestId as string },
+        data: { recipeVersion, updatedAt: new Date(originalUpdatedAt) },
+      });
+      const beforeReplay = await prisma.cutRequest.findUniqueOrThrow({
+        where: { id: first.body.requestId as string },
+        include: {
+          jobs: { include: { attempts: true, resultArtifact: true } },
+        },
+      });
+      const countsBeforeReplay = {
+        requests: await prisma.cutRequest.count({
+          where: { idempotencyKey },
+        }),
+        jobs: beforeReplay.jobs.length,
+        attempts: beforeReplay.jobs.reduce(
+          (total, job) => total + job.attempts.length,
+          0,
+        ),
+        artifacts: beforeReplay.jobs.filter((job) => job.resultArtifact).length,
+      };
+      expect(countsBeforeReplay).toEqual({
+        requests: 1,
+        jobs: 1,
+        attempts: 1,
+        artifacts: 0,
+      });
+
+      await request(app.getHttpServer())
+        .post(`/api/v1/projects/${projectId}/cuts`)
+        .set("Idempotency-Key", idempotencyKey)
+        .send({ segments })
+        .expect(201)
+        .expect(({ body }) => expect(body).toEqual(first.body));
+
+      const afterReplay = await prisma.cutRequest.findUniqueOrThrow({
+        where: { id: first.body.requestId as string },
+        include: {
+          jobs: { include: { attempts: true, resultArtifact: true } },
+        },
+      });
+      expect({
+        requests: await prisma.cutRequest.count({
+          where: { idempotencyKey },
+        }),
+        jobs: afterReplay.jobs.length,
+        attempts: afterReplay.jobs.reduce(
+          (total, job) => total + job.attempts.length,
+          0,
+        ),
+        artifacts: afterReplay.jobs.filter((job) => job.resultArtifact).length,
+      }).toEqual(countsBeforeReplay);
+      expect(afterReplay.jobs).toEqual([
+        expect.objectContaining({
+          recipeVersion,
+          updatedAt: new Date(originalUpdatedAt),
+        }),
+      ]);
+    },
+  );
 
   it("rejects out-of-duration bounds without persisting a job", async () => {
     const projectId = await readyProject(5_000);

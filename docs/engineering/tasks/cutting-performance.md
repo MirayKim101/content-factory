@@ -53,7 +53,8 @@ object keys и SHA-256. Cold job прошёл примерно в `2.5×` быс
 | `faster`   | `27877 ms`  | `9598776`   | `0.9724` |
 | `veryfast` | `15191 ms`  | `8261830`   | `0.9712` |
 
-Новые jobs используют `stage1-cut-h264-v2` (`veryfast`, CRF 20, AAC 192k).
+На дату этого baseline новые jobs использовали `stage1-cut-h264-v2`
+(`veryfast`, CRF 20, AAC 192k); текущая v3 описана ниже.
 Старые jobs с `stage1-cut-h264-v1` воспроизводимо остаются на `medium`.
 
 ## Найденные причины
@@ -159,3 +160,72 @@ Baseline доказывает надёжность и пользу кэша, н�
 для целевой очереди. Следующий capacity experiment выполняется отдельно:
 сначала concurrency `2`, затем `4` только при безопасных CPU/RAM/scratch
 показателях и без изменения бизнес-логики jobs.
+
+## Recipe v3 — ограничение потоков FFmpeg
+
+Проверка 2026-10-03 выполнена как изолированный диагностический cut, а не как
+новый capacity baseline. Она сравнивает прежний runtime image
+`content-factory-worker:diagnostic-prod-20261003-8ae525e37920` с recipe v2 и
+candidate image `content-factory-worker:diagnostic-prod-20261003-88913598440e`
+с recipe v3. Candidate собран из immutable commit
+`88913598440e87c80df8d0263dc3f3e13d8a13ce`.
+
+Отдельный no-cache candidate `3738e1f83f154619387cab3e5da3ed9e3812e1df`
+имел идентичные `apps/worker/Dockerfile` и `apps/worker/src` с измеренным
+candidate; его image
+`content-factory-worker:diagnostic-prod-20261003-3738e1f83f15` отдельно
+создал тот же H.264-only output (SHA-256
+`dd3b1c6612fbbf8319b311bcb884f9646df80360a8d91d9284043d61d5503321`,
+1920×1080, 24 fps, 12,000 ms).
+
+- source: `tmp/worker-media-fixture-fZCgHN/source-faststart.mp4`;
+  SHA-256 `2dfb40e475787162be3ac3b00a104308e85d00655f3ffe6814c5f82f293a5978`;
+  18,386 bytes; H.264 1920×1080, 24 fps, 12,000 ms, без audio stream;
+- оба запуска: `--network none`, read-only root filesystem, `--cpus 1`,
+  `--memory 512m`, `--pids-limit 128`, `FFMPEG_THREADS=1`, один полный
+  отрезок 0–12,000 ms;
+- sampler работает внутри того же PID cgroup и каждые 25 ms читает
+  `pids.current` и `/proc/<ffmpeg-pid>/task`; он не создаёт дочерние процессы.
+
+| Recipe/image        | Max cgroup PIDs | Max FFmpeg tasks | Reserve below 128 | Output SHA-256                                                     | ffprobe                    |
+| ------------------- | --------------: | ---------------: | ----------------: | ------------------------------------------------------------------ | -------------------------- |
+| v2 / `8ae525e37920` |              75 |               66 |                53 | `7647174ecf0062dc5f04860c68b318edbb554abbb4e0b54024078ac85855fdd5` | H.264 1920×1080, 12,000 ms |
+| v3 / `88913598440e` |              10 |                1 |               118 | `dd3b1c6612fbbf8319b311bcb884f9646df80360a8d91d9284043d61d5503321` | H.264 1920×1080, 12,000 ms |
+
+Retained raw metrics: `tmp/worker-v3-benchmark-AnTiHJ/before.metrics` and
+`after.metrics`, with 1,597 / 193 sampler observations respectively. These are
+counts, not elapsed milliseconds. Earlier unretained figures (77/12 PIDs,
+1,389/152 observations) are not used as reproducible acceptance evidence.
+
+`v3` keeps v2's H.264 `veryfast`/CRF 20, pixel format, optional audio mapping,
+AAC parameters and `+faststart`; it adds only `-filter_threads 1`, decoder
+`-threads:v 1` before `-i`, and encoder `-threads:v 1` after the input. The
+fixture contains no audio stream, so the expected and observed outputs are
+video-only; this check does not claim an AAC result. The results demonstrate
+thread containment for this fixture under the stated limits, not a general
+throughput or visual-quality capacity claim.
+
+## Combined v3 API/worker acceptance
+
+The same disposable source was admitted through the actual API candidate
+`3320af272a63ea89be9a0b4e5bcbd133d9d5ac47` and processed by worker candidate
+`e5115c875b22aa23b2e0aa532e5ed48c6548f966`. Both ran non-root/read-only under
+the one-CPU/PID-128 diagnostic profile with manual rights and external flags off.
+
+- One-second cut: READY, attempt 1, 3,889 bytes, SHA-256
+  `96d208d25724a25649cddea88236b1e42037cbef25fddd80725a6db5149a6b70`.
+- Ten-second cut after deletion of only the owned disposable Redis queue:
+  PostgreSQL reconciliation produced READY, attempt 1, 21,547 bytes, SHA-256
+  `b1cfaf517c78c179135d7510f508ef35d7388ecffb45fb7ac25f68b3586c3753`.
+- A separate cut was observed PROCESSING before SIGKILL of only the fixture
+  worker. Restart completed attempt 2 with one artifact and that same checksum.
+- Replay preserved one logical job/artifact. Both job and artifact persisted
+  `stage1-cut-h264-v3`; no legacy recipe was rewritten.
+- Destroyed MP4 encoded samples retained a valid upload container, but encoding
+  ended in controlled `FFMPEG_CUT_FAILED`, with no ready result.
+
+Private evidence: `tmp/combined-media-evidence-OzWgfW/media-evidence.json`,
+SHA-256 `e6e73832cfd47645ee136fbb8ec8b19bcd33797db8e2be52bd38d311763d72d6`.
+This is recovery/idempotency acceptance, not production throughput or a general
+audio/visual quality benchmark. Rollout worker before API v3 admission; rollback
+API admission first and retain v3-capable workers until all v3 intents finish.

@@ -75,7 +75,7 @@ jobs:
 
       - name: Verify immutable API context and diagnostic runtime targets
         run: |
-          node --test scripts/export-api-build-context.test.mjs
+          node --test scripts/export-api-build-context.test.mjs scripts/ci-media-api-gate.test.mjs
           context_json=$(node scripts/export-api-build-context.mjs "$GITHUB_SHA")
           context_path=$(printf '%s' "$context_json" | node -e 'let s="";process.stdin.on("data", c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
           docker build --file "$context_path/infrastructure/api/Dockerfile" \
@@ -88,7 +88,7 @@ jobs:
       - name: Verify closed worker context and container compilation
         run: |
           node scripts/check-worker-build-context.mjs
-          node --test scripts/export-worker-build-context.test.mjs scripts/artifact-scan-policy.test.mjs
+          node --test scripts/export-worker-build-context.test.mjs scripts/artifact-scan-policy.test.mjs scripts/diagnostic-pair-recovery.test.mjs
           context_json=$(node scripts/export-worker-build-context.mjs "$GITHUB_SHA")
           context_path=$(printf '%s' "$context_json" | node -e 'let s="";process.stdin.on("data", c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
           docker build --file "$context_path/infrastructure/worker/context-check.Dockerfile" \
@@ -173,3 +173,22 @@ jobs:
           pnpm --filter @content-factory/worker exec vitest run \
             --config vitest.integration.config.ts \
             test/lease-recovery.integration.spec.ts --testTimeout=20000
+
+  media-pipeline-api:
+    name: Isolated media pipeline API integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out source and exact revision object
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.15.0
+
+      - name: Run fresh PostgreSQL, Redis, MinIO and queue-enabled media API batch
+        run: node scripts/ci-media-api-gate.mjs "$GITHUB_SHA"

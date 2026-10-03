@@ -41,7 +41,10 @@ export class FfmpegMediaProcessor implements MediaProcessor {
   constructor(
     private readonly ffmpegPath: string,
     private readonly ffprobePath: string,
-  ) {}
+    private readonly threads: number,
+  ) {
+    if (!isThreadLimit(threads)) throw new Error("CUT_THREAD_LIMIT_INVALID");
+  }
 
   async probe(
     filePath: string,
@@ -139,10 +142,14 @@ export class FfmpegMediaProcessor implements MediaProcessor {
     signal: AbortSignal;
     onProgress(processedMs: number): void;
   }): Promise<{ version: string }> {
-    const process = spawn(this.ffmpegPath, buildCutArguments(input), {
-      signal: input.signal,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    const process = spawn(
+      this.ffmpegPath,
+      buildCutArguments({ ...input, threads: this.threads }),
+      {
+        signal: input.signal,
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
     let stdout = "";
     let stderr = "";
     process.stdout.setEncoding("utf8");
@@ -188,8 +195,13 @@ export function buildCutArguments(input: {
   outputPath: string;
   startMs: number;
   endMs: number;
+  threads?: number;
 }): string[] {
   const preset = encoderPreset(input.recipeVersion);
+  if (input.recipeVersion === "stage1-cut-h264-v3") {
+    if (!isThreadLimit(input.threads)) throw invalidThreadLimit();
+    return threadedCutArguments(input, "veryfast", input.threads);
+  }
   return [
     "-hide_banner",
     "-nostdin",
@@ -228,9 +240,79 @@ export function buildCutArguments(input: {
 function encoderPreset(recipeVersion: string): "medium" | "veryfast" {
   if (recipeVersion === "stage1-cut-h264-v1") return "medium";
   if (recipeVersion === "stage1-cut-h264-v2") return "veryfast";
+  if (recipeVersion === "stage1-cut-h264-v3") return "veryfast";
   throw new ControlledMediaError(
     "CUT_RECIPE_UNSUPPORTED",
     "Версия настроек обработки этого задания не поддерживается.",
+    false,
+  );
+}
+
+function threadedCutArguments(
+  input: {
+    sourcePath: string;
+    outputPath: string;
+    startMs: number;
+    endMs: number;
+  },
+  preset: "veryfast",
+  threads: number,
+): string[] {
+  const limit = String(threads);
+  return [
+    "-hide_banner",
+    "-nostdin",
+    "-y",
+    "-filter_threads",
+    limit,
+    "-ss",
+    seconds(input.startMs),
+    "-threads:v",
+    limit,
+    "-i",
+    input.sourcePath,
+    "-threads:v",
+    limit,
+    "-t",
+    seconds(input.endMs - input.startMs),
+    "-map",
+    "0:v:0",
+    "-map",
+    "0:a?",
+    "-c:v",
+    "libx264",
+    "-preset",
+    preset,
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "192k",
+    "-movflags",
+    "+faststart",
+    "-progress",
+    "pipe:1",
+    "-nostats",
+    input.outputPath,
+  ];
+}
+
+function isThreadLimit(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isSafeInteger(value) &&
+    value >= 1 &&
+    value <= 32
+  );
+}
+
+function invalidThreadLimit(): ControlledMediaError {
+  return new ControlledMediaError(
+    "CUT_THREAD_LIMIT_INVALID",
+    "FFmpeg thread limit must be a safe integer between 1 and 32.",
     false,
   );
 }

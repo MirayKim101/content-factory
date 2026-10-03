@@ -2,6 +2,60 @@
 
 Обновлено: 2026-10-03. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
+## Recovery, recipe v3 и API hardening — текущий крупный срез
+
+Новые cut intents сохраняют `stage1-cut-h264-v3`: decoder, encoder и filter
+threads ограничены проверенной настройкой `FFMPEG_THREADS`. Существующие v1/v2
+не переписываются, их FFmpeg arguments сохранены. На том же небольшом 1080p
+fixture сохранённый повтор показывает снижение пика cgroup процессов с 75 до 10.
+Это не новый capacity SLO; значения относятся только к retained evidence.
+Порядок rollout: сначала v3-capable worker, затем API admission; обратный
+порядок запрещён. Для rollback сначала вернуть API admission к v2, сохранив
+v3-capable workers до завершения всех уже созданных v3 jobs.
+
+Полный source gate из отдельного immutable Git snapshot без `.env` и pending
+user files прошёл: lint, strict typecheck, 919 unit tests (API 269, worker 350,
+web 277, contracts 23), оба OpenAPI checks и все workspace builds. Дополнительно
+21 build-context/scanner/paired-recovery/CI isolation policy tests прошли. Настоящий API
+integration batch с PostgreSQL/BullMQ/MinIO прошёл 8/8; legacy recipe replay
+сохраняет timestamps, recipe и полное тело ответа. Независимое ревью обнаружило
+и исправило фиктивный request count в тесте — теперь он читается из PostgreSQL.
+Полный queue-enabled integration gate включён отдельным CI job; в отличие от
+прежнего PostgreSQL-only job он поднимает собственные Redis и private MinIO.
+Local повтор из combined candidate `7f174ec541a1a9c5822b9364f837591c797b06db`
+прошёл fresh/repeat migrations и все 8 сценариев, затем удалил только свои
+disposable containers/network. Внешние write switches были выключены.
+
+Combined API `3320af2` и worker `e5115c8` отдельно прошли manual upload/rights,
+v3 cut/download/replay, потерю disposable Redis queue, SIGKILL в наблюдаемом
+PROCESSING и controlled corrupt-media failure. Restart дал attempt 2 с одним
+artifact и той же checksum; source/result recipe lineage сохранилась. Private
+evidence: `tmp/combined-media-evidence-OzWgfW/media-evidence.json`.
+
+Final API/migrate bases сохраняют Node 24/Bookworm: пять точечных OS patches
+проверены полным inventory diff. Из final images удалены только поставляемые
+base image глобальные package managers, а не application dependency graph.
+Fresh/repeat 45 migrations, readiness 200/503 с возвратом после каждого отказа,
+upload/rights/idempotency/Range/checksum smoke прошли; независимый reviewer
+воспроизвёл fresh migration и runtime checks. Actual artifact gates остаются
+**красными**: API 160, migrate 170 non-LOW findings вместо прежних 208/218.
+Два source high advisories также не закрыты. Это checkpoint remediation, не
+production promotion. Детали: `tasks/api-runtime-hardening.md`.
+
+Проверено совместное восстановление PostgreSQL metadata и matching private
+objects: все 74 таблицы, 45 миграций, 12 объектов и 12 ready references совпали.
+Snapshot монтировался read-only; неполная копия отказала до PUT и оставила
+target bucket пустым. Независимый read-only повтор подтвердил checksums и
+неизменность snapshot. Данные рабочего `content-factory-restored` не участвовали.
+Это non-versioned MP4 diagnostic drill, не полноценный production backup/RPO/RTO.
+Детали, private evidence paths и rollback: `tasks/paired-recovery-drill.md`.
+
+Следующий обязательный runtime срез — static SPA/Caddy edge по ADR-011,
+resource-checked production disk admission и дальнейшая security remediation.
+Server/domain/private access, реальные credentials и credentialed provider
+canaries остаются отдельными prerequisites; их значения не выдуманы.
+Порт 3000 не использовался. Рабочий UI: <http://127.0.0.1:3100>.
+
 ## Source release gate и security checkpoint 2026-10-03
 
 Добавлен `.github/workflows/release-gate.yml`: закреплённые Node 24.15.0,
