@@ -2,6 +2,43 @@
 
 Обновлено: 2026-10-04. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
+## Checkpoint на ночь — разработка остановлена по просьбе владельца
+
+Проверенный код `d8aeaeace9e127c1ca2a4eb57ca68acbf38d14ba` опубликован в
+`origin/feat/stage2b2-frame-evidence`. Полный worker gate: lint, typecheck,
+366 tests и build PASS; independent review CLEAN. Все 19 native startup cases
+и media upload/replay/queue-loss/SIGKILL/controlled-failure batch прошли.
+Hosted CI run `37141155269`: migrations/recovery и isolated media integration
+PASS; source checks проходят, кроме двух обязательных dependency audit steps.
+Production promotion остаётся BLOCKED: исключения из security gate не вводились.
+
+Незавершённые изменения сохранены **локально**, не входят в опубликованную
+версию и не являются проверенной поставкой:
+
+- API upload-capacity WIP: stash commit
+  `01c905901747840e71e1fa9a0c2b933d5f015568`, 26 собственных путей;
+  frozen candidate `708706b21af965d25e6344e6d4e2f6cbce73bb46`.
+  До delivery нужны реальные cross-endpoint admission/release, raw socket abort
+  при ожидании reservation и активной записи, ENOSPC/EDQUOT/EFBIG проверки
+  создания/открытия/записи с cleanup и release. Четыре multipart writer endpoints:
+  project upload, creator reference, editorial thumbnail и montage asset.
+- Worker shared-capacity foundation WIP: stash commit
+  `eb372b0532538e39083a64cfd13413d8e81f32a3`, шесть собственных путей.
+  Ledger, ports, overlap utility, draft task и подготовленные tests ещё не
+  подключены к runtime; новые tests не запускались. Это не завершённый Slice 2.
+
+Завтра сначала проверить пересечения сохранённых WIP с текущей рабочей копией,
+затем восстанавливать только собственные изменения отдельными срезами.
+SHA выше стабильны; номера `stash@{n}` могут измениться. Незакоммиченные
+пользовательские API-файлы, `.idea` и корневой `package-lock.json` не менялись
+и не включались в эти scoped stashes. Порт 3000 не затрагивался.
+
+Текущая цель имеет статус `paused`. Отключение heartbeat
+`content-factory-stage-3` не подтверждено: app view возвращает только карточку,
+локальный каталог automations пуст, partial update отклонён из-за отсутствия
+полной конфигурации. Не считать расписание отключённым без подтверждения
+в приложении; неизвестные prompt/schedule не заменялись вымышленными значениями.
+
 ## Worker scratch capability — завершённый verification slice
 
 Проверка временного хранилища теперь выполняется до подключения worker к
