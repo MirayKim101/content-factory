@@ -276,8 +276,24 @@ Fresh PostgreSQL migration: 45/45, 74 public tables, 0 unvalidated constraints
 
 Дополнительно прошли Prisma validate/migration deploy, OpenAPI regeneration and
 drift checks, API/worker/web typecheck и lint, API/worker/web production builds,
-production dependency audit, Docker Compose config validation и runtime health
+исторический production dependency audit, Docker Compose config validation и runtime health
 на API 3001/UI 3100. Порт 3000 не используется.
+
+На 2026-10-03 результат security audit изменился: после patch обновлений обоих
+графов остаются два high без upstream fix (node-forge GHSA-86w9-cpqp-85rv,
+braces GHSA-vfj7-8cjw-p6xm). Полный `pnpm audit --audit-level moderate` и
+production-classified `pnpm audit --prod --audit-level moderate` завершаются
+ненулевым кодом. Это release blocker, не принятый риск. Исторические зелёные
+audit results выше/ниже не являются текущей security приёмкой.
+
+Новый source CI gate дополнительно проверен локально: все workspace quality
+checks и сборки, 45 fresh migrations, clip/publication API 4/4, worker recovery
+12/12. Реальная multipart PostgreSQL/MinIO приёмка после multer 2.4.0: 12/12,
+включая oversized 413, malformed/disconnect cleanup, concurrent idempotency,
+recovery и controlled cleanup failure. Test-only happy-dom 20.8.9 прошёл web
+277/277 и typecheck. Desktop/mobile browser smoke повторён после остальных
+dependency patches. CI source checks не заменяют production image scan,
+private-access acceptance и совместный DB/MinIO restore proof.
 
 Web development default и runbook закрепляют порт 3100. API не открывает
 отдельный CORS origin для занятого 3000: browser API идёт через same-origin

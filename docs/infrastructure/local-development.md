@@ -537,3 +537,50 @@ bucket, затем делай forward-миграцию или восстанав
 result objects не удаляй: предыдущий upload-срез их игнорирует, а данные нужны
 для forward-fix и повторного reconciliation. Destructive down migration для
 реальных source/result данных не поддерживается.
+
+## Source CI и security checkpoint 2026-10-03
+
+`Source release gate` запускается на push/PR/manual dispatch. Source job
+выполняет frozen install, changed-file formatting, lint/typecheck/unit tests,
+OpenAPI drift, builds, Compose validation без запуска контейнеров и два hard
+audit. Второй job использует одноразовый PostgreSQL service, все миграции,
+clip/publication persistence tests и worker lease/restart tests. Только inert
+test credentials; публикация и rollout не выполняются. Требование к private
+production runtime, image scan и совместному DB/MinIO restore ещё не закрыто.
+
+Пины и официальные источники проверены перед обновлением:
+
+- [Node 24.15.0](https://nodejs.org/en/download/archive/v24.15.0),
+  [pnpm 10.34.5 installation](https://pnpm.io/installation),
+  [GitHub PostgreSQL service](https://docs.github.com/en/actions/tutorials/use-containerized-services/create-postgresql-service-containers).
+- [multer 2.4.0](https://github.com/expressjs/multer/releases/tag/v2.4.0),
+  [undici 8.10.2](https://github.com/nodejs/undici/releases/tag/v8.10.2),
+  [fast-uri 3.1.8](https://github.com/fastify/fast-uri/releases/tag/v3.1.8).
+- [brace-expansion 2.1.7/5.0.12](https://github.com/juliangruber/brace-expansion/releases),
+  [serialize-javascript 7.1.2](https://github.com/yahoo/serialize-javascript/releases/tag/v7.1.2),
+  [devalue 5.9.3](https://github.com/sveltejs/devalue/releases/tag/v5.9.3),
+  [test-only happy-dom 20.8.9](https://github.com/capricorn86/happy-dom/releases/tag/v20.8.9).
+- [js-yaml 4.3.2](https://github.com/nodeca/js-yaml/releases/tag/4.3.2)
+  исправляет advisory в dev-only OpenAPI generation tooling; ветка 5.x не меняется.
+
+28 production-classified advisories, два Happy DOM test advisories и один
+js-yaml OpenAPI build-tool advisory устранены.
+На дату проверки ещё нет supported patched version для
+[node-forge high](https://github.com/advisories/GHSA-86w9-cpqp-85rv) и
+[braces high](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
+Оба audit обязаны оставаться красными: не добавлять ignore/allowlist,
+`continue-on-error`, `ignore-unfixed` и не повышать порог. Отсутствие Nuxt CLI
+в будущем static runtime не делает executed build graph безопасным.
+Checkpoint можно сохранить как risk reduction, но не продвигать как release.
+
+Formatting применяется к tracked changed files относительно push/PR base.
+При отсутствии base проверяется весь tracked baseline, где обнаружены 50
+старых нарушений. Защищённые файлы не форматируются без отдельного разрешения.
+Hosted CI evidence нужно проверять в GitHub Actions после push; локальные
+проверки не являются evidence завершённого hosted run.
+
+Откат source-gate/security checkpoint: обычный reviewed revert workflow,
+package manifests и `pnpm-lock.yaml` вместе, затем frozen install. Он не
+меняет БД/медиа и не требует destructive migration. Возврат старых версий
+возвращает известные vulnerabilities и не является безопасным production
+rollback; предпочтителен supported forward security fix.

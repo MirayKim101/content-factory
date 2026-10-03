@@ -31,7 +31,7 @@ jobs:
 
       - name: Install locked dependencies
         run: |
-          corepack enable
+          npm install --global pnpm@10.34.5
           pnpm install --frozen-lockfile
 
       - name: Regenerate the sole Prisma source output

@@ -1,0 +1,150 @@
+name: Source release gate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source:
+    name: Source quality and API contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      # Inert test configuration: never load deployment credentials in CI.
+      POSTGRES_DB: cf_ci_release
+      POSTGRES_USER: cf_ci
+      POSTGRES_PASSWORD: cf_ci_fixture_password
+      REDIS_PASSWORD: cf_ci_fixture_password
+      S3_ACCESS_KEY: cf_ci
+      S3_SECRET_KEY: cf_ci_fixture_password
+      MEDIA_QUEUE_DISABLED: "1"
+    steps:
+      - name: Check out source and comparison history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.15.0
+
+      - name: Install locked dependencies
+        run: |
+          npm install --global pnpm@10.34.5
+          pnpm install --frozen-lockfile
+
+      - name: Check formatting of changed tracked files
+        env:
+          COMPARE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$COMPARE_BASE" ] && [ "$COMPARE_BASE" != "0000000000000000000000000000000000000000" ]; then
+            git cat-file -e "$COMPARE_BASE^{commit}"
+            git diff --name-only --diff-filter=ACMR -z "$COMPARE_BASE" HEAD |
+              xargs -0 --no-run-if-empty pnpm exec prettier --check --ignore-unknown --
+          else
+            git ls-files -z |
+              xargs -0 --no-run-if-empty pnpm exec prettier --check --ignore-unknown --
+          fi
+
+      - name: Lint all workspaces
+        run: pnpm lint
+
+      - name: Typecheck all workspaces
+        run: pnpm typecheck
+
+      - name: Run all unit tests
+        run: pnpm test
+
+      - name: Verify authoritative OpenAPI and generated client
+        run: |
+          pnpm --filter @content-factory/api check:openapi
+          pnpm --filter @content-factory/web check:openapi
+
+      - name: Build all workspaces
+        run: pnpm build
+
+      - name: Validate Compose without starting deployment services
+        run: |
+          docker compose --env-file .env.example -f infrastructure/compose.yaml \
+            --profile publishing --profile twitch --profile vertical config --quiet
+
+      - name: Check complete source and build dependency advisories
+        run: pnpm audit --audit-level moderate
+
+      - name: Check production-classified dependency advisories
+        if: ${{ !cancelled() }}
+        run: pnpm audit --prod --audit-level moderate
+
+  postgres:
+    name: Fresh migrations and PostgreSQL recovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
+        env:
+          POSTGRES_DB: cf_ci_release
+          POSTGRES_USER: cf_ci
+          POSTGRES_PASSWORD: cf_ci_fixture_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cf_ci -d cf_ci_release"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      POSTGRES_DB: cf_ci_release
+      POSTGRES_USER: cf_ci
+      POSTGRES_PASSWORD: cf_ci_fixture_password
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5432"
+      REDIS_PASSWORD: cf_ci_fixture_password
+      S3_ACCESS_KEY: cf_ci
+      S3_SECRET_KEY: cf_ci_fixture_password
+      MEDIA_QUEUE_DISABLED: "1"
+      DEPLOYMENT_PROFILE: local
+      SOURCE_AUTHORIZATION_POLICY: manual
+      API_HOST: 127.0.0.1
+      PUBLICATION_ISOLATED_TESTS: "1"
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install pinned Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.15.0
+
+      - name: Install locked dependencies
+        run: |
+          npm install --global pnpm@10.34.5
+          pnpm install --frozen-lockfile
+
+      - name: Apply all committed migrations to the disposable service
+        run: pnpm --filter @content-factory/api db:migrate
+
+      - name: Prove durable clip admission and publication fences
+        run: |
+          pnpm --filter @content-factory/api exec vitest run \
+            --config vitest.integration.config.ts \
+            test/clip-generation.persistence.integration.spec.ts \
+            test/publication-isolated.integration.spec.ts --testTimeout=20000
+
+      - name: Prove worker retry, lease loss and restart recovery
+        run: |
+          pnpm --filter @content-factory/worker exec vitest run \
+            --config vitest.integration.config.ts \
+            test/lease-recovery.integration.spec.ts --testTimeout=20000

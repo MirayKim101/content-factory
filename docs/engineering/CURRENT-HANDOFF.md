@@ -1,6 +1,38 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-10-02. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-10-03. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
+
+## Source release gate и security checkpoint 2026-10-03
+
+Добавлен `.github/workflows/release-gate.yml`: закреплённые Node 24.15.0,
+pnpm 10.34.5 и SHA GitHub actions, frozen install, lint/typecheck/unit/build,
+OpenAPI drift, Compose validation, оба hard dependency audit. Отдельный
+PostgreSQL 18.6 job применяет 45 миграций и проверяет clip/publication fences
+и worker recovery. CI не получает deployment credentials и не публикует сервисы.
+Это source gate, **не** доказательство deployable production runtime.
+
+Security patch сохраняет major baseline: multer 2.4.0, undici 8.10.2,
+fast-uri 3.1.8, brace-expansion 2.1.7/5.0.12, serialize-javascript 7.1.2,
+devalue 5.9.3, js-yaml 4.3.2 и test-only happy-dom 20.8.9; lockfile закреплён.
+Устранены 28 production-classified advisories, два Happy DOM test advisories
+и один js-yaml OpenAPI build-tool advisory. Оба audit остаются **красными** из-за двух high без опубликованного
+исправления: node-forge GHSA-86w9-cpqp-85rv и braces GHSA-vfj7-8cjw-p6xm.
+Историческое «No known vulnerabilities found» ниже не описывает текущий граф.
+Release/promotion заблокирован; исключения и снижение порога не применяются.
+
+Локально прошли все non-audit Node 24 source checks (API 259, worker 342, web 277,
+contracts 23), оба OpenAPI checks, сборки, Compose config, fresh PostgreSQL
+45 migrations + 4 API + 12 worker recovery tests, дополнительно 12 реальных
+multipart PostgreSQL/MinIO tests и desktop/mobile browser smoke. Temporary DB
+удалены, рабочая БД не была test target. После test-library patch повторены
+277 web tests, typecheck и OpenAPI generation checks. Browser smoke использует mock API и не заменяет
+credentialed canary.
+
+Formatting CI проверяет изменённые tracked files; полный baseline содержит
+50 старых formatting failures, включая защищённые пользовательские файлы.
+Общую переформатировку не выполняли. Полный dispatch/initial-push fallback
+не гарантирован зелёным до отдельной очистки baseline. Детали и rollback:
+`../infrastructure/local-development.md`.
 
 ## Главный результат
 
@@ -16,9 +48,9 @@ Mac snapshot `33f57c8` (`b13ea84` + 19 реальных незакоммичен
 ## Текущий этап
 
 Актуальный воспроизводимый baseline находится в
-`STAGE3-LOCAL-ACCEPTANCE.md`: API `255/255`, contracts `23/23`, worker
-`342/342`, web `274/274`, lease-recovery PostgreSQL `12/12`, publication
-disposable PostgreSQL `1/1`, clip-generation API PostgreSQL `2/2`, Twitch
+`STAGE3-LOCAL-ACCEPTANCE.md`: API `259/259`, contracts `23/23`, worker
+`342/342`, web `277/277`, lease-recovery PostgreSQL `12/12`, publication
+disposable PostgreSQL `1/1`, clip-generation API PostgreSQL `3/3`, Twitch
 PostgreSQL + MinIO `2/2`, vertical Docker FFmpeg `1/1`, fresh migrations
 `45/45` с 74 таблицами и 0 unvalidated constraints. Порт UI — `3100`, API —
 `3001`; порт `3000` не используется. Реальные credentialed Twitch media,
