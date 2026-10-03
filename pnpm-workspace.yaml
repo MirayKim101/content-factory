@@ -2,5 +2,12 @@ packages:
   - apps/*
   - packages/*
 
-onlyBuiltDependencies:
-  - esbuild
+allowBuilds:
+  esbuild@0.28.2: true
+  prisma@7.10.0: true
+  "@prisma/engines@7.10.0": true
+  "@scarf/scarf@1.4.0": false
+  msgpackr-extract@3.0.4: false
+  vue-demi@0.14.10: true
+
+strictDepBuilds: true

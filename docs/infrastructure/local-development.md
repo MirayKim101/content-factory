@@ -652,3 +652,86 @@ credentials и local data. Diagnostic images не публикуются и не
 release artifacts. Final worker всё ещё требует отдельной production-only
 dependency closure, native Node startup и digest-bound scan по ADR-011.
 Rollback fix возвращает прежний риск контекста; не используй его для promotion.
+
+## Изолированная проверка API-образов — не deployment
+
+Это одноразовая проверка маленького MP4 в новой БД и новом bucket. Она не
+публикует host ports и не подключает рабочие volumes. Internal Docker network
+не имеет внешнего egress: миграции должны работать с уже встроенным engine.
+Не запускай smoke script против существующих данных. Порт 3000 не используется.
+
+1. Создай context из exact committed revision, а не из рабочего каталога:
+
+   ```sh
+   cf_revision=$(git rev-parse HEAD)
+   cf_context_json=$(node scripts/export-api-build-context.mjs "$cf_revision")
+   cf_context=$(printf '%s' "$cf_context_json" | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
+   ```
+
+   Успех: JSON называет commit/tree и новый каталог `tmp/api-context-*`.
+   Exporter читает только Git blobs. Pending API versions, `.idea`, root
+   `package-lock.json`, `.env`, media и tests не входят в context. Внутри
+   сохранён `build-provenance.json` с blob IDs и SHA-256 каждого input.
+
+2. Построй два diagnostic targets из этого же context:
+
+   ```sh
+   docker build --file "$cf_context/infrastructure/api/Dockerfile" --build-arg SOURCE_REVISION="$cf_revision" --target api-runtime --tag content-factory-api:diagnostic-local "$cf_context"
+   docker build --file "$cf_context/infrastructure/api/Dockerfile" --build-arg SOURCE_REVISION="$cf_revision" --target api-migrate --tag content-factory-api-migrate:diagnostic-local "$cf_context"
+   ```
+
+   API использует production install без optional dependencies и отдельную
+   direct `ioredis`; мигратор содержит pinned Prisma CLI, canonical migrations
+   и minimal `DATABASE_URL` config. Prisma CLI/engines, TypeScript и tests не
+   копируются в API. OpenSSL нужен builder и мигратору, но не API с JS adapter.
+   Build проверяет hashes и отсутствие лишних context files.
+
+3. Закрепи именно локальные image IDs и запусти отдельную проверку:
+
+   ```sh
+   export CF_DIAGNOSTIC_API_IMAGE=$(docker image inspect content-factory-api:diagnostic-local --format '{{.Id}}')
+   export CF_DIAGNOSTIC_MIGRATE_IMAGE=$(docker image inspect content-factory-api-migrate:diagnostic-local --format '{{.Id}}')
+   export CF_DIAGNOSTIC_MINIO_IMAGE=$(docker image inspect content-factory-minio:RELEASE.2025-10-15T17-29-55Z --format '{{.Id}}')
+   docker compose --env-file /dev/null -p content-factory-api-diagnostic -f infrastructure/api/diagnostic.compose.yaml up --detach --wait --wait-timeout 100 api
+   ```
+
+   Нужен уже построенный owned MinIO image из раздела storage выше. Если inspect
+   любого image завершился ошибкой, не продолжай. Успех: 45 migrations applied,
+   `minio-init`/`api-migrate` exit 0, API healthy. API non-root/read-only,
+   capability drops и Stage 3 flags 0; volumes рабочей системы не используются.
+   Fixture scratch — только bounded 16 MiB tmpfs для upload limit 1 MiB. Это
+   не production disk/capacity admission proof.
+
+4. Создай маленький собственный fixture через owned FFmpeg image и проверь API:
+
+   ```sh
+   cf_fixture_dir=$(mktemp -d "$PWD/tmp/api-media-proof-XXXXXX")
+   docker run --rm --network none --entrypoint ffmpeg --mount "type=bind,source=$cf_fixture_dir,target=/fixture" content-factory-media-worker:0.0.0-stage1 -hide_banner -loglevel error -f lavfi -i color=c=blue:size=64x64:rate=1 -t 2 -c:v libx264 -pix_fmt yuv420p -movflags +faststart /fixture/source.mp4
+   cf_api_container=$(docker compose --env-file /dev/null -p content-factory-api-diagnostic -f infrastructure/api/diagnostic.compose.yaml ps --quiet api)
+   docker exec -i "$cf_api_container" node -e 'process.stdin.pipe(require("node:fs").createWriteStream("/tmp/content-factory-api/fixture.mp4"))' < "$cf_fixture_dir/source.mp4"
+   docker exec -i "$cf_api_container" node --input-type=module < scripts/api-container-smoke.mjs
+   ```
+
+   Успех: `API_CONTAINER_SMOKE_OK`; checksum/download, explicit manual rights,
+   duplicate-safe upload, Range 206/416, errors 413/415, cleanup и отдельный
+   BullMQ/ioredis roundtrip прошли. FFmpeg image здесь только создаёт файл;
+   это не полный production worker/cut acceptance и не browser/edge proof.
+
+5. Проверь повторный migration deploy/status и удали только одноразовый стенд:
+
+   ```sh
+   docker compose --env-file /dev/null -p content-factory-api-diagnostic -f infrastructure/api/diagnostic.compose.yaml run --rm api-migrate
+   docker compose --env-file /dev/null -p content-factory-api-diagnostic -f infrastructure/api/diagnostic.compose.yaml run --rm api-migrate node node_modules/prisma/build/index.js migrate status --config prisma.config.mjs
+   docker compose --env-file /dev/null -p content-factory-api-diagnostic -f infrastructure/api/diagnostic.compose.yaml down --volumes
+   ```
+
+   Ожидается no pending migrations/schema up to date. Последняя команда удаляет
+   только diagnostic containers/network и их одноразовые данные; не применяй
+   её к рабочему Compose project. Fixture и provenance остаются в `tmp`.
+
+Images не публикуются. Unresolved source advisories продолжают блокировать
+promotion независимо от functional smoke. Digest-bound SBOM/scans, production
+worker/edge, disk admission, matching DB/MinIO restore и human deployment facts
+остаются отдельными обязательными gates по ADR-011. Rollback preparation:
+не использовать diagnostic images; текущая локалка и authoritative data не
+изменяются.

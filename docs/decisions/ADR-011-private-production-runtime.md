@@ -63,8 +63,26 @@ artifact/runtime gate являются отдельными обязательн
 - Образы и package graph должны быть воспроизводимо закреплены. Нельзя
   использовать advisory allowlist, `ignore-unfixed`, снижение audit threshold
   или unsupported major transitive override.
-- Protected external directories, associated resources и пользовательские
-  файлы полностью исключены из build context, CI, runtime и deployment work.
+- Protected external directories и associated resources полностью исключены из
+  build context, CI, runtime и deployment work. Под «пользовательскими файлами»
+  здесь понимаются только uncommitted/ignored working-tree versions, локальные
+  editor files, credentials и data, а не обязательный committed product source.
+- Image source context создаётся из exact reviewed Git commit object, а не из
+  mutable working tree. Он включает allowlisted committed source closure и
+  исключает uncommitted versions, `.idea`, root `package-lock.json`, `.env*`,
+  local data и остальные untracked/ignored files. Нельзя молча исключать
+  committed feature module только потому, что у того же path есть защищённая
+  working-tree версия.
+- Frozen preparation baseline commit
+  `65e7e2ba67fefafc4221d1cc2751bfdd180d68a8` содержит обязательные
+  `apply-ai-thumbnail.ts`, `save-editorial-package.ts` и
+  `prisma-editorial.repository.ts` как blobs `bb4bd406b421`, `25da5afbdfa1` и
+  `793c54656a5d`. На момент independent review текущий `HEAD`
+  `70dee37891d95bc7494c4a926cd8c6ea321426de` сохранял те же blobs
+  для этих трёх paths. Только эти committed versions могут попасть в
+  bounded context; их pending working-tree versions нельзя читать через
+  filesystem, копировать, stage, reset или overwrite в рамках packaging
+  slice.
 
 ## Варианты
 
@@ -116,10 +134,30 @@ public Twitch webhook являются отдельными operating-model deci
    migration CLI. Он запускается non-root, с read-only root filesystem,
    dropped capabilities, `no-new-privileges`, bounded PID/CPU/memory, graceful
    `SIGINT`/`SIGTERM`, local log rotation и отдельным writable upload scratch.
+   Его dependency closure создаётся отдельным frozen pnpm install с
+   `--prod --no-optional` и scoped API dependency filter. Closure содержит
+   `@prisma/client` и `@prisma/adapter-pg`, но не `prisma`,
+   `@prisma/engines`, `@prisma/dev`, TypeScript, `tsx`, test/lint tools или
+   build-stage `node_modules`. Ручное удаление пакетов из установленного graph
+   не допускается; final inventory и runtime smoke доказывают closure.
+   Выбранный BullMQ Redis backend делает `ioredis` runtime requirement,
+   несмотря на optional peer metadata BullMQ. Поэтому API объявляет direct
+   pinned production dependency `ioredis@5.11.1`; `--no-optional` не должен
+   полагаться на auto-installed optional peer. Root peer-resolution rewrite,
+   `packageExtensions` и transitive override для этой связки не допускаются.
 2. `api-migrate` — независимый one-shot target из того же commit/lockfile. Он
-   содержит только необходимые Prisma migration artifacts/tooling, не слушает
-   HTTP port и завершается non-zero при любой migration/configuration error.
-   `api-runtime` не стартует до его successful completion.
+   использует отдельный workspace dependency graph с direct pinned
+   `prisma@7.10.0` и `dotenv@17.4.2`, минимальным migration-only config и
+   единственными canonical `apps/api/prisma/schema.prisma` + committed migrations.
+   Config читает только injected `DATABASE_URL`; он не импортирует contracts,
+   Nest application или полный API environment module. Prisma CLI принадлежит
+   build/migration graph, а не API runtime graph. Target не слушает HTTP port и
+   завершается non-zero при любой
+   migration/configuration error. `api-runtime` не стартует до его successful
+   completion. Использовать весь API dev graph или вручную копировать CLI из
+   build-stage `node_modules` запрещено. Существующий API `devDependency`
+   `prisma@7.10.0` сохраняется для repository DB scripts и CI; его исключает из
+   final API closure именно `--prod`, а не удаление из API manifest.
 3. `web-edge` — multi-stage image. Node/pnpm/Nuxt существуют только в build
    stage. Final image использует проверенный Caddy version, закреплённый digest,
    запускается non-root/read-only и содержит только SPA assets, Caddy binary и
@@ -187,9 +225,48 @@ public Twitch webhook являются отдельными operating-model deci
 
 ### Supply chain и CI gates
 
+- Build provenance фиксирует commit SHA/tree и Dockerfile/lockfile digests.
+  Context materialизуется из Git object database; build из mutable checkout,
+  даже если Docker ignore выглядит закрытым, не является promotion evidence.
+  Allowlist closure проверяется против imports/TypeScript dependency graph
+  выбранного commit. Packaging не stage/reset/overwrite защищённые pending
+  working-tree paths.
 - Dockerfile frontend, base images и promoted application images закрепляются
   version + immutable digest; install использует committed lockfile и
   `pnpm install --frozen-lockfile`.
+- В pinned pnpm `10.34.5` dependency lifecycle scripts управляются
+  fail-closed через version-scoped `allowBuilds`: exact `esbuild@0.28.2`,
+  `prisma@7.10.0`, `@prisma/engines@7.10.0` и `vue-demi@0.14.10` имеют
+  value `true`; exact `@scarf/scarf@1.4.0` и `msgpackr-extract@3.0.4`
+  имеют value `false`. `strictDepBuilds` остаётся `true`. Generic rebuild,
+  `dangerouslyAllowAllBuilds` и любой нерассмотренный lifecycle script запрещены
+  и должны завершать install non-zero. Prisma preinstall и engine postinstall
+  выполняются только в builder.
+- Exact approval `vue-demi@0.14.10` ограничен reviewed lifecycle для
+  locked `vue@3.5.42`. Postinstall читает `Vue.version`, выбирает
+  Vue 3 branch и копирует только package-local `lib/v3/index.cjs`,
+  `lib/v3/index.mjs` и `lib/v3/index.d.ts` в corresponding `lib/index.*`.
+  Reviewed code не использует network, external processes, credentials или
+  project files. Exact `true` устраняет подтверждённый pnpm `10.34.5`
+  raw-name bug для versioned `false`, сохраняя version-closed approval и
+  unknown-script failure. Любое изменение exact version, integrity, peer Vue
+  или side-effect boundary требует повторного review.
+  Bundled Vue 3 parity доказана clean fixture: `lib/index.cjs`,
+  `lib/index.mjs` и `lib/index.d.ts` byte-identical с corresponding
+  `lib/v3/index.*` до postinstall; CJS возвращает `isVue3=true` и
+  `isVue2=false`. В текущем graph approved postinstall функционально
+  является no-op package-local file copy; exact `true` нужен для
+  корректной strict policy pinned installer. Acceptance обязательно
+  требует cold empty-store frozen install, full-source checks, web typecheck,
+  browser tests и production web build.
+- Exact deny `msgpackr-extract@3.0.4` одобрен как отключение optional
+  native string-decoding acceleration. Vendor `msgpackr@2.0.5`
+  объявляет addon optional, ловит ошибку его загрузки и сохраняет pure-JS
+  decoder; vendor README описывает addon как optional performance boost.
+  Acceptance требует independent review этого exact vendor fallback и real final
+  API/BullMQ smoke без native addon. Если fallback или interoperability не
+  доказаны, preparation останавливается; менять value на `true` без
+  отдельного review нельзя.
 - Source/build audit и production-classified audit выполняются отдельно с
   threshold `moderate`; оба обязаны завершиться exit code `0`. Исключения,
   allowlist, `continue-on-error`, `ignore-unfixed` и threshold lowering
@@ -203,6 +280,12 @@ public Twitch webhook являются отдельными operating-model deci
 - CI не получает deployment credentials, не обращается к production data и не
   публикует service ports. Generated-client/source gate является необходимым,
   но недостаточным доказательством runtime readiness.
+- На 2026-10-03 upstream Caddy `2.11.7` опубликован как исправление regressions
+  `2.11.6`, включая обрыв stream после одной минуты, но официальный
+  `caddy:2.11.7-alpine` ещё отсутствует. `2.11.6`, mutable `latest`/`alpine` и
+  самостоятельная подмена release binary не принимаются. Web-edge packaging
+  остаётся на hold до появления official exact tag, проверки manifest digest и
+  long-stream smoke; независимая API/worker preparation может продолжаться.
 
 ## Последствия
 
@@ -344,6 +427,32 @@ runtime быть не должно.
 16. External private access, server/domain/VPN, TLS/ACL, credentials и real
     publishing остаются явно `not configured / not approved` до отдельного
     human deployment decision.
+17. Build evidence называет exact commit/tree; API source в context совпадает с
+    committed blobs этого commit. Uncommitted/ignored content, `.idea`, root
+    `package-lock.json`, `.env*` и local data отсутствуют, а protected pending
+    paths не staged/reset/overwritten.
+18. `api-runtime` inventory подтверждает direct `ioredis@5.11.1` и
+    production-only graph без Prisma CLI, engines/dev tooling и случайного
+    optional-peer pollution. `api-migrate` отдельно содержит pinned
+    `prisma@7.10.0`, `dotenv@17.4.2`, required engine и canonical migration chain;
+    его config читает только `DATABASE_URL` и не импортирует полный API
+    environment module. Оба targets проходят startup/config smoke на Node 24,
+    а migration target не запускает HTTP.
+19. Web-edge target не считается подготовленным, пока official
+    `caddy:2.11.7-alpine` (или более новый reviewed fix release) не доступен и не
+    закреплён immutable multi-architecture digest; stream длительностью больше
+    минуты и large upload/download проходят controlled smoke.
+20. Frozen cold-store install завершается non-zero при любом
+    lifecycle script вне exact version-scoped `true` entries; exact `false`
+    entries не выполняются. `vue-demi@0.14.10` postinstall изменяет
+    только три reviewed package-local `lib/index.*`, выбирает Vue 3 и не
+    создаёт network или external-process activity. Full source/web typechecks,
+    browser tests и production web build проходят после exact lifecycle. Final
+    runtime images не содержат builder lifecycle state или package-manager cache. Final API
+    inventory не содержит
+    `msgpackr-extract`, его platform packages или
+    `node-gyp-build-optional-packages`; pure-JS MessagePack round-trip и real API-to-BullMQ
+    dispatch/consume smoke проходят после independent vendor fallback review.
 
 ## Promotion и deployment gate
 

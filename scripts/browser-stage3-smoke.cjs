@@ -1,11 +1,13 @@
 /* Browser-only acceptance: API writes are intercepted, never sent to the server.
  * Supply Playwright through NODE_PATH; no repository dependency installation.
- * Run against the local Nuxt UI (3100), not a production endpoint.
+ * Run against the local Nuxt UI (3100) or owned clean-source preview (3102),
+ * never a production endpoint.
  */
 const assert = require("node:assert/strict");
 const { chromium } = require(process.env.CF_PLAYWRIGHT_MODULE || "playwright");
 
-const origin = "http://127.0.0.1:3100";
+const origin = process.env.CF_SMOKE_ORIGIN || "http://127.0.0.1:3100";
+assert.match(origin, /^http:\/\/127\.0\.0\.1:(?:3100|3102)$/);
 const projectId = "00000000-0000-4000-8000-000000000001";
 const intentId = "00000000-0000-4000-8000-000000000002";
 const suggestionId = "00000000-0000-4000-8000-000000000003";

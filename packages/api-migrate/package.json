@@ -1,0 +1,13 @@
+{
+  "name": "@content-factory/api-migrate",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate:deploy": "prisma migrate deploy --config prisma.config.mjs"
+  },
+  "dependencies": {
+    "dotenv": "17.4.2",
+    "prisma": "7.10.0"
+  }
+}

@@ -102,6 +102,52 @@ Hosted run `37120609697` для `65e7e2b` подтвердил все non-audit 
 включая Docker context/compile, и PostgreSQL job. Только оба audit steps
 красные на двух известных high; этот release blocker сохраняется.
 
+### API runtime / migration packaging checkpoint 2026-10-03
+
+Добавлены отдельные diagnostic `api-runtime` и `api-migrate` targets по ADR-011.
+Context создаётся из exact Git commit blobs, не из working tree; проверяются
+350 allowlisted regular inputs, hashes и отсутствие дополнительных files.
+Pending protected API versions остаются нетронутыми. Contract native TypeScript
+на Node 24 находится вне physical `node_modules`; `erasableSyntaxOnly` закрепляет
+runtime boundary. API closure ставится frozen `--prod --no-optional`, содержит
+direct `ioredis@5.11.1`, но не Prisma CLI/engines/dev, TypeScript, tsx или tests.
+Отдельный migration workspace содержит pinned Prisma/dotenv и читает только
+injected `DATABASE_URL`; canonical 45 migrations не дублируются.
+
+Lifecycle policy fail-closed: exact reviewed esbuild/Prisma/engines/Vue Demi
+scripts allowed, Scarf/native MessagePack installer denied, unknown scripts
+не разрешены. Empty-store full install доказан: 934 downloaded, 0 reused.
+Versioned false Vue Demi не удовлетворяет strict check pinned pnpm; exact
+approved true запускает только reviewed package-local Vue 3 file copies.
+Builder и мигратор получают pinned OpenSSL 3.0.22/libssl3; API final их не
+наследует и использует JS PostgreSQL adapter.
+
+Крупный clean-source gate Node 24 без `.env` прошёл: lint, typecheck,
+911 unit tests (API 269, worker 342, web 277, contracts 23), оба OpenAPI checks
+и все builds. Source snapshot вынесен за ancestor ignored `tmp`, чтобы обычный
+lint действительно проверял files; ignore checks не отключались. Clean Vue
+graph прошёл browser smoke на owned preview 3102: 12 route/viewport checks,
+10 overlays, 8 mock clip cases. Рабочая UI 3100 не заменялась.
+
+Immutable diagnostic candidate `79ad3b339eb061663822980d97dd5af5364e1ed1`
+прошёл реальные сборки обоих targets. Isolated internal-network Compose
+применил 45 migrations без external egress, repeat deploy no-op/status clean;
+unavailable DB и missing config дают non-zero. API non-root/read-only/no
+host-published ports. FFmpeg-generated 1614-byte source прошёл upload,
+checksum, manual rights, duplicate replay, S3 download, Range 206/416,
+413/415 и request scratch cleanup. BullMQ/ioredis tiny fixture исполнил один
+logical job; native acceleration явно false. Redis/PG/S3 loss даёт bounded
+readiness 503 при health 200; recovery и API restart сохраняют media/rights.
+Это diagnostic evidence, не promoted release artifact; public committed SHA
+должен использоваться для следующего воспроизводимого build.
+
+Полные и production-classified audits повторены после изменения graph:
+оба exit 1, те же два unresolved high; исключения не добавлялись. SBOM/image
+scans, minimal worker/edge, disk admission, paired restore и human deployment
+facts остаются незавершёнными gates. Full production manual cut через edge
+этим fixture не доказывался. Rollback: не использовать diagnostic images;
+локальные authoritative данные и existing runtime не менялись.
+
 EventSub secret rotation теперь требует explicit `TWITCH_EVENTSUB_SECRET_VERSION`.
 Общий PostgreSQL lease сериализует обычную сверку и пересоздание подписок;
 partial failure не фиксирует applied version, старый lease не может завершить

@@ -73,6 +73,18 @@ jobs:
       - name: Build all workspaces
         run: pnpm build
 
+      - name: Verify immutable API context and diagnostic runtime targets
+        run: |
+          node --test scripts/export-api-build-context.test.mjs
+          context_json=$(node scripts/export-api-build-context.mjs "$GITHUB_SHA")
+          context_path=$(printf '%s' "$context_json" | node -e 'let s="";process.stdin.on("data", c=>s+=c);process.stdin.on("end",()=>process.stdout.write(JSON.parse(s).destination))')
+          docker build --file "$context_path/infrastructure/api/Dockerfile" \
+            --build-arg SOURCE_REVISION="$GITHUB_SHA" --target api-runtime \
+            --tag content-factory-api:ci-diagnostic-only "$context_path"
+          docker build --file "$context_path/infrastructure/api/Dockerfile" \
+            --build-arg SOURCE_REVISION="$GITHUB_SHA" --target api-migrate \
+            --tag content-factory-api-migrate:ci-diagnostic-only "$context_path"
+
       - name: Verify closed worker context and container compilation
         run: |
           node scripts/check-worker-build-context.mjs

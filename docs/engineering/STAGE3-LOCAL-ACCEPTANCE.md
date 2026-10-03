@@ -416,6 +416,32 @@ calls coalesce. Independent review `CLEAN`; live API на plain Node без load
 вернул readiness 200/no-store через 3100, health 200, disabled clip history 200.
 После restart/build browser smoke повторён успешно; его API scenarios mocked.
 
+## Изолированная API packaging проверка 2026-10-03
+
+Clean committed-source candidate на Node 24 прошёл empty-store frozen install
+(934 downloaded, zero reused), lint/typecheck, 911 unit tests, OpenAPI checks,
+все builds. Owned clean-source preview 3102 прошёл 12 route/viewport checks,
+10 selector overlays и 8 mock clip cases после reviewed Vue Demi postinstall.
+Mutable working-tree/protected API versions не входили в context.
+
+API/migrate diagnostic targets построены из exact candidate Git blobs с
+350-file hash-checked context. API final содержит mandatory ioredis, но не
+Prisma CLI/engines, TS compiler/tsx или tests; contracts расположены вне
+physical node_modules. Migrator offline internal-network применил все 45
+migrations, повторный deploy no-op, status clean, unavailable DB/missing
+config fail non-zero. API non-root/read-only/ports unpublished.
+
+Tiny FFmpeg MP4 прошёл upload/manual authorization/replay/checksum/download,
+Range 206/416, controlled 413/415 и request scratch cleanup. Отдельный BullMQ
+roundtrip доказал direct ioredis и native-acceleration-disabled fallback,
+duplicate prevention одного job. PG/Redis/S3 loss возвращает bounded readiness
+503 при живом health, recovery и API restart сохраняют источник/права.
+
+Это новая пустая disposable namespace, не paired restore и не production
+manual worker/edge acceptance. Fixture bounded RAM scratch не доказывает
+production disk admission; source audits всё ещё exit 1 на двух high.
+Images не опубликованы; SBOM/artifact scans и promotion остаются отдельными gates.
+
 ## Не является локально доказанным
 
 Hosted CI `65e7e2b`, run `37120609697`: все non-audit source steps и

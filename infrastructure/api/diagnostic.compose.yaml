@@ -1,0 +1,133 @@
+# Disposable, small-fixture acceptance only. Not a deployment configuration:
+# no host ports, no existing volumes, no provider secrets, no production data.
+services:
+  postgres:
+    image: postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
+    environment:
+      POSTGRES_DB: cf_api_diagnostic
+      POSTGRES_USER: cf_diagnostic
+      POSTGRES_PASSWORD: cf_diagnostic_fixture_only
+    networks: [proof]
+    healthcheck:
+      test:
+        [CMD, pg_isready, --username=cf_diagnostic, --dbname=cf_api_diagnostic]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  redis:
+    image: redis:8.10.1@sha256:298e5b3bc566bade82f46ad5511777a4a07a294097ce16ada2f6a42be5239df5
+    command: [redis-server, --requirepass, cf_diagnostic_fixture_only]
+    networks: [proof]
+    healthcheck:
+      test:
+        [
+          CMD,
+          redis-cli,
+          --no-auth-warning,
+          --pass,
+          cf_diagnostic_fixture_only,
+          ping,
+        ]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  minio:
+    image: ${CF_DIAGNOSTIC_MINIO_IMAGE:?supply an inspected local MinIO image ID}
+    environment:
+      MINIO_ROOT_USER: cf_diagnostic_root
+      MINIO_ROOT_PASSWORD: cf_diagnostic_root_fixture_only
+    command: [server, /data, --console-address, ":9001"]
+    networks: [proof]
+    healthcheck:
+      test: [CMD, /usr/local/bin/healthcheck]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  minio-init:
+    image: ${CF_DIAGNOSTIC_MINIO_IMAGE:?supply an inspected local MinIO image ID}
+    entrypoint: [/bin/sh, /provision]
+    environment:
+      MINIO_ROOT_USER: cf_diagnostic_root
+      MINIO_ROOT_PASSWORD: cf_diagnostic_root_fixture_only
+      S3_SOURCE_BUCKET: cf-api-diagnostic
+      S3_ACCESS_KEY: cf_diagnostic_api
+      S3_SECRET_KEY: cf_diagnostic_api_fixture_only
+    volumes: [../minio/provision:/provision:ro]
+    networks: [proof]
+    depends_on:
+      minio: { condition: service_healthy }
+
+  api-migrate:
+    image: ${CF_DIAGNOSTIC_MIGRATE_IMAGE:?supply a locally built diagnostic migration image}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=16m,uid=1000,gid=1000,mode=0700"]
+    environment:
+      DATABASE_URL: postgresql://cf_diagnostic:cf_diagnostic_fixture_only@postgres:5432/cf_api_diagnostic?schema=public
+    networks: [proof]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    image: ${CF_DIAGNOSTIC_API_IMAGE:?supply a locally built diagnostic API image}
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    stop_grace_period: 20s
+    # This bounded RAM scratch is ONLY for <=1 MiB diagnostic files. The
+    # eventual production runtime needs separately capacity-checked disk.
+    tmpfs:
+      [
+        "/tmp/content-factory-api:rw,noexec,nosuid,size=16m,uid=1000,gid=1000,mode=0700",
+      ]
+    environment:
+      API_HOST: 0.0.0.0
+      PORT: "3001"
+      API_MAX_UPLOAD_BYTES: "1048576"
+      API_UPLOAD_TEMP_DIRECTORY: /tmp/content-factory-api
+      DEPLOYMENT_PROFILE: other
+      SOURCE_AUTHORIZATION_POLICY: manual
+      POSTGRES_DB: cf_api_diagnostic
+      POSTGRES_USER: cf_diagnostic
+      POSTGRES_PASSWORD: cf_diagnostic_fixture_only
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: cf_diagnostic_fixture_only
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_SOURCE_BUCKET: cf-api-diagnostic
+      S3_ACCESS_KEY: cf_diagnostic_api
+      S3_SECRET_KEY: cf_diagnostic_api_fixture_only
+      MEDIA_QUEUE_DISABLED: "1"
+      AI_CONTEXT_ENABLED: "0"
+      EDITORIAL_FRAMES_ENABLED: "0"
+      RESEARCH_TEXT_ENABLED: "0"
+      THUMBNAIL_SUGGESTIONS_ENABLED: "0"
+      PUBLISHING_ENABLED: "0"
+      YOUTUBE_PUBLISHING_ENABLED: "0"
+      TIKTOK_PUBLISHING_ENABLED: "0"
+      TWITCH_INGESTION_ENABLED: "0"
+      TWITCH_VOD_AUTO_INGEST_ENABLED: "0"
+      TWITCH_VOD_MEDIA_GATEWAY_ENABLED: "0"
+      VERTICAL_RENDER_ENABLED: "0"
+      CLIP_GENERATION_ENABLED: "0"
+    networks: [proof]
+    depends_on:
+      api-migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      minio-init: { condition: service_completed_successfully }
+
+networks:
+  proof:
+    internal: true
