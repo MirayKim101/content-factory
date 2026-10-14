@@ -9,6 +9,63 @@
 Цель активна; ночной checkpoint ниже является историей, не текущей паузой.
 Оба scoped WIP восстановлены без изменения защищённых пользовательских файлов.
 
+Проверенный diagnostic checkpoint опубликован как
+`993524e533a5fe1db966f797fa8bf88c8de4c274`, 67 собственных путей; remote SHA
+подтверждён. Hosted CI `38566064644`: all-workspace format/lint/types/unit,
+OpenAPI, builds и API/worker/static-web container preparation PASS; fresh
+migrations/recovery и isolated media API integration PASS. Source job красный
+только на двух обязательных dependency audit steps. Это не production release.
+Следующий WIP: четыре совместимых security resolution, отдельная Perl-only
+transaction и settled UI/keyboard polish. Он не принят прошедшим CI старого SHA.
+
+Новый frozen source `e17b10c5449c0b72b248fc68e6bb9e32fb3b8f75` прошёл
+independent source review CLEAN: API 324 tests/65 files, types/lint/build и
+обе OpenAPI проверки PASS, четыре точных lock resolutions/16 parent ranges.
+Cold install: 934 downloaded, 0 reused. Оба audits теперь DENY 6
+(2 critical, 4 high), не historical 10.
+API/migrate/worker собраны из одного e17 source: native inventories PASS,
+scans DENY 145/155/741. Новый isolated `cf-security-e17-20261014` прошёл
+fresh/repeat 45 canonical migrations, настоящий queue-disabled API smoke,
+затем queue-enabled media/replay/Redis loss/SIGKILL/failure/cleanup batch.
+Final UI image/settled browser и combined runtime independent review завершены:
+CLEAN в diagnostic scope. Web: 278 tests/51 files, lint/types/static build и
+13 edge helper tests PASS. Независимо повторены 16 browser cases/8 comboboxes,
+keyboard focus/Arrow/Enter/Escape, wrapping и три recovered download/Range.
+Raw browser FAIL для двух native media preload cancellations сохранён;
+строгая классификация с пятью negative controls принимает только эти события,
+не подавляет network errors в целом. Browser mutation fence допускает только
+GET/HEAD; реальные upload/rights/cut операции проверены отдельным Node client.
+Combined fresh migrations/media/recovery proof:
+`tmp/security-maintenance-20261014-0MOH8w/combined-runtime-proof.json`, SHA256
+`beacfe48dc3e3acc3c890822daa32e8148d30c290aaf0dfd9e87e60b52c22142`.
+Final edge proof: `tmp/web-edge-final-e17-Er5Uq6/final-combined-evidence.json`,
+SHA256 `9a27094d57915b6753fd7bfea74818572d1783447215ebebb04c64e49c66548d`.
+Independent handoffs: `/tmp/cf-uniform-e17-review-20261014-aniuyE/HANDOFF.md`
+и `/tmp/cf-strong-ui-review-20261014-XjTq76/HANDOFF.md`. Worker startup/PNG и
+inventories повторены; disruptive recovery проверен по scripts/logs, не запущен
+reviewer повторно. Edge scan DENY 19; production по-прежнему запрещён.
+
+Следующие отдельные срезы: compatible Nuxt DevTools 3.4.3 maintenance;
+manual montage attestation по дополнению ADR-005; browser-write Origin/Fetch
+Metadata guard. Архитектор подтвердил последний как pre-production gap:
+Helmet/CORS не доказывают защиту от cross-site form writes. Нужен explicit
+origin allowlist без Host/forwarded inference, fail-closed unsafe requests до
+Multer/business effects и явный контракт native originless clients; private
+access сохраняется. Это спецификация следующей работы, не выполненная защита.
+
+Обнаружен отдельный production blocker: MontageAsset пока имеет только
+local-auto evidence; manual policy намеренно даёт `MONTAGE_RIGHTS_REQUIRED`.
+ADR-005 требует отдельные права на материал, а не наследование прав VOD.
+Архитектор одобрил спецификацию manual asset attestation как следующий срез
+после текущего checkpoint; проверки не ослаблять, старые local rows не retag.
+
+Search-scope incident при последующей диагностике: один широкий `rg` по
+editorial-content мог просканировать три защищённых working-tree API файла.
+Совпадения/содержимое этих файлов не выводились, они не менялись и не stage-ились.
+Владелец уведомлён; дальше использовать только точные разрешённые файлы либо
+явные исключения до обхода. Closed build/test contexts по-прежнему содержат
+только committed baseline, не защищённые pending versions.
+
 API upload staging прошёл 312 unit tests с HTTP socket/fault и module-wiring
 проверками; дополнительный review исправил пропуск специальных permission bits.
 Independent source review CLEAN. Native API/migrate candidate

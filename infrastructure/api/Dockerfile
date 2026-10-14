@@ -102,6 +102,25 @@ RUN set -eu; \
     test "$(dpkg-query -W -f='${Version}' tzdata)" = '2026c-0+deb12u1'; \
     rm -rf /var/lib/apt/lists/*; \
     rm -f /tmp/packages.before /tmp/packages.after /tmp/packages.changed /tmp/packages.removed /tmp/packages.expected
+# Separate architect-approved Perl patch; do not broaden the five-package
+# transaction above or allow companion-package changes through apt resolution.
+RUN set -eu; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/perl.before; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends --only-upgrade \
+      perl-base=5.36.0-7+deb12u4; \
+    dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/perl.after; \
+    awk 'NR == FNR { before[$1] = $2; next } !($1 in before) || before[$1] != $2 { print $1 }' \
+      /tmp/perl.before /tmp/perl.after | sort > /tmp/perl.changed; \
+    awk 'NR == FNR { after[$1] = $2; next } !($1 in after) { print $1 }' \
+      /tmp/perl.after /tmp/perl.before | sort > /tmp/perl.removed; \
+    printf '%s\n' perl-base > /tmp/perl.expected; \
+    cmp /tmp/perl.expected /tmp/perl.changed; \
+    test ! -s /tmp/perl.removed; \
+    test "$(dpkg-query -W -f='${Version}' perl-base)" = '5.36.0-7+deb12u4'; \
+    rm -rf /var/lib/apt/lists/*; \
+    rm -f /tmp/perl.before /tmp/perl.after /tmp/perl.changed /tmp/perl.removed /tmp/perl.expected
+
 # Final images run Node directly. Remove only the global package-manager trees
 # and shims shipped by the pinned official Node image; application dependencies
 # remain the untouched frozen pnpm production closure copied below.

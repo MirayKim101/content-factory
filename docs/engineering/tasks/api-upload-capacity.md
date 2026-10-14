@@ -302,3 +302,144 @@ No additional application change or dependency upgrade is hidden in that
 normalization. The current complete and production-classified source audits
 were repeated separately and now each deny at ten advisories; this source
 correctness review is not a clean dependency gate or production approval.
+
+## Compatible dependency maintenance (2026-10-14)
+
+The follow-up is based on pushed checkpoint
+`993524e533a5fe1db966f797fa8bf88c8de4c274` and owns exactly
+`pnpm-lock.yaml`, `apps/api/test/forwarded-address.spec.ts` and this taskdoc.
+Main's concurrent Perl/Dockerfile maintenance is a separate transaction and is
+not included or modified here. Application code, authentication, trust-proxy
+configuration, API/schema contracts, root manifests, overrides and lifecycle
+policy are unchanged. No branch commit or push was made by the bounded owner.
+
+The only resolution changes are:
+
+| Package                 | Before | After  |
+| ----------------------- | ------ | ------ |
+| proxy-addr              | 2.0.7  | 2.0.8  |
+| source-map-js           | 1.2.1  | 1.2.2  |
+| postcss-selector-parser | 7.1.5  | 7.1.6  |
+| shell-quote             | 1.10.0 | 1.11.0 |
+
+Official [pnpm update documentation](https://pnpm.io/10.x/cli/update), the
+[proxy-addr release](https://github.com/jshttp/proxy-addr/releases/tag/v2.0.8),
+[Express manifest](https://raw.githubusercontent.com/expressjs/express/v5.2.1/package.json),
+and upstream advisories were checked:
+[proxy-addr](https://github.com/advisories/GHSA-jqcg-44mw-7w3h),
+[source-map-js](https://github.com/advisories/GHSA-68fv-2mgg-jv7q),
+[postcss-selector-parser](https://github.com/advisories/GHSA-rj75-hqrm-r3gf),
+[shell-quote](https://github.com/advisories/GHSA-pqg4-j6r4-53mv).
+Exact official npm registry metadata, tarball SRIs, Node engine requirements
+and all 16 actual parent edges are recorded in
+`tmp/proxy-addr-maintenance-tVEsVG/registry-proof.json`. Every new version
+satisfies every actual parent range, not only the example parent. Express
+5.2.1 still requests `^2.0.7`; magicast 0.5.4 requests `^1.2.1`, postcss-calc
+10.1.1 requests `^7.0.0`, and launch-editor 2.14.1 requests `^1.8.4`.
+
+The closed source fixture is `/tmp/cf-proxy-addr-source-aJZJtl`; its baseline
+files came from committed Git blobs, including only committed versions of the
+three protected pending API paths. Pinned pnpm 10.34.5 generated compatible
+transitive updates with:
+
+```sh
+pnpm --recursive update proxy-addr source-map-js postcss-selector-parser shell-quote --depth 100 --lockfile-only
+```
+
+The initial version-qualified indirect update was a no-op. The named-package
+update selected shell-quote 1.12.0, outside this task's exact approved target;
+that intermediate lock was preserved as unaccepted evidence and never copied
+to the working lockfile. A separate disposable manifest requested exactly
+shell-quote 1.11.0 and pinned pnpm generated its package/snapshot records. Only
+those generated records and the existing shell-quote edge were mechanically
+transplanted into the otherwise generated lock. No manifest or override was
+added to Content Factory. `lock-delta-proof.json` asserts byte-for-byte that the
+entire final lock differs from the checkpoint only by the four versions, their
+official SRIs and 16 references. All seven source manifest/workspace boundaries
+match the checkpoint. The lock has 28 changed lines, SHA-256
+`a20e435645b06112451c20e9de9b7a83e2fa742b553da910b9768468d6ff387b`.
+
+### HTTP regression and full-source verification
+
+The twelve new tests use actual Nest/Express and production
+`configureHttpSecurity`. Real HTTP requests cannot spoof the socket peer,
+protocol, hostname or secure state using `Forwarded` or `X-Forwarded-*`.
+The default `trust proxy` stays false; the tests never enable it. Additional
+predicates resolve proxy-addr through Nest's actual Express installation and
+reject over-broad IPv6/mapped trust subnets without breaking explicitly intended
+IPv4/mapped subnet matching. A separate negative control reproduced acceptance
+of unrelated IPv4 peers by proxy-addr 2.0.7 for both vulnerable subnet forms.
+
+The first scoped install omitted the web contract generator: 323 tests passed
+and one contract test failed because openapi-typescript was absent. The initial
+format command also lacked the committed `.prettierignore` and incorrectly
+checked the intentionally ignored generated lock. Both fixture deficiencies
+were corrected without application/test behavior changes; original failures
+remain in `gate-results.json` and their logs.
+
+The final complete workspace frozen install used a new empty store,
+`/tmp/cf-security-full-cold-store-7eR9n0`, on Node 24.15.0/pnpm 10.34.5:
+934 downloaded, zero reused, exit 0, unchanged lock/manifests and the existing
+strict version-scoped lifecycle policy. Installed manifests verify all four
+exact target versions. The subsequent whole API batch passed: 65 files,
+324 tests (312 baseline plus twelve), zero-warning lint, strict TypeScript,
+production build, deterministic OpenAPI JSON and generated TypeScript client.
+The unit JSON SHA-256 is
+`4ee323a43d603841bb016d53b3cffe6eee21cb73cd6c034557647907f175c5c0`.
+The post-gate source recheck verifies all committed inputs. Pinned Prisma
+generation reproduces one tracked generated model with trailing horizontal
+whitespace only (`TwitchEventSubReconciliationState.ts`); the proof records
+both hashes and asserts equality after removing trailing spaces/tabs. All
+other baseline source inputs remain byte-identical. This derived fixture
+output is not copied to the working tree or included as a source change.
+Web rendering, browser and web build/typecheck acceptance remain separately
+owned by the frontend owner; the API owner does not claim those passed.
+
+Exact reproducible invocation from the source fixture (all credentials inert):
+
+```sh
+cd /tmp/cf-proxy-addr-source-aJZJtl
+export PATH=/home/miray/Projects/ContentFactory/tmp/runtime-node24:/tmp/cf-proxy-addr-source-aJZJtl/node_modules/.bin:$PATH
+export S3_ACCESS_KEY=cf_unit_fixture_only S3_SECRET_KEY=cf_unit_fixture_only
+export REDIS_PASSWORD=cf_unit_fixture_only
+export POSTGRES_USER=cf_unit_fixture_only POSTGRES_PASSWORD=cf_unit_fixture_only POSTGRES_DB=cf_unit_fixture_only
+export API_UPLOAD_STAGING_SAFETY_BYTES=0 CI=true
+pnpm install --frozen-lockfile --store-dir /tmp/cf-security-full-cold-store-7eR9n0
+pnpm --filter @content-factory/api db:generate
+pnpm --filter @content-factory/api exec oxlint --deny-warnings src test scripts
+pnpm --filter @content-factory/api typecheck
+pnpm --filter @content-factory/api build
+(cd apps/api && pnpm exec vitest run --reporter=default --reporter=json --outputFile=../../unit-results.json)
+pnpm --filter @content-factory/api check:openapi
+pnpm --filter @content-factory/web check:openapi
+pnpm audit --json --audit-level moderate
+pnpm audit --prod --json --audit-level moderate
+```
+
+`run-gates.mjs` records the actual absolute pnpm executable, explicit inert
+environment, timestamps, exit codes and log hashes. It removes inherited
+DATABASE_URL/S3_ENDPOINT/REDIS_URL and never copies an environment file.
+For another cold reproduction, use another newly created empty store rather
+than claiming the populated path above is still cold.
+
+### Honest audit handoff and rollback
+
+Both actual fresh source audits return exit 1: six advisories each, two critical
+and four high, down from ten (four critical, five high, one moderate).
+The remaining modules are node-forge, braces, @simple-git/argv-parser and
+simple-git; no unsupported major override or exception was introduced.
+The complete JSON reports are `final-audit-full.log` and
+`final-audit-prod.log` under `tmp/proxy-addr-maintenance-tVEsVG`, SHA-256
+`8735aada85fea3c10beb858c48059b3d6593176c33344d0b59f90b9530534dee` and
+`f62643fffaaefa8a133758ab93dde399875214be2bc4392d839811e655724391`.
+They preserve all paths/findings, not merely a severity summary. All source
+gates remain DENY; functional success does not authorize production promotion.
+
+`final-proof.json` binds the isolated Git tree (not a branch commit), all three
+owned blobs, installed targets, source immutability, unit report, commands and
+audit evidence. Independent review must reproduce this slice. Native API and
+migrate rebuilds wait for Main's separately reviewed Dockerfile transaction so
+the eventual artifacts share one exact combined candidate. No native image or
+artifact scan is claimed for this lock update. Rollback is a coordinated revert
+of these three owned paths, fresh frozen dependency installation and repeated
+API/web gates; no schema, persistent data or provider changes need reversal.

@@ -326,7 +326,9 @@ onUnmounted(() => {
         <div v-else class="empty-state">
           <span class="empty-ratio" aria-hidden="true">9:16</span>
           <h3>Вертикальных версий пока нет</h3>
-          <p>Выберите готовую нарезку справа, чтобы создать первую версию.</p>
+          <p>
+            Выберите готовую нарезку, чтобы создать первую вертикальную версию.
+          </p>
         </div>
       </section>
       <aside class="composer">
@@ -342,8 +344,8 @@ onUnmounted(() => {
           требует подтверждения.
         </p>
         <p v-if="!renderEnabled" class="admission-note" role="status">
-          Создание новых вертикальных версий выключено администратором.
-          Готовые результаты по-прежнему доступны для просмотра и подтверждения.
+          Создание новых вертикальных версий выключено администратором. Готовые
+          результаты по-прежнему доступны для просмотра и подтверждения.
         </p>
         <label
           ><span>Готовая нарезка</span
@@ -363,9 +365,8 @@ onUnmounted(() => {
         <Button
           :disabled="!renderEnabled || !selectedCutId || saving"
           @click="createRender"
-          >{{
-          saving ? "Создаём…" : "Добавить в очередь"
-        }}</Button>
+          >{{ saving ? "Создаём…" : "Добавить в очередь" }}</Button
+        >
         <p v-if="!loading && !availableCuts.length" class="hint">
           Все готовые нарезки уже добавлены или ещё не созданы.
         </p>

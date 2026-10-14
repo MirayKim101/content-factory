@@ -20,8 +20,8 @@
   --cf-danger-soft: #fff0ef;
   --cf-success: #27754e;
   --cf-success-soft: #e9f6ee;
-  --cf-shadow-sm: 0 1px 2px rgb(23 32 51 / 0.04),
-    0 8px 24px rgb(23 32 51 / 0.045);
+  --cf-shadow-sm:
+    0 1px 2px rgb(23 32 51 / 0.04), 0 8px 24px rgb(23 32 51 / 0.045);
   --cf-shadow-lg: 0 24px 72px rgb(23 32 51 / 0.18);
   --cf-radius-sm: 0.625rem;
   --cf-radius-md: 0.875rem;
@@ -113,7 +113,10 @@ a {
   color: var(--cf-text);
 }
 
-:where(.p-button, [data-pc-name="button"])[data-p-severity="secondary"]:hover:not(:disabled) {
+:where(
+    .p-button,
+    [data-pc-name="button"]
+  )[data-p-severity="secondary"]:hover:not(:disabled) {
   border-color: #aab8bc;
   background: var(--cf-surface-muted);
   color: var(--cf-text);
@@ -221,7 +224,22 @@ a.action-link:hover {
   white-space: nowrap;
 }
 
-:where(.p-select-dropdown, [data-pc-name="select"][data-pc-section="dropdown"]) {
+/* PrimeVue focuses its inner span; the root owns the visible focus ring. */
+:where(.p-select, [data-pc-name="select"][data-pc-section="root"])
+  > span[role="combobox"][data-pc-section="label"]:focus {
+  outline: none;
+}
+
+:where(.p-select, [data-pc-name="select"][data-pc-section="root"]):has(
+  > [role="combobox"]:focus-visible
+) {
+  outline-color: var(--cf-brand);
+}
+
+:where(
+  .p-select-dropdown,
+  [data-pc-name="select"][data-pc-section="dropdown"]
+) {
   display: grid;
   flex: 0 0 2.4rem;
   height: var(--cf-control-height);
@@ -281,7 +299,7 @@ a.action-link:hover {
   background: #fff;
   cursor: pointer;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 :where(
@@ -292,6 +310,8 @@ a.action-link:hover {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 :where(.project-select-panel) {
@@ -307,8 +327,8 @@ a.action-link:hover {
   font-size: 0.84rem;
   font-weight: 650;
   line-height: 1.25;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 :where(

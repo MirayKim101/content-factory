@@ -43,9 +43,22 @@ inventory and PNG checks, and inspected (not replayed) the media recovery proof.
 See `tasks/api-upload-capacity.md`,
 `tasks/worker-shared-capacity.md` and `tasks/pcre2-security-maintenance.md`.
 
+The next frozen maintenance source `e17b10c` independently passed 324 API
+tests, types/lint/build/contracts and exact four-package lock review. Its
+complete/production audits are now DENY 6 (2 critical, 4 high), versus ten
+at the published `993524e` checkpoint. Native API/migrate/worker scans bound
+to the same new source deny at 145/155/741 respectively. Fresh/repeat 45
+migrations and the combined native API/media/recovery/failure batch passed.
+Independent native/source and final bounded UI/edge reviews are CLEAN. The
+reviewer repeated full web gates (278 tests/51 files), strong read-only browser
+(16 cases/eight comboboxes) and three recovered checksum/Range downloads.
+Disruptive recovery evidence was inspected, not independently replayed.
+
 1. **Security of source/build and final artifacts.** Complete and production-
    classified dependency audits were repeated on October 14 with the unchanged
-   lockfile: each exits 1 with ten advisories (4 critical, 5 high, 1 moderate).
+   published `993524e` lockfile: each exits 1 with ten advisories
+   (4 critical, 5 high, 1 moderate). The pending e17 maintenance slice reduces
+   each to six as recorded above; no clean gate is claimed.
    The two historical unpatched high advisories remain:
    [node-forge](https://github.com/advisories/GHSA-86w9-cpqp-85rv) and
    [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), with no published
@@ -76,23 +89,44 @@ See `tasks/api-upload-capacity.md`,
    now published and the pinned native image passed 256 MiB upload/download,
    65-second streams, cache/deep links and controlled upstream failures.
    Its actual all-severity scan denies promotion at 19 non-LOW. Independent
-   diagnostic review is CLEAN. Initial browser hydration/geometry smoke passed
-   on 12 desktop/mobile pages and eight selectors, but settled loading,
-   late responses and keyboard-close acceptance are being strengthened.
+   diagnostic review is CLEAN. Final settled browser verifies 16 desktop/mobile
+   cases/eight selectors with loading/late-response checks, visible keyboard
+   focus, Arrow/Enter selection, Escape closure and mobile option wrapping.
    Actual API/media-through-edge upload/authorization/cut/replay/Range/failure
-   and recovered downloads passed; independent final evidence review remains
-   pending, independently of dev UI on port 3100. Initial screenshot review
-   also identified duplicate selector focus outlines and mobile-specific copy
-   to polish; the initial render smoke is not full operator acceptance.
-3. **Production storage and operations.** Select and verify persistent disk
+   and recovered downloads passed; independent final review is CLEAN,
+   independently of dev UI on port 3100. Duplicate focus outlines and mobile
+   location-specific copy were corrected. Raw FAIL for two native preload
+   cancellations remains preserved with a strict, negatively tested classifier;
+   no general network-error suppression. Browser requests were GET/HEAD only;
+   writes were exercised by a separate Node client. Manual montage operator
+   acceptance remains blocked below; this is not complete product acceptance.
+3. **Manual montage asset rights.** The local Stage 2 montage path currently
+   accepts only development evidence. Manual production policy intentionally
+   denies it as `MONTAGE_RIGHTS_REQUIRED`; source-video permission does not
+   authorize an advertisement/intro/outro/banner. ADR-005 anticipates separate
+   asset-scoped evidence. The architect approved a future explicit operator
+   attestation protocol, additive exact-pair constraints and end-to-end API/
+   worker/recipe/render/export eligibility after the current checkpoint.
+   Implementation and operator wording acceptance are still pending. Never
+   unblock this by enabling local-auto in production or relabelling old rows.
+4. **Browser-write boundary.** Architect review found no explicit Origin/Fetch
+   Metadata guard before unsafe API requests. Helmet and private access do not
+   establish cross-site form protection. Add an explicit canonical origin
+   allowlist, reject hostile/opaque/malformed origins and cross-site metadata
+   before parsing/staging/business effects, and define intentional native
+   originless-client writes. Never infer trust from Host/forwarded headers.
+   Actual production origin depends on deployment facts; fail closed when
+   absent. Add SPA frame protection separately without breaking OAuth popups.
+   This is a recorded gap, not an exploit demonstration or completed guard.
+5. **Production storage and operations.** Select and verify persistent disk
    capacity, bounded non-RAM media scratch, cleanup/retention, encrypted
    off-host backups, all-writer fencing and realistic paired restore drills.
    The tiny diagnostic tmpfs is explicitly not a large-media deployment.
-4. **Private deployment prerequisites.** Actual server, private access model,
+6. **Private deployment prerequisites.** Actual server, private access model,
    domain/TLS ownership where applicable, secret storage/rotation and operational
    responsibility need recorded decisions. Preparation must not invent these
    facts or configure public access. Default external write switches stay off.
-5. **Credentialed provider acceptance.** Twitch ingestion and every enabled
+7. **Credentialed provider acceptance.** Twitch ingestion and every enabled
    AI/publishing provider/channel require approved credentials and a bounded
    canary. Confirm remote identity, approved input, output, restart/duplicate
    prevention and reconciliation. Mock/local dry-run is not a real publication.
@@ -121,12 +155,14 @@ admission disabled; local acceptance is not a credentialed provider canary.
 
 ## Safe order of remaining work
 
-Read-only triage of the October 14 reports identifies the next small
-remediation candidates: API `proxy-addr` compatible patch `2.0.7 -> 2.0.8`,
-and an explicitly reviewed `perl-base` Bookworm security update. Neither has
-been applied by this checkpoint. Required evidence includes official release
-and compatibility checks, a scoped reproducible dependency/inventory change,
-regressions and new exact-artifact scans. The edge also needs an official
+The e17 diagnostic slice applies the compatible proxy-addr/source-map-js/
+postcss-selector-parser/shell-quote resolutions and a separately checked
+Perl-only OS update. Source audits still deny six findings; all four artifacts
+remain denied. Next bounded maintenance is the architect-reviewed compatible
+Nuxt DevTools 3.4.3 resolution, with no broader Nuxt/Vue refresh or unsupported
+major override. Manual montage attestation and browser-write hardening are
+separate implementation slices, not benefits of a dependency patch.
+The edge also needs an official
 artifact with updated embedded Go dependencies; updating Alpine packages alone
 cannot patch its Caddy binary. Even those changes would leave unresolved
 findings, including the OpenPGP advisory in the Go dependency closure.

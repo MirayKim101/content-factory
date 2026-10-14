@@ -65,3 +65,89 @@ Upload → probe → READY → reload/content; corrupt file controlled failure;
 retry/duplicate delivery/restart/Redis loss/lease fencing без duplicate effects;
 exact checksum/lineage и запрет cross-project reads. Старые SOURCE/CUT_RESULT
 не меняются. Следовать task acceptance, независимому review и browser smoke.
+
+## Manual production completion — approved specification, 2026-10-14
+
+Архитектор классифицировал это как предусмотренное завершение ADR-005, без
+нового material ADR. **Реализация ещё не принята и начинается только после
+текущего security/UI checkpoint.** Нынешний `MONTAGE_RIGHTS_REQUIRED` при manual
+policy — намеренный запрет незавершённого local-only пути, не повод ослабить gate.
+
+### Протокол
+
+Существующий multipart upload сохраняет `kind`, `file`, `Idempotency-Key`.
+Для ручной аттестации нужны `sourceVersion` текущего исходника, exact
+`rightsDeclarationVersion=montage-operator-attestation-v1` и явный
+`rightsAttested=true` с одной документированной multipart representation.
+Сервер независимо проверяет SourceAuthorization, вычисляет checksum/size и
+вместе с upload intent сохраняет `OPERATOR_ATTESTATION`, literal декларации и
+свой timestamp. Клиент не задаёт stored basis/time или signer identity.
+
+Это утверждение частного оператора о возможности использовать конкретный
+файл для выбранного montage purpose, **не юридическая проверка или доказательство
+владения**. Права VOD не подставляют права на этот материал. Окончательная
+пользовательская формулировка декларации требует product-owner review перед
+production acceptance; реализация/диагностика не утверждают её юридическую силу.
+
+Одна новая canonical additive migration (46-я при сохранении нынешних 45)
+заменяет отдельные local-only checks одним exact-pair constraint:
+
+- `LOCAL_DEVELOPMENT_AUTO` / `montage-local-development-auto-v1`;
+- `OPERATOR_ATTESTATION` / `montage-operator-attestation-v1`.
+
+Timestamp остаётся обязательным; format/size/status/cleanup/lineage constraints
+не снимаются. Старые migration файлы и существующие строки не переписываются.
+Новый fingerprint v2 включает meaningful upload context и нормализованное
+rights evidence, но не новый timestamp/asset ID. Идентичный replay возвращает
+прежний asset и время решения; изменённый context/bytes/kind/declaration
+конфликтует. Точный v1 local replay сохраняется только в подходящем local mode;
+ручной запрос не повышает старую local запись. Для manual evidence нужен новый
+явный upload/asset identity, не автоматический retag.
+
+### Единая eligibility и интерфейс
+
+Manual evidence принимается в обеих поддержанных operating policies только
+при независимо usable source. Local evidence — лишь в валидном local-auto.
+Unknown/partial/stale evidence и mismatched snapshots запрещены. API/domain/SQL
+должны совпадать на creation/finalization/recovery, list/content, recipe inputs,
+render admission/read/download, editorial approval, export admission/download,
+worker dispatch/claim/input loading и lease-fenced completion. Новая логика не
+импортирует API implementation в независимый worker.
+
+Mixed libraries фильтруют неавторизованные rows **до pagination**; direct content
+остаётся закрытым. UI checkbox изначально false и сбрасывается при смене файла,
+проекта, source version или kind; request использует immutable submission snapshot
+и не применяет stale response. Reload/recovery не восстанавливает согласие
+молча. Без автоматического клика и наследования SourceAuthorization.
+OpenAPI/client получают описанные поля и безопасный rights-status metadata,
+без object keys или вымышленного подписанта. Multipart field/part bounds меняются
+лишь до точного протокола; staging/admission/deadlines остаются bounded.
+
+### Acceptance и rollback
+
+Нужны fresh/upgrade canonical migration proofs; обе валидные пары принимаются,
+mixed/unknown отклоняются, legacy rows неизменны. Отдельно проверить отсутствие/
+false/unsupported declaration, stale source, source-only rights, cross-project
+references, checksum/context mismatch и local evidence under manual.
+Проверить legacy v1 и v2 replay/conflict/concurrency, потерянный ответ и
+неоднозначный DB/storage исход без второго asset/probe.
+
+Native manual path при `DEPLOYMENT_PROFILE=other`: ad/intro/outro/banner upload,
+background video probe, READY, exact recipe/render, review/approval и background
+export/download. Redis loss, SIGKILL, lease/stale finalizer, corrupt media и
+storage interruption не создают duplicate/unauthorized READY output. Browser
+проверяет сброс checkbox, reload/retry, понятный 403, настоящий manual upload,
+timeline/overlay и Range/download. Обязательны relevant large gates и independent
+real-diff/reproduced review.
+
+Expiry/revocation, attribution/license documents, verification документов,
+re-attestation существующих assets и cross-source reuse не входят. Не выдавать
+их за реализованные. JWT/RBAC, public access, paid providers и внешняя публикация
+не добавляются. Protected pending API файлы нельзя читать/менять/stage; если
+нужное изменение требует этих paths, остановить только этот срез для конкретного
+решения владельца, не создавать скрытую копию business implementation.
+
+Rollback прекращает новый manual admission, сохраняет evidence/media/recipes
+и widened constraint. Drain/recover admitted jobs до замены совместимых workers;
+предпочесть capable binaries с выключенным admission. Destructive down migration
+не допускается. Production deployment этим дополнением не разрешён.
