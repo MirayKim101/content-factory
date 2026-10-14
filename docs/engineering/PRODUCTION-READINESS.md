@@ -54,11 +54,34 @@ reviewer repeated full web gates (278 tests/51 files), strong read-only browser
 (16 cases/eight comboboxes) and three recovered checksum/Range downloads.
 Disruptive recovery evidence was inspected, not independently replayed.
 
+Published checkpoint `464aeb9` has hosted CI `38576934260`: all functional jobs
+and source/build checks pass except the two mandatory dependency audits.
+The subsequent uncommitted combined `07a5` source independently passes 375 API
+tests/66 files, lint/types/build/contracts. DevTools 3.4.3 removes the remaining
+simple-git closure: both source audits now deny only two HIGH node-forge/braces
+findings, no critical. Three 07a5 native inventories match e17 exactly and new
+fresh/repeat migrations/media/recovery/failure pass; scans still DENY
+145/155/741. The optional enabled DevTools startup separately FAILS with two
+vendor uncaught write-after-end errors. Supported disablement now has actual-app
+startup/HMR/browser-write acceptance, independently reproduced; vendor FAIL is
+preserved. New native SPA framing and the READY-cut mobile overflow correction
+at d233 independently pass 320/390/1440, keyboard, iframe refusal, legitimate
+browser uploads/cuts and no-side-effect cross-site negatives. All five isolated
+API suites independently pass 41/41. The false-green lint P2 is closed by the
+test-only6b9fde9 successor: independently138 files/0 warnings and6 affected
+tests pass. Owner full278 tests, types/build/14 helpers and changed-test format
+pass; Main changed31-file formatting passes under existing CI policy. Full
+source still has18 pre-existing style warnings, retained FAIL. No runtime
+rebuild/relabel: all109 inputs match d233. See `tmp/web-lint-p2-llJLKH/CHECKPOINT-HANDOFF.md`.
+See `tasks/browser-write-boundary.md`, `tasks/devtools-security-maintenance.md`,
+`tasks/devtools-disabled-runtime.md` and `tasks/spa-frame-boundary.md`.
+
 1. **Security of source/build and final artifacts.** Complete and production-
    classified dependency audits were repeated on October 14 with the unchanged
    published `993524e` lockfile: each exits 1 with ten advisories
-   (4 critical, 5 high, 1 moderate). The pending e17 maintenance slice reduces
-   each to six as recorded above; no clean gate is claimed.
+   (4 critical, 5 high, 1 moderate). The historical e17 maintenance slice reduces
+   each to six as recorded above. This is historical e17 evidence: the current
+   combined 07a5 reports deny two HIGH as recorded above; no clean gate is claimed.
    The two historical unpatched high advisories remain:
    [node-forge](https://github.com/advisories/GHSA-86w9-cpqp-85rv) and
    [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), with no published
@@ -107,7 +130,11 @@ Disruptive recovery evidence was inspected, not independently replayed.
    asset-scoped evidence. The architect approved a future explicit operator
    attestation protocol, additive exact-pair constraints and end-to-end API/
    worker/recipe/render/export eligibility after the current checkpoint.
-   Implementation and operator wording acceptance are still pending. Never
+   Separate incomplete unstaged WIP passes owner455 API/397 worker tests,11 HTTP/
+   PostgreSQL scenarios,198 SQL cases and canonical46 fresh/repeat/45→46 checksums.
+   Dispatch/metadata are implemented, but shared-contract/config/CI integration,
+   native render/approval/export/fault acceptance and independent
+   review are pending. Operator wording acceptance is also pending. Never
    unblock this by enabling local-auto in production or relabelling old rows.
 4. **Browser-write boundary.** Architect review found no explicit Origin/Fetch
    Metadata guard before unsafe API requests. Helmet and private access do not
@@ -117,7 +144,15 @@ Disruptive recovery evidence was inspected, not independently replayed.
    originless-client writes. Never infer trust from Host/forwarded headers.
    Actual production origin depends on deployment facts; fail closed when
    absent. Add SPA frame protection separately without breaking OAuth popups.
-   This is a recorded gap, not an exploit demonstration or completed guard.
+   The 07a5 implementation now passes independently repeated source/compiled
+   HTTP/integration checks and actual browser positive/negative writes through
+   the separately built d233 edge. Negative 74-table/object/staging snapshots
+   are serialized against positive writers. Optional DevTools disablement has
+   clean actual-app development/HMR and independent reproduced acceptance;
+   its vendor defect is not repaired. Native frame headers and same/cross-origin
+   iframe blocking independently pass. This closes the diagnostic boundary
+   behavior, not production origin/access selection or outstanding security
+   denials; the separate false-green lint P2 is closed as recorded above.
 5. **Production storage and operations.** Select and verify persistent disk
    capacity, bounded non-RAM media scratch, cleanup/retention, encrypted
    off-host backups, all-writer fencing and realistic paired restore drills.
@@ -130,6 +165,16 @@ Disruptive recovery evidence was inspected, not independently replayed.
    AI/publishing provider/channel require approved credentials and a bounded
    canary. Confirm remote identity, approved input, output, restart/duplicate
    prevention and reconciliation. Mock/local dry-run is not a real publication.
+   TikTok has a newly identified pre-canary credential-rotation gap: API and
+   worker consume refreshed access tokens without preserving a potentially
+   replaced refresh token, and creator-info GET can trigger that remote
+   operation. See `tasks/tiktok-credential-rotation-gap.md` for exact source and
+   official provider evidence. ADR-010 prohibits provider credentials in
+   PostgreSQL; do not silently add a credential table to fix it. An owned
+   secret-reference port/mock contract and fail-closed TikTok fence are now
+   architect-approved for a later local slice; an actual production secret
+   adapter remains unselected/unapproved. The loss is reproduced only under a
+   rotating synthetic provider. No real refresh, credential or canary was used.
 
 ## Maintenance risk requiring an architecture decision
 
@@ -146,6 +191,15 @@ OS/FFmpeg baseline replacement needs a material ADR, measured candidate scans,
 compatibility/resource/output evidence and an independent review; it is not an
 unreviewed transitive override or a promise that another distribution is clean.
 
+Main rechecked the exact retained 07a5 JSON reports (`artifact-scan-itJ63m`,
+`artifact-scan-n7Huyj`, `artifact-scan-cjxi8a`): all OS-severity records total
+228/242/982, and none has a populated `FixedVersion` in those reports. Their
+release-denying non-LOW subsets remain 145/155/741. This is evidence about the
+recorded database and exact images, not a claim that no future package fix can
+exist. Worker findings concentrate in the FFmpeg/library family; a guessed
+major replacement or deleting essential runtime packages is not an approved
+compatible patch. Do not count repeated unchanged installs as gate closure.
+
 ADR-010 is accepted only for the local/default-off implementation, following
 the architect decision and independent scope review on 2026-10-03. External
 provider rollout and production deployment remain unapproved. This status
@@ -155,12 +209,15 @@ admission disabled; local acceptance is not a credentialed provider canary.
 
 ## Safe order of remaining work
 
-The e17 diagnostic slice applies the compatible proxy-addr/source-map-js/
-postcss-selector-parser/shell-quote resolutions and a separately checked
-Perl-only OS update. Source audits still deny six findings; all four artifacts
-remain denied. Next bounded maintenance is the architect-reviewed compatible
-Nuxt DevTools 3.4.3 resolution, with no broader Nuxt/Vue refresh or unsupported
-major override. Manual montage attestation and browser-write hardening are
+The published maintenance checkpoint applies the compatible proxy-addr/
+source-map-js/postcss-selector-parser/shell-quote resolutions and a separately
+checked Perl-only OS update. The combined DevTools 3.4.3 slice reduces source
+audits to two HIGH, but preserves an enabled-module runtime FAIL. Its supported
+optional-module disablement has independently reproduced runtime acceptance.
+The separate real-lint P2 is closed for the combined diagnostic checkpoint;
+all four artifacts remain denied. No broader
+Nuxt/Vue refresh or unsupported major override is approved.
+Manual montage attestation and browser-write hardening are
 separate implementation slices, not benefits of a dependency patch.
 The edge also needs an official
 artifact with updated embedded Go dependencies; updating Alpine packages alone
@@ -177,5 +234,6 @@ with approved configuration; enable at most one provider/channel for its exact
 canary. Preserve manual export and switch admission off before any rollback.
 
 No production deployment, external publication, port 3000 change or modification
-of other projects is implied by this document. The development UI remains
-<http://127.0.0.1:3100>.
+of other projects is implied by this document. The documented development UI
+address is <http://127.0.0.1:3100>; current verification uses private containers
+without host ports and does not establish a running listener at that address.

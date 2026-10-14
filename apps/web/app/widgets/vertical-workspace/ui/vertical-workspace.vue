@@ -469,6 +469,7 @@ label > span {
 }
 .queue-panel,
 .composer {
+  min-width: 0;
   padding: 1.25rem;
   border: 1px solid var(--cf-border);
   border-radius: var(--cf-radius-lg);
@@ -613,7 +614,7 @@ label > span {
     grid-template-columns: repeat(2, 1fr);
   }
   .workspace-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .composer {
     position: static;

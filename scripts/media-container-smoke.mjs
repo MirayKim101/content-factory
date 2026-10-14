@@ -51,8 +51,11 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 async function request(path, expected = 200, options = {}) {
+  const headers = new Headers(options.headers);
+  headers.set("X-Content-Factory-Client", "native-v1");
   const response = await fetch(`${base}${path}`, {
     ...options,
+    headers,
     signal: AbortSignal.timeout(10000),
   });
   assert.equal(

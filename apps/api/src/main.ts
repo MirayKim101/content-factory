@@ -61,7 +61,15 @@ export async function createApp(): Promise<INestApplication> {
 export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
   const openApiConfig = new DocumentBuilder()
     .setTitle("Content Factory API")
-    .setDescription("Private Content Factory REST API")
+    .setDescription(
+      "Private Content Factory REST API. Unsafe methods require an explicitly " +
+        "configured browser Origin (cross-site Fetch Metadata is denied), or an " +
+        "originless native client with X-Content-Factory-Client: native-v1 and no " +
+        "browser provenance except the single Sec-Fetch-Mode: cors added by Node " +
+        "fetch. This marker is not authentication. Denials return 403 " +
+        "BROWSER_WRITE_FORBIDDEN before body parsing or upload staging. See " +
+        "docs/engineering/tasks/browser-write-boundary.md for the exact policy.",
+    )
     .setVersion("1.0")
     .build();
   return SwaggerModule.createDocument(app, openApiConfig);

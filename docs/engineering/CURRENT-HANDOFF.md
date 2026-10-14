@@ -2,12 +2,150 @@
 
 Обновлено: 2026-10-14. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
-## Автономное продолжение 2026-10-14 — проверка поставки продолжается
+## Остановка по просьбе владельца — checkpoint 2026-10-14
+
+Владелец попросил довести текущую точку до commit/push и остановиться до завтра,
+затем попробовать выключить компьютер. Это отменяет прежнее непрерывное
+продолжение; после checkpoint не запускать новые slices без возобновления.
+Использовано около 34% лимита при верхней границе 50%. Ниже сохранена история.
+Все агенты остановлены. После сохранения evidence остановлены пять ещё
+работавших ролей собственного `cf-origin-07a5-20261014`; все семь контейнеров
+теперь stopped, containers/volumes/networks/images не удалялись. Proof:
+`tmp/browser-write-native-vWOCMb/owner-stop-proof.json`. Соседние проекты,
+их процессы и порт3000 не управлялись. Старая heartbeat automation не удалось
+подтверждённо обновить: view возвращает только UI card, локального TOML нет,
+update требует недоступные полные поля. Не создавать замену/дубликат; цель
+приостанавливается отдельно после push по явному запросу владельца.
 
 Владелец возобновил работу до production-safe версии без ожидания ручной
 проверки, с верхней границей 50% использованного лимита. При старте было 10%.
 Цель активна; ночной checkpoint ниже является историей, не текущей паузой.
 Оба scoped WIP восстановлены без изменения защищённых пользовательских файлов.
+
+## Текущий checkpoint `464aeb9` и следующий combined WIP
+
+`464aeb9c54b7c4b1341d9b7533cedbd715f87c96` опубликован, remote SHA подтверждён.
+Это 14 собственных путей: четыре compatible security resolutions, проверенная
+Perl-only transaction, исправления selector focus/wrapping/mobile copy и
+документация. Независимые source/native/strong browser reviews CLEAN только
+в указанном diagnostic scope. Hosted CI `38576934260`: все functional jobs и
+source/build checks PASS; только обе обязательные dependency audit steps FAIL.
+
+Новый WIP `07a5f56ca0c4c6a3e4c8cc971c37768d7a41425d` объединяет browser-write
+Origin/Fetch Metadata guard и DevTools 3.4.3 lock. Source: 375 tests/66 files,
+lint/types/build/OpenAPI/generated client PASS, независимо повторены. Lock:
+48 affected constraints и прежние 16 security edges проверены независимо;
+cold install 930/0 inspected, не повторён reviewer. Оба audits теперь DENY
+2 HIGH (node-forge/braces), без critical и без исключений.
+Три actual native образа имеют один 07a5 source; inventories OS/JS и media
+binaries совпадают с e17. Fresh/repeat 45 migrations и новый combined API/
+media/replay/queue-loss/SIGKILL/failure batch PASS. Scans DENY 145/155/741.
+См. `tasks/browser-write-boundary.md`, `tasks/devtools-security-maintenance.md`.
+
+DevTools startup при этом **FAIL**: missing-token HTTP handler вызывает два
+vendor write-after-end uncaughtException, несмотря на exit 0/raw bounded PASS.
+Raw history и overriding strict FAIL сохранены; нельзя выдавать token/RPC/Git
+подпроверки за общий PASS. Архитектор одобрил explicit DevTools disablement;
+successor `80c4cdb9a240ad8f7ea12dfb211c8f72b2fcf871` меняет только Nuxt config
+и taskdoc. Поддержанная настройка не исправляет vendor defect. Следующий
+`ccfa1797d455fe441dc0774874ac31c076fa1ab7` добавляет только SPA HTML framing
+headers, scoped preparation test и отдельный taskdoc: 14 helper tests PASS.
+Все backend source/closure blobs неизменны относительно 07a5. Архитектор явно
+допустил сохранение actual 07a5 backend labels и отдельный новый edge revision
+при точном input comparison; нельзя переписывать provenance. Реальный browser
+write guard и новая edge evidence функционально приняты независимо;
+all-five-suite isolated integration повторён reviewer: 41/41 PASS без skips,
+fresh/repeat 45 canonical migrations. Handoff:
+`/tmp/cf-origin-integration-review-20261014-fKembD/HANDOFF.md`.
+Старый CI не является проверкой нового source.
+
+Последний frozen `d233c4fd382d49ad0db6c244f5c6a10870d27a06` содержит только
+две CSS-правки vertical workspace: min-width:0 для panels и minmax(0,1fr)
+для mobile grid. Реальный READY-cut выявил overflow 390→417; исходный FAIL
+сохранён. Новый actual native edge независимо прошёл 320/390/1440, keyboard,
+same/cross-origin iframe отказ, natural JSON/multipart upload/rights/cut/replay,
+video/checksum/206/416 и cross-site отказ без изменений 74 tables/objects/staging.
+Owner повторил positive→negative batch под exclusive lease:
+`tmp/web-edge-final-d233-zWKEYU/leased-batch-WUb34F/final-leased-handoff.json`,
+SHA256 `1fb25c1bde5917b1a0ab8f4030916fd88b185a3df379bc96a72bb9a34a1855ee`.
+Actual disabled-dev startup/HMR independently PASS; это mitigation, не vendor fix.
+Edge index `sha256:5f3ac2cf156dc826a23ba9b6c4b5c5d43c3edc65ba0c178bbc07ad59bcea92f6`,
+native scan DENY19 (4 HIGH/8 MEDIUM/7 UNKNOWN, также 1 LOW).
+
+Закрыт P2 verification finding: owner lint внутри ignored tmp fixture проверял
+ноль файлов и ложно показывал PASS. Независимый настоящий scan 138 файлов нашёл
+две existing unsafe optional-chain warnings в assembly API tests. Successor
+`6b9fde9a19a4ea5cde692063748c1f029c7e4bf2` исправляет только эти два tests:
+независимо 138 files/0 warnings и 6 affected tests PASS. Owner полный batch:
+278 tests, lint138, types/static build, 14 helpers PASS. Formatting изменённых
+файлов PASS согласно existing CI changed-file policy; full-source format всё
+ещё имеет те же 18 прежних style warnings, это отдельный retained FAIL.
+Все109 runtime inputs точно d233, native rebuild/relabel не нужен. Proof:
+`tmp/web-lint-p2-llJLKH/checkpoint-proof.json`, SHA256
+`e72f57f63536a656d1b600dc96196c1cdee60d48ccaf1380c4e462bdc7e87328`.
+Raw false-green и реальные FAIL сохраняются. Полный independent handoff:
+`/tmp/cf-ui-final-review-20261014-rH35GO/HANDOFF.md` и `FINDINGS.md`.
+
+Main namespace `cf-origin-07a5-20261014` после полного media batch оставлена
+для UI/reviewer без дальнейших stop/kill/flush/recreate. Все её данные fake,
+host ports отсутствуют; overlay разрешает только diagnostic origin
+`http://127.0.0.1:8080`, не production domain. Системные/dev listeners 3001/3100
+при проверке не обнаружены; это не доказательство работающей локалки.
+Independent native review 07a5 CLEAN: все три inventory и 15 HTTP-проб actual
+compiled guard повторены, OCI/provenance/source/SBOM/scan bindings проверены;
+disruptive recovery inspected, не replayed. Handoff:
+`/tmp/cf-guard-native-review-20261014-pJpFdQ/HANDOFF.md`.
+CI runner дополнен export/read-only mount нового native request fixture;
+эти два helper файла идут **после freeze 07a5**, отдельно reviewed, 4 tests PASS.
+Runtime source blobs 07a5 ими не менялись. Shared index пока пуст.
+
+Дополнительный scope incident: в начале продолжения была выполнена общая
+`git diff --stat` без path allowlist. Git мог перечитать protected pending API
+originals для сравнения/нормализации; их содержимое не выводилось, они не
+менялись, не копировались в contexts и не stage-ились. Владелец уведомлён.
+Не повторять broad diff/status scans: использовать явные собственные paths;
+для directory traversal нужны case-insensitive protected-directory exclusions
+и исключения трёх pending файлов до обхода. Не читать originals ради проверки
+этого incident. Closed build/test inputs остаются committed ADR-011 blobs.
+
+Исторические fake namespaces `cf-worker-capacity-20261014` и
+`cf-security-e17-20261014` удалены после проверки exact labels/revisions,
+отсутствия host ports/foreign network endpoints/shared volumes и flags0.
+Удалено 14 собственных контейнеров, две сети и два anonymous PostgreSQL volumes;
+MinIO writable layers также содержали только synthetic fixtures. Регенерация
+возможна сохранёнными test drivers; images/archives/source/evidence сохранены.
+Proof `tmp/historical-runtime-cleanup-Cm0oqk/cleanup-proof.json`, SHA256
+`33f2d27323ea8214f45da91f924b4f8137c4333f2774555df68b384d4bb03776`.
+Текущий `cf-origin-07a5-20261014` не изменён. Оставшиеся browser write batches
+UI/reviewer сериализуются временным exclusive proof lease, чтобы global
+negative snapshots не гонялись с чужими synthetic positive uploads.
+
+Read-only GET audit выявил дополнительный TikTok pre-canary gap: creator-info
+GET инициирует OAuth refresh; API и worker не сохраняют потенциально новый
+refresh token. Official provider docs требуют использовать замену. Это source
+finding, не воспроизведённый credentialed failure; flags остаются off.
+ADR-010/task3D запрещают provider credentials в PostgreSQL, поэтому нельзя
+самовольно вводить credential table. См. `tasks/tiktok-credential-rotation-gap.md`;
+архитектор одобрил следующий bounded fail-closed admission/GET-read-only/
+secret-owner port + mock slice без нового material ADR, только после текущего
+checkpoint. Реальный secret adapter/topology ещё не выбран; PostgreSQL secrets
+не разрешены. Fake rotation loss воспроизведён для API/worker/expiry/restart,
+SHA `78eab2db181111a38238d845b491f2569c43ad089d506ba0b37ffcee1dfb60b2`.
+Manual montage следующий отдельный unstaged slice уже реализует explicit
+asset attestation, v2/v1 replay, recovery и rights-filter-before-pagination:
+Последний owner batch: 455 API/397 worker tests, 11 isolated HTTP/PostgreSQL
+cases, 198 SQL cases, dispatch/metadata и canonical46 fresh/repeat/45→46 upgrade
+PASS. Полного native pipeline не было: harness остановился на read-only mc
+config в MinIO. Shared config/contracts/CI46, render/approval/export/fault proofs,
+frontend и independent full review остаются. Admission default-off.
+Все19 owned paths этого отдельного incomplete WIP **не stage/commit/push**;
+сохранены в рабочем дереве и в durable project-local snapshot
+`tmp/manual-montage-stop-preserved-7wm4Pv/manifest.json` (не ephemeral /tmp).
+Stop proof: `tmp/manual-montage-rights-Xwon6C/stop-checkpoint-proof.json`, SHA256
+`9a32c90b2c81484e3d7049a800c11a608e3311100f4b78894629facf427758c0`.
+Taskdoc этого WIP ещё описывает предыдущую точку; ориентироваться на stop proof.
+
+## Предыдущий diagnostic slice `993524e` / frozen `e17`
 
 Проверенный diagnostic checkpoint опубликован как
 `993524e533a5fe1db966f797fa8bf88c8de4c274`, 67 собственных путей; remote SHA

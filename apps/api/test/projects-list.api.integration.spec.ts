@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { INestApplication } from "@nestjs/common";
-import request from "supertest";
+import request from "./fixtures/native-api-request.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { PrismaService } from "../src/database/prisma.service.js";

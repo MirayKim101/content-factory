@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { INestApplication } from "@nestjs/common";
 import type { Queue } from "bullmq";
-import request from "supertest";
+import request from "./fixtures/native-api-request.js";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PrismaService } from "../src/database/prisma.service.js";

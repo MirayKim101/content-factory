@@ -22,6 +22,7 @@ export const minioBuildPins = Object.freeze({
 });
 const fixturePaths = new Set([
   "apps/api/test/media-pipeline.api.integration.spec.ts",
+  "apps/api/test/fixtures/native-api-request.ts",
   "apps/api/vitest.integration.config.ts",
   "infrastructure/minio/Dockerfile",
   "infrastructure/minio/healthcheck",
@@ -153,6 +154,10 @@ export function composeFixture({
     folder,
     "apps/api/vitest.integration.config.ts",
   );
+  const nativeRequestPath = resolve(
+    folder,
+    "apps/api/test/fixtures/native-api-request.ts",
+  );
   const provisionPath = resolve(folder, "infrastructure/minio/provision");
   const testEnvironment = {
     NODE_ENV: "test",
@@ -281,6 +286,7 @@ export function composeFixture({
         ],
         volumes: [
           `${apiTestPath}:/workspace/apps/api/test/media-pipeline.api.integration.spec.ts:ro`,
+          `${nativeRequestPath}:/workspace/apps/api/test/fixtures/native-api-request.ts:ro`,
           `${vitestConfigPath}:/workspace/apps/api/vitest.integration.config.ts:ro`,
         ],
         environment: testEnvironment,

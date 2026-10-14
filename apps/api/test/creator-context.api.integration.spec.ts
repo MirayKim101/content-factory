@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 import type { INestApplication } from "@nestjs/common";
-import request from "supertest";
+import request from "./fixtures/native-api-request.js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { CreatorContextStorage } from "../src/ai-content/application/creator-context-storage.port.js";

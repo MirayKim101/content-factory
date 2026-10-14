@@ -2,7 +2,9 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
   compatibilityDate: "2026-09-01",
-  devtools: { enabled: true },
+  // Optional upstream DevTools HTTP handler fails its strict runtime gate.
+  // Keep the application usable without registering that development surface.
+  devtools: { enabled: false },
   ssr: false,
   css: ["~/assets/css/main.css"],
   modules: ["@primevue/nuxt-module"],

@@ -62,6 +62,10 @@ test("requires a full immutable revision and a bounded project namespace", () =>
 
 test("allows only committed test and MinIO fixture inputs", () => {
   assert.equal(
+    assertFixturePath("apps/api/test/fixtures/native-api-request.ts"),
+    "apps/api/test/fixtures/native-api-request.ts",
+  );
+  assert.equal(
     assertFixturePath("apps/api/test/media-pipeline.api.integration.spec.ts"),
     "apps/api/test/media-pipeline.api.integration.spec.ts",
   );
@@ -99,6 +103,11 @@ test("generated Compose fixture has no host ports, enables BullMQ, and disables 
   assert.ok(
     document.services["api-test"].volumes.every((volume) =>
       volume.endsWith(":ro"),
+    ),
+  );
+  assert.ok(
+    document.services["api-test"].volumes.includes(
+      "/tmp/fixture/apps/api/test/fixtures/native-api-request.ts:/workspace/apps/api/test/fixtures/native-api-request.ts:ro",
     ),
   );
 });

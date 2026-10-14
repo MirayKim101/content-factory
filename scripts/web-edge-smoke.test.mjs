@@ -1,7 +1,26 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFile } from "node:fs/promises";
 
 import { classifyEdgeRequest, forwardedHeaders } from "./web-edge-smoke.mjs";
+
+test("SPA framing policy is scoped to HTML fallback without changing API or popup isolation", async () => {
+  const config = await readFile(
+    new URL("../infrastructure/web-edge/Caddyfile", import.meta.url),
+    "utf8",
+  );
+  const fallback = config.slice(config.lastIndexOf("\thandle {"));
+  assert.match(fallback, /Content-Security-Policy "frame-ancestors 'none'"/);
+  assert.match(fallback, /X-Frame-Options DENY/);
+  assert.match(fallback, /Cache-Control "no-store"/);
+  assert.equal((config.match(/Content-Security-Policy/g) ?? []).length, 1);
+  assert.equal((config.match(/X-Frame-Options/g) ?? []).length, 1);
+  assert.doesNotMatch(
+    config,
+    /Cross-Origin-Opener-Policy|script-src|default-src/,
+  );
+  assert.match(config, /reverse_proxy api:3001/);
+});
 
 test("API fixtures preserve path/query and media/idempotency headers while dropping spoofed forwarding", () => {
   assert.deepEqual(

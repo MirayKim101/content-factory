@@ -42,8 +42,11 @@ for (const flag of [
 }
 const base = "http://127.0.0.1:3001/api/v1";
 async function request(path, expected, options = {}) {
+  const headers = new Headers(options.headers);
+  headers.set("X-Content-Factory-Client", "native-v1");
   const response = await fetch(`${base}${path}`, {
     ...options,
+    headers,
     signal: AbortSignal.timeout(10000),
   });
   assert.equal(

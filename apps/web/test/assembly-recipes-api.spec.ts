@@ -92,8 +92,8 @@ describe("assembly recipes API", () => {
       ),
     ).resolves.toMatchObject({ id: recipe.id });
     expect(request?.method).toBe("PUT");
-    expect(
-      (request?.headers as Record<string, string>)["Idempotency-Key"],
-    ).toBe("stable-key");
+    expect(new Headers(request?.headers).get("Idempotency-Key")).toBe(
+      "stable-key",
+    );
   });
 });

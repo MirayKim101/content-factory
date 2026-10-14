@@ -76,6 +76,7 @@ export const API_ENVIRONMENT_KEYS = [
   "DEPLOYMENT_PROFILE",
   "SOURCE_AUTHORIZATION_POLICY",
   "API_HOST",
+  "API_BROWSER_ORIGINS",
 ] as const;
 
 export type DeploymentProfile = "local" | "other";

@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { INestApplication } from "@nestjs/common";
-import request from "supertest";
+import request from "./fixtures/native-api-request.js";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { PrismaService } from "../src/database/prisma.service.js";
@@ -403,6 +403,7 @@ describe("projects upload API (PostgreSQL + MinIO)", () => {
           "content-type": `multipart/form-data; boundary=${boundary}`,
           "content-length": 1_000_000,
           "idempotency-key": "integration-aborted-0001",
+          "x-content-factory-client": "native-v1",
         },
       });
       uploadRequest.on("error", () => resolve());

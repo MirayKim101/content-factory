@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { INestApplication } from "@nestjs/common";
-import request from "supertest";
+import request from "./fixtures/native-api-request.js";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { apiEnvironment } from "../src/config/environment.js";

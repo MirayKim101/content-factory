@@ -66,7 +66,7 @@ describe("assembly renders API", () => {
       job: { progress: { basisPoints: 4_200 } },
     });
     expect(init?.method).toBe("POST");
-    expect((init?.headers as Record<string, string>)["Idempotency-Key"]).toBe(
+    expect(new Headers(init?.headers).get("Idempotency-Key")).toBe(
       "stable-render-key",
     );
     expect(init?.body).toBe(JSON.stringify({ recipeRevision: 2 }));
