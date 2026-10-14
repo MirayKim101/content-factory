@@ -1,13 +1,32 @@
 import { randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import { lstat, mkdir, open, statfs, unlink } from "node:fs/promises";
-import { join, parse, resolve, sep } from "node:path";
+import { isAbsolute, join, parse, relative, resolve, sep } from "node:path";
 
 export class ScratchCapabilityError extends Error {
   constructor() {
     super("CONFIG_SCRATCH_UNUSABLE");
     this.name = "ScratchCapabilityError";
   }
+}
+
+/** Cache initialization removes its owned contents. A root may not contain
+ * the other root, even if nested mounts report different device identities. */
+export function assertSeparateScratchRoots(
+  scratch: string,
+  cache: string,
+): void {
+  if (scratch !== resolve(scratch) || cache !== resolve(cache))
+    throw new ScratchCapabilityError();
+  const contains = (parent: string, child: string): boolean => {
+    const path = relative(parent, child);
+    return (
+      path === "" ||
+      (!isAbsolute(path) && path !== ".." && !path.startsWith(`..${sep}`))
+    );
+  };
+  if (contains(scratch, cache) || contains(cache, scratch))
+    throw new ScratchCapabilityError();
 }
 
 export interface ScratchFilesystemStats {

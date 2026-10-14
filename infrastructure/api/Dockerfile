@@ -85,7 +85,7 @@ RUN set -eu; \
       libgcrypt20=1.10.1-3+deb12u1 \
       libgnutls30=3.7.9-2+deb12u7 \
       liblzma5=5.4.1-1+deb12u2 \
-      libpcre2-8-0=10.42-1+deb12u1 \
+      libpcre2-8-0=10.42-1+deb12u2 \
       tzdata=2026c-0+deb12u1; \
     dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.after; \
     awk 'NR == FNR { before[$1] = $2; next } !($1 in before) || before[$1] != $2 { print $1 }' \
@@ -98,7 +98,7 @@ RUN set -eu; \
     test "$(dpkg-query -W -f='${Version}' libgcrypt20)" = '1.10.1-3+deb12u1'; \
     test "$(dpkg-query -W -f='${Version}' libgnutls30)" = '3.7.9-2+deb12u7'; \
     test "$(dpkg-query -W -f='${Version}' liblzma5)" = '5.4.1-1+deb12u2'; \
-    test "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" = '10.42-1+deb12u1'; \
+    test "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" = '10.42-1+deb12u2'; \
     test "$(dpkg-query -W -f='${Version}' tzdata)" = '2026c-0+deb12u1'; \
     rm -rf /var/lib/apt/lists/*; \
     rm -f /tmp/packages.before /tmp/packages.after /tmp/packages.changed /tmp/packages.removed /tmp/packages.expected

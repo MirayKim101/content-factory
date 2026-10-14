@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { promisify } from "node:util";
+import { testCapacity } from "./filesystem-capacity.fixture.js";
 
 import { framePolicyMaterial } from "@content-factory/contracts";
 import { Pool } from "pg";
@@ -911,6 +912,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             {
               scratchDirectory: scratchRoot,
               scratchSafetyBytes: 0n,
+              ...(await testCapacity(scratchRoot)),
               leaseMs: 30_000,
               jobTimeoutMs: 60_000,
             },
@@ -1111,6 +1113,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
             {
               scratchDirectory: scratchRoot,
               scratchSafetyBytes: 0n,
+              ...(await testCapacity(scratchRoot)),
               leaseMs: 30_000,
               jobTimeoutMs: 60_000,
             },
@@ -1645,6 +1648,7 @@ describe.runIf(process.env.ASSEMBLY_REPOSITORY_ISOLATED_TESTS === "1")(
           {
             scratchDirectory: scratchRoot,
             scratchSafetyBytes: 0n,
+            ...(await testCapacity(scratchRoot)),
             leaseMs: 30_000,
             jobTimeoutMs: 60_000,
           },

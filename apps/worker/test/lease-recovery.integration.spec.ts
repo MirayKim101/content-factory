@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
+import { testCapacity } from "./filesystem-capacity.fixture.js";
 
 import {
   afterAll,
@@ -64,7 +65,9 @@ describe("worker lease recovery race (PostgreSQL)", () => {
     const reconciliation = new PrismaPipelineRepository(prisma);
     const storage = new MemoryStorage();
     const processor = new DistinctAttemptProcessor();
+    const capacity = await testCapacity(scratchDirectory);
     const sourceCache = new LocalSourceCache({
+      ...capacity,
       directory: join(scratchDirectory, "source-cache"),
       maxBytes: 1024n * 1024n,
       ttlMs: 60_000,
@@ -79,6 +82,7 @@ describe("worker lease recovery race (PostgreSQL)", () => {
       {
         scratchDirectory,
         scratchSafetyBytes: 0n,
+        ...capacity,
         leaseMs: 30_000,
         jobTimeoutMs: 60_000,
       },

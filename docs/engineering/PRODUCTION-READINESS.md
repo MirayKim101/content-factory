@@ -1,6 +1,6 @@
 # Production readiness — evidence, not a percentage
 
-Updated: 2026-10-04. Current status: **production release blocked**.
+Updated: 2026-10-14. Current status: **production release blocked**.
 Local product acceptance, container preparation and actual external operation
 are separate milestones. No real publishing/provider admission is authorized
 by a green local test.
@@ -33,26 +33,57 @@ production scratch. Its actual full artifact scan remains DENY at 695 records.
 
 ## Mandatory unfinished gates
 
+The 2026-10-14 continuation is still under verification, not a production
+approval. API upload admission passed an independently reproduced 312-test
+batch; worker shared-device admission passed 393 tests including a reproduced
+and corrected stale-filesystem-sample race. The final PNG-pinned worker passed
+24 native startup/capacity cases, full inventory/PNG overlay and real media/
+queue-loss/SIGKILL/failure checks. Independent native review reproduced startup,
+inventory and PNG checks, and inspected (not replayed) the media recovery proof.
+See `tasks/api-upload-capacity.md`,
+`tasks/worker-shared-capacity.md` and `tasks/pcre2-security-maintenance.md`.
+
 1. **Security of source/build and final artifacts.** Complete and production-
-   classified dependency audits each still find two high advisories:
+   classified dependency audits were repeated on October 14 with the unchanged
+   lockfile: each exits 1 with ten advisories (4 critical, 5 high, 1 moderate).
+   The two historical unpatched high advisories remain:
    [node-forge](https://github.com/advisories/GHSA-86w9-cpqp-85rv) and
    [braces](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm), with no published
-   patched version in the recorded audit. Actual hardened API/migrate scans
-   still deny promotion at 160/170 non-LOW records. Those counts are not unique
-   CVEs or a percentage of readiness. The exact hardened worker scan denies
+   patched version in the recorded audit. Additional findings affect
+   proxy-addr, source-map-js, postcss-selector-parser, shell-quote, simple-git
+   and its argv-parser; the audit's patched-version field is not permission
+   for an unsupported major override. Complete JSON evidence is retained in
+   `tmp/worker-capacity-native-GGLAT7/source-audit-{full,production}-20261014.json`.
+   Full/production report SHA-256 respectively:
+   `664732b1dae3ab242e314445fb62b62ab9126631ad05c74573fd0eb0066ed5d7`,
+   `4a2ae98a9cbb6e4e7e0fe239a34358acc0ee8f5a1aae9703070687708ed1f7a9`.
+   Fresh 2026-10-14 hardened API/migrate
+   artifact scans deny promotion at 159/168 non-LOW records. Those counts are
+   not unique CVEs or a percentage of readiness. The preceding hardened worker scan denies
    promotion at 695 non-LOW records after five bounded OS updates, down from
    717 after global-manager removal and its original 743-record baseline; native
    dependencies and media/recovery behavior are unchanged. See
    `tasks/worker-runtime-hardening.md`. The web-edge scan is a separate gate.
-   No allowlist, `ignore-unfixed`, severity reduction
+   The final explicit PNG-pinned `0c9cf33` worker scan with the newer database
+   denies at 754 non-LOW; functional checks do not waive this denial.
+   Counts across database dates are not directly comparable. No allowlist,
+   `ignore-unfixed`, severity reduction
    or final-image-only substitution for the source gate is allowed.
 2. **Static web-edge runtime.** ADR-011 specifies static Nuxt SPA assets in a
    pinned Caddy image, with the fixed streaming `/api/v1` route. Exact-Git
-   static generation, strict web types and 11 preparation policies passed;
-   see `tasks/web-edge-runtime.md`. Official `caddy:2.11.7-alpine` publication
-   is still pending; no replacement binary or older image is authorized.
-   Actual image inventory, cache/deep-link behavior, streaming failures and real
-   browser acceptance must pass independently of dev UI on port 3100.
+   static generation, strict web types and 13 preparation/runtime helper tests
+   passed; see `tasks/web-edge-runtime.md`. Official `caddy:2.11.7-alpine` is
+   now published and the pinned native image passed 256 MiB upload/download,
+   65-second streams, cache/deep links and controlled upstream failures.
+   Its actual all-severity scan denies promotion at 19 non-LOW. Independent
+   diagnostic review is CLEAN. Initial browser hydration/geometry smoke passed
+   on 12 desktop/mobile pages and eight selectors, but settled loading,
+   late responses and keyboard-close acceptance are being strengthened.
+   Actual API/media-through-edge upload/authorization/cut/replay/Range/failure
+   and recovered downloads passed; independent final evidence review remains
+   pending, independently of dev UI on port 3100. Initial screenshot review
+   also identified duplicate selector focus outlines and mobile-specific copy
+   to polish; the initial render smoke is not full operator acceptance.
 3. **Production storage and operations.** Select and verify persistent disk
    capacity, bounded non-RAM media scratch, cleanup/retention, encrypted
    off-host backups, all-writer fencing and realistic paired restore drills.
@@ -89,6 +120,19 @@ exception. Runtime preparation remains bounded by ADR-011 with external
 admission disabled; local acceptance is not a credentialed provider canary.
 
 ## Safe order of remaining work
+
+Read-only triage of the October 14 reports identifies the next small
+remediation candidates: API `proxy-addr` compatible patch `2.0.7 -> 2.0.8`,
+and an explicitly reviewed `perl-base` Bookworm security update. Neither has
+been applied by this checkpoint. Required evidence includes official release
+and compatibility checks, a scoped reproducible dependency/inventory change,
+regressions and new exact-artifact scans. The edge also needs an official
+artifact with updated embedded Go dependencies; updating Alpine packages alone
+cannot patch its Caddy binary. Even those changes would leave unresolved
+findings, including the OpenPGP advisory in the Go dependency closure.
+Changing Bookworm, FFmpeg, an EOL dependency major, or the official-Caddy
+packaging model needs a separate material architecture decision. Suppression
+or reachability assumptions do not satisfy the current artifact policy.
 
 Finish independently verified immutable runtime/edge preparation and reduce
 remaining attack surface. Establish artifact/source security decisions and

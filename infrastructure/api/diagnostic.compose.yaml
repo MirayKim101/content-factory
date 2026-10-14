@@ -93,6 +93,7 @@ services:
       PORT: "3001"
       API_MAX_UPLOAD_BYTES: "1048576"
       API_UPLOAD_TEMP_DIRECTORY: /tmp/content-factory-api
+      API_UPLOAD_STAGING_SAFETY_BYTES: "0"
       DEPLOYMENT_PROFILE: other
       SOURCE_AUTHORIZATION_POLICY: manual
       POSTGRES_DB: cf_api_diagnostic

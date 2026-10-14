@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   ScratchCapabilityError,
+  assertSeparateScratchRoots,
   usableScratchFilesystem,
   verifyScratchCapability,
 } from "../src/infrastructure/scratch-capability.js";
@@ -33,6 +34,26 @@ afterEach(async () => {
 });
 
 describe("scratch capability before worker readiness", () => {
+  it("rejects equal and nested cleanup domains without filesystem access", () => {
+    for (const [scratch, cache] of [
+      ["/fixture/scratch", "/fixture/scratch"],
+      ["/fixture/scratch", "/fixture/scratch/cache"],
+      ["/fixture/cache/scratch", "/fixture/cache"],
+      ["/fixture/scratch", "/fixture/scratch/../cache"],
+    ])
+      expect(() => assertSeparateScratchRoots(scratch!, cache!)).toThrow(
+        "CONFIG_SCRATCH_UNUSABLE",
+      );
+  });
+
+  it("permits non-overlapping siblings with similar string prefixes", () => {
+    expect(() =>
+      assertSeparateScratchRoots("/fixture/cache", "/fixture/cache-other"),
+    ).not.toThrow();
+    expect(() =>
+      assertSeparateScratchRoots("/fixture/scratch", "/fixture/cache"),
+    ).not.toThrow();
+  });
   it("creates private missing roots and leaves no exclusive probe behind", async () => {
     const base = await fixture();
     const root = join(base, "nested", "scratch");

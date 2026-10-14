@@ -7145,6 +7145,16 @@
               }
             },
             "description": ""
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            },
+            "description": ""
           }
         },
         "tags": ["ai-content-context"]
@@ -9300,7 +9310,7 @@
                 }
               }
             },
-            "description": "Object storage upload failed."
+            "description": "Upload staging capacity is unavailable or object storage upload failed."
           }
         },
         "summary": "Create a project by uploading an MP4 source for later authorization",

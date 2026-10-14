@@ -55,7 +55,6 @@ import { PrismaEditorialExportRepository } from "./infrastructure/prisma-editori
 import { EditorialExportController } from "./presentation/editorial-export.controller.js";
 
 import { ProjectsModule } from "../projects/projects.module.js";
-import { TempUploadLifecycleInterceptor } from "../projects/presentation/temp-upload-lifecycle.interceptor.js";
 import { CreateProcessingTemplate } from "./application/create-processing-template.js";
 import {
   GetEditorialAsset,
@@ -160,7 +159,6 @@ import { EDITORIAL_AI_THUMBNAIL_APPLIER } from "./application/editorial-ai-thumb
     EditorialAssetReconciliationStartup,
     GetEditorialPackage,
     ListEditorialPackages,
-    TempUploadLifecycleInterceptor,
     { provide: EDITORIAL_REPOSITORY, useExisting: PrismaEditorialRepository },
     { provide: EDITORIAL_AI_METADATA_APPLIER, useExisting: ApplyAiMetadata },
     {

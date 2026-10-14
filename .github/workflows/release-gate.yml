@@ -26,6 +26,8 @@ jobs:
       S3_ACCESS_KEY: cf_ci
       S3_SECRET_KEY: cf_ci_fixture_password
       MEDIA_QUEUE_DISABLED: "1"
+      # Contract export uses the non-test profile; zero is diagnostic only.
+      API_UPLOAD_STAGING_SAFETY_BYTES: "0"
     steps:
       - name: Check out source and comparison history
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6

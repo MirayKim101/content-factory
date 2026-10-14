@@ -5,6 +5,23 @@ security gate still denies promotion. No production deployment approved.
 
 Date: 2026-10-03
 
+## Follow-up 2026-10-14
+
+This record preserves the historical immutable baseline below. Subsequent
+shared-capacity code passed an independently reproduced 393-test worker batch;
+see `worker-shared-capacity.md`. The architect explicitly approved PCRE2
+`10.42-1+deb12u2` and worker-only PNG `1.6.39-2+deb12u6` maintenance, with no
+other inventory drift or security exceptions; see
+`pcre2-security-maintenance.md`. The new explicit-PNG source candidate is
+`0c9cf33c347eb373a801abc2d6cd9e16b09b54d3`; its 24 native cases, PNG overlay,
+complete 288/66 inventory comparison and media/recovery/failure batch passed.
+Fresh all-severity scan still denies at 754 non-LOW. Independent native review
+repeated startup/inventory/PNG checks and inspected Main's recovery evidence;
+no new correctness findings. Earlier warm-cache downgrades remain rejected.
+Supporting `7c` recovery/controlled-failure checks passed, but its fresh scan
+still denies promotion at 754 non-LOW. It is not retroactive acceptance of the
+new pinned candidate. Historical counts below use an older scanner database.
+
 ## Scope
 
 This baseline uses the exact committed worker source revision

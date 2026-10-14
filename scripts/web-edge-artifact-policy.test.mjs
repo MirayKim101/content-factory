@@ -317,3 +317,29 @@ test("edge scanner isolation mounts only owned artifact and DB read-only without
     false,
   );
 });
+
+test("actual Syft relative Caddy path and linked Go modules do not imply root home or Go toolchain", () => {
+  const input = sbom();
+  input.files[0].fileName = "usr/bin/caddy";
+  input.files.push({ fileName: "etc/crontabs/root" });
+  input.packages.push({
+    name: "cloud.google.com/go/auth",
+    versionInfo: "fixture",
+  });
+  const calibrated = { ...expectedCaddy, binaryFileName: "usr/bin/caddy" };
+  assert.equal(validateWebSbom(input, calibrated, sbomCreator).name, "caddy");
+  for (const path of [
+    "root/private.txt",
+    "/root/private.txt",
+    "usr/local/go/bin/go",
+    "../root/private.txt",
+    "usr/../root/private.txt",
+    "usr\\bin\\node",
+  ]) {
+    const injected = structuredClone(input);
+    injected.files.push({ fileName: path });
+    assert.throws(() => validateWebSbom(injected, calibrated, sbomCreator));
+  }
+  input.packages.push({ name: "go", versionInfo: "fixture" });
+  assert.throws(() => validateWebSbom(input, calibrated, sbomCreator));
+});

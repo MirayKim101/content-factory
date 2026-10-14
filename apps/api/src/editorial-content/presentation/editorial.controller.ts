@@ -83,6 +83,8 @@ import {
   toProcessingTemplateResponse,
 } from "./editorial-response.js";
 import { editorialUploadOptions } from "./editorial-upload-options.js";
+import { EDITORIAL_THUMBNAIL_UPLOAD_MAX_BYTES } from "./editorial-upload-options.js";
+import { UploadStagingAdmission } from "../../projects/presentation/upload-staging-admission.metadata.js";
 
 @ApiTags("editorial-content")
 @Controller("api/v1")
@@ -143,6 +145,7 @@ export class EditorialController {
 
   @Post("projects/:projectId/editorial-assets/thumbnails")
   @HttpCode(HttpStatus.CREATED)
+  @UploadStagingAdmission(EDITORIAL_THUMBNAIL_UPLOAD_MAX_BYTES)
   @UseInterceptors(
     TempUploadLifecycleInterceptor,
     FileInterceptor("file", editorialUploadOptions),

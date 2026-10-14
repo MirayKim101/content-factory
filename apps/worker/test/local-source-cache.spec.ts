@@ -18,10 +18,203 @@ import type {
   SourceCacheTelemetry,
 } from "../src/application/ports.js";
 import { LocalSourceCache } from "../src/infrastructure/local-source-cache.js";
+import { testCapacity } from "./filesystem-capacity.fixture.js";
+import type { FilesystemCapacityReader } from "../src/infrastructure/local-filesystem-capacity-ledger.js";
 
 const directories: string[] = [];
 
 describe("LocalSourceCache", () => {
+  it("retains an abandoned fill reservation until its real writer and cleanup settle", async () => {
+    const { cache, capacityLedger, scratchTarget } = await createCache(
+      1024n,
+      async () => ({ device: 1n, availableBytes: 8n }),
+    );
+    const bytes = Buffer.from("four");
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const abort = new AbortController();
+    const fill = vi.fn(async (path: string) => {
+      await gate;
+      await writeFile(path, bytes);
+    });
+    const acquisition = cache.acquire({
+      identity: sourceIdentity("abandoned-fill", bytes),
+      outputReservationBytes: 4n,
+      safetyBytes: 0n,
+      signal: abort.signal,
+      fill,
+    });
+    const result = expect(acquisition).rejects.toThrow("cancelled");
+    await vi.waitFor(() => expect(fill).toHaveBeenCalledOnce());
+    abort.abort(new Error("cancelled"));
+    // Wait until consumer output is released, while the ignored-abort writer
+    // remains blocked. Source fill must still consume four bytes.
+    let extra: Awaited<ReturnType<typeof capacityLedger.tryReserve>> = null;
+    await vi.waitFor(async () => {
+      extra = await capacityLedger.tryReserve([
+        { target: scratchTarget, futureBytes: 4n },
+      ]);
+      expect(extra).not.toBeNull();
+    });
+    expect(
+      await capacityLedger.tryReserve([
+        { target: scratchTarget, futureBytes: 1n },
+      ]),
+    ).toBeNull();
+    extra!.release();
+    finish();
+    await result;
+    await cache.close();
+    capacityLedger.assertNoLocalReservations();
+  });
+
+  it("refuses a single-flight waiter before joining when its own output cannot fit", async () => {
+    const { cache, capacityLedger } = await createCache(1024n, async () => ({
+      device: 1n,
+      availableBytes: 8n,
+    }));
+    const bytes = Buffer.from("four");
+    const identity = sourceIdentity("denied-waiter", bytes);
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const fill = vi.fn(async (path: string) => {
+      await gate;
+      await writeFile(path, bytes);
+    });
+    const owner = cache.acquire({
+      identity,
+      outputReservationBytes: 4n,
+      safetyBytes: 0n,
+      signal: new AbortController().signal,
+      fill,
+    });
+    await vi.waitFor(() => expect(fill).toHaveBeenCalledOnce());
+    await expect(
+      cache.acquire({
+        identity,
+        outputReservationBytes: 1n,
+        safetyBytes: 0n,
+        signal: new AbortController().signal,
+        fill,
+      }),
+    ).rejects.toMatchObject({ code: "SOURCE_CACHE_ADMISSION_DENIED" });
+    finish();
+    await (await owner).release();
+    await cache.close();
+    capacityLedger.assertNoLocalReservations();
+  });
+  it("reserves each consumer output before waiting and retains fill ownership after owner abort", async () => {
+    const { cache, capacityLedger, scratchTarget } = await createCache(
+      1024n,
+      async () => ({ device: 1n, availableBytes: 12n }),
+    );
+    const bytes = Buffer.from("four");
+    const identity = sourceIdentity("reserved-waiters", bytes);
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const fill = vi.fn(async (path: string) => {
+      await gate;
+      await writeFile(path, bytes);
+    });
+    const ownerAbort = new AbortController();
+    const owner = cache.acquire({
+      identity,
+      outputReservationBytes: 4n,
+      safetyBytes: 0n,
+      signal: ownerAbort.signal,
+      fill,
+    });
+    const ownerResult = expect(owner).rejects.toThrow("owner stopped");
+    await vi.waitFor(() => expect(fill).toHaveBeenCalledOnce());
+    const waiterEvents: SourceCacheTelemetry[] = [];
+    const waiter = cache.acquire({
+      identity,
+      outputReservationBytes: 4n,
+      safetyBytes: 0n,
+      signal: new AbortController().signal,
+      fill,
+      onTelemetry: (event) => waiterEvents.push(event),
+    });
+    await vi.waitFor(() =>
+      expect(
+        waiterEvents.some(
+          (event) => event.cacheOutcome === "single_flight_wait",
+        ),
+      ).toBe(true),
+    );
+    ownerAbort.abort(new Error("owner stopped"));
+    await ownerResult;
+    // Still 4 fill + 4 waiter: owner cancellation must not release fill.
+    expect(
+      await capacityLedger.tryReserve([
+        { target: scratchTarget, futureBytes: 5n },
+      ]),
+    ).toBeNull();
+    finish();
+    const handle = await waiter;
+    const remaining = await capacityLedger.tryReserve([
+      { target: scratchTarget, futureBytes: 8n },
+    ]);
+    expect(remaining).not.toBeNull();
+    remaining!.release();
+    await handle.release();
+    await handle.release();
+    await cache.close();
+    capacityLedger.assertNoLocalReservations();
+  });
+
+  it("denies a cache hit on the scratch device even when cache space is abundant", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "cf-cache-split-capacity-"));
+    directories.push(directory);
+    let outputAvailable = 1000n;
+    // A separate reader and device make accidental cache-side authorization visible.
+    const { LocalFilesystemCapacityLedger } =
+      await import("../src/infrastructure/local-filesystem-capacity-ledger.js");
+    const ledger = new LocalFilesystemCapacityLedger(async (path) => ({
+      device: path === directory ? 1n : 2n,
+      availableBytes: path === directory ? 10000n : outputAvailable,
+    }));
+    const cacheTarget = await ledger.registerRoot(directory, 0n);
+    const scratchTarget = await ledger.registerRoot(`${directory}-scratch`, 0n);
+    const cache = new LocalSourceCache({
+      directory,
+      maxBytes: 1024n,
+      ttlMs: 60_000,
+      capacityLedger: ledger,
+      cacheTarget,
+      outputTarget: scratchTarget,
+    });
+    const bytes = Buffer.from("hit");
+    const identity = sourceIdentity("split-hit", bytes);
+    const first = await cache.acquire({
+      identity,
+      outputReservationBytes: 0n,
+      safetyBytes: 0n,
+      signal: new AbortController().signal,
+      fill: (path) => writeFile(path, bytes),
+    });
+    await first.release();
+    outputAvailable = 0n;
+    const fill = vi.fn();
+    await expect(
+      cache.acquire({
+        identity,
+        outputReservationBytes: 1n,
+        safetyBytes: 0n,
+        signal: new AbortController().signal,
+        fill,
+      }),
+    ).rejects.toMatchObject({ code: "SOURCE_CACHE_ADMISSION_DENIED" });
+    expect(fill).not.toHaveBeenCalled();
+    await cache.close();
+    ledger.assertNoLocalReservations();
+  });
   it("single-flights five same-source consumers into one verified download", async () => {
     const { cache } = await createCache(1024n);
     const bytes = Buffer.from("immutable-source");
@@ -395,6 +588,7 @@ describe("LocalSourceCache", () => {
     directories.push(directory);
     const cache = new LocalSourceCache({
       directory,
+      ...(await testCapacity(directory)),
       maxBytes: 1024n,
       ttlMs: 1,
     });
@@ -482,6 +676,7 @@ describe("LocalSourceCache", () => {
     const identity = sourceIdentity("source-e", bytes);
     const firstCache = new LocalSourceCache({
       directory,
+      ...(await testCapacity(directory)),
       maxBytes: 1024n,
       ttlMs: 60_000,
     });
@@ -495,6 +690,7 @@ describe("LocalSourceCache", () => {
 
     const secondCache = new LocalSourceCache({
       directory,
+      ...(await testCapacity(directory)),
       maxBytes: 1024n,
       ttlMs: 60_000,
     });
@@ -517,12 +713,19 @@ afterEach(async () => {
   );
 });
 
-async function createCache(maxBytes: bigint) {
+async function createCache(maxBytes: bigint, read?: FilesystemCapacityReader) {
   const directory = await mkdtemp(join(tmpdir(), "cf-local-cache-test-"));
   directories.push(directory);
+  const capacity = await testCapacity(directory, 0n, read);
   return {
-    cache: new LocalSourceCache({ directory, maxBytes, ttlMs: 60_000 }),
+    cache: new LocalSourceCache({
+      directory,
+      maxBytes,
+      ttlMs: 60_000,
+      ...capacity,
+    }),
     directory,
+    ...capacity,
   };
 }
 

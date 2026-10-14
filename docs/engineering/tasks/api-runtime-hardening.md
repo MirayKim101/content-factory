@@ -4,6 +4,19 @@
 diff, provenance/inventory и повторный fresh runtime review CLEAN, 2026-10-03.
 Production promotion/deployment не разрешены.
 
+## Follow-up 2026-10-14
+
+Исторические hashes и пять исходных pins ниже сохранены как baseline, а не
+текущий разрешённый runtime. Bounded maintenance обновляет только PCRE2 до
+`10.42-1+deb12u2`; PNG в API/migrate не добавляется. См.
+`pcre2-security-maintenance.md` и `api-upload-capacity.md`.
+Новый candidate `83f9d4ba727546450a04511b2a24773d279de426` прошёл native
+staging/failure smoke, fresh/repeat 45 migrations и независимое сравнение
+полных inventories: 88/90 packages, только PCRE2 изменён относительно
+соответствующих hardening baselines ниже. Свежие all-severity scans дают
+DENY 159/168 non-LOW. Даты DB отличаются от исторических scans; counts не
+являются прямой оценкой изменения безопасности. Promotion остаётся запрещён.
+
 ## Scope
 
 Этот bounded slice меняет только final `api-runtime` и `api-migrate` bases.

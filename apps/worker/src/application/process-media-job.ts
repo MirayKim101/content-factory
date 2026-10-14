@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, mkdtemp, rm, stat, statfs, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import {
@@ -9,6 +9,9 @@ import {
   type ClaimedMediaJob,
 } from "../domain/media-job.js";
 import type {
+  CapacityReservation,
+  FilesystemCapacityLedger,
+  FilesystemTarget,
   MediaJobPhaseTelemetry,
   AssemblyRenderer,
   MediaJobTelemetry,
@@ -24,15 +27,14 @@ import type {
 export interface MediaWorkerLimits {
   scratchDirectory: string;
   scratchSafetyBytes: bigint;
+  capacityLedger: FilesystemCapacityLedger;
+  scratchTarget: FilesystemTarget;
   leaseMs: number;
   jobTimeoutMs: number;
   assemblyFontPath?: string;
 }
 
 export class ProcessMediaJob {
-  private reservedScratchBytes = 0n;
-  private recoveredScratchBytes = 0n;
-
   constructor(
     private readonly repository: MediaJobRepository,
     private readonly storage: WorkerObjectStorage,
@@ -46,24 +48,34 @@ export class ProcessMediaJob {
   ) {}
 
   setRecoveredScratchBytes(value: bigint): void {
-    this.recoveredScratchBytes = value < 0n ? 0n : value;
+    this.limits.capacityLedger.replaceRecoveredReservation(
+      "media-export-recovery",
+      [
+        {
+          target: this.limits.scratchTarget,
+          futureBytes: value < 0n ? 0n : value,
+        },
+      ],
+    );
   }
 
   async execute(jobId: string): Promise<void> {
     let scratchReservation = 0n;
+    let capacityReservation: CapacityReservation | null = null;
     let scratchPeakBytes = 0n;
     const resourcePlan = await this.repository.getAssemblyResourcePlan(jobId);
     if (resourcePlan) {
-      const disk = await statfs(this.limits.scratchDirectory, { bigint: true });
-      const available = disk.bavail * disk.bsize;
-      const required =
-        resourcePlan.requiredScratchBytes + this.limits.scratchSafetyBytes;
       // Recovered reservations may belong to another process or to an orphan
       // that is still inside the safety grace. Double-accounting a current
       // local marker is conservative; subtracting it without exact ownership
       // would permit overcommit during the next concurrent admission.
-      const accounted = this.recoveredScratchBytes + this.reservedScratchBytes;
-      if (available - accounted < required) {
+      capacityReservation = await this.limits.capacityLedger.tryReserve([
+        {
+          target: this.limits.scratchTarget,
+          futureBytes: resourcePlan.requiredScratchBytes,
+        },
+      ]);
+      if (!capacityReservation) {
         await this.repository.deferAssemblyAdmission(
           jobId,
           "INSUFFICIENT_SCRATCH",
@@ -71,7 +83,6 @@ export class ProcessMediaJob {
         );
         return;
       }
-      this.reservedScratchBytes += resourcePlan.requiredScratchBytes;
       scratchReservation = resourcePlan.requiredScratchBytes;
     }
     let job: ClaimedMediaJob | null;
@@ -82,11 +93,11 @@ export class ProcessMediaJob {
         this.limits.leaseMs,
       );
     } catch (error) {
-      this.reservedScratchBytes -= scratchReservation;
+      capacityReservation?.release();
       throw error;
     }
     if (!job) {
-      this.reservedScratchBytes -= scratchReservation;
+      capacityReservation?.release();
       return;
     }
     const totalStartedAt = performance.now();
@@ -819,7 +830,7 @@ export class ProcessMediaJob {
                 )
               : Promise.resolve(),
           () => {
-            this.reservedScratchBytes -= scratchReservation;
+            capacityReservation?.release();
           },
         );
       } finally {

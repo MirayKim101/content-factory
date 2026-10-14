@@ -25,7 +25,9 @@ import {
 import { FfmpegMediaProcessor } from "./infrastructure/ffmpeg-media-processor.js";
 import { FfmpegAssemblyRenderer } from "./infrastructure/ffmpeg-assembly-renderer.js";
 import { LocalSourceCache } from "./infrastructure/local-source-cache.js";
+import { LocalFilesystemCapacityLedger } from "./infrastructure/local-filesystem-capacity-ledger.js";
 import {
+  assertSeparateScratchRoots,
   ScratchCapabilityError,
   verifyScratchCapability,
 } from "./infrastructure/scratch-capability.js";
@@ -842,7 +844,21 @@ async function startAiWorker(): Promise<void> {
 
 async function startWorker(): Promise<void> {
   const config = workerConfig();
+  assertSeparateScratchRoots(
+    config.scratchDirectory,
+    config.sourceCacheDirectory,
+  );
+  await verifyScratchCapability(config.scratchDirectory);
   await verifyScratchCapability(config.sourceCacheDirectory);
+  const capacityLedger = new LocalFilesystemCapacityLedger();
+  const scratchTarget = await capacityLedger.registerRoot(
+    config.scratchDirectory,
+    config.scratchSafetyBytes,
+  );
+  const cacheTarget = await capacityLedger.registerRoot(
+    config.sourceCacheDirectory,
+    config.scratchSafetyBytes,
+  );
   const readinessFile = await prepareWorkerReadiness(config.scratchDirectory);
   const workerId = `media-worker-${randomUUID()}`;
   const repository = new PgMediaJobRepository(
@@ -871,6 +887,8 @@ async function startWorker(): Promise<void> {
     {
       scratchDirectory: config.scratchDirectory,
       scratchSafetyBytes: Number(config.scratchSafetyBytes),
+      capacityLedger,
+      scratchTarget,
       leaseMs: config.leaseMs,
       workDeadlineMs: config.frameWorkDeadlineMs,
     },
@@ -903,6 +921,9 @@ async function startWorker(): Promise<void> {
     directory: config.sourceCacheDirectory,
     maxBytes: config.sourceCacheMaxBytes,
     ttlMs: config.sourceCacheTtlMs,
+    capacityLedger,
+    cacheTarget,
+    outputTarget: scratchTarget,
   });
   const packageExporter = new StreamingZip64PackageExporter();
   const processJob = new ProcessMediaJob(
@@ -914,6 +935,8 @@ async function startWorker(): Promise<void> {
     {
       scratchDirectory: config.scratchDirectory,
       scratchSafetyBytes: config.scratchSafetyBytes,
+      capacityLedger,
+      scratchTarget,
       leaseMs: config.leaseMs,
       jobTimeoutMs: config.jobTimeoutMs,
       assemblyFontPath: config.assemblyFontPath,
@@ -1054,6 +1077,14 @@ async function startWorker(): Promise<void> {
         repository.close(),
         frameRepository.close(),
       ]);
+      try {
+        capacityLedger.assertNoLocalReservations();
+      } catch {
+        exitCode = Math.max(exitCode, 1);
+        console.error(
+          JSON.stringify({ event: "worker_capacity_reservation_leak" }),
+        );
+      }
       storage.close();
       process.exitCode = exitCode;
     })();

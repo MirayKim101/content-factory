@@ -15,6 +15,10 @@ import type {
 } from "../src/application/frame-extractor.port.js";
 import type { WorkerObjectStorage } from "../src/application/ports.js";
 import { ControlledMediaError } from "../src/domain/media-job.js";
+import { testCapacity } from "./filesystem-capacity.fixture.js";
+import { FRAME_LIMITS } from "@content-factory/contracts";
+import { LocalSourceCache } from "../src/infrastructure/local-source-cache.js";
+import type { FilesystemCapacityReader } from "../src/infrastructure/local-filesystem-capacity-ledger.js";
 
 const directories: string[] = [];
 afterEach(async () => {
@@ -22,7 +26,7 @@ afterEach(async () => {
     await rm(path, { recursive: true, force: true });
 });
 
-async function setup() {
+async function setup(read?: FilesystemCapacityReader) {
   const scratch = await mkdtemp(
     join(tmpdir(), "content-factory-frame-process-test-"),
   );
@@ -167,6 +171,7 @@ async function setup() {
     }),
   } satisfies FrameExtractor;
   const log = vi.fn();
+  const capacity = await testCapacity(scratch, 64n * 1024n * 1024n, read);
   const processor = new ProcessFrameJob(
     repository,
     storage,
@@ -175,6 +180,7 @@ async function setup() {
     {
       scratchDirectory: scratch,
       scratchSafetyBytes: 64 * 1024 * 1024,
+      ...capacity,
       leaseMs: 300,
       workDeadlineMs: 300_000,
     },
@@ -190,10 +196,89 @@ async function setup() {
     events,
     log,
     scratch,
+    ...capacity,
   };
 }
 
 describe("frame worker lifecycle and settlement fences", () => {
+  it("shares cache contention and defers through PG without terminal rejection or I/O", async () => {
+    const safety = 64n * 1024n * 1024n;
+    const frameBytes =
+      BigInt(Buffer.byteLength("exact immutable input")) +
+      BigInt(FRAME_LIMITS.maxSetBytes);
+    const f = await setup(async () => ({
+      device: 1n,
+      availableBytes: frameBytes + safety + 7n,
+    }));
+    const directory = await mkdtemp(
+      join(tmpdir(), "cf-frame-cache-contention-"),
+    );
+    directories.push(directory);
+    const cache = new LocalSourceCache({
+      directory,
+      maxBytes: 1024n,
+      ttlMs: 60000,
+      capacityLedger: f.capacityLedger,
+      cacheTarget: f.cacheTarget,
+      outputTarget: f.scratchTarget,
+    });
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const bytes = Buffer.from("four");
+    const fill = vi.fn(async (path: string) => {
+      await gate;
+      await writeFile(path, bytes);
+    });
+    const acquisition = cache.acquire({
+      identity: {
+        sourceId: "frame-contention",
+        sourceVersion: 1,
+        sha256: createHash("sha256").update(bytes).digest("hex"),
+        sizeBytes: 4n,
+      },
+      outputReservationBytes: 4n,
+      safetyBytes: safety,
+      signal: new AbortController().signal,
+      fill,
+    });
+    await vi.waitFor(() => expect(fill).toHaveBeenCalledOnce());
+    f.repository.claim.mockImplementation(async (input) => {
+      expect(input.availableScratchBytes).toBe(0);
+      return null;
+    });
+    await f.processor.execute(f.plan.jobId);
+    expect(f.repository.rejectPending).not.toHaveBeenCalled();
+    expect(f.storage.download).not.toHaveBeenCalled();
+    expect(await readdir(f.scratch)).toEqual([]);
+    finish();
+    await (await acquisition).release();
+    await cache.close();
+    f.capacityLedger.assertNoLocalReservations();
+  });
+
+  it("keeps existing PG safety exactly once and releases on a lost claim response", async () => {
+    const available = 200n * 1024n * 1024n;
+    const f = await setup(async () => ({
+      device: 1n,
+      availableBytes: available,
+    }));
+    f.repository.claim.mockImplementation(async (input) => {
+      expect(input.availableScratchBytes).toBe(Number(available));
+      expect(input.scratchReservedBytes).toBe(
+        Number(f.plan.capture.cutResultSizeBytes) +
+          FRAME_LIMITS.maxSetBytes +
+          64 * 1024 * 1024,
+      );
+      throw new Error("claim response lost");
+    });
+    await expect(f.processor.execute(f.plan.jobId)).rejects.toThrow(
+      "claim response lost",
+    );
+    f.capacityLedger.assertNoLocalReservations();
+    expect(await readdir(f.scratch)).toEqual([]);
+  });
   it("gates the first byte, prepares every exact key before upload and stops after finalization", async () => {
     const f = await setup();
     expect(await f.processor.execute(f.plan.jobId)).toBe(true);

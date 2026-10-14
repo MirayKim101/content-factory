@@ -9,6 +9,7 @@ import {
 
 import { apiEnvironment } from "../../config/environment.js";
 import { safeCause } from "../application/safe-cause.js";
+import { ensurePrivateUploadRoot } from "../presentation/upload-staging-admission.service.js";
 
 @Injectable()
 export class TempUploadSweepStartup implements OnApplicationBootstrap {
@@ -26,9 +27,12 @@ export class TempUploadSweepStartup implements OnApplicationBootstrap {
 
   async sweep(now = Date.now()): Promise<number> {
     const config = apiEnvironment();
+    const rootDirectory = await ensurePrivateUploadRoot(
+      config.uploadTempDirectory,
+    );
     let entries;
     try {
-      entries = await readdir(config.uploadTempDirectory, {
+      entries = await readdir(rootDirectory, {
         withFileTypes: true,
       });
     } catch (error) {
@@ -39,7 +43,7 @@ export class TempUploadSweepStartup implements OnApplicationBootstrap {
     for (const entry of entries) {
       if (removed >= config.uploadTempSweepLimit) break;
       if (!entry.isDirectory() || !entry.name.startsWith("request-")) continue;
-      const directory = join(config.uploadTempDirectory, entry.name);
+      const directory = join(rootDirectory, entry.name);
       const metadata = await stat(directory);
       if (now - metadata.mtimeMs < config.uploadTempStaleAfterMs) continue;
       await rm(directory, { recursive: true, force: true });

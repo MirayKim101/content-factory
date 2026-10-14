@@ -22,6 +22,10 @@ import type {
 import type { ClaimedMediaJob } from "../src/domain/media-job.js";
 import { ControlledMediaError } from "../src/domain/media-job.js";
 import { StreamingZip64PackageExporter } from "../src/infrastructure/streaming-zip64-package-exporter.js";
+import { testCapacity } from "./filesystem-capacity.fixture.js";
+import { LocalSourceCache } from "../src/infrastructure/local-source-cache.js";
+
+const capacity = await testCapacity(tmpdir());
 
 function claimed<T extends "SOURCE_PROBE" | "CUT_SEGMENT">(
   type: T,
@@ -115,6 +119,71 @@ function dependencies(job: ClaimedMediaJob) {
 }
 
 describe("ProcessMediaJob", () => {
+  it("defers assembly against the same future-write budget held by a cache fill and consumer", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "cf-media-cache-contention-"),
+    );
+    const binding = await testCapacity(directory, 0n, async () => ({
+      device: 1n,
+      availableBytes: 10n,
+    }));
+    const cache = new LocalSourceCache({
+      directory,
+      maxBytes: 1024n,
+      ttlMs: 60000,
+      ...binding,
+    });
+    const bytes = Buffer.from("four");
+    let finish!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    const fill = vi.fn(async (path: string) => {
+      await gate;
+      await writeFile(path, bytes);
+    });
+    const acquisition = cache.acquire({
+      identity: {
+        sourceId: "assembly-contention",
+        sourceVersion: 1,
+        sha256: createHash("sha256").update(bytes).digest("hex"),
+        sizeBytes: 4n,
+      },
+      outputReservationBytes: 4n,
+      safetyBytes: 0n,
+      signal: new AbortController().signal,
+      fill,
+    });
+    try {
+      await vi.waitFor(() => expect(fill).toHaveBeenCalledOnce());
+      const job = assemblyJob();
+      const deps = dependencies(job);
+      deps.repository.getAssemblyResourcePlan = vi.fn(async () => ({
+        requiredScratchBytes: 3n,
+      }));
+      await worker(
+        deps,
+        30000,
+        undefined,
+        cache,
+        assemblyRenderer(),
+        undefined,
+        binding,
+      ).execute(job.id);
+      expect(deps.repository.deferAssemblyAdmission).toHaveBeenCalledWith(
+        job.id,
+        "INSUFFICIENT_SCRATCH",
+        expect.any(Date),
+      );
+      expect(deps.repository.claim).not.toHaveBeenCalled();
+    } finally {
+      finish();
+      await (await acquisition).release();
+      await cache.close();
+      binding.capacityLedger.assertNoLocalReservations();
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
   it("exports one lease-scoped package, persists real progress, and clears scratch", async () => {
     const job = exportJob();
     const deps = dependencies(job);
@@ -854,6 +923,7 @@ describe("ProcessMediaJob", () => {
 
 afterEach(() => {
   vi.useRealTimers();
+  capacity.capacityLedger.assertNoLocalReservations();
 });
 
 function fakeMp4(marker: string): Buffer {
@@ -871,6 +941,7 @@ function worker(
   sourceCache: SourceCache = passthroughSourceCache(),
   renderer?: AssemblyRenderer,
   packageExporter?: PackageExporter,
+  capacityBinding = capacity,
 ): ProcessMediaJob {
   return new ProcessMediaJob(
     deps.repository,
@@ -881,6 +952,7 @@ function worker(
     {
       scratchDirectory: tmpdir(),
       scratchSafetyBytes: 0n,
+      ...capacityBinding,
       leaseMs,
       jobTimeoutMs: 60_000,
       assemblyFontPath: "/tmp/test-font.ttf",

@@ -42,6 +42,7 @@ export const API_ENVIRONMENT_KEYS = [
   "S3_STARTUP_TIMEOUT_MS",
   "API_MAX_UPLOAD_BYTES",
   "API_UPLOAD_TEMP_DIRECTORY",
+  "API_UPLOAD_STAGING_SAFETY_BYTES",
   "API_UPLOAD_TEMP_STALE_AFTER_MS",
   "API_UPLOAD_TEMP_SWEEP_LIMIT",
   "SOURCE_PENDING_STALE_AFTER_MS",
@@ -146,6 +147,22 @@ function boundedInteger(
   return value;
 }
 
+function parseBoundedEnvironmentInteger(
+  environment: NodeJS.ProcessEnv,
+  name: string,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const raw = environment[name];
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < minimum || value > maximum) {
+    throw new Error(`CONFIG_${name}_OUT_OF_RANGE`);
+  }
+  return value;
+}
+
 export function databaseUrl(): string {
   const user = encodeURIComponent(required("POSTGRES_USER"));
   const password = encodeURIComponent(required("POSTGRES_PASSWORD"));
@@ -161,6 +178,7 @@ export interface ApiEnvironment {
   sourceAuthorizationPolicy: SourceAuthorizationPolicy;
   maxUploadBytes: number;
   uploadTempDirectory: string;
+  uploadStagingSafetyBytes: number;
   uploadTempStaleAfterMs: number;
   uploadTempSweepLimit: number;
   sourceBucket: string;
@@ -199,22 +217,57 @@ export interface ApiEnvironment {
   clipGenerationModel: string | null;
 }
 
+export const MAX_API_UPLOAD_BYTES = 10 * 1024 ** 3;
+
+export interface UploadCapacityRuntime {
+  maxUploadBytes: number;
+  uploadStagingSafetyBytes: number;
+}
+
+export function resolveUploadCapacityRuntime(
+  environment: NodeJS.ProcessEnv,
+  deploymentProfile: DeploymentProfile,
+): UploadCapacityRuntime {
+  const maxUploadBytes = parseBoundedEnvironmentInteger(
+    environment,
+    "API_MAX_UPLOAD_BYTES",
+    MAX_API_UPLOAD_BYTES,
+    1,
+    MAX_API_UPLOAD_BYTES,
+  );
+  const rawSafetyBytes = environment.API_UPLOAD_STAGING_SAFETY_BYTES;
+  if (rawSafetyBytes === undefined || rawSafetyBytes.trim() === "") {
+    if (deploymentProfile === "local" || environment.NODE_ENV === "test") {
+      return { maxUploadBytes, uploadStagingSafetyBytes: 0 };
+    }
+    throw new Error("CONFIG_API_UPLOAD_STAGING_SAFETY_BYTES_REQUIRED");
+  }
+  const uploadStagingSafetyBytes = Number(rawSafetyBytes);
+  if (
+    !Number.isSafeInteger(uploadStagingSafetyBytes) ||
+    uploadStagingSafetyBytes < 0
+  ) {
+    throw new Error("CONFIG_API_UPLOAD_STAGING_SAFETY_BYTES_INVALID");
+  }
+  return { maxUploadBytes, uploadStagingSafetyBytes };
+}
+
 export function apiEnvironment(): ApiEnvironment {
   loadEnvironment();
   const authorization = resolveSourceAuthorizationRuntime(process.env);
+  const uploadCapacity = resolveUploadCapacityRuntime(
+    process.env,
+    authorization.deploymentProfile,
+  );
   return {
     apiHost: authorization.apiHost,
     deploymentProfile: authorization.deploymentProfile,
     sourceAuthorizationPolicy: authorization.policy,
-    maxUploadBytes: boundedInteger(
-      "API_MAX_UPLOAD_BYTES",
-      10 * 1024 ** 3,
-      1,
-      5 * 1024 ** 4,
-    ),
+    maxUploadBytes: uploadCapacity.maxUploadBytes,
     uploadTempDirectory:
       process.env.API_UPLOAD_TEMP_DIRECTORY?.trim() ||
       resolve(process.cwd(), "tmp/uploads"),
+    uploadStagingSafetyBytes: uploadCapacity.uploadStagingSafetyBytes,
     uploadTempStaleAfterMs: positiveInteger(
       "API_UPLOAD_TEMP_STALE_AFTER_MS",
       300_000,

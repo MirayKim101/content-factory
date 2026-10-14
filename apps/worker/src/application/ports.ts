@@ -5,6 +5,41 @@ import type {
 } from "../domain/media-job.js";
 import type { MontageProbeResultV1 } from "@content-factory/contracts";
 
+/** Process-local future-write accounting, not a filesystem quota. */
+export interface FilesystemTarget {
+  readonly id: symbol;
+  readonly device: bigint;
+}
+
+export interface CapacityRequest {
+  readonly target: FilesystemTarget;
+  readonly futureBytes: bigint;
+}
+
+export interface CapacityReservation {
+  readonly requests: readonly CapacityRequest[];
+  releaseTarget(target: FilesystemTarget): void;
+  release(): void;
+  /** Excludes this provisional token. Existing PG frame requirements already
+   * contain safety; do not deduct that safety a second time here. */
+  availableForExistingFrameClaim(target: FilesystemTarget): Promise<bigint>;
+}
+
+export interface FilesystemCapacityLedger {
+  registerRoot(
+    directory: string,
+    safetyBytes: bigint,
+  ): Promise<FilesystemTarget>;
+  tryReserve(
+    requests: readonly CapacityRequest[],
+  ): Promise<CapacityReservation | null>;
+  replaceRecoveredReservation(
+    owner: "media-export-recovery",
+    requests: readonly CapacityRequest[],
+  ): void;
+  assertNoLocalReservations(): void;
+}
+
 export interface MediaJobRepository {
   getAssemblyResourcePlan(jobId: string): Promise<{
     requiredScratchBytes: bigint;

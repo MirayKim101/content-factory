@@ -55,6 +55,7 @@ import {
 import { isUuidV4 } from "./montage-identifier.js";
 import { normalizeMultipartFilename } from "../../http/multipart-filename.js";
 import { MontageUploadAdmissionInterceptor } from "./montage-upload-admission.interceptor.js";
+import { UploadStagingAdmission } from "../../projects/presentation/upload-staging-admission.metadata.js";
 
 @ApiTags("montage-assets")
 @ApiParam({ name: "projectId", schema: { type: "string", format: "uuid" } })
@@ -72,6 +73,7 @@ export class MontageController {
 
   @Post()
   @HttpCode(202)
+  @UploadStagingAdmission(MONTAGE_MAX_BYTES)
   @UseInterceptors(
     MontageUploadAdmissionInterceptor,
     TempUploadLifecycleInterceptor,

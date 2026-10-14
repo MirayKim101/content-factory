@@ -69,17 +69,14 @@ RUN node --input-type=module -e '\
   console.log(JSON.stringify([...new Set(packages)].sort()));'
 
 FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d AS runtime
-ARG SOURCE_REVISION
-LABEL org.opencontainers.image.revision=$SOURCE_REVISION \
-    io.content-factory.promotion="blocked-until-all-release-gates-pass"
-
 ARG FFMPEG_VERSION=7:5.1.9-0+deb12u1
 ARG DEJAVU_FONT_VERSION=2.37-6
 
 # The Bookworm FFmpeg package is version-pinned; this is not a clean security
 # gate. Remove package metadata in the same layer to avoid retaining build state.
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends "ffmpeg=${FFMPEG_VERSION}" "fonts-dejavu-core=${DEJAVU_FONT_VERSION}" \
+    && apt-get install --yes --no-install-recommends "ffmpeg=${FFMPEG_VERSION}" "fonts-dejavu-core=${DEJAVU_FONT_VERSION}" "libpng16-16=1.6.39-2+deb12u6" \
+    && test "$(dpkg-query -W -f='${Version}' libpng16-16)" = '1.6.39-2+deb12u6' \
     && ffmpeg -version \
     && ffprobe -version \
     && sha256sum /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf > /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf.sha256 \
@@ -94,7 +91,7 @@ RUN set -eu; \
       libgcrypt20=1.10.1-3+deb12u1 \
       libgnutls30=3.7.9-2+deb12u7 \
       liblzma5=5.4.1-1+deb12u2 \
-      libpcre2-8-0=10.42-1+deb12u1 \
+      libpcre2-8-0=10.42-1+deb12u2 \
       tzdata=2026c-0+deb12u1; \
     dpkg-query -W -f='${Package}\t${Version}\n' | sort > /tmp/packages.after; \
     awk 'NR == FNR { before[$1] = $2; next } !($1 in before) || before[$1] != $2 { print $1 }' \
@@ -107,7 +104,7 @@ RUN set -eu; \
     test "$(dpkg-query -W -f='${Version}' libgcrypt20)" = '1.10.1-3+deb12u1'; \
     test "$(dpkg-query -W -f='${Version}' libgnutls30)" = '3.7.9-2+deb12u7'; \
     test "$(dpkg-query -W -f='${Version}' liblzma5)" = '5.4.1-1+deb12u2'; \
-    test "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" = '10.42-1+deb12u1'; \
+    test "$(dpkg-query -W -f='${Version}' libpcre2-8-0)" = '10.42-1+deb12u2'; \
     test "$(dpkg-query -W -f='${Version}' tzdata)" = '2026c-0+deb12u1'; \
     rm -rf /var/lib/apt/lists/*; \
     rm -f /tmp/packages.before /tmp/packages.after /tmp/packages.changed /tmp/packages.removed /tmp/packages.expected
@@ -142,6 +139,12 @@ RUN set -eu; \
       test ! -L "$path"; \
     done; \
     test "$(node --version)" = 'v24.15.0'
+
+# Commit-specific metadata must not invalidate the independent pinned OS layers.
+# The source stage still verifies the exact commit and every input blob.
+ARG SOURCE_REVISION
+LABEL org.opencontainers.image.revision=$SOURCE_REVISION \
+    io.content-factory.promotion="blocked-until-all-release-gates-pass"
 
 ENV NODE_ENV=production \
     DEPLOYMENT_PROFILE=other \

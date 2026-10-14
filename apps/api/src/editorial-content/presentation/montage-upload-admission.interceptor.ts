@@ -1,4 +1,3 @@
-import { mkdir, statfs } from "node:fs/promises";
 import {
   Inject,
   Injectable,
@@ -8,12 +7,11 @@ import {
   type NestInterceptor,
 } from "@nestjs/common";
 import { finalize } from "rxjs";
-import { apiEnvironment } from "../../config/environment.js";
 import {
   MONTAGE_REPOSITORY,
   type MontageRepository,
 } from "../application/montage-repository.port.js";
-import { MONTAGE_MAX_BYTES, MontageError } from "../domain/montage-asset.js";
+import { MontageError } from "../domain/montage-asset.js";
 import { isUuidV4 } from "./montage-identifier.js";
 
 // Local single-process deployment: two bounded uploads, each reserving 256 MiB.
@@ -65,17 +63,6 @@ export class MontageUploadAdmissionInterceptor implements NestInterceptor {
       );
     this.active += 1;
     try {
-      const root = apiEnvironment().uploadTempDirectory;
-      await mkdir(root, { recursive: true, mode: 0o700 });
-      const disk = await statfs(root, { bigint: true });
-      if (disk.bavail * disk.bsize < BigInt(2 * MONTAGE_MAX_BYTES + 1024 ** 3))
-        throw new HttpException(
-          {
-            code: "MONTAGE_STAGING_FULL",
-            message: "Not enough upload staging space.",
-          },
-          503,
-        );
       // Absolute deadline, not merely an idle socket timeout; slow multipart clients cannot hold admission forever.
       const timer = setTimeout(
         () => request.destroy(new Error("MONTAGE_UPLOAD_TIMEOUT")),

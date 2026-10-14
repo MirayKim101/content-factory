@@ -37,6 +37,7 @@ import { ObjectRangeNotSatisfiableError } from "../../projects/application/objec
 import { ErrorResponseDto } from "../../projects/presentation/project.dto.js";
 import { SecureDiskStorage } from "../../projects/presentation/secure-disk-storage.js";
 import { TempUploadLifecycleInterceptor } from "../../projects/presentation/temp-upload-lifecycle.interceptor.js";
+import { UploadStagingAdmission } from "../../projects/presentation/upload-staging-admission.metadata.js";
 import {
   AiContentIdempotencyConflictError,
   AiContentPersistenceConflictError,
@@ -258,6 +259,7 @@ export class CreatorContextController {
 
   @Post("api/v1/creator-profiles/:profileId/reference-assets")
   @HttpCode(201)
+  @UploadStagingAdmission(CREATOR_REFERENCE_MAX_BYTES)
   @UseInterceptors(
     AiContextAdmissionInterceptor,
     TempUploadLifecycleInterceptor,
@@ -276,6 +278,7 @@ export class CreatorContextController {
   @ApiHeader({ name: "Idempotency-Key", required: true })
   @ApiBody({ type: CreatorReferenceUploadDto })
   @ApiCreatedResponse({ type: CreatorReferenceAssetResponseDto })
+  @ApiResponse({ status: 503, type: ErrorResponseDto })
   async uploadReference(
     @Param("profileId", uuidPipe) profileId: string,
     @Headers("idempotency-key") key: string | undefined,

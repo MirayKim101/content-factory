@@ -60,6 +60,8 @@ import {
 } from "./project-response.js";
 import { TempUploadLifecycleInterceptor } from "./temp-upload-lifecycle.interceptor.js";
 import { uploadOptions } from "./upload-options.js";
+import { UploadStagingAdmission } from "./upload-staging-admission.metadata.js";
+import { SOURCE_UPLOAD_MAX_BYTES } from "./upload-options.js";
 import { normalizeMultipartFilename } from "../../http/multipart-filename.js";
 
 @ApiTags("projects")
@@ -134,6 +136,7 @@ export class ProjectsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UploadStagingAdmission(SOURCE_UPLOAD_MAX_BYTES)
   @UseInterceptors(
     TempUploadLifecycleInterceptor,
     FileInterceptor("file", uploadOptions),
@@ -183,7 +186,8 @@ export class ProjectsController {
   @ApiResponse({
     status: 503,
     type: ErrorResponseDto,
-    description: "Object storage upload failed.",
+    description:
+      "Upload staging capacity is unavailable or object storage upload failed.",
   })
   async create(
     @UploadedFile() file: Express.Multer.File | undefined,

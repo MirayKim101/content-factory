@@ -1,8 +1,81 @@
 # Content Factory — current handoff
 
-Обновлено: 2026-10-04. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
+Обновлено: 2026-10-14. Продолжение Stage 3; защищённые каталоги и их ресурсы не затрагивались.
 
-## Checkpoint на ночь — разработка остановлена по просьбе владельца
+## Автономное продолжение 2026-10-14 — проверка поставки продолжается
+
+Владелец возобновил работу до production-safe версии без ожидания ручной
+проверки, с верхней границей 50% использованного лимита. При старте было 10%.
+Цель активна; ночной checkpoint ниже является историей, не текущей паузой.
+Оба scoped WIP восстановлены без изменения защищённых пользовательских файлов.
+
+API upload staging прошёл 312 unit tests с HTTP socket/fault и module-wiring
+проверками; дополнительный review исправил пропуск специальных permission bits.
+Independent source review CLEAN. Native API/migrate candidate
+`83f9d4ba727546450a04511b2a24773d279de426` включает bounded PCRE2 security patch;
+88/90 OS inventories совпадают с соответствующими hardening baselines, кроме
+PCRE2 `u1 -> u2`. Исходный migrate comparison с неверно выбранным pre-hardening
+baseline сохранён как FAIL; правильный `61eb281` baseline подтверждён по
+committed task record, image label и независимому `dpkg-query` повтору.
+Main использует новую private disposable namespace `cf-worker-capacity-20261014`:
+fresh/repeat 45 migrations и readiness 200 подтверждены. Свежие actual artifact
+scans API/migrate завершены: DENY 159/168 non-LOW соответственно; promotion
+не разрешён. Attested re-exports сохраняют идентичные runtime manifests.
+
+Worker shared-capacity wiring прошло 393 tests, types, lint и build;
+independent source repeat CLEAN, включая compiled stale-statfs/release P1
+regressions. Native candidate
+`1ec8b5cb938f01edc5f7c6c56759e7ddd78c01d8` отказал fail-closed при сборке:
+official Debian repository больше не содержит pinned PCRE2 `10.42-1+deb12u1`.
+Официальный `10.42-1+deb12u2` проверен по package/changelog/checksum и одобрен
+архитектором как bounded maintenance. Pin/assertions обновлены без исключений;
+см. `tasks/pcre2-security-maintenance.md`.
+Worker candidate `7c7c8e0b55c6fbcd6ff33439dbee45970c024af3` собран и прошёл
+24 actual native startup/capacity cases. Однако warm-cache image **не принят**:
+полный inventory выявил старые cached expat/OpenSSL версии вне разрешённой
+дельты. Cold rebuild выявил отдельную PNG `u5 -> u6` дельту; архитектор явно
+одобрил её точный pin/assert в initial FFmpeg install. Новый frozen candidate
+`0c9cf33c347eb373a801abc2d6cd9e16b09b54d3` собран cold с provenance.
+Все 24 native cases и PNG pixel-overlay PASS; full inventory сохраняет
+288 OS names/66 Node packages, меняются только PCRE2 и PNG, остальные
+286 OS versions, FFmpeg/ffprobe/font совпали. Повторён реальный combined
+upload/replay/queue-loss/SIGKILL/failure batch: PASS на новом образе,
+attempt 1 после Redis loss, attempt 2 после SIGKILL 137, один artifact/checksum.
+Первый harness отказал до flush из-за ошибочного DB12; исправлен test harness,
+продолжен тот же queued project в собственном Redis DB0 (17 keys -> 0).
+Все логи сохранены. Финальный новый scan DENY 754; independent native review
+CLEAN: 24 cases, PNG и полный inventory повторены, provenance/scan проверены.
+Media recovery проверен reviewer по реальным scripts/logs/JSON, не повторялся им.
+Старый `7c` не принят задним числом.
+Supporting `7c` pipeline: upload/cut/replay PASS, graceful stop exit 0;
+QUEUED/attempt 0 пережил очистку только disposable Redis (12 keys -> 0)
+и завершился attempt 1. Actual SIGKILL exit 137 восстановился attempt 2,
+checksum совпал; повреждённое видео — `FFMPEG_CUT_FAILED` без результата.
+Attested `7c` all-severity scan DENY 754 non-LOW; это не финальный PNG-pinned
+artifact. Разные даты scanner DB не позволяют сравнивать counts как прогресс.
+
+Официальный Caddy `2.11.7-alpine` теперь опубликован; bounded web-edge image
+preparation выполнена, independent diagnostic review CLEAN: 13 helper tests,
+256 MiB multipart/download и 65-second streaming PASS; actual image scan
+DENY 19 non-LOW. Reviewer отдельно повторил auth-header preservation и log
+redaction. Initial browser smoke отрисовал 12 desktop/mobile страниц и проверил
+геометрию восьми selectors; это hydration/transport proof, не settled operator
+acceptance. Main обнаружил слабые ожидания loader/late responses и отсутствие
+assertion закрытия popup по Escape; stronger private browser harness в работе.
+Двойная внутренняя focus-рамка и mobile-copy «справа» отмечены для UI polish.
+Настоящий API/media через edge: upload/manual rights/probe/cut/replay,
+checksum/Range, 413/415, failed cut без artifact и cleanup PASS; отдельно
+скачаны recovered Main jobs, включая attempt 2. Independent final evidence
+review продолжается. Source advisories node-forge/braces по-прежнему без
+published patch по проверке official GitHub/npm. Production promotion и реальный
+deployment остаются запрещены до всех gates и отдельных deployment facts.
+Fresh complete и production-classified `pnpm audit` на неизменном lockfile
+теперь находят по 10 advisories (4 critical, 5 high, 1 moderate), а не только
+исторические два high. Новые findings и dependency paths сохранены в
+`tmp/worker-capacity-native-GGLAT7/source-audit-*-20261014.json`; это отдельный
+следующий remediation slice, не основание снизить threshold.
+
+## История: checkpoint на ночь 2026-10-04
 
 Проверенный код `d8aeaeace9e127c1ca2a4eb57ca68acbf38d14ba` опубликован в
 `origin/feat/stage2b2-frame-evidence`. Полный worker gate: lint, typecheck,

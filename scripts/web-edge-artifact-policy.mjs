@@ -35,7 +35,6 @@ const forbiddenPathSegments = new Set([
   "pnpm",
   "python",
   "python3",
-  "root",
   "rustc",
   "src",
   "tar",
@@ -49,19 +48,37 @@ const forbiddenPathSegments = new Set([
 ]);
 
 function hasForbiddenPathSegment(value) {
-  return value
-    .toLowerCase()
-    .split("/")
-    .filter(Boolean)
-    .some((segment) => forbiddenPathSegments.has(segment));
+  assert.ok(
+    value.length > 0 && !/[\\\0]/.test(value),
+    "Malformed SBOM file path",
+  );
+  const parts = value.toLowerCase().split("/").filter(Boolean);
+  assert.ok(
+    parts.every((part) => part !== "." && part !== ".."),
+    "Non-canonical SBOM file path",
+  );
+  // /root is a forbidden home directory; etc/crontabs/root is an OS file,
+  // not that directory. Syft reports canonical container paths without '/'.
+  return (
+    parts[0] === "root" ||
+    parts.some((segment) => forbiddenPathSegments.has(segment))
+  );
 }
 
 function hasForbiddenPackageName(name) {
-  return name
-    .toLowerCase()
-    .split(/[/@]/)
-    .filter(Boolean)
-    .some((segment) => forbiddenPathSegments.has(segment));
+  return (
+    name
+      .toLowerCase()
+      .split(/[/@]/)
+      .filter(Boolean)
+      // cloud.google.com/go/... identifies linked Go modules, not a compiler.
+      // A literal "go" package and /usr/local/go files remain forbidden.
+      .some(
+        (segment) =>
+          forbiddenPathSegments.has(segment) &&
+          (segment !== "go" || name.toLowerCase() === "go"),
+      )
+  );
 }
 
 function validateInventory(inventory, expected) {
@@ -171,7 +188,9 @@ export function validateWebSbom(sbom, expectedCaddy, expectedSbomCreator) {
     assert.ok(typeof value === "string" && value.length > 0);
   }
   assert.match(expectedCaddy.versionInfo, /^v?2\.11\.7$/);
-  assert.ok(expectedCaddy.binaryFileName.startsWith("/"));
+  assert.ok(
+    ["/usr/bin/caddy", "usr/bin/caddy"].includes(expectedCaddy.binaryFileName),
+  );
   assert.equal(typeof expectedSbomCreator, "string");
   assert.ok(expectedSbomCreator.length > 0);
   assert.equal(sbom?.spdxVersion, "SPDX-2.3");

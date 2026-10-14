@@ -3798,6 +3798,14 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
+      503: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponseDto"];
+        };
+      };
     };
   };
   CreatorContextController_getAuthorization: {
@@ -5284,7 +5292,7 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponseDto"];
         };
       };
-      /** @description Object storage upload failed. */
+      /** @description Upload staging capacity is unavailable or object storage upload failed. */
       503: {
         headers: {
           [name: string]: unknown;

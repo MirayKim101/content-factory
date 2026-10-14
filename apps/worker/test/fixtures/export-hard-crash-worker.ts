@@ -8,6 +8,7 @@ import type {
 import { ProcessMediaJob } from "../../src/application/process-media-job.js";
 import { PgMediaJobRepository } from "../../src/infrastructure/pg-media-job.repository.js";
 import { StreamingZip64PackageExporter } from "../../src/infrastructure/streaming-zip64-package-exporter.js";
+import { testCapacity } from "../filesystem-capacity.fixture.js";
 
 const [databaseUrl, jobId, scratchDirectory, videoBase64, thumbnailBase64] =
   process.argv.slice(2);
@@ -55,6 +56,7 @@ await new ProcessMediaJob(
   {
     scratchDirectory,
     scratchSafetyBytes: 0n,
+    ...(await testCapacity(scratchDirectory)),
     leaseMs: 30_000,
     jobTimeoutMs: 60_000,
   },

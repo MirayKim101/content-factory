@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, rm, stat, statfs } from "node:fs/promises";
+import { mkdir, rm, stat } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { FRAME_LIMITS } from "@content-factory/contracts";
 import type { FrameExtractor } from "./frame-extractor.port.js";
@@ -8,12 +8,26 @@ import type {
   ClaimedFrameWork,
   FrameJobRepository,
 } from "./frame-job-repository.port.js";
-import type { WorkerObjectStorage } from "./ports.js";
+import type {
+  FilesystemCapacityLedger,
+  FilesystemTarget,
+  WorkerObjectStorage,
+} from "./ports.js";
 import { ControlledMediaError, leaseLostError } from "../domain/media-job.js";
+
+function boundedAvailable(bytes: bigint): number {
+  return Number(
+    bytes > BigInt(Number.MAX_SAFE_INTEGER)
+      ? BigInt(Number.MAX_SAFE_INTEGER)
+      : bytes,
+  );
+}
 
 export interface FrameJobConfiguration {
   scratchDirectory: string;
   scratchSafetyBytes: number;
+  capacityLedger: FilesystemCapacityLedger;
+  scratchTarget: FilesystemTarget;
   leaseMs: number;
   workDeadlineMs: number;
 }
@@ -21,7 +35,6 @@ export interface FrameJobConfiguration {
 /** Sequential owned I/O makes its settlement boundary explicit. No detached
  * upload or child promise may survive executionStopped(). */
 export class ProcessFrameJob {
-  private localReservedBytes = 0;
   private readonly activeControllers = new Set<AbortController>();
   private reconciliation: Promise<void> | null = null;
   constructor(
@@ -41,14 +54,18 @@ export class ProcessFrameJob {
   async execute(jobId: string): Promise<boolean> {
     const plan = await this.repository.plan(jobId);
     if (!plan) return false;
-    await mkdir(this.config.scratchDirectory, { recursive: true, mode: 0o700 });
     const required =
       Number(plan.capture.cutResultSizeBytes) +
       FRAME_LIMITS.maxSetBytes +
       this.config.scratchSafetyBytes;
-    const filesystem = await statfs(this.config.scratchDirectory);
-    const available =
-      filesystem.bavail * filesystem.bsize - this.localReservedBytes;
+    const reservation = await this.config.capacityLedger.tryReserve([
+      {
+        target: this.config.scratchTarget,
+        futureBytes:
+          BigInt(plan.capture.cutResultSizeBytes) +
+          BigInt(FRAME_LIMITS.maxSetBytes),
+      },
+    ]);
     // Reserve locally before asynchronous claim; the transaction additionally
     // deducts durable reservations across all worker replicas.
     // Persist the unique name before creating anything on disk. A lost claim
@@ -58,7 +75,6 @@ export class ProcessFrameJob {
       this.config.scratchDirectory,
       `content-factory-frames-${randomUUID()}-${randomBytes(3).toString("hex")}`,
     );
-    this.localReservedBytes += required;
     let work: ClaimedFrameWork | null = null;
     try {
       try {
@@ -69,7 +85,15 @@ export class ProcessFrameJob {
           workDeadlineMs: this.config.workDeadlineMs,
           scratchDirectoryName: basename(directory),
           scratchReservedBytes: required,
-          availableScratchBytes: available,
+          // A local refusal still uses the existing PG deferral path. It is
+          // not rejectPending(), which would permanently fail runnable work.
+          availableScratchBytes: reservation
+            ? boundedAvailable(
+                await reservation.availableForExistingFrameClaim(
+                  this.config.scratchTarget,
+                ),
+              )
+            : 0,
         });
       } catch (error) {
         if (error instanceof ControlledMediaError && !error.retryable) {
@@ -85,14 +109,17 @@ export class ProcessFrameJob {
       if (!work) return true;
       await this.perform(work, directory);
     } finally {
-      this.localReservedBytes -= required;
       // Claimed scratch is deleted only through persisted inactivity evidence.
-      await this.reconcile().catch((error: unknown) =>
-        this.log({
-          event: "frame_reconciliation_failed",
-          code: safeCode(error),
-        }),
-      );
+      try {
+        await this.reconcile().catch((error: unknown) =>
+          this.log({
+            event: "frame_reconciliation_failed",
+            code: safeCode(error),
+          }),
+        );
+      } finally {
+        reservation?.release();
+      }
     }
     return true;
   }

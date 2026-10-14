@@ -1,18 +1,12 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
-import {
-  chmod,
-  mkdir,
-  readdir,
-  rename,
-  rm,
-  stat,
-  statfs,
-  writeFile,
-} from "node:fs/promises";
+import { chmod, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import type {
+  CapacityReservation,
+  FilesystemCapacityLedger,
+  FilesystemTarget,
   SourceCache,
   SourceCacheHandle,
   SourceCacheIdentity,
@@ -20,6 +14,7 @@ import type {
   SourceProbeResult,
 } from "../application/ports.js";
 import { ControlledMediaError } from "../domain/media-job.js";
+import { verifyScratchCapability } from "./scratch-capability.js";
 
 interface CacheEntry {
   path: string;
@@ -36,6 +31,7 @@ interface InflightFill {
   controller: AbortController;
   waiters: number;
   sizeBytes: bigint;
+  settled: boolean;
 }
 
 interface ProbeFlight {
@@ -48,6 +44,9 @@ export interface LocalSourceCacheOptions {
   directory: string;
   maxBytes: bigint;
   ttlMs: number;
+  capacityLedger: FilesystemCapacityLedger;
+  cacheTarget: FilesystemTarget;
+  outputTarget: FilesystemTarget;
 }
 
 export class LocalSourceCache implements SourceCache {
@@ -56,13 +55,15 @@ export class LocalSourceCache implements SourceCache {
   private initialized: Promise<void> | undefined;
   private currentBytes = 0n;
   private fillReservedBytes = 0n;
-  private outputReservedBytes = 0n;
   private evictionCount = 0;
   private evictedBytes = 0n;
   private lock: Promise<void> = Promise.resolve();
   private closed = false;
 
-  constructor(private readonly options: LocalSourceCacheOptions) {}
+  constructor(private readonly options: LocalSourceCacheOptions) {
+    if (options.cacheTarget.id === options.outputTarget.id)
+      throw new Error("SOURCE_CACHE_CAPACITY_TARGET_INVALID");
+  }
 
   async acquire(input: {
     identity: SourceCacheIdentity;
@@ -76,6 +77,7 @@ export class LocalSourceCache implements SourceCache {
     const key = cacheKey(input.identity);
     let entry: CacheEntry | undefined;
     let fill: InflightFill | undefined;
+    let reservation: CapacityReservation | undefined;
     let outcome: SourceCacheHandle["outcome"] = "hit";
     const evictionCountBefore = this.evictionCount;
     const evictedBytesBefore = this.evictedBytes;
@@ -85,12 +87,13 @@ export class LocalSourceCache implements SourceCache {
       await this.ensureInitialized();
       if (this.closed) throw new Error("SOURCE_CACHE_CLOSED");
       await this.exclusive(async () => {
+        if (this.closed) throw new Error("SOURCE_CACHE_CLOSED");
+        if (input.signal.aborted) throw input.signal.reason;
         entry = await this.validEntry(key, input.identity);
         if (entry) {
-          await this.reserveOutput(
-            input.outputReservationBytes,
-            input.safetyBytes,
-          );
+          reservation = await this.reserve(input.outputReservationBytes);
+          if (this.closed) throw new Error("SOURCE_CACHE_CLOSED");
+          if (input.signal.aborted) throw input.signal.reason;
           entry.refCount += 1;
           entry.lastAccessMs = Date.now();
           return;
@@ -98,21 +101,27 @@ export class LocalSourceCache implements SourceCache {
 
         fill = this.inflight.get(key);
         if (fill) {
+          reservation = await this.reserve(input.outputReservationBytes);
+          if (this.closed) throw new Error("SOURCE_CACHE_CLOSED");
+          if (input.signal.aborted) throw input.signal.reason;
           fill.waiters += 1;
           outcome = "single_flight_wait";
           return;
         }
 
         await this.evictForBudget(input.identity.sizeBytes);
-        await this.assertPhysicalAdmission(
-          input.identity.sizeBytes + input.outputReservationBytes,
-          input.safetyBytes,
+        reservation = await this.reserve(
+          input.outputReservationBytes,
+          input.identity.sizeBytes,
         );
+        if (this.closed) throw new Error("SOURCE_CACHE_CLOSED");
+        if (input.signal.aborted) throw input.signal.reason;
         const controller = new AbortController();
         const created: InflightFill = {
           controller,
           waiters: 1,
           sizeBytes: input.identity.sizeBytes,
+          settled: false,
           promise: Promise.resolve(undefined as unknown as CacheEntry),
         };
         this.fillReservedBytes += input.identity.sizeBytes;
@@ -121,6 +130,7 @@ export class LocalSourceCache implements SourceCache {
           input.identity,
           controller.signal,
           input.fill,
+          reservation,
           input.onTelemetry,
         );
         void created.promise.catch(() => undefined);
@@ -129,6 +139,7 @@ export class LocalSourceCache implements SourceCache {
         outcome = "fill";
       });
     } catch (error) {
+      reservation?.release();
       this.emit(input.onTelemetry, {
         phase: "cache_lookup",
         durationMs: elapsed(startedAt),
@@ -154,12 +165,17 @@ export class LocalSourceCache implements SourceCache {
     });
 
     if (entry) {
-      return this.handle(entry, resolvedOutcome, input.outputReservationBytes);
+      return this.handle(entry, resolvedOutcome, reservation!);
     }
 
     const waitStartedAt = performance.now();
     try {
       entry = await waitWithAbort(fill!.promise, input.signal);
+      await this.exclusive(async () => {
+        if (input.signal.aborted) throw input.signal.reason;
+        entry!.refCount += 1;
+        entry!.lastAccessMs = Date.now();
+      });
       if (resolvedOutcome === "single_flight_wait") {
         this.emit(input.onTelemetry, {
           phase: "cache_wait",
@@ -170,6 +186,9 @@ export class LocalSourceCache implements SourceCache {
         });
       }
     } catch (error) {
+      // A fill owns its cache-domain reservation until its writer has settled.
+      // Cancelling one consumer releases only that consumer's output domain.
+      reservation!.releaseTarget(this.options.outputTarget);
       if (resolvedOutcome === "single_flight_wait") {
         this.emit(input.onTelemetry, {
           phase: "cache_wait",
@@ -187,28 +206,28 @@ export class LocalSourceCache implements SourceCache {
         if (active && active === fill) {
           active.waiters -= 1;
           if (active.waiters === 0) {
-            active.controller.abort(input.signal.reason);
-            abandonedFill = active.promise;
+            if (active.settled) this.inflight.delete(key);
+            else {
+              active.controller.abort(input.signal.reason);
+              abandonedFill = active.promise;
+            }
           }
         }
       });
       if (abandonedFill) await Promise.allSettled([abandonedFill]);
     }
 
-    await this.exclusive(async () => {
-      await this.reserveOutput(input.outputReservationBytes, input.safetyBytes);
-      entry!.refCount += 1;
-      entry!.lastAccessMs = Date.now();
-    });
-    return this.handle(entry, resolvedOutcome, input.outputReservationBytes);
+    return this.handle(entry, resolvedOutcome, reservation!);
   }
 
   async close(): Promise<void> {
     this.closed = true;
-    for (const fill of this.inflight.values()) fill.controller.abort();
-    await Promise.allSettled(
-      [...this.inflight.values()].map((fill) => fill.promise),
-    );
+    let fills: InflightFill[] = [];
+    await this.exclusive(async () => {
+      fills = [...this.inflight.values()];
+      for (const fill of fills) fill.controller.abort();
+    });
+    await Promise.allSettled(fills.map((fill) => fill.promise));
     await this.ensureInitialized();
     await this.removeDirectoryContents();
     this.entries.clear();
@@ -217,8 +236,7 @@ export class LocalSourceCache implements SourceCache {
 
   private async ensureInitialized(): Promise<void> {
     this.initialized ??= (async () => {
-      await mkdir(this.options.directory, { recursive: true, mode: 0o700 });
-      await chmod(this.options.directory, 0o700);
+      await verifyScratchCapability(this.options.directory);
       // Cache metadata is intentionally process-local. A restart is a safe miss.
       await this.removeDirectoryContents();
     })();
@@ -247,6 +265,7 @@ export class LocalSourceCache implements SourceCache {
     identity: SourceCacheIdentity,
     signal: AbortSignal,
     fill: (destination: string, signal: AbortSignal) => Promise<void>,
+    reservation: CapacityReservation,
     onTelemetry?: (event: SourceCacheTelemetry) => void,
   ): Promise<CacheEntry> {
     const readyPath = join(this.options.directory, `${key}.mp4`);
@@ -330,14 +349,20 @@ export class LocalSourceCache implements SourceCache {
       });
       return entry;
     } finally {
-      await rm(temporaryPath, { force: true });
-      await this.exclusive(async () => {
-        const active = this.inflight.get(key);
-        if (active) {
-          this.fillReservedBytes -= active.sizeBytes;
-          this.inflight.delete(key);
-        }
-      });
+      try {
+        await rm(temporaryPath, { force: true });
+      } finally {
+        // Actual physical leftovers remain visible to statfs; no I/O survives.
+        reservation.releaseTarget(this.options.cacheTarget);
+        await this.exclusive(async () => {
+          const active = this.inflight.get(key);
+          if (active) {
+            this.fillReservedBytes -= active.sizeBytes;
+            active.settled = true;
+            if (active.waiters === 0) this.inflight.delete(key);
+          }
+        });
+      }
     }
   }
 
@@ -349,6 +374,7 @@ export class LocalSourceCache implements SourceCache {
     if (!entry) return undefined;
     if (
       entry.refCount === 0 &&
+      !this.inflight.has(key) &&
       Date.now() - entry.lastAccessMs >= this.options.ttlMs
     ) {
       await this.invalidate(key, entry);
@@ -397,7 +423,7 @@ export class LocalSourceCache implements SourceCache {
     if (requiredBytes > this.options.maxBytes) throw cacheAdmissionError();
     const now = Date.now();
     const candidates = [...this.entries.entries()]
-      .filter(([, entry]) => entry.refCount === 0)
+      .filter(([key, entry]) => entry.refCount === 0 && !this.inflight.has(key))
       .sort(([, left], [, right]) => {
         const leftExpired = now - left.lastAccessMs >= this.options.ttlMs;
         const rightExpired = now - right.lastAccessMs >= this.options.ttlMs;
@@ -424,32 +450,24 @@ export class LocalSourceCache implements SourceCache {
     }
   }
 
-  private async assertPhysicalAdmission(
-    newBytes: bigint,
-    safetyBytes: bigint,
-  ): Promise<void> {
-    const disk = await statfs(this.options.directory);
-    const available = BigInt(disk.bavail) * BigInt(disk.bsize);
-    const required =
-      newBytes +
-      safetyBytes +
-      this.fillReservedBytes +
-      this.outputReservedBytes;
-    if (available < required) throw cacheAdmissionError();
-  }
-
-  private async reserveOutput(
-    bytes: bigint,
-    safetyBytes: bigint,
-  ): Promise<void> {
-    await this.assertPhysicalAdmission(bytes, safetyBytes);
-    this.outputReservedBytes += bytes;
+  private async reserve(
+    outputBytes: bigint,
+    fillBytes?: bigint,
+  ): Promise<CapacityReservation> {
+    const reservation = await this.options.capacityLedger.tryReserve([
+      { target: this.options.outputTarget, futureBytes: outputBytes },
+      ...(fillBytes === undefined
+        ? []
+        : [{ target: this.options.cacheTarget, futureBytes: fillBytes }]),
+    ]);
+    if (!reservation) throw cacheAdmissionError();
+    return reservation;
   }
 
   private handle(
     entry: CacheEntry,
     outcome: SourceCacheHandle["outcome"],
-    outputReservationBytes: bigint,
+    reservation: CapacityReservation,
   ): SourceCacheHandle {
     let released = false;
     return {
@@ -462,10 +480,7 @@ export class LocalSourceCache implements SourceCache {
         await this.exclusive(async () => {
           entry.refCount = Math.max(0, entry.refCount - 1);
           entry.lastAccessMs = Date.now();
-          this.outputReservedBytes =
-            this.outputReservedBytes >= outputReservationBytes
-              ? this.outputReservedBytes - outputReservationBytes
-              : 0n;
+          reservation.releaseTarget(this.options.outputTarget);
         });
       },
     };
